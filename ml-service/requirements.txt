@@ -1,5 +1,5 @@
 # ML service Python dependencies
-flask>=2.3,<2.4
+flask>=2.3,<3.2
 pydantic>=2.3
 shapely>=2.0
 numpy>=1.26
