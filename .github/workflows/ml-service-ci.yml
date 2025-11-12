@@ -68,7 +68,7 @@ jobs:
 
       - name: Upload coverage.xml
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ml-service-coverage-xml
           path: ml-service/.coverage-reports/coverage.xml
@@ -77,7 +77,7 @@ jobs:
 
       - name: Upload coverage HTML
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ml-service-coverage-html
           path: ml-service/.coverage-reports/html
