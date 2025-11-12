@@ -7,7 +7,7 @@ Pillow>=10.0
 scikit-image>=0.22
 gunicorn>=21.2
 python-json-logger>=2.0.7
-werkzeug<3
+werkzeug<4
 requests>=2.31
 pytest>=7.4
 pytest-cov>=4.1
