@@ -19,11 +19,18 @@ class Config:
     # Models (Segmentation - Sprint 2)
     MODEL_NAME: str = os.getenv("MODEL_NAME", "unet")
     # Effective default version used when not specified by header/body
-    UNET_DEFAULT_VERSION: str = os.getenv("UNET_DEFAULT_VERSION", os.getenv("MODEL_VERSION", "1.0.0"))
+    UNET_DEFAULT_VERSION: str = os.getenv("UNET_DEFAULT_VERSION", os.getenv("MODEL_VERSION", "2.0.0"))
 
     # Models (Sprint 3 additions)
     # Path to yield RF ONNX model (fallback to joblib if ORT unavailable)
     ML_YIELD_MODEL_PATH: str = os.getenv("ML_YIELD_MODEL_PATH", "ml-training/models/yield_rf/1.0.0/model.onnx")
+
+    # Dataset references for trained models
+    DATASET_LINKS: Dict[str, str] = {
+        "unet_2.0.0_train": "https://drive.google.com/drive/folders/1s06WXKPTNXeRuz4M2SAxY3hAf8vH2Zjw?usp=drive_link",
+        "unet_2.0.0_train_images": "https://drive.google.com/drive/folders/1WHsyPZDcPADZanLAtyZ8roaUBTcES2QG?usp=drive_link",
+        "unet_2.0.0_train_masks": "https://drive.google.com/drive/folders/1WB38Uwm_qf3Wfzj8nhVCF_zUTGgv6xQn?usp=drive_link",
+    }
 
     # Disaster analysis defaults
     DISASTER_PRE_DAYS: int = int(os.getenv("DISASTER_PRE_DAYS", "14"))

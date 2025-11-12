@@ -26,6 +26,15 @@ data:
     output:
       format: png
       structure: folders   # folders | manifest
+    download:
+      enabled: true
+      links:
+        train_images: "https://drive.google.com/uc?id=1EXAMPLE_TRAIN_IMAGES"
+        train_masks: "https://drive.google.com/uc?id=1EXAMPLE_TRAIN_MASKS"
+        val_images: "https://drive.google.com/uc?id=1EXAMPLE_VAL_IMAGES"
+        val_masks: "https://drive.google.com/uc?id=1EXAMPLE_VAL_MASKS"
+        test_images: "https://drive.google.com/uc?id=1EXAMPLE_TEST_IMAGES"
+        test_masks: "https://drive.google.com/uc?id=1EXAMPLE_TEST_MASKS"
 
 split:
   val_ratio: 0.2

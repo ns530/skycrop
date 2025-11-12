@@ -574,6 +574,75 @@ class TileDataset(tf.keras.utils.Sequence if tf is not None else object):  # typ
         y = np.stack(msks, axis=0)
         return x, y
 
+class Sentinel2Dataset(tf.keras.utils.Sequence if tf is not None else object):  # type: ignore
+    def __init__(
+        self,
+        images_dir: str,
+        masks_dir: str,
+        batch_size: int = 4,
+        shuffle: bool = True,
+        augment: bool = False,
+        aug_cfg: Optional[Dict] = None,
+        seed: int = 1337,
+        normalize: bool = True,
+    ) -> None:
+        self.images_dir = images_dir
+        self.masks_dir = masks_dir
+        self.image_paths = list_files(images_dir)
+        self.mask_paths = [matching_mask_path(images_dir, masks_dir, p) for p in self.image_paths]
+        self.mask_paths = [m for m in self.mask_paths if m is not None]
+        self.image_paths = self.image_paths[:len(self.mask_paths)]
+        assert len(self.image_paths) == len(self.mask_paths), "Image/mask count mismatch"
+        self.batch_size = max(1, int(batch_size))
+        self.shuffle = shuffle
+        self.augment = augment
+        self.normalize = normalize
+        self.seed = seed
+        self.rng = np.random.RandomState(seed)
+        if aug_cfg is None:
+            aug_cfg = {}
+        self.aug = build_augmentations_from_cfg(aug_cfg=aug_cfg, image_channels=3, seed=seed)
+        self.indexes = np.arange(len(self.image_paths))
+        if self.shuffle:
+            self.rng.shuffle(self.indexes)
+
+    def __len__(self) -> int:
+        return int(math.ceil(len(self.image_paths) / self.batch_size))
+
+    def on_epoch_end(self) -> None:
+        if self.shuffle:
+            self.rng.shuffle(self.indexes)
+
+    def __getitem__(self, idx: int) -> Tuple[np.ndarray, np.ndarray]:
+        start = idx * self.batch_size
+        end = min((idx + 1) * self.batch_size, len(self.image_paths))
+        batch_idx = self.indexes[start:end]
+        imgs: List[np.ndarray] = []
+        msks: List[np.ndarray] = []
+        for i in batch_idx:
+            img = read_image_any(self.image_paths[i])
+            msk = cv2.imread(self.mask_paths[i], cv2.IMREAD_GRAYSCALE)
+            if msk is None or img is None:
+                raise FileNotFoundError(f"Missing file for pair: {self.image_paths[i]} / {self.mask_paths[i]}")
+            msk = (msk > 127).astype(np.uint8)
+            # Resize to 512x512
+            img = cv2.resize(img, (512, 512), interpolation=cv2.INTER_LINEAR)
+            msk = cv2.resize(msk, (512, 512), interpolation=cv2.INTER_NEAREST)
+            if self.augment and img.ndim == 3 and img.shape[-1] == 3:
+                augmented = self.aug(image=img, mask=msk)
+                img = augmented["image"]
+                msk = augmented["mask"]
+                msk = (msk > 0).astype(np.uint8)
+            img = img.astype(np.float32)
+            if self.normalize:
+                img /= 255.0
+            msk = msk.astype(np.float32)[..., None]  # H W 1
+            imgs.append(img)
+            msks.append(msk)
+        x = np.stack(imgs, axis=0)
+        y = np.stack(msks, axis=0)
+        return x, y
+
 
 def build_sequences_from_tiles(
     tiles_dir: str,
@@ -657,6 +726,47 @@ def perform_tiling(
     image_files = list_files(raw_images_dir)
     if len(image_files) == 0:
         raise FileNotFoundError(f"No images found under {raw_images_dir}")
+def build_sequences_from_sentinel2(
+    sentinel2_base_dir: str,
+    batch_size: int = 4,
+    augment_cfg: Optional[Dict] = None,
+    seed: int = 1337,
+) -> Tuple[Sentinel2Dataset, Sentinel2Dataset, Sentinel2Dataset]:
+    train_images_dir = os.path.join(sentinel2_base_dir, "train", "train_images")
+    train_masks_dir = os.path.join(sentinel2_base_dir, "train", "train_masks")
+    val_images_dir = os.path.join(sentinel2_base_dir, "val", "val_images")
+    val_masks_dir = os.path.join(sentinel2_base_dir, "val", "val_masks")
+    test_images_dir = os.path.join(sentinel2_base_dir, "test", "test_images")
+    test_masks_dir = os.path.join(sentinel2_base_dir, "test", "test_masks")
+    train_seq = Sentinel2Dataset(
+        train_images_dir,
+        train_masks_dir,
+        batch_size=batch_size,
+        shuffle=True,
+        augment=True,
+        aug_cfg=augment_cfg,
+        seed=seed,
+    )
+    val_seq = Sentinel2Dataset(
+        val_images_dir,
+        val_masks_dir,
+        batch_size=batch_size,
+        shuffle=False,
+        augment=False,
+        aug_cfg=augment_cfg,
+        seed=seed,
+    )
+    test_seq = Sentinel2Dataset(
+        test_images_dir,
+        test_masks_dir,
+        batch_size=batch_size,
+        shuffle=False,
+        augment=False,
+        aug_cfg=augment_cfg,
+        seed=seed,
+    )
+    return train_seq, val_seq, test_seq
+
     # Filter to those with matching masks
     pairs: List[Tuple[str, str]] = []
     for img_path in image_files:

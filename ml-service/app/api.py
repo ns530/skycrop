@@ -92,7 +92,7 @@ def _resolve_effective_model_version(body_version: Optional[str]) -> Tuple[str, 
         header_value = f"{model_name}-{default_version}"
 
     # Validate known version(s) for Sprint 2 stub
-    allowed = {default_version}
+    allowed = {"1.0.0", "2.0.0"}
     if version_token not in allowed:
         # Unknown model version
         raise ValueError(f"unknown_version:{version_token}")

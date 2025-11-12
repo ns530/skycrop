@@ -7,6 +7,11 @@ import yaml
 import argparse
 from typing import Dict, Any
 
+try:
+    import gdown
+except ImportError:
+    gdown = None
+
 # Ensure local imports work when running as "python ml-training/train_unet.py"
 CURRENT_DIR = os.path.dirname(__file__)
 if CURRENT_DIR not in sys.path:
@@ -14,6 +19,7 @@ if CURRENT_DIR not in sys.path:
 
 from dataset import (  # noqa: E402
     build_sequences_from_tiles,
+    build_sequences_from_sentinel2,
     set_global_seeds,
     load_yaml_config,
 )
@@ -55,6 +61,33 @@ def _expand_in_obj(obj: Any) -> Any:
     if isinstance(obj, list):
         return [_expand_in_obj(v) for v in obj]
     return _expand_env_style_vars(obj)
+
+
+def download_sentinel2_dataset(data_dir: str, download_cfg: Dict) -> None:
+    """
+    Download Sentinel-2 dataset from Google Drive if not present.
+    """
+    if gdown is None:
+        raise RuntimeError("gdown not installed; cannot download dataset. Install with: pip install gdown")
+
+    sentinel2_dir = os.path.join(data_dir, download_cfg.get("input_dir", "sentinel2_datasets"))
+    if os.path.exists(sentinel2_dir):
+        print(f"Sentinel-2 dataset already exists at {sentinel2_dir}")
+        return
+
+    links = download_cfg.get("links", {})
+    if not links:
+        raise ValueError("No download links provided in config")
+
+    os.makedirs(sentinel2_dir, exist_ok=True)
+
+    for name, url in links.items():
+        if not url:
+            continue
+        output_dir = os.path.join(sentinel2_dir, name.replace("_", "/"))
+        os.makedirs(output_dir, exist_ok=True)
+        print(f"Downloading {name} from {url} to {output_dir}")
+        gdown.download(url, output_dir, fuzzy=True, quiet=False)
 
 
 def load_and_resolve_config(config_path: str) -> Dict:
@@ -119,6 +152,15 @@ def main(argv=None) -> int:
     runs_dir = str(cfg.get("paths", {}).get("runs_dir", "./runs"))
     exp_name = str(cfg.get("experiment", {}).get("name", "unet_baseline"))
 
+    # Sentinel-2 config
+    sentinel2_cfg = cfg.get("data", {}).get("sentinel2", {})
+    use_sentinel2 = bool(sentinel2_cfg.get("enabled", False))
+    if use_sentinel2:
+        sentinel2_base_dir = os.path.join(data_dir, sentinel2_cfg.get("input_dir", "sentinel2_datasets"))
+        download_cfg = sentinel2_cfg.get("download", {})
+        if download_cfg.get("enabled", True):
+            download_sentinel2_dataset(data_dir, sentinel2_cfg)
+
     _ensure_dir(runs_dir)
     run_root = os.path.join(runs_dir, exp_name)
     tb_dir = os.path.join(run_root, "tb")
@@ -135,17 +177,29 @@ def main(argv=None) -> int:
 
     # Datasets
     try:
-        train_seq, val_seq = build_sequences_from_tiles(
-            tiles_dir=tiles_dir,
-            batch_size=batch_size,
-            val_split_dirnames=("train", "val"),
-            augment_cfg=augment_cfg,
-            seed=seed,
-        )
+        if use_sentinel2:
+            train_seq, val_seq, _ = build_sequences_from_sentinel2(
+                sentinel2_base_dir=sentinel2_base_dir,
+                batch_size=batch_size,
+                augment_cfg=augment_cfg,
+                seed=seed,
+            )
+        else:
+            train_seq, val_seq = build_sequences_from_tiles(
+                tiles_dir=tiles_dir,
+                batch_size=batch_size,
+                val_split_dirnames=("train", "val"),
+                augment_cfg=augment_cfg,
+                seed=seed,
+            )
     except FileNotFoundError as e:
-        print(f"Dataset preparation missing: {e}")
-        print("Hint: run tiling first, e.g.:")
-        print("  python ml-training/dataset.py tile --data-dir ./data --tile-size 512 --overlap 64 --val-ratio 0.2 --seed 1337")
+        if use_sentinel2:
+            print(f"Sentinel-2 dataset missing: {e}")
+            print("Hint: check download links in config or set data.sentinel2.download.enabled: true")
+        else:
+            print(f"Dataset preparation missing: {e}")
+            print("Hint: run tiling first, e.g.:")
+            print("  python ml-training/dataset.py tile --data-dir ./data --tile-size 512 --overlap 64 --val-ratio 0.2 --seed 1337")
         return 2
 
     # Model
