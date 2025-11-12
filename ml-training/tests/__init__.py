@@ -1,0 +1,1 @@
+# Mark tests as a package to enable absolute imports like `from tests.fixtures.synthetic import ...`

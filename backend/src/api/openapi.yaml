@@ -1,0 +1,1456 @@
+openapi: 3.1.0
+info:
+  title: SkyCrop API
+  version: 0.1.0
+  description: |
+    SkyCrop - Satellite-Based Paddy Field Management & Monitoring System
+    MVP Auth and Health endpoints.
+
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+  - url: https://api.skycrop.com
+    description: Production server
+
+tags:
+  - name: Authentication
+    description: User authentication and account management
+  - name: System
+    description: System status and utility endpoints
+
+paths:
+  /health:
+    get:
+      tags: [System]
+      summary: Health check
+      description: Returns API status, environment and timestamp
+      responses:
+        '200':
+          description: Health status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthOk'
+
+  /api/v1/auth/signup:
+    post:
+      tags: [Authentication]
+      summary: Register a new user (email/password)
+      description: Creates a user and issues a JWT. Sends an email verification token (MVP returns token for testing).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/auth/login:
+    post:
+      tags: [Authentication]
+      summary: Login with email/password
+      description: Validates credentials and returns a JWT.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials or account locked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/auth/logout:
+    post:
+      tags: [Authentication]
+      summary: Logout current session
+      description: Blacklists the provided JWT until it expires.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '401':
+          description: Missing/invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/auth/verify-email:
+    get:
+      tags: [Authentication]
+      summary: Verify email
+      description: Marks a user as email-verified using a one-time token.
+      parameters:
+        - in: query
+          name: token
+          schema:
+            type: string
+          required: true
+          description: Email verification token
+      responses:
+        '200':
+          description: Email verified
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: Invalid/expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/auth/request-password-reset:
+    post:
+      tags: [Authentication]
+      summary: Request password reset
+      description: Issues a one-time password reset token (MVP returns token for testing).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestPasswordReset'
+      responses:
+        '200':
+          description: Reset token issued (or noop if user not found)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+
+  /api/v1/auth/reset-password:
+    post:
+      tags: [Authentication]
+      summary: Reset password with token
+      description: Resets password using a previously issued token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPassword'
+      responses:
+        '200':
+          description: Password updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: Invalid/expired token or weak new password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/auth/google:
+    get:
+      tags: [Authentication]
+      summary: Initiate Google OAuth
+      description: Redirects to Google consent screen.
+      responses:
+        '302':
+          description: Redirect to Google
+
+  /api/v1/auth/google/callback:
+    get:
+      tags: [Authentication]
+      summary: Google OAuth callback
+      description: Completes Google OAuth and redirects to frontend with a JWT as a query param.
+      responses:
+        '302':
+          description: Redirect to frontend with token query parameter
+
+  /api/v1/fields:
+    get:
+      tags: [Fields]
+      summary: List user's fields (with spatial filters)
+      description: Returns active fields owned by the authenticated user with optional spatial filters and pagination.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: bbox
+          schema:
+            type: string
+            pattern: '^-?\\d{1,3}\\.\\d+,-?\\d{1,2}\\.\\d+,-?\\d{1,3}\\.\\d+,-?\\d{1,2}\\.\\d+$'
+          description: 'minLon,minLat,maxLon,maxLat (SRID 4326)'
+        - in: query
+          name: near
+          schema:
+            type: string
+            pattern: '^-?\\d{1,2}\\.\\d+,-?\\d{1,3}\\.\\d+,\\d{1,6}$'
+          description: 'lat,lon,radius_m (uses ST_DWithin on center)'
+        - in: query
+          name: intersects
+          schema:
+            type: string
+          description: 'GeoJSON Polygon/MultiPolygon as string or "field:{uuid}"'
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1, default: 1 }
+        - in: query
+          name: page_size
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+        - in: query
+          name: sort
+          schema: { type: string, enum: [name, created_at, area_sqm], default: created_at }
+        - in: query
+          name: order
+          schema: { type: string, enum: [asc, desc], default: desc }
+      responses:
+        '200':
+          description: List of fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Field'
+                  pagination:
+                    type: object
+                    properties:
+                      page: { type: integer, example: 1 }
+                      page_size: { type: integer, example: 20 }
+                      total: { type: integer, example: 2 }
+                required: [success, data]
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags: [Fields]
+      summary: Create a new field (manual boundary)
+      description: Creates a field using a provided boundary polygon and name
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FieldCreateRequest'
+      responses:
+        '201':
+          description: Field created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    $ref: '#/components/schemas/Field'
+                  warnings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code: { type: string, example: GEOMETRY_SNAPPED }
+                        message: { type: string }
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/fields/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [Fields]
+      summary: Get field by ID
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Field details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                required: [success, data]
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    patch:
+      tags: [Fields]
+      summary: Update field metadata (name/status)
+      description: Update field name
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              # required removed; partial update (name/status) per Sprint 2
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 50
+                status:
+                  type: string
+                  enum: [active, archived, deleted]
+      responses:
+        '200':
+          description: Field updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags: [Fields]
+      summary: Delete field (soft delete)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Field deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/satellite/tiles/{z}/{x}/{y}:
+    get:
+      tags: [Satellite]
+      summary: Get Sentinel-2 tile via proxy
+      description: Returns a tile image. Supports ETag and Cache-Control headers; Redis-backed caching.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: z
+          required: true
+          schema: { type: integer, minimum: 0 }
+        - in: path
+          name: x
+          required: true
+          schema: { type: integer, minimum: 0 }
+        - in: path
+          name: y
+          required: true
+          schema: { type: integer, minimum: 0 }
+        - in: query
+          name: bands
+          schema:
+            type: string
+            description: CSV list of bands
+            example: RGB,NIR
+        - in: query
+          name: date
+          schema: { type: string, format: date }
+        - in: query
+          name: cloud_lt
+          schema: { type: integer, minimum: 0, maximum: 100, default: 20 }
+      responses:
+        '200':
+          description: Tile image
+          headers:
+            ETag:
+              schema: { type: string }
+            Cache-Control:
+              schema: { type: string }
+              example: public, max-age=21600
+          content:
+            image/png:
+              schema: { type: string, format: binary }
+            image/jpeg:
+              schema: { type: string, format: binary }
+        '304':
+          description: Not Modified
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Upstream unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/satellite/preprocess:
+    post:
+      tags: [Satellite]
+      summary: Submit preprocessing job (idempotent)
+      description: Submits a preprocess job for bbox/date/bands/cloud-mask. Uses Idempotency-Key header.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: false
+          schema: { type: string, minLength: 1, maxLength: 128 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [bbox, date, bands]
+              properties:
+                bbox:
+                  type: array
+                  items: { type: number }
+                  minItems: 4
+                  maxItems: 4
+                date:
+                  type: string
+                  format: date
+                bands:
+                  type: array
+                  items: { type: string, enum: [RGB, NIR, SWIR, RED, GREEN, BLUE] }
+                  minItems: 1
+                cloud_mask:
+                  type: boolean
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    properties:
+                      job_id: { type: string }
+                      status: { type: string, example: queued }
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/ml/segmentation/predict:
+    post:
+      tags: [ML]
+      summary: Segmentation mask prediction
+      description: Produces segmentation mask for bbox or field_id. Proxies to internal ML service.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MLPredictRequest'
+      responses:
+        '200':
+          description: Prediction result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MLMaskResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Model not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Timeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Success:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          nullable: true
+          example: null
+
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: VALIDATION_ERROR
+            message:
+              type: string
+              example: Email is invalid
+            details:
+              type: object
+              nullable: true
+      required: [success, error]
+
+    HealthOk:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+        service:
+          type: string
+          example: skycrop-backend
+        env:
+          type: string
+          example: development
+        timestamp:
+          type: string
+          format: date-time
+
+    UserPublic:
+      type: object
+      description: Public user fields returned by auth endpoints
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        role:
+          type: string
+          enum: [farmer, admin]
+        email_verified:
+          type: boolean
+      required: [user_id, email, name, role, email_verified]
+
+    AuthPayload:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserPublic'
+        token:
+          type: string
+          description: JWT bearer token
+        verification:
+          type: object
+          nullable: true
+          description: Only present for signup when verification token is issued
+          properties:
+            token:
+              type: string
+            expires_in_seconds:
+              type: integer
+              example: 86400
+
+    AuthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/AuthPayload'
+
+    SignupRequest:
+      type: object
+      required: [email, password, name]
+      properties:
+        email:
+          type: string
+          format: email
+          example: farmer@example.com
+        password:
+          type: string
+          minLength: 8
+          example: Password1
+        name:
+          type: string
+          example: Sunil Perera
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: farmer@example.com
+        password:
+          type: string
+          example: Password1
+
+    RequestPasswordReset:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+          example: farmer@example.com
+
+    ResetPassword:
+      type: object
+      required: [token, newPassword]
+      properties:
+        token:
+          type: string
+        newPassword:
+          type: string
+          minLength: 8
+          example: NewPassword1
+
+    GeoJSONPolygon:
+      type: object
+      description: GeoJSON Polygon or MultiPolygon in SRID 4326
+      oneOf:
+        - type: object
+          properties:
+            type: { type: string, enum: [Polygon] }
+            coordinates:
+              type: array
+              description: Array of linear rings (first is outer ring, subsequent are holes)
+              items:
+                type: array
+                items:
+                  type: array
+                  minItems: 2
+                  items:
+                    type: number
+          required: [type, coordinates]
+        - type: object
+          properties:
+            type: { type: string, enum: [MultiPolygon] }
+            coordinates:
+              type: array
+              items:
+                type: array
+
+    Field:
+      type: object
+      properties:
+        field_id: { type: string, format: uuid }
+        user_id: { type: string, format: uuid }
+        name: { type: string }
+        boundary:
+          $ref: '#/components/schemas/GeoJSONPolygon'
+        area_sqm:
+          type: number
+          format: float
+          description: Area in square meters computed via ST_Area(geography)
+        center:
+          type: object
+          description: GeoJSON Point
+          properties:
+            type: { type: string, enum: [Point] }
+            coordinates:
+              type: array
+              minItems: 2
+              maxItems: 3
+              items: { type: number }
+        status: { type: string, enum: [active, archived, deleted] }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+      required: [field_id, user_id, name, boundary, area_sqm, center, status, created_at, updated_at]
+
+    FieldCreateRequest:
+      type: object
+      required: [name, boundary]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        boundary:
+          $ref: '#/components/schemas/GeoJSONPolygon'
+    MLPredictRequest:
+      type: object
+      properties:
+        bbox:
+          type: array
+          items: { type: number }
+          minItems: 4
+          maxItems: 4
+          description: [minLon,minLat,maxLon,maxLat]
+        field_id:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        model_version:
+          type: string
+          example: unet-1.0.0
+        tiling:
+          type: object
+          properties:
+            size: { type: integer, default: 512 }
+            overlap: { type: integer, default: 64 }
+        return:
+          type: string
+          enum: [mask_url, inline]
+          default: mask_url
+      oneOf:
+        - required: [bbox, date]
+        - required: [field_id, date]
+
+    MLMaskResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data:
+          type: object
+          properties:
+            request_id: { type: string }
+            model:
+              type: object
+              properties:
+                name: { type: string, example: unet }
+                version: { type: string, example: 1.0.0 }
+            mask_url: { type: string, format: uri }
+            mask_base64: { type: string, description: inline encoded mask when requested }
+            mask_format: { type: string, enum: [geojson, png] }
+            metrics:
+              type: object
+              properties:
+                latency_ms: { type: integer }
+                tile_count: { type: integer }
+                cloud_coverage: { type: number, format: float }
+            warnings:
+              type: array
+              items: { type: string }
+
+    HealthSnapshot:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        field_id: { type: string, format: uuid }
+        timestamp: { type: string, format: date-time }
+        source: { type: string, example: sentinel2 }
+        ndvi: { type: number, format: float, example: 0.62 }
+        ndwi: { type: number, format: float, example: 0.20 }
+        tdvi: { type: number, format: float, example: 0.45 }
+        notes: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+      required: [id, field_id, timestamp]
+
+    Pagination:
+      type: object
+      properties:
+        page: { type: integer, example: 1 }
+        pageSize: { type: integer, example: 20 }
+        total: { type: integer, example: 2 }
+      required: [page, pageSize, total]
+
+    HealthSnapshotListResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/HealthSnapshot'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      required: [success, data]
+
+    Recommendation:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        field_id: { type: string, format: uuid }
+        timestamp: { type: string, format: date-time }
+        type:
+          type: string
+          enum: [water, fertilizer]
+        severity:
+          type: string
+          enum: [low, medium, high]
+        reason: { type: string }
+        details:
+          type: object
+          nullable: true
+        created_at: { type: string, format: date-time }
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+      required: [id, field_id, timestamp, type, severity, reason]
+
+    RecommendationListResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Recommendation'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      required: [success, data]
+
+  /api/v1/fields/{id}/health:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [Health]
+      summary: List health snapshots for a field
+      description: Returns paginated vegetation index snapshots (NDVI/NDWI/TDVI) for the field.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: from
+          required: false
+          schema: { type: string, format: date }
+          description: Inclusive start date (YYYY-MM-DD)
+        - in: query
+          name: to
+          required: false
+          schema: { type: string, format: date }
+          description: Inclusive end date (YYYY-MM-DD)
+        - in: query
+          name: page
+          required: false
+          schema: { type: integer, minimum: 1, default: 1 }
+        - in: query
+          name: pageSize
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        '200':
+          description: Paginated list of health snapshots
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string, format: uuid }
+                        field_id: { type: string, format: uuid }
+                        timestamp: { type: string, format: date-time }
+                        source: { type: string, example: sentinel2 }
+                        ndvi: { type: number, format: float, example: 0.62 }
+                        ndwi: { type: number, format: float, example: 0.20 }
+                        tdvi: { type: number, format: float, example: 0.45 }
+                        notes: { type: string, nullable: true }
+                        created_at: { type: string, format: date-time }
+                        updated_at: { type: string, format: date-time }
+                  pagination:
+                    type: object
+                    properties:
+                      page: { type: integer, example: 1 }
+                      pageSize: { type: integer, example: 20 }
+                      total: { type: integer, example: 2 }
+                required: [success, data]
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/fields/{id}/health/history:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: days
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 365
+      - in: query
+        name: from
+        required: false
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: to
+        required: false
+        schema:
+          type: string
+          format: date
+    get:
+      tags: [Health]
+      summary: Get health history for a field
+      description: Returns health records for the field, either within the last N days, or within a specific date range.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of health records (most recent first)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        record_id: { type: string, format: uuid }
+                        field_id: { type: string, format: uuid }
+                        measurement_date: { type: string, format: date }
+                        ndvi_mean: { type: number, format: float }
+                        ndvi_min: { type: number, format: float }
+                        ndvi_max: { type: number, format: float }
+                        ndvi_std: { type: number, format: float }
+                        ndwi_mean: { type: number, format: float }
+                        ndwi_min: { type: number, format: float }
+                        ndwi_max: { type: number, format: float }
+                        ndwi_std: { type: number, format: float }
+                        tdvi_mean: { type: number, format: float }
+                        health_status: { type: string, enum: [excellent, good, fair, poor] }
+                        health_score: { type: integer, minimum: 0, maximum: 100 }
+                        trend: { type: string, enum: [improving, stable, declining] }
+                        satellite_image_id: { type: string }
+                        cloud_cover: { type: number, format: float }
+                        created_at: { type: string, format: date-time }
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/fields/{id}/health/compute:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags: [Health]
+      summary: Compute and persist NDVI/NDWI/TDVI for a field/date
+      description: Triggers computation via Sentinel Hub Process API and upserts a snapshot. Idempotent by (field_id, date) unless recompute=true.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [date]
+              properties:
+                date:
+                  type: string
+                  format: date
+                  example: 2025-01-15
+                recompute:
+                  type: boolean
+                  default: false
+      responses:
+        '201':
+          description: Snapshot created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    properties:
+                      id: { type: string, format: uuid }
+                      field_id: { type: string, format: uuid }
+                      timestamp: { type: string, format: date-time }
+                      source: { type: string, example: sentinel2 }
+                      ndvi: { type: number, format: float, example: 0.62 }
+                      ndwi: { type: number, format: float, example: 0.20 }
+                      tdvi: { type: number, format: float, example: 0.45 }
+                      notes: { type: string, nullable: true }
+                      created_at: { type: string, format: date-time }
+                      updated_at: { type: string, format: date-time }
+                  meta:
+                    type: object
+                    properties:
+                      correlation_id: { type: string, nullable: true }
+                      latency_ms: { type: integer }
+                      cache_hit: { type: boolean, example: false }
+        '200':
+          description: Idempotent; returned existing snapshot or recomputed update
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    properties:
+                      id: { type: string, format: uuid }
+                      field_id: { type: string, format: uuid }
+                      timestamp: { type: string, format: date-time }
+                      source: { type: string, example: sentinel2 }
+                      ndvi: { type: number, format: float, example: 0.62 }
+                      ndwi: { type: number, format: float, example: 0.20 }
+                      tdvi: { type: number, format: float, example: 0.45 }
+                      notes: { type: string, nullable: true }
+                      created_at: { type: string, format: date-time }
+                      updated_at: { type: string, format: date-time }
+                  meta:
+                    type: object
+                    properties:
+                      correlation_id: { type: string, nullable: true }
+                      latency_ms: { type: integer }
+                      cache_hit: { type: boolean, example: true }
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Upstream Sentinel Hub unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/fields/{id}/health/refresh:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags: [Health]
+      summary: Schedule health data refresh
+      description: Schedules a job to retrieve satellite data and recalculate indices. Returns 202 Accepted.
+      security:
+        - bearerAuth: []
+      responses:
+        '202':
+          description: Refresh scheduled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    properties:
+                      message: { type: string, example: Health refresh scheduled }
+                      field_id: { type: string, format: uuid }
+                      scheduled_at: { type: string, format: date-time }
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Field not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/fields/{id}/recommendations:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Recommendations]
+      summary: List recommendations for a field
+      description: Returns paginated recommendations with optional date range and type filters.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: from
+          required: false
+          schema: { type: string, format: date }
+          description: Inclusive start date (YYYY-MM-DD)
+        - in: query
+          name: to
+          required: false
+          schema: { type: string, format: date }
+          description: Inclusive end date (YYYY-MM-DD)
+        - in: query
+          name: type
+          required: false
+          schema: { type: string, enum: [water, fertilizer] }
+        - in: query
+          name: page
+          required: false
+          schema: { type: integer, minimum: 1, default: 1 }
+        - in: query
+          name: pageSize
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        '200':
+          description: Paginated list of recommendations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendationListResponse'
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/fields/{id}/recommendations/compute:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      tags: [Recommendations]
+      summary: Compute and persist water/fertilizer recommendations
+      description: Idempotent by (field_id, date, type). Use recompute=true to update existing entries.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [date]
+              properties:
+                date:
+                  type: string
+                  format: date
+                  example: 2025-01-15
+                recompute:
+                  type: boolean
+                  default: false
+      responses:
+        '201':
+          description: Created new recommendation entities
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Recommendation'
+                  meta:
+                    type: object
+                    properties:
+                      correlation_id: { type: string, nullable: true }
+                      latency_ms: { type: integer }
+                      cache_hit: { type: boolean }
+        '200':
+          description: Existing records returned or updated (idempotent)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Recommendation'
+                  meta:
+                    type: object
+                    properties:
+                      correlation_id: { type: string, nullable: true }
+                      latency_ms: { type: integer }
+                      cache_hit: { type: boolean }
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/weather/current:
+    get:
+      tags: [Weather]
+      summary: Get current weather for a field
+      description: Returns current weather using field center coordinates (OpenWeatherMap One Call)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: field_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Field ID to retrieve weather for
+      responses:
+        '200':
+          description: Current weather payload
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    properties:
+                      field_id: { type: string, format: uuid }
+                      coord:
+                        type: object
+                        properties:
+                          lat: { type: number, format: float }
+                          lon: { type: number, format: float }
+                      current:
+                        type: object
+                        description: OpenWeatherMap One Call current block
+                      source: { type: string, example: openweathermap_onecall }
+                      fetched_at: { type: string, format: date-time }
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/weather/forecast:
+    get:
+      tags: [Weather]
+      summary: Get 7-day forecast for a field
+      description: Returns 7-day daily forecast using field center coordinates (OpenWeatherMap One Call)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: field_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Field ID to retrieve forecast for
+      responses:
+        '200':
+          description: 7-day forecast payload
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    properties:
+                      field_id: { type: string, format: uuid }
+                      coord:
+                        type: object
+                        properties:
+                          lat: { type: number, format: float }
+                          lon: { type: number, format: float }
+                      daily:
+                        type: array
+                        description: Array of daily forecasts (max 7)
+                        items:
+                          type: object
+                      source: { type: string, example: openweathermap_onecall }
+                      fetched_at: { type: string, format: date-time }
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'

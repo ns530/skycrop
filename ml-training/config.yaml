@@ -1,0 +1,221 @@
+experiment:
+  name: unet_baseline
+  seed: 1337
+
+data:
+  data_dir: ${DATA_DIR:-./data}
+  raw_dir: ${DATA_DIR:-./data}/raw
+  tiles_dir: ${DATA_DIR:-./data}/tiles
+  tile:
+    size: 512
+    overlap: 64
+    min_mask_coverage: 0.005  # 0.5% minimum mask coverage to keep a tile
+  sentinel2:
+    enabled: false
+    input_dir: sentinel2_datasets/
+    output_dir: data/processed/sentinel2/
+    bands: [B04, B03, B02]
+    include_nir: false
+    normalize:
+      method: percentile
+      percentiles: [2, 98]
+    cloud_mask:
+      enabled: false
+      source: scl
+      threshold: 0.4
+    output:
+      format: png
+      structure: folders   # folders | manifest
+
+split:
+  val_ratio: 0.2
+  shuffle: true
+
+train:
+  epochs: 20
+  batch_size: 4
+  learning_rate: 0.001
+  optimizer: adam
+  weight_decay: 0.0
+  bce_weight: 0.5
+  dice_weight: 0.5
+  loss_smooth: 1.0
+  augment:
+    # Legacy flat probabilities (backward-compatible defaults)
+    hflip: 0.5
+    vflip: 0.5
+    rotate90: 0.5
+    brightness_contrast: 0.2
+    shift_scale_rotate: 0.2
+
+    # Multi-channel behavior toggle
+    # When input has 4 channels (e.g., RGB+NIR), photometric transforms are disabled by default.
+    # Set to true to allow photometric transforms on multi-channel inputs. Defaults to false.
+    allow_photometric_on_multichannel: false
+
+    # Advanced augmentation toggles (optional; disabled by default).
+    # If train.augment.* dicts below are omitted, behavior remains unchanged.
+    # Example configuration (uncomment and customize to enable):
+    #
+    # flip_horizontal: { enabled: true, p: 0.5 }
+    # flip_vertical: { enabled: true, p: 0.5 }
+    # random_rotate_90: { enabled: true, p: 0.5 }
+    # shift_scale_rotate:
+    #   enabled: true
+    #   p: 0.3
+    #   shift_limit: 0.1
+    #   scale_limit: 0.1
+    #   rotate_limit: 15
+    #   border_mode: reflect  # reflect|constant|edge
+    # elastic_transform:
+    #   enabled: false
+    #   p: 0.2
+    #   alpha: 1.0
+    #   sigma: 50.0
+    #   alpha_affine: 50.0
+    # gaussian_noise: { enabled: false, p: 0.1, std_range: [5.0, 25.0] }
+    # blur: { enabled: false, p: 0.1, blur_limit: 3 }
+    # gamma: { enabled: false, p: 0.1, gamma_range: [0.9, 1.1] }
+    # hsv:
+    #   enabled: false
+    #   p: 0.1
+    #   hue_shift_limit: 10
+    #   sat_shift_limit: 20
+    #   val_shift_limit: 10
+    # brightness_contrast:
+    #   enabled: false
+    #   p: 0.3
+    #   brightness_limit: 0.2
+    #   contrast_limit: 0.2
+    # clahe:
+    #   enabled: false
+    #   p: 0.1
+    #   clip_limit: 2.0
+    #   tile_grid_size: [8, 8]
+    # fog_haze: { enabled: false, p: 0.1, density: 0.05 }
+    # shadow: { enabled: false, p: 0.1, num_shadows: 1, shadow_dimension: 5 }
+    # cutout: { enabled: false, p: 0.1, num_holes: 4, max_h_size: 32, max_w_size: 32 }
+
+  # Optional new optimizer/loss schema (backward-compatible). If omitted, legacy keys above are used.
+  # optimizer:
+  #   name: adam            # one of: [adam, sgd, adamw, sgdw]
+  #   lr: 0.001             # learning rate (fallback to train.learning_rate)
+  #   weight_decay: 0.0     # decoupled WD for *W variants when tensorflow-addons is available
+  #   decoupled_wd: true    # defaults to true for adamw/sgdw, else false
+  #   exclude_from_weight_decay: ["bias", "bn", "batchnorm"]  # advisory; in fallback L2, biases/BN not regularized
+  #   betas: [0.9, 0.999]   # adam/adamw
+  #   eps: 1e-8             # adam/adamw
+  #   momentum: 0.9         # sgd/sgdw
+  #   nesterov: false       # sgd/sgdw
+  #
+  # loss:
+  #   name: bce_dice        # one of: [bce, dice, bce_dice, focal, tversky]
+  #   params:
+  #     # For bce_dice:
+  #     # bce_weight: 0.5
+  #     # dice_weight: 0.5
+  #     # smooth: 1.0
+  #     # For dice:
+  #     # smooth: 1.0
+  #     # For focal:
+  #     # alpha: 0.25
+  #     # gamma: 2.0
+  #     # logits: false
+  #     # For tversky:
+  #     # alpha: 0.5
+  #     # beta: 0.5
+  #     # smooth: 1.0
+model:
+  name: unet
+  input_channels: 3
+  output_channels: 1
+  base_filters: 32
+  depth: 4
+  dropout: 0.0
+
+metrics:
+  threshold: 0.5  # default probability threshold for validation metrics
+
+inference:
+  threshold: 0.5
+  tile:
+    size: 512
+    overlap: 64
+  postprocess:
+    # Legacy controls (backward-compatible)
+    min_area_pixels: 64
+    buffer_pixels: 0
+
+    # New optional controls (all default to disabled/no-op to preserve behavior)
+    # These mirror ML-Service options 1:1.
+    min_area: 0
+    simplify_tolerance: 0.0
+    remove_holes: false
+    topology: preserve   # preserve|clean|none
+    morphology:
+      smooth: none       # none|open|close
+      kernel_size: 3
+      iterations: 1
+paths:
+  runs_dir: ${RUNS_DIR:-./runs}
+  models_dir: ./ml-training/models
+
+checkpoint:
+  monitor: val_iou
+  mode: max
+  save_best_only: true
+  early_stopping_patience: 5
+
+registry:
+  model_version: ${MODEL_VERSION:-1.0.0}
+
+# ==== Yield RF configuration (Sprint 3) ====
+yield_rf:
+  version: "1.0.0"
+
+  # Rolling window sizes (days)
+  windows:
+    w7: 7
+    w14: 14
+    w30: 30
+
+  # RandomForest hyperparameters (CPU-friendly)
+  rf:
+    n_estimators: 200
+    max_depth: 12
+    min_samples_leaf: 3
+    random_state: 1337
+
+  # Feature toggles
+  features:
+    ndvi: true          # rolling stats for NDVI
+    ndwi: true          # rolling stats for NDWI
+    tdvi: true          # rolling stats for TDVI
+    rain_cum: true      # cumulative rain over windows
+    degree_days: true   # degree days using tmin/tmax approximation
+    seasonality: true   # month sin/cos and simple season one-hots
+    area: false         # optional field static (requires fields_csv)
+    base_temp_c: 10.0   # base temperature for degree-days
+
+  # Paths for inputs (resolved with ${DATA_DIR} if provided)
+  paths:
+    labels_csv: ${DATA_DIR:-./data}/yield/raw/train.csv
+    indices_csv: ${DATA_DIR:-./data}/yield/features/indices.csv
+    weather_csv: ${DATA_DIR:-./data}/yield/features/weather.csv
+    fields_csv: ${DATA_DIR:-./data}/yield/features/fields.csv  # optional
+# ==== Disaster Analysis configuration (Sprint 3) ====
+disaster:
+  windows:
+    pre_days: 14
+    post_days: 7
+  thresholds:
+    FLOOD_NDWI_DELTA_MIN: 0.15
+    FLOOD_NDWI_ABS_MIN: 0.1
+    DROUGHT_NDWI_DROP_MIN: 0.12
+    DROUGHT_NDVI_DROP_MIN: 0.08
+    STRESS_TDVI_DELTA_MIN: 0.08
+  morphology:
+    min_area_pixels: 50
+    open_size: 2
+    close_size: 2
+  version: "1.0.0"

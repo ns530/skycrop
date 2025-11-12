@@ -1,0 +1,85 @@
+name: ML Service CI
+
+on:
+  push:
+    paths:
+      - 'ml-service/**'
+  pull_request:
+    paths:
+      - 'ml-service/**'
+
+jobs:
+  test:
+    name: Python 3.11 on Ubuntu
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ml-service
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: ml-service/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Detect configured linters
+        id: detect_linters
+        run: |
+          if grep -q "tool.black" pyproject.toml; then
+            echo "black=true" >> $GITHUB_OUTPUT
+          else
+            echo "black=false" >> $GITHUB_OUTPUT
+          fi
+          if grep -q "tool.ruff" pyproject.toml; then
+            echo "ruff=true" >> $GITHUB_OUTPUT
+          else
+            echo "ruff=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install optional linters
+        if: steps.detect_linters.outputs.black == 'true' || steps.detect_linters.outputs.ruff == 'true'
+        run: |
+          if [ "${{ steps.detect_linters.outputs.black }}" = "true" ]; then pip install black; fi
+          if [ "${{ steps.detect_linters.outputs.ruff }}" = "true" ]; then pip install ruff; fi
+
+      - name: Run black --check
+        if: steps.detect_linters.outputs.black == 'true'
+        run: black --check .
+
+      - name: Run ruff
+        if: steps.detect_linters.outputs.ruff == 'true'
+        run: ruff check .
+
+      - name: Prepare coverage output dir
+        run: mkdir -p .coverage-reports/html
+
+      - name: Pytest with coverage gate (>=85)
+        run: |
+          pytest -q tests --cov=app --cov-report=xml:.coverage-reports/coverage.xml --cov-report=html:.coverage-reports/html --cov-fail-under=85
+
+      - name: Upload coverage.xml
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ml-service-coverage-xml
+          path: ml-service/.coverage-reports/coverage.xml
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload coverage HTML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ml-service-coverage-html
+          path: ml-service/.coverage-reports/html
+          if-no-files-found: warn
+          retention-days: 7

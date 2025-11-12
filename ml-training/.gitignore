@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.python-version
+.venv/
+.env
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# ML-training data and artifacts (kept local)
+data/
+runs/
+models/
+!models/.gitkeep
+
+# Logs and checkpoints
+*.log
+*.ckpt
+checkpoint/
+
+# Large binaries
+*.onnx
+*.tfrecord
+*.tar
+*.tar.gz
+*.zip
+*.7z
+
+# IDE
+.vscode/
+.idea/

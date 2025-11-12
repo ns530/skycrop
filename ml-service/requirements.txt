@@ -1,0 +1,18 @@
+# ML service Python dependencies
+flask>=2.3,<2.4
+pydantic>=2.3
+shapely>=2.0
+numpy>=1.26
+Pillow>=10.0
+scikit-image>=0.22
+gunicorn>=21.2
+python-json-logger>=2.0.7
+werkzeug<3
+requests>=2.31
+pytest>=7.4
+pytest-cov>=4.1
+black>=24.3.0
+ruff>=0.5.0
+python-dotenv>=1.0.1
+onnxruntime>=1.16
+joblib>=1.4
