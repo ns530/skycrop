@@ -227,7 +227,7 @@ def matching_mask_path(images_dir: str, masks_dir: str, image_path: str) -> Opti
 
 
 def list_files(dir_path: str) -> List[str]:
-    exts = ("*.png", "*.jpg", "*.jpeg", "*.tif", "*.tiff")
+    exts = ("*.png", "*.jpg", "*.jpeg", "*.tif", "*.tiff", "*.nc")
     files: List[str] = []
     for ex in exts:
         files.extend(glob.glob(os.path.join(dir_path, ex)))
@@ -552,7 +552,7 @@ class TileDataset(tf.keras.utils.Sequence if tf is not None else object):  # typ
         for i in batch_idx:
             # Read image (supports PNG/JPEG/TIFF and .nc if provided)
             img = read_image_any(self.image_paths[i])
-            msk = cv2.imread(self.mask_paths[i], cv2.IMREAD_GRAYSCALE)
+            msk = read_mask_any(self.mask_paths[i])
             if msk is None or img is None:
                 raise FileNotFoundError(f"Missing file for pair: {self.image_paths[i]} / {self.mask_paths[i]}")
             msk = (msk > 127).astype(np.uint8)
@@ -637,7 +637,7 @@ class Sentinel2Dataset(tf.keras.utils.Sequence if tf is not None else object):  
         msks: List[np.ndarray] = []
         for i in batch_idx:
             img = read_image_any(self.image_paths[i])
-            msk = cv2.imread(self.mask_paths[i], cv2.IMREAD_GRAYSCALE)
+            msk = read_mask_any(self.mask_paths[i])
             if msk is None or img is None:
                 raise FileNotFoundError(f"Missing file for pair: {self.image_paths[i]} / {self.mask_paths[i]}")
             msk = (msk > 127).astype(np.uint8)
