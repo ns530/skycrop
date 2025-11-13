@@ -11,7 +11,7 @@ data:
     overlap: 64
     min_mask_coverage: 0.005  # 0.5% minimum mask coverage to keep a tile
   sentinel2:
-    enabled: false
+    enabled: true
     input_dir: sentinel2_datasets/
     output_dir: data/processed/sentinel2/
     bands: [B04, B03, B02]
@@ -27,7 +27,7 @@ data:
       format: png
       structure: folders   # folders | manifest
     download:
-      enabled: true
+      enabled: false
       links:
         train_images: "https://drive.google.com/uc?id=1EXAMPLE_TRAIN_IMAGES"
         train_masks: "https://drive.google.com/uc?id=1EXAMPLE_TRAIN_MASKS"
