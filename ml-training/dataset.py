@@ -516,6 +516,9 @@ class TileDataset(tf.keras.utils.Sequence if tf is not None else object):  # typ
     ) -> None:
         self.image_paths = list(image_paths)
         self.mask_paths = list(mask_paths)
+        print(f"DEBUG: TileDataset initialized with {len(self.image_paths)} image paths and {len(self.mask_paths)} mask paths")
+        print(f"DEBUG: First few image paths: {self.image_paths[:3]}")
+        print(f"DEBUG: First few mask paths: {self.mask_paths[:3]}")
         assert len(self.image_paths) == len(self.mask_paths), "Image/mask count mismatch"
         self.batch_size = max(1, int(batch_size))
         self.shuffle = shuffle
@@ -588,10 +591,23 @@ class Sentinel2Dataset(tf.keras.utils.Sequence if tf is not None else object):  
     ) -> None:
         self.images_dir = images_dir
         self.masks_dir = masks_dir
+        print(f"DEBUG: Dataset paths - images_dir={images_dir}, masks_dir={masks_dir}")
+        print(f"DEBUG: images_dir exists: {os.path.exists(images_dir)}")
+        if os.path.exists(images_dir):
+            print(f"DEBUG: Contents of images_dir: {os.listdir(images_dir)}")
+        else:
+            print("DEBUG: images_dir does not exist")
+        print(f"DEBUG: masks_dir exists: {os.path.exists(masks_dir)}")
+        if os.path.exists(masks_dir):
+            print(f"DEBUG: Contents of masks_dir: {os.listdir(masks_dir)}")
+        else:
+            print("DEBUG: masks_dir does not exist")
         self.image_paths = list_files(images_dir)
+        print(f"DEBUG: Found {len(self.image_paths)} image files. First 5: {self.image_paths[:5]}")
         self.mask_paths = [matching_mask_path(images_dir, masks_dir, p) for p in self.image_paths]
         self.mask_paths = [m for m in self.mask_paths if m is not None]
         self.image_paths = self.image_paths[:len(self.mask_paths)]
+        print(f"DEBUG: After filtering masks: {len(self.image_paths)} image-mask pairs")
         assert len(self.image_paths) == len(self.mask_paths), "Image/mask count mismatch"
         self.batch_size = max(1, int(batch_size))
         self.shuffle = shuffle
