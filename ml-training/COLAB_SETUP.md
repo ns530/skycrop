@@ -28,12 +28,20 @@ MyDrive/
 
 1. **Open Colab**: Go to [colab.research.google.com](https://colab.research.google.com)
 
-2. **Upload Notebook**: Upload the `colab_train_unet.ipynb` file to Colab
+2. **Get Training Files** (Choose one option):
+
+   **Option A: Clone Repository (Recommended)**:
+   ```bash
+   !git clone https://github.com/ns530/skycrop.git
+   %cd skycrop/ml-training
+   ```
+
+   **Option B: Upload Notebook (Alternative)**:
+   Upload the `colab_train_unet.ipynb` file to Colab
 
 3. **Run Setup Cells**:
    - Mount Google Drive
-   - Navigate to the ml-training directory
-   - Install dependencies
+   - Install dependencies (skip navigation if using Option A)
    - Set environment variables
 
 4. **Verify Dataset**: Check that the dataset path exists and contains the expected folders
