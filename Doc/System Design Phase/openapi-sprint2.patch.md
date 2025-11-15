@@ -386,7 +386,7 @@ Apply with care; validate with an OpenAPI linter after patching.
 +    post:
 +      tags: [ML]
 +      summary: Segmentation mask prediction
-+      description: Produces segmentation mask for bbox or field_id. Proxies to internal ML service.
++      description: Produces segmentation mask for bbox. Proxies to internal ML service.
 +      security:
 +        - bearerAuth: []
 +      requestBody:
@@ -521,9 +521,6 @@ Apply with care; validate with an OpenAPI linter after patching.
 +          minItems: 4
 +          maxItems: 4
 +          description: [minLon,minLat,maxLon,maxLat]
-+        field_id:
-+          type: string
-+          format: uuid
 +        date:
 +          type: string
 +          format: date
@@ -539,9 +536,7 @@ Apply with care; validate with an OpenAPI linter after patching.
 +          type: string
 +          enum: [mask_url, inline]
 +          default: mask_url
-+      oneOf:
-+        - required: [bbox, date]
-+        - required: [field_id, date]
++      required: [bbox, date]
 +
 +    MLMaskResponse:
 +      type: object

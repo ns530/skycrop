@@ -24,38 +24,7 @@ from model_rf import (  # noqa: E402
     get_feature_importances,
     save_joblib,
 )
-
-
-def _expand_env_style_vars(value: Any) -> Any:
-    if not isinstance(value, str):
-        return value
-    out = os.path.expandvars(value)
-
-    def _replace_default(match):
-        inner = match.group(1)
-        if ":-" in inner:
-            var, default = inner.split(":-", 1)
-            return os.getenv(var, default)
-        return os.getenv(inner, "")
-
-    import re
-
-    out = re.sub(r"\$\{([^}]+)\}", _replace_default, out)
-    return out
-
-
-def _expand_in_obj(obj: Any) -> Any:
-    if isinstance(obj, dict):
-        return {k: _expand_in_obj(v) for k, v in obj.items()}
-    if isinstance(obj, list):
-        return [_expand_in_obj(v) for v in obj]
-    return _expand_env_style_vars(obj)
-
-
-def load_yaml_config(path: str) -> Dict[str, Any]:
-    with open(path, "r", encoding="utf-8") as f:
-        cfg = yaml.safe_load(f) or {}
-    return _expand_in_obj(cfg)
+from config_utils import load_and_resolve_config  # noqa: E402
 
 
 def parse_args(argv=None):
@@ -112,19 +81,7 @@ def time_aware_split(df_merged: pd.DataFrame, X: pd.DataFrame, y: pd.Series, see
 
 def main(argv=None) -> int:
     args = parse_args(argv)
-    cfg = load_yaml_config(args.config)
-
-    # Environment overrides (keep compatibility with project pattern)
-    data_dir_env = os.getenv("DATA_DIR")
-    runs_dir_env = os.getenv("RUNS_DIR")
-    if data_dir_env:
-        cfg.setdefault("data", {})
-        cfg["data"]["data_dir"] = data_dir_env
-        cfg["data"]["raw_dir"] = os.path.join(data_dir_env, "raw")
-        cfg["data"]["tiles_dir"] = os.path.join(data_dir_env, "tiles")
-    if runs_dir_env:
-        cfg.setdefault("paths", {})
-        cfg["paths"]["runs_dir"] = runs_dir_env
+    cfg = load_and_resolve_config(args.config)
 
     # Seeds and determinism
     seed = int(cfg.get("experiment", {}).get("seed", 1337))

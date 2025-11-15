@@ -23,6 +23,7 @@ class _YieldPredictor:
         self._session = None  # ONNX InferenceSession or sklearn-like estimator
         self._input_name: Optional[str] = None
         self._model_path: Optional[str] = None
+        self._loading_thread: Optional[threading.Thread] = None
 
     def _load_onnx(self, path: str) -> None:
         try:
@@ -60,6 +61,25 @@ class _YieldPredictor:
         self._backend = "joblib"
         self._model_path = path
         self._loaded = True
+
+    def start_background_load(self, model_path: str) -> None:
+        """
+        Start background loading of the model if not already loaded or loading.
+        """
+        if self._loaded and self._model_path == model_path:
+            return
+        if self._loading_thread and self._loading_thread.is_alive():
+            return
+
+        def load():
+            try:
+                self.ensure_loaded(model_path)
+            except Exception as e:
+                # Log error; in production, use proper logging
+                print(f"Background model load failed: {e}")
+
+        self._loading_thread = threading.Thread(target=load, daemon=True)
+        self._loading_thread.start()
 
     def ensure_loaded(self, model_path: str) -> None:
         """

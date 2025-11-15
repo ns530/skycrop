@@ -64,22 +64,22 @@ install:
 .PHONY: train
 train:
 	@echo "Starting training with CONFIG=$(CONFIG) DATA_DIR=$(DATA_DIR) RUNS_DIR=$(RUNS_DIR) MODEL_VERSION=$(MODEL_VERSION)"
-	@set DATA_DIR=$(DATA_DIR) && set RUNS_DIR=$(RUNS_DIR) && set MODEL_VERSION=$(MODEL_VERSION) && $(PY) ml-training/train_unet.py --config $(CONFIG)
+	@export DATA_DIR=$(DATA_DIR) && export RUNS_DIR=$(RUNS_DIR) && export MODEL_VERSION=$(MODEL_VERSION) && $(PY) ml-training/train_unet.py --config $(CONFIG)
 
 .PHONY: export
 export:
 	@echo "Exporting model version $(MODEL_VERSION) using $(CONFIG)"
-	@set MODEL_VERSION=$(MODEL_VERSION) && $(PY) ml-training/export.py --config $(CONFIG) --version $(MODEL_VERSION)
+	@export MODEL_VERSION=$(MODEL_VERSION) && $(PY) ml-training/export.py --config $(CONFIG) --version $(MODEL_VERSION)
 
 .PHONY: yield-train
 yield-train:
 	@echo "Starting RF yield training with CONFIG=$(CONFIG) DATA_DIR=$(DATA_DIR) RUNS_DIR=$(RUNS_DIR)"
-	@set DATA_DIR=$(DATA_DIR) && set RUNS_DIR=$(RUNS_DIR) && $(PY) ml-training/yield/train_rf.py --config $(CONFIG)
+	@export DATA_DIR=$(DATA_DIR) && export RUNS_DIR=$(RUNS_DIR) && $(PY) ml-training/yield/train_rf.py --config $(CONFIG)
 
 .PHONY: yield-export
 yield-export:
 	@echo "Exporting RF yield model version $(MODEL_VERSION) using $(CONFIG)"
-	@set MODEL_VERSION=$(MODEL_VERSION) && $(PY) ml-training/yield/export_rf.py --config $(CONFIG) --version $(MODEL_VERSION)
+	@export MODEL_VERSION=$(MODEL_VERSION) && $(PY) ml-training/yield/export_rf.py --config $(CONFIG) --version $(MODEL_VERSION)
 
 .PHONY: yield-infer
 yield-infer:
@@ -145,4 +145,4 @@ disaster-run:
 .PHONY: disaster-export
 disaster-export:
 	@echo "Exporting disaster analysis artifacts version $(MODEL_VERSION) using $(CONFIG)"
-	@set MODEL_VERSION=$(MODEL_VERSION) && $(PY) ml-training/disaster/export.py --out-dir ./out --config $(CONFIG) --version $(MODEL_VERSION)
+	@export MODEL_VERSION=$(MODEL_VERSION) && $(PY) ml-training/disaster/export.py --out-dir ./out --config $(CONFIG) --version $(MODEL_VERSION)

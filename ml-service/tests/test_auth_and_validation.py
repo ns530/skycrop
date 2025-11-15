@@ -32,28 +32,12 @@ def test_validation_bad_bbox_ranges_400(client, auth_headers):
     assert data["error"]["code"] == "INVALID_INPUT"
 
 
-def test_validation_both_bbox_and_field_id_400(client, auth_headers):
-    body = {"bbox": [80.1, 7.2, 80.2, 7.3], "field_id": "abc", "date": "2025-10-10"}
-    resp = _post(client, "/v1/segmentation/predict", body, auth_headers)
-    assert resp.status_code == 400
-    data = resp.get_json()
-    assert data["error"]["code"] == "INVALID_INPUT"
-
-
-def test_validation_neither_bbox_nor_field_id_400(client, auth_headers):
+def test_validation_missing_bbox_400(client, auth_headers):
     body = {"date": "2025-10-10"}
     resp = _post(client, "/v1/segmentation/predict", body, auth_headers)
     assert resp.status_code == 400
     data = resp.get_json()
     assert data["error"]["code"] == "INVALID_INPUT"
-
-
-def test_field_id_without_resolver_501(client, auth_headers):
-    body = {"field_id": "00000000-0000-4000-8000-000000000000", "date": "2025-10-10"}
-    resp = _post(client, "/v1/segmentation/predict", body, auth_headers)
-    assert resp.status_code == 501
-    data = resp.get_json()
-    assert data["error"]["code"] in ("NOT_IMPLEMENTED",)
 
 
 def test_model_not_found_404_header_override(client, auth_headers):

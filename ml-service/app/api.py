@@ -182,21 +182,7 @@ def predict():
         if sleep_ms > int(current_app.config.get("REQUEST_TIMEOUT_S", 60)) * 1000:
             return _error("TIMEOUT", "Inference timed out", status=504)
 
-    # Handle field_id path per contract
-    if req.field_id is not None:
-        resolver = current_app.config.get("FIELD_RESOLVER_URL")
-        if not resolver:
-            return _error("NOT_IMPLEMENTED", "field_id resolution not configured", {"field_id": req.field_id}, status=501)
-        # Sprint 2 scaffold: upstream resolution not wired; map as upstream error
-        return _error(
-            "UPSTREAM_ERROR",
-            "Field resolver not implemented in scaffold",
-            {"field_id": req.field_id, "resolver": resolver},
-            status=503,
-        )
-
     # ONNX-backed inference path (bbox required in current contract)
-    assert req.bbox is not None
 
     # Build a deterministic synthetic RGB image as input to the ONNX U-Net.
     # This keeps request schema unchanged (no image payload) while enabling the real pipeline.

@@ -69,6 +69,11 @@ def create_app(config_overrides: Optional[dict] = None) -> Flask:
     # Parsed dict of thresholds
     app.config["DISASTER_THRESHOLDS"] = getattr(cfg, "DISASTER_THRESHOLDS", {})
 
+    # Start background loading of yield prediction model
+    from .yield_predict import _predictor, _resolve_model_path
+    model_path = _resolve_model_path(app.config)
+    _predictor.start_background_load(model_path)
+
     # Ensure static/masks directory exists
     masks_dir = os.path.join(static_folder, cfg.MASKS_SUBDIR)
     os.makedirs(masks_dir, exist_ok=True)

@@ -16,7 +16,7 @@ from skimage.morphology import (
     remove_small_holes,
     disk,
 )
-from skimage.measure import label, regionprops
+from skimage.measure import label, regionprops, find_contours
 
 # =========================
 # Configuration (ENV-driven)
@@ -327,23 +327,35 @@ def _polygonize_mask(mask01: np.ndarray) -> List[Polygon]:
         if POST_MIN_AREA and reg.area < POST_MIN_AREA:
             continue
         try:
-            # Use region convex hull as a robust, fast boundary
-            geom = unary_union([ (shape({"type":"Point","coordinates":[float(c[1]), float(c[0])]})) for c in reg.coords ])
-            hull = geom.convex_hull
+            # Create accurate polygon from contours
+            region_mask = (lbl == reg.label).astype(np.uint8)
+            contours = find_contours(region_mask, 0.5)
+            if not contours:
+                continue
+            # First contour is exterior, others are holes
+            exterior = contours[0]
+            interiors = contours[1:]
+            # Convert from (row, col) to (x, y)
+            exterior_xy = [(float(pt[1]), float(pt[0])) for pt in exterior]
+            interiors_xy = [[(float(pt[1]), float(pt[0])) for pt in c] for c in interiors]
+            # Create polygon
+            poly = Polygon(exterior_xy, interiors_xy)
+            if not poly.is_valid:
+                poly = poly.buffer(0)
+            if poly.is_empty:
+                continue
         except Exception:
             continue
-        if hull.is_empty:
-            continue
         if POST_SIMPLIFY_TOLERANCE and POST_SIMPLIFY_TOLERANCE > 0:
-            hull = hull.simplify(float(POST_SIMPLIFY_TOLERANCE), preserve_topology=True)
-        if hull.is_empty:
+            poly = poly.simplify(float(POST_SIMPLIFY_TOLERANCE), preserve_topology=True)
+        if poly.is_empty:
             continue
-        if POST_MIN_AREA and hull.area < POST_MIN_AREA:
+        if POST_MIN_AREA and poly.area < POST_MIN_AREA:
             continue
-        if isinstance(hull, Polygon):
-            polys.append(hull)
-        elif isinstance(hull, MultiPolygon):
-            polys.extend([p for p in hull.geoms if isinstance(p, Polygon)])
+        if isinstance(poly, Polygon):
+            polys.append(poly)
+        elif isinstance(poly, MultiPolygon):
+            polys.extend([p for p in poly.geoms if isinstance(p, Polygon)])
 
     if not polys:
         return []
@@ -432,6 +444,13 @@ def run_unet_geojson(
     bs = int(INFER_BATCH_SIZE if batch_size is None else batch_size)
     hw = bool(INFER_HANN_WEIGHTING if hann_weighting is None else hann_weighting)
     pad = str(INFER_PADDING if padding is None else padding)
+
+    # Validate input limits to prevent excessive memory usage
+    if ts > 1024:
+        raise ValueError(f"tile_size {ts} exceeds maximum allowed 1024")
+    H, W = image_rgb.shape[:2]
+    if H > 4096 or W > 4096:
+        raise ValueError(f"Image dimensions {H}x{W} exceed maximum allowed 4096x4096")
 
     # Inference over tiles
     prob, meta = _infer_tiles(

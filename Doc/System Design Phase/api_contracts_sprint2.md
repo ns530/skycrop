@@ -233,8 +233,7 @@ Timeout: 60s (CPU baseline); queue concurrency limited to 5
 
 Request:
 {
-  "bbox": [minLon, minLat, maxLon, maxLat] | null,
-  "field_id": "uuid" | null,
+  "bbox": [minLon, minLat, maxLon, maxLat],
   "date": "YYYY-MM-DD",
   "model_version": "unet-1.0.0",
   "tiling": { "size": 512, "overlap": 64 },
@@ -242,8 +241,7 @@ Request:
 }
 
 Validation:
-- Require exactly one of bbox or field_id
-- bbox as above; field_id must belong to user
+- bbox required as above
 - date required; model_version optional; tiling optional (defaults size=512, overlap=64)
 - return defaults to mask_url
 
@@ -341,10 +339,10 @@ Response 201:
 Example: Field list with spatial filter and pagination
 GET /api/v1/fields?bbox=80.10,7.20,80.50,7.80&page=2&page_size=20
 
-Example: ML Predict by field_id
+Example: ML Predict by bbox
 POST /api/v1/ml/segmentation/predict
 {
-  "field_id": "6b0f4a2b-2a32-4be5-bb27-5f2f2210b91a",
+  "bbox": [80.10, 7.20, 80.12, 7.22],
   "date": "2025-10-15",
   "return": "mask_url"
 }

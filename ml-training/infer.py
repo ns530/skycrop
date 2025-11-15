@@ -48,7 +48,7 @@ def _normalize_image(img: np.ndarray) -> np.ndarray:
 
 
 def _accumulate_probs(
-    H: int, W: int, tile_size: int, overlap: int, predict_fn, pad_to_tile: bool = False
+    img: np.ndarray, H: int, W: int, tile_size: int, overlap: int, predict_fn, pad_to_tile: bool = False
 ) -> np.ndarray:
     """
     Sliding window inference with overlap; accumulate probabilities and average on overlaps.
@@ -110,7 +110,7 @@ def _accumulate_probs(
             ih = min(tile_size, max(0, H - y0))
             iw = min(tile_size, max(0, W - x0))
             if ih > 0 and iw > 0:
-                tile[:ih, :iw, :] = _normalize_image(img_global[y0 : y0 + ih, x0 : x0 + iw, :])
+                tile[:ih, :iw, :] = _normalize_image(img[y0 : y0 + ih, x0 : x0 + iw, :])
 
             batch_imgs.append(tile)
             batch_coords.append((x0, y0))
@@ -198,7 +198,6 @@ def run_inference(
     Returns:
         Small summary dict with metadata.
     """
-    global img_global  # used by _accumulate_probs
     # Read image
     if is_tiff(image_path):
         if rasterio is None:
@@ -221,14 +220,13 @@ def run_inference(
     if arr is None:
         raise FileNotFoundError(f"Failed to read image: {image_path}")
 
-    img_global = arr  # for window function
     H, W, _ = arr.shape
 
     # Predictor
     predict_fn = _predictor_from_model(model_path, tile_size=tile_size)
 
     # Accumulate probabilities
-    prob = _accumulate_probs(H, W, tile_size, overlap, predict_fn, pad_to_tile=True)
+    prob = _accumulate_probs(arr, H, W, tile_size, overlap, predict_fn, pad_to_tile=True)
 
     # Threshold to binary
     mask01 = (prob >= float(threshold)).astype(np.uint8)

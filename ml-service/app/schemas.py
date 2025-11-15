@@ -17,8 +17,7 @@ class DebugOptions(BaseModel):
 
 
 class PredictRequest(BaseModel):
-    bbox: Optional[List[float]] = Field(default=None)
-    field_id: Optional[str] = Field(default=None)
+    bbox: List[float]
     date: date
     model_version: Optional[str] = None
     tiling: TilingConfig = Field(default_factory=TilingConfig)
@@ -32,9 +31,7 @@ class PredictRequest(BaseModel):
 
     @field_validator("bbox")
     @classmethod
-    def validate_bbox(cls, v: Optional[List[float]]) -> Optional[List[float]]:
-        if v is None:
-            return v
+    def validate_bbox(cls, v: List[float]) -> List[float]:
         if not isinstance(v, list) or len(v) != 4:
             raise ValueError("bbox must be an array of 4 numbers [minLon,minLat,maxLon,maxLat]")
         try:
@@ -48,16 +45,6 @@ class PredictRequest(BaseModel):
         if not (min_lon < max_lon and min_lat < max_lat):
             raise ValueError("bbox min must be less than max for lon and lat")
         return [min_lon, min_lat, max_lon, max_lat]
-
-    @model_validator(mode="after")
-    def check_bbox_or_field_id(self) -> "PredictRequest":
-        has_bbox = self.bbox is not None
-        has_field = self.field_id is not None and len(self.field_id) > 0
-        if has_bbox and has_field:
-            raise ValueError("Provide exactly one of bbox or field_id, not both")
-        if not has_bbox and not has_field:
-            raise ValueError("Either bbox or field_id is required")
-        return self
 
 
 class ModelInfo(BaseModel):

@@ -12,29 +12,13 @@ if CURRENT_DIR not in sys.path:
 
 from dataset import build_sequences_from_sentinel2, load_yaml_config
 from model_unet import build_and_compile_from_config
+from config_utils import load_and_resolve_config  # noqa: E402
 
 try:
     import tensorflow as tf
 except Exception as e:
     print(f"TensorFlow import failed: {e}")
     sys.exit(1)
-
-
-def load_and_resolve_config(config_path: str) -> Dict:
-    """Load and resolve config with environment variable expansion."""
-    cfg = load_yaml_config(config_path)
-
-    # Expand environment variables
-    def expand_vars(obj):
-        if isinstance(obj, str):
-            return os.path.expandvars(obj)
-        elif isinstance(obj, dict):
-            return {k: expand_vars(v) for k, v in obj.items()}
-        elif isinstance(obj, list):
-            return [expand_vars(v) for v in obj]
-        return obj
-
-    return expand_vars(cfg)
 
 
 def parse_args(argv=None):

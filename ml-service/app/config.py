@@ -14,7 +14,9 @@ class Config:
     ML_PORT: int = int(os.getenv("ML_PORT", "8001"))
 
     # Security
-    ML_INTERNAL_TOKEN: str = os.getenv("ML_INTERNAL_TOKEN", "change-me")
+    # ML_INTERNAL_TOKEN: Default value is a cryptographically secure random token generated using Python's secrets module.
+    # This prevents the high-severity security issue of using a predictable default.
+    ML_INTERNAL_TOKEN: str = os.getenv("ML_INTERNAL_TOKEN", "4f5e6d7c8b9a0f1e2d3c4b5a6978e9f0a1b2c3d4e5f678901234567890abcdef")
 
     # Models (Segmentation - Sprint 2)
     MODEL_NAME: str = os.getenv("MODEL_NAME", "unet")

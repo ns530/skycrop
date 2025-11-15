@@ -20,6 +20,7 @@ from metrics import (  # noqa: E402
     dice_metric,
     bce_dice_loss,
 )
+from config_utils import load_and_resolve_config  # noqa: E402
 
 # Optional heavy deps guarded
 try:
@@ -31,38 +32,6 @@ try:
     import tf2onnx
 except Exception:  # pragma: no cover
     tf2onnx = None  # type: ignore
-
-
-def _expand_env_style_vars(value: Any) -> Any:
-    if not isinstance(value, str):
-        return value
-    out = os.path.expandvars(value)
-
-    def _replace_default(match):
-        inner = match.group(1)
-        if ":-" in inner:
-            var, default = inner.split(":-", 1)
-            return os.getenv(var, default)
-        return os.getenv(inner, "")
-
-    import re
-
-    out = re.sub(r"\$\{([^}]+)\}", _replace_default, out)
-    return out
-
-
-def _expand_in_obj(obj: Any) -> Any:
-    if isinstance(obj, dict):
-        return {k: _expand_in_obj(v) for k, v in obj.items()}
-    if isinstance(obj, list):
-        return [_expand_in_obj(v) for v in obj]
-    return _expand_env_style_vars(obj)
-
-
-def load_yaml_config(path: str) -> Dict[str, Any]:
-    with open(path, "r", encoding="utf-8") as f:
-        cfg = yaml.safe_load(f) or {}
-    return _expand_in_obj(cfg)
 
 
 def sha256_of_file(path: str) -> str:
@@ -176,19 +145,7 @@ def parse_args(argv=None):
 
 def main(argv=None) -> int:
     args = parse_args(argv)
-    cfg = load_yaml_config(args.config)
-
-    # Resolve key paths/env overrides
-    data_dir_env = os.getenv("DATA_DIR")
-    runs_dir_env = os.getenv("RUNS_DIR")
-    if data_dir_env:
-        cfg.setdefault("data", {})
-        cfg["data"]["data_dir"] = data_dir_env
-        cfg["data"]["raw_dir"] = os.path.join(data_dir_env, "raw")
-        cfg["data"]["tiles_dir"] = os.path.join(data_dir_env, "tiles")
-    if runs_dir_env:
-        cfg.setdefault("paths", {})
-        cfg["paths"]["runs_dir"] = runs_dir_env
+    cfg = load_and_resolve_config(args.config)
 
     runs_dir = str(cfg.get("paths", {}).get("runs_dir", "./runs"))
     exp_name = str(cfg.get("experiment", {}).get("name", "unet_baseline"))
