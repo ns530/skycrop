@@ -179,19 +179,19 @@ def _read_optional_var(ds, names: Sequence[str]) -> Optional[np.ndarray]:
 
 
 def _open_netcdf(path: str):
-    if netCDF4 is not None:
-        try:
-            return netCDF4.Dataset(path, mode="r")
-        except Exception:
-            pass
     if h5py is not None:
         try:
             return h5py.File(path, mode="r")
         except Exception:
             pass
+    if netCDF4 is not None:
+        try:
+            return netCDF4.Dataset(path, mode="r")
+        except Exception:
+            pass
     raise RuntimeError(
-        "Neither netCDF4 nor h5py could open the file. "
-        "Install netCDF4 (preferred) or h5py."
+        "Neither h5py nor netCDF4 could open the file. "
+        "Install h5py (preferred) or netCDF4."
     )
 
 
