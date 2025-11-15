@@ -63,31 +63,35 @@ def _expand_in_obj(obj: Any) -> Any:
     return _expand_env_style_vars(obj)
 
 
-def download_sentinel2_dataset(data_dir: str, download_cfg: Dict) -> None:
+def download_sentinel2_dataset(data_dir: str, sentinel2_cfg: Dict) -> None:
     """
     Download Sentinel-2 dataset from Google Drive if not present.
     """
     if gdown is None:
         raise RuntimeError("gdown not installed; cannot download dataset. Install with: pip install gdown")
 
-    sentinel2_dir = os.path.join(data_dir, download_cfg.get("input_dir", "sentinel2_datasets"))
+    sentinel2_dir = os.path.join(data_dir, sentinel2_cfg.get("input_dir", "sentinel2_datasets"))
     if os.path.exists(sentinel2_dir):
         print(f"Sentinel-2 dataset already exists at {sentinel2_dir}")
         return
 
-    links = download_cfg.get("links", {})
-    if not links:
-        raise ValueError("No download links provided in config")
+    download_section = sentinel2_cfg.get("download", {})
+    folder_ids = download_section.get("folder_ids", {})
+    if not folder_ids:
+        raise ValueError("No download folder_ids provided in config")
 
     os.makedirs(sentinel2_dir, exist_ok=True)
 
-    for name, url in links.items():
-        if not url:
+    for name, folder_id in folder_ids.items():
+        if not folder_id:
             continue
-        output_dir = os.path.join(sentinel2_dir, name.replace("_", "/"))
+        parts = name.split('_', 1)
+        category = parts[0]
+        full_name = name
+        output_dir = os.path.join(sentinel2_dir, category, full_name)
         os.makedirs(output_dir, exist_ok=True)
-        print(f"Downloading {name} from {url} to {output_dir}")
-        gdown.download(url, output_dir, fuzzy=True, quiet=False)
+        print(f"Downloading {name} from folder {folder_id} to {output_dir}")
+        gdown.download_folder(id=folder_id, output=output_dir, quiet=False)
 
 
 def load_and_resolve_config(config_path: str) -> Dict:
