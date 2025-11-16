@@ -11,7 +11,7 @@ if CURRENT_DIR not in sys.path:
     sys.path.insert(0, CURRENT_DIR)
 
 from dataset import build_sequences_from_sentinel2, load_yaml_config
-from model_unet import build_and_compile_from_config
+from model_unet import build_and_compile_from_config, get_optimizer, get_loss_fn, dice_metric, iou_metric
 from config_utils import load_and_resolve_config  # noqa: E402
 
 try:
@@ -90,6 +90,20 @@ def main(argv=None) -> int:
         print("Model loaded successfully")
     except Exception as e:
         print(f"Failed to load model: {e}")
+        return 1
+
+    # Compile model for evaluation
+    try:
+        optimizer = get_optimizer(train_cfg)
+        loss_fn = get_loss_fn(train_cfg)
+        model.compile(
+            optimizer=optimizer,
+            loss=loss_fn,
+            metrics=[dice_metric, iou_metric]
+        )
+        print("Model compiled successfully")
+    except Exception as e:
+        print(f"Failed to compile model: {e}")
         return 1
 
     # Evaluate on test set
