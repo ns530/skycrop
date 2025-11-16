@@ -97,8 +97,8 @@ def build_model_from_config(cfg: Dict[str, Any]) -> "tf.keras.Model":
 
 
 def export_savedmodel(model: "tf.keras.Model", out_dir: str) -> None:
-    # Save TF SavedModel
-    model.save(out_dir, include_optimizer=False)
+    # Export TF SavedModel for serving
+    model.export(out_dir)
 
 
 def export_onnx_from_keras(model: "tf.keras.Model", out_path: str, opset: int = 13) -> None:
