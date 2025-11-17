@@ -52,7 +52,7 @@ jobs:
 
       - name: Build (and optionally push) image
         id: build
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./ml-service
           platforms: linux/amd64
