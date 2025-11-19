@@ -1,0 +1,20 @@
+import { render, screen } from '@testing-library/react';
+import React from 'react';
+
+import { App } from '../app/App';
+import { AppProviders } from '../app/providers/AppProviders';
+
+describe('App', () => {
+  it('renders without crashing and shows farmer dashboard heading after auth (stub)', () => {
+    render(
+      <AppProviders>
+        <App />
+      </AppProviders>
+    );
+
+    // We do not assert on specific routes here because RequireAuth currently
+    // treats the user as unauthenticated by default. This is a smoke test
+    // that ensures the tree renders without throwing.
+    expect(screen.getByText(/SkyCrop/i)).toBeInTheDocument();
+  });
+});

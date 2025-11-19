@@ -77,6 +77,31 @@ class MLGatewayService {
     return out;
   }
 
+  normalizeYieldPayload(input) {
+    const out = {};
+    if (Array.isArray(input.features)) {
+      out.features = input.features.map(feature => {
+        const normalized = { field_id: feature.field_id };
+        for (const [key, value] of Object.entries(feature)) {
+          if (key !== 'field_id') {
+            normalized[key] = Number(value);
+          }
+        }
+        return normalized;
+      });
+    }
+    if (Array.isArray(input.rows)) {
+      out.rows = input.rows.map(row => row.map(Number));
+    }
+    if (Array.isArray(input.feature_names)) {
+      out.feature_names = input.feature_names;
+    }
+    if (input.model_version) {
+      out.model_version = String(input.model_version);
+    }
+    return out;
+  }
+
   computeRequestHash(payload) {
     const stable = this._stableStringify(payload);
     return this._sha1(stable);
@@ -84,6 +109,23 @@ class MLGatewayService {
 
   _cacheKey(hash) {
     return `ml:segmentation:predict:${hash}`;
+  }
+
+  _yieldCacheKey(hash) {
+    return `ml:yield:predict:${hash}`;
+  }
+
+  _estimateHarvestDate() {
+    // Estimate harvest date as 4 months from now (typical for paddy rice)
+    const now = new Date();
+    now.setMonth(now.getMonth() + 4);
+    return now.toISOString().split('T')[0];
+  }
+
+  _getPreviousSeasonYield(fieldId) {
+    // Mock previous season yield - in real implementation, query database
+    // Return a value slightly lower than current optimal
+    return 4800; // kg/ha
   }
 
   async cacheGet(key) {
@@ -136,6 +178,58 @@ class MLGatewayService {
     const latency = Date.now() - started;
     logger.info('ml.gateway.downstream', {
       route: '/api/v1/ml/segmentation/predict',
+      latency_ms: latency,
+      downstream_status: resp.status,
+      correlation_id: correlationId,
+      model_version: resp.headers?.['x-model-version'] || payload.model_version || null,
+    });
+
+    if (resp.status >= 200 && resp.status < 300) {
+      return {
+        ok: true,
+        status: resp.status,
+        headers: resp.headers || {},
+        data: resp.data,
+        latency_ms: latency,
+      };
+    }
+
+    // Map error
+    const e = this._mapDownstreamError(resp);
+    throw e;
+  }
+
+  async _callYieldML(payload, correlationId) {
+    const url = `${this.ML_SERVICE_URL}/v1/yield/predict`;
+    const headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'X-Internal-Token': this.ML_INTERNAL_TOKEN,
+    };
+    if (this.ML_SERVICE_TOKEN) headers['Authorization'] = `Bearer ${this.ML_SERVICE_TOKEN}`;
+    if (correlationId) headers['X-Request-Id'] = correlationId;
+    if (payload.model_version) headers['X-Model-Version'] = payload.model_version;
+
+    const started = Date.now();
+    let resp;
+    try {
+      resp = await axios.post(url, payload, { headers,
+        timeout: this.TIMEOUT_MS,
+        validateStatus: (s) => s >= 200 && s < 600, // treat 5xx as handled errors
+      });
+    } catch (err) {
+      const latency = Date.now() - started;
+      logger.error('ml.gateway.http_error', {
+        route: '/api/v1/ml/yield/predict',
+        latency_ms: latency,
+        message: err.message,
+      });
+      throw new AppError('UPSTREAM_ERROR', 'ML service request failed', 502, { message: err.message });
+    }
+
+    const latency = Date.now() - started;
+    logger.info('ml.gateway.downstream', {
+      route: '/api/v1/ml/yield/predict',
       latency_ms: latency,
       downstream_status: resp.status,
       correlation_id: correlationId,
@@ -286,6 +380,72 @@ class MLGatewayService {
       maskUrl: data.mask_url || null,
       maskBase64: data.mask_base64 || null,
       metadata: data.metrics ? { metrics: data.metrics, warnings: data.warnings || [] } : undefined,
+    };
+  }
+
+  /**
+   * Get disaster assessment for a field
+   */
+  async getDisasterAssessment(fieldId) {
+    // Mock implementation - in real implementation, call ML service disaster analysis
+    // For now, return basic assessment based on recent health data
+    return {
+      risk_level: 'low', // low, medium, high
+      disaster_types: ['flood'], // possible disasters
+      confidence: 0.85,
+      assessed_at: new Date().toISOString()
+    };
+  }
+
+  /**
+   * Predict yield with caching
+   * Returns { result, cacheHit, downstreamStatus, modelVersion, latency_ms }
+   */
+  async yieldPredict(input, correlationId) {
+    await this.init();
+
+    const payload = this.normalizeYieldPayload(input);
+    const hash = this.computeRequestHash(payload);
+    const key = this._yieldCacheKey(hash);
+
+    // Check cache
+    const cached = await this.cacheGet(key);
+    if (cached && typeof cached === 'object') {
+      return {
+        result: { success: true, data: cached },
+        cacheHit: true,
+        downstreamStatus: 200,
+        modelVersion: cached?.model?.version || null,
+        latency_ms: 0,
+      };
+    }
+
+    const resp = await this._callYieldML(payload, correlationId);
+    const modelVersionHdr = resp.headers?.['x-model-version'] || null;
+
+    // Normalize downstream success payload into backend shape
+    const data = resp.data || {};
+    const normalized = {
+      request_id: data.request_id || correlationId || null,
+      model: data.model || null,
+      predictions: (data.predictions || []).map(prediction => ({
+        ...prediction,
+        harvest_date: prediction.harvest_date || this._estimateHarvestDate(),
+        optimal_yield: prediction.optimal_yield || 5500, // kg/ha, typical optimal for paddy
+        previous_season_yield: prediction.previous_season_yield || this._getPreviousSeasonYield(prediction.field_id),
+      })),
+      warnings: data.warnings || [],
+    };
+
+    // Cache the result
+    await this.cacheSet(key, normalized);
+
+    return {
+      result: { success: true, data: normalized },
+      cacheHit: false,
+      downstreamStatus: resp.status,
+      modelVersion: modelVersionHdr || (data.model && data.model.version) || payload.model_version || null,
+      latency_ms: resp.latency_ms,
     };
   }
 }

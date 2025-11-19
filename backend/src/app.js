@@ -13,6 +13,7 @@ const fieldHealthRoutes = require('./api/routes/fieldHealth.routes');
 const satelliteRoutes = require('./api/routes/satellite.routes');
 const mlRoutes = require('./api/routes/ml.routes');
 const recommendationRoutes = require('./api/routes/recommendation.routes');
+const dashboardRoutes = require('./api/routes/dashboard.routes');
 const { apiLimiter } = require('./api/middleware/rateLimit.middleware');
 const { logger, loggerStream } = require('./utils/logger');
 
@@ -70,6 +71,7 @@ app.use('/api/v1/fields', recommendationRoutes);
 app.use('/api/v1/weather', weatherRoutes);
 app.use('/api/v1/satellite', satelliteRoutes);
 app.use('/api/v1/ml', mlRoutes);
+app.use('/api/v1/dashboard', dashboardRoutes);
 
 // 404 handler
 app.use((req, res, next) => {

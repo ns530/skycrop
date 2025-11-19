@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+ 
+/* Base typography and layout */
+:root {
+  color-scheme: light;
+}
+ 
+html,
+body,
+#root {
+  height: 100%;
+}
+ 
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: #f3f4f6; /* gray-100 */
+  color: #1f2937; /* gray-900 */
+}
+ 
+/* Ensure focus outlines are visible for accessibility */
+:focus-visible {
+  outline: 3px solid #3b82f6; /* brand-blue */
+  outline-offset: 2px;
+}
+ 
+/* Tailwind base layer for typography and links */
+@layer base {
+  body {
+    @apply text-base font-normal text-gray-900 bg-gray-100 font-sans;
+  }
+ 
+  h1 {
+    @apply text-2xl font-bold text-gray-900;
+  }
+ 
+  h2 {
+    @apply text-xl font-semibold text-gray-900;
+  }
+ 
+  p {
+    @apply text-base leading-relaxed text-gray-700;
+  }
+ 
+  a {
+    @apply text-primary underline-offset-4;
+  }
+ 
+  a:hover,
+  a:focus-visible {
+    @apply underline;
+  }
+}
+ 
+/* Simple utility for page containers (in addition to PageContainer component) */
+.app-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+ 
+/* Visually hidden but focusable skip link support is handled via Tailwind classes in App */

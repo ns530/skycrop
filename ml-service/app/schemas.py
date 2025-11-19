@@ -153,6 +153,9 @@ class YieldPredictRequest(BaseModel):
 class YieldPrediction(BaseModel):
     field_id: Optional[str] = None
     yield_kg_per_ha: float
+    harvest_date: Optional[str] = None
+    optimal_yield: Optional[float] = None
+    previous_season_yield: Optional[float] = None
 
 
 class YieldPredictResponse(BaseModel):

@@ -235,20 +235,61 @@ const recommendationList = Joi.object({
   }, 'date range validation')
   .prefs({ abortEarly: false, stripUnknown: true });
 
+// Yield prediction validation
+const yieldPredict = Joi.object({
+  features: Joi.array()
+    .items(Joi.object({
+      field_id: Joi.string()
+        .guid({ version: ['uuidv4', 'uuidv5', 'uuidv1'] })
+        .required(),
+    }).pattern(/^[a-zA-Z_][a-zA-Z0-9_]*$/, Joi.number().required()))
+    .optional(),
+  rows: Joi.array()
+    .items(Joi.array().items(Joi.number().required()))
+    .optional(),
+  feature_names: Joi.array()
+    .items(Joi.string().pattern(/^[a-zA-Z_][a-zA-Z0-9_]*$/))
+    .optional(),
+  model_version: Joi.string()
+    .pattern(/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/)
+    .optional(),
+})
+  .custom((val, helpers) => {
+    const hasFeatures = Array.isArray(val.features);
+    const hasRows = Array.isArray(val.rows);
+    const hasFeatureNames = Array.isArray(val.feature_names);
+
+    if (hasFeatures && (hasRows || hasFeatureNames)) {
+      return helpers.error('any.invalid', { message: 'Provide either features OR rows with feature_names, not both' });
+    }
+    if (!hasFeatures && hasRows && !hasFeatureNames) {
+      return helpers.error('any.invalid', { message: 'rows requires feature_names' });
+    }
+    if (!hasFeatures && !hasRows) {
+      return helpers.error('any.invalid', { message: 'Provide either features or rows with feature_names' });
+    }
+    if (hasRows && hasFeatureNames && val.rows.length > 0 && val.feature_names.length !== val.rows[0].length) {
+      return helpers.error('any.invalid', { message: 'feature_names length must match rows[0] length' });
+    }
+    return val;
+  })
+  .prefs({ abortEarly: false, stripUnknown: true });
+
  module.exports = {
-  validateRequest,
-  schemas: {
-    signup,
-    login,
-    requestPasswordReset,
-    resetPassword,
-    satelliteTileParams,
-    satelliteTileQuery,
-    satellitePreprocess,
-    mlPredict,
-    healthCompute,
-    healthList,
-    recommendationCompute,
-    recommendationList,
-  },
+ validateRequest,
+ schemas: {
+   signup,
+   login,
+   requestPasswordReset,
+   resetPassword,
+   satelliteTileParams,
+   satelliteTileQuery,
+   satellitePreprocess,
+   mlPredict,
+   yieldPredict,
+   healthCompute,
+   healthList,
+   recommendationCompute,
+   recommendationList,
+ },
 };

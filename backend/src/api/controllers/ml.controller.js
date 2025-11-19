@@ -12,6 +12,44 @@ const mlGateway = getMLGatewayService();
  *   Performs cache lookup via service; proxies to ML service on miss
  */
 module.exports = {
+  async yieldPredict(req, res, next) {
+    const started = Date.now();
+    const correlationId = req.headers['x-request-id'] || null;
+    try {
+      const input = req.body || {};
+      const {
+        result,
+        cacheHit,
+        downstreamStatus,
+        modelVersion,
+        latency_ms,
+      } = await mlGateway.yieldPredict(input, correlationId);
+
+      const totalLatency = Date.now() - started;
+      logger.info('ml.yieldPredict', {
+        route: '/api/v1/ml/yield/predict',
+        method: 'POST',
+        correlation_id: correlationId,
+        latency_ms: totalLatency,
+        cache_hit: cacheHit,
+        downstream_status: downstreamStatus,
+        model_version: modelVersion || null,
+      });
+
+      return res.status(200).json({
+        success: true,
+        data: result.data,
+        meta: {
+          correlation_id: correlationId,
+          latency_ms: totalLatency,
+          cache_hit: cacheHit,
+        },
+      });
+    } catch (err) {
+      return next(err);
+    }
+  },
+
   async predict(req, res, next) {
     const started = Date.now();
     const correlationId = req.headers['x-request-id'] || null;

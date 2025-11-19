@@ -30,4 +30,7 @@ router.use((err, _req, _res, next) => {
 // POST /api/v1/ml/segmentation/predict
 router.post('/segmentation/predict', validateRequest(schemas.mlPredict), MLController.predict);
 
+// POST /api/v1/ml/yield/predict
+router.post('/yield/predict', validateRequest(schemas.yieldPredict), MLController.yieldPredict);
+
 module.exports = router;
