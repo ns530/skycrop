@@ -25,34 +25,11 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          // Vendor chunks
+          // Vendor chunks - only npm packages
           'react-vendor': ['react', 'react-dom'],
           'router-vendor': ['react-router-dom'],
           'query-vendor': ['@tanstack/react-query'],
-          'ui-vendor': ['clsx'],
-
-          // Feature chunks
-          'auth': [
-            './src/features/auth',
-          ],
-          'fields': [
-            './src/features/fields',
-          ],
-          'yield': [
-            './src/features/yield',
-          ],
-          'health': [
-            './src/features/health',
-          ],
-          'weather': [
-            './src/features/weather',
-          ],
-          'recommendations': [
-            './src/features/recommendations',
-          ],
-          'admin': [
-            './src/features/admin',
-          ],
+          'map-vendor': ['leaflet', 'react-leaflet'],
         },
       },
     },
