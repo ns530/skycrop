@@ -1,0 +1,48 @@
+# SkyCrop - Git Ignore File
+
+# Secrets and Environment Variables
+secrets.txt
+.env
+.env.local
+.env.staging
+.env.production
+*.secret
+*.key
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Logs
+logs/
+*.log
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# IDE Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build outputs
+dist/
+build/
+*.pyc
+__pycache__/
+
+# Testing
+coverage/
+.nyc_output/
+test-results/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
