@@ -1,6 +1,6 @@
 'use strict';
 
-const { initRedis, getRedisClient } = require('../../config/redis.config');
+const { initRedis, getRedisClient, isRedisAvailable } = require('../../config/redis.config');
 
 /**
  * Build a Redis-backed rate limiter middleware (token bucket via INCR/EXPIRE).
@@ -23,10 +23,19 @@ function createRateLimiter({
 
   return async function rateLimiter(req, res, next) {
     try {
-      // Ensure Redis connection (lazy)
+      // Check if Redis is available - fail open if not
+      if (!isRedisAvailable()) {
+        const redis = await initRedis();
+        if (!redis) {
+          // Redis not available, skip rate limiting
+          return next();
+        }
+      }
+
       const redis = getRedisClient();
-      if (!redis.isOpen) {
-        await initRedis();
+      if (!redis || !redis.isOpen) {
+        // Redis not available, skip rate limiting
+        return next();
       }
 
       const id = keyGenerator(req);
@@ -61,7 +70,7 @@ function createRateLimiter({
       // Continue
       return next();
     } catch (err) {
-      // Fail-open on limiter errors
+      // Fail-open on limiter errors (Redis unavailable)
       return next();
     }
   };

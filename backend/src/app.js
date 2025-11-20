@@ -14,6 +14,7 @@ const satelliteRoutes = require('./api/routes/satellite.routes');
 const mlRoutes = require('./api/routes/ml.routes');
 const recommendationRoutes = require('./api/routes/recommendation.routes');
 const dashboardRoutes = require('./api/routes/dashboard.routes');
+const yieldRoutes = require('./api/routes/yield.routes');
 const { apiLimiter } = require('./api/middleware/rateLimit.middleware');
 const { logger, loggerStream } = require('./utils/logger');
 
@@ -72,6 +73,7 @@ app.use('/api/v1/weather', weatherRoutes);
 app.use('/api/v1/satellite', satelliteRoutes);
 app.use('/api/v1/ml', mlRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
+app.use('/api/v1', yieldRoutes); // Yield routes (both /fields/:id/yield and /yield/:id)
 
 // 404 handler
 app.use((req, res, next) => {
