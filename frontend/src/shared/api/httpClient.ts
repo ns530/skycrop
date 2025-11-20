@@ -68,7 +68,8 @@ export const configureAuthHandlers = (handlers: { refreshFn?: RefreshFn; onAuthE
   authState.onAuthError = handlers.onAuthError ?? null;
 };
 
-const apiBaseURL = '/api/v1';
+// Use environment variable for production, fallback to relative path for dev proxy
+const apiBaseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
 const httpClient: AxiosInstance = axios.create({
   baseURL: apiBaseURL,
