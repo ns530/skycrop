@@ -5,6 +5,7 @@ const http = require('http');
 const app = require('./app');
 const { initDatabase } = require('./config/database.config');
 const { logger } = require('./utils/logger');
+const { runMigrations } = require('./scripts/migrate');
 
 const PORT = Number(process.env.PORT) || 3000;
 
@@ -30,6 +31,11 @@ process.on('SIGINT', () => shutdown('SIGINT'));
 
 async function start() {
   try {
+    // Run migrations first
+    logger.info('Running database migrations...');
+    await runMigrations();
+    logger.info('Migrations complete. Initializing database connection...');
+    
     await initDatabase();
   } catch (err) {
     logger.error('Database initialization failed: %s', err.message);
