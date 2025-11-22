@@ -1,6 +1,85 @@
 {
-  "name": "SkyCrop",
-  "displayName": "SkyCrop",
-  "version": "0.1.0"
+  "expo": {
+    "name": "SkyCrop",
+    "slug": "skycrop",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#16A34A"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": ["**/*"],
+    "android": {
+      "package": "com.skycrop.mobile",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#16A34A"
+      },
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ],
+      "googleServicesFile": "./google-services.json"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.skycrop.mobile",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "SkyCrop needs camera access to capture field images for analysis",
+        "NSLocationWhenInUseUsageDescription": "SkyCrop needs your location to map your fields accurately",
+        "NSPhotoLibraryUsageDescription": "SkyCrop needs access to your photo library to save field images"
+      },
+      "googleServicesFile": "./ios/GoogleService-Info.plist"
+    },
+    "plugins": [
+      [
+        "@react-native-firebase/app",
+        {
+          "android": {
+            "googleServicesFile": "./google-services.json"
+          },
+          "ios": {
+            "googleServicesFile": "./ios/GoogleService-Info.plist"
+          }
+        }
+      ],
+      [
+        "@react-native-firebase/messaging",
+        {
+          "android": {
+            "requestIgnoreBatteryOptimizations": true
+          }
+        }
+      ],
+      [
+        "react-native-maps",
+        {
+          "android": {
+            "googleMapsApiKey": "YOUR_GOOGLE_MAPS_API_KEY"
+          },
+          "ios": {
+            "googleMapsApiKey": "YOUR_GOOGLE_MAPS_API_KEY"
+          }
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "YOUR_EAS_PROJECT_ID_WILL_BE_SET_AUTOMATICALLY"
+      }
+    }
+  }
 }
-

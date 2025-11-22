@@ -1,0 +1,50 @@
+# ============================================
+# SKYCROP FRONTEND - ENVIRONMENT VARIABLES
+# ============================================
+# Copy this file to frontend/.env.example
+# Then copy to:
+# - frontend/.env.development (for local development)
+# - frontend/.env.production (for production builds)
+# ============================================
+
+# ============ API CONFIGURATION ============
+# Local Development:
+VITE_API_BASE_URL=http://localhost:3000/api/v1
+
+# Production (Railway):
+# VITE_API_BASE_URL=https://skycrop-backend-production-xxxx.up.railway.app/api/v1
+
+# ============ WEBSOCKET CONFIGURATION ============
+# Local Development:
+VITE_WS_URL=http://localhost:3000
+
+# Production (Railway):
+# VITE_WS_URL=wss://skycrop-backend-production-xxxx.up.railway.app
+
+# ============ APPLICATION INFO ============
+VITE_APP_NAME=SkyCrop
+VITE_APP_VERSION=0.1.0
+VITE_ENV=development
+
+# ============ MAPBOX / LEAFLET (Optional) ============
+# VITE_MAPBOX_TOKEN=your-mapbox-access-token
+
+# ============ GOOGLE MAPS (Optional) ============
+# VITE_GOOGLE_MAPS_API_KEY=your-google-maps-api-key
+
+# ============ ANALYTICS (Optional) ============
+# VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+
+# ============ SENTRY ERROR TRACKING (Optional) ============
+# VITE_SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
+# VITE_SENTRY_ENVIRONMENT=production
+
+# ============ FEATURE FLAGS ============
+VITE_ENABLE_OFFLINE_MODE=true
+VITE_ENABLE_PWA=false
+VITE_ENABLE_ANALYTICS=false
+
+# ============ PERFORMANCE ============
+VITE_ENABLE_SOURCEMAPS=false
+VITE_ENABLE_PROFILING=false
+
