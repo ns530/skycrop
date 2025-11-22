@@ -3,6 +3,7 @@
 const { Sequelize } = require('sequelize');
 
 const {
+  DATABASE_URL,
   DB_HOST = 'localhost',
   DB_PORT = '5432',
   DB_NAME = 'skycrop_dev',
@@ -16,33 +17,62 @@ const {
   NODE_ENV = 'development',
 } = process.env;
 
-const dialectOptions = {};
-if (DB_SSL === 'true') {
-  // Railway/Cloud providers may require SSL
-  dialectOptions.ssl = {
-    require: true,
-    rejectUnauthorized: false,
-  };
-}
+// Create Sequelize instance
+// Prefer DATABASE_URL (Railway/Cloud) over individual variables (local dev)
+let sequelize;
 
-const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
-  host: DB_HOST,
-  port: Number(DB_PORT),
-  dialect: 'postgres',
-  logging: NODE_ENV === 'development' ? console.log : false,
-  pool: {
-    max: Number(DB_POOL_MAX),
-    min: Number(DB_POOL_MIN),
-    idle: Number(DB_POOL_IDLE),
-    acquire: Number(DB_POOL_ACQUIRE),
-  },
-  dialectOptions,
-  define: {
-    // Align timestamps with our schema (created_at, updated_at)
-    underscored: true,
-    freezeTableName: true,
-  },
-});
+if (DATABASE_URL) {
+  // Cloud deployment (Railway, Heroku, etc.) - use DATABASE_URL
+  sequelize = new Sequelize(DATABASE_URL, {
+    dialect: 'postgres',
+    logging: NODE_ENV === 'development' ? console.log : false,
+    pool: {
+      max: Number(DB_POOL_MAX),
+      min: Number(DB_POOL_MIN),
+      idle: Number(DB_POOL_IDLE),
+      acquire: Number(DB_POOL_ACQUIRE),
+    },
+    dialectOptions: {
+      ssl: NODE_ENV === 'production' ? {
+        require: true,
+        rejectUnauthorized: false,
+      } : false,
+    },
+    define: {
+      // Align timestamps with our schema (created_at, updated_at)
+      underscored: true,
+      freezeTableName: true,
+    },
+  });
+} else {
+  // Local development - use individual variables
+  const dialectOptions = {};
+  if (DB_SSL === 'true') {
+    dialectOptions.ssl = {
+      require: true,
+      rejectUnauthorized: false,
+    };
+  }
+
+  sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
+    host: DB_HOST,
+    port: Number(DB_PORT),
+    dialect: 'postgres',
+    logging: NODE_ENV === 'development' ? console.log : false,
+    pool: {
+      max: Number(DB_POOL_MAX),
+      min: Number(DB_POOL_MIN),
+      idle: Number(DB_POOL_IDLE),
+      acquire: Number(DB_POOL_ACQUIRE),
+    },
+    dialectOptions,
+    define: {
+      // Align timestamps with our schema (created_at, updated_at)
+      underscored: true,
+      freezeTableName: true,
+    },
+  });
+}
 
 /**
  * Initialize and verify DB connection.
