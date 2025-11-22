@@ -6,6 +6,7 @@ import {
   getRecommendationsForField,
   applyRecommendation,
   type Recommendation,
+  type RecommendationStatus,
 } from '../api/recommendationApi';
 
 /**
@@ -51,11 +52,11 @@ export const useApplyRecommendation = () => {
       const appliedAt = payload?.appliedAt ?? new Date().toISOString();
 
       if (previousRecommendations) {
-        const next = previousRecommendations.map((rec: Recommendation) =>
+        const next: Recommendation[] = previousRecommendations.map((rec: Recommendation) =>
           rec.id === id
             ? {
                 ...rec,
-                status: 'applied',
+                status: 'applied' as RecommendationStatus,
                 appliedAt,
               }
             : rec,

@@ -10,6 +10,7 @@ const {
   NotFoundError,
   ConflictError,
 } = require('../errors/custom-errors');
+const { emitToField, emitToUser } = require('../websocket/server');
 
 /**
  * Yield Service
@@ -372,6 +373,246 @@ async function getStatistics(userId, fieldId) {
 }
 
 /**
+ * Predict yield for a field
+ * @param {string} userId - User ID
+ * @param {string} fieldId - Field ID
+ * @param {object} predictionOptions - Options (planting_date, variety, soil_type, etc.)
+ * @returns {Promise<object>} Prediction result
+ */
+async function predictYield(userId, fieldId, predictionOptions = {}) {
+  const { getMLGatewayService } = require('./mlGateway.service');
+  const HealthRepository = require('../repositories/health.repository');
+  const { getWeatherService } = require('./weather.service');
+
+  // Validate field exists and belongs to user
+  const field = await Field.findOne({
+    where: { field_id: fieldId, user_id: userId, status: 'active' },
+  });
+
+  if (!field) {
+    throw new NotFoundError('Field not found or does not belong to user', { field_id: fieldId });
+  }
+
+  // 1. Get NDVI history (last 90 days)
+  const healthRepository = new HealthRepository();
+  const endDate = new Date().toISOString().split('T')[0];
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - 90);
+  const startDateStr = startDate.toISOString().split('T')[0];
+
+  const healthRecords = await healthRepository.findByFieldAndDateRange(fieldId, startDateStr, endDate);
+
+  // Calculate NDVI statistics
+  const ndviValues = healthRecords.map(r => parseFloat(r.ndvi_mean)).filter(v => !isNaN(v));
+  const ndviAvg = ndviValues.length > 0 ? ndviValues.reduce((a, b) => a + b, 0) / ndviValues.length : 0.6;
+  const ndviMax = ndviValues.length > 0 ? Math.max(...ndviValues) : 0.7;
+  const ndviMin = ndviValues.length > 0 ? Math.min(...ndviValues) : 0.5;
+  const ndviStd = ndviValues.length > 1 ? Math.sqrt(ndviValues.reduce((sum, val) => sum + Math.pow(val - ndviAvg, 2), 0) / ndviValues.length) : 0.1;
+
+  // 2. Get weather data (rainfall, temperature)
+  let rainfallTotal = 150; // Default mm
+  let tempAvg = 28; // Default °C
+  let humidity = 75; // Default %
+
+  try {
+    const weatherService = getWeatherService();
+    const weatherResponse = await weatherService.getForecastByCoords(
+      field.center.coordinates[1], // latitude
+      field.center.coordinates[0]  // longitude
+    );
+
+    if (weatherResponse.data && weatherResponse.data.totals) {
+      rainfallTotal = weatherResponse.data.totals.rain_7d_mm || rainfallTotal;
+    }
+
+    if (weatherResponse.data && weatherResponse.data.days && weatherResponse.data.days.length > 0) {
+      const temps = weatherResponse.data.days.map(d => (d.tmax + d.tmin) / 2).filter(t => !isNaN(t));
+      tempAvg = temps.length > 0 ? temps.reduce((a, b) => a + b, 0) / temps.length : tempAvg;
+    }
+  } catch (error) {
+    // Weather service failed - use defaults
+    console.warn('Weather service unavailable, using default values:', error.message);
+  }
+
+  // 3. Build feature vector for ML model
+  const areaHa = parseFloat(field.area) || 1.0;
+  
+  // Feature vector (must match trained model):
+  // [ndvi_avg, ndvi_max, ndvi_min, ndvi_std, rainfall_mm, temp_avg, humidity, area_ha]
+  const features = [{
+    field_id: fieldId,
+    ndvi_avg: ndviAvg,
+    ndvi_max: ndviMax,
+    ndvi_min: ndviMin,
+    ndvi_std: ndviStd,
+    rainfall_mm: rainfallTotal,
+    temp_avg: tempAvg,
+    humidity: humidity,
+    area_ha: areaHa,
+  }];
+
+  // 4. Call ML service
+  const mlGateway = getMLGatewayService();
+  const mlResponse = await mlGateway.yieldPredict({ features }, null);
+
+  // 5. Extract prediction
+  const prediction = mlResponse.result.data.predictions[0] || {};
+  const predictedYieldPerHa = parseFloat(prediction.predicted_yield || prediction.predicted_yield_per_ha || 4500);
+  const confidenceLower = parseFloat(prediction.confidence_interval?.lower || predictedYieldPerHa * 0.85);
+  const confidenceUpper = parseFloat(prediction.confidence_interval?.upper || predictedYieldPerHa * 1.15);
+
+  // 6. Calculate derived values
+  const predictedTotalYield = predictedYieldPerHa * areaHa;
+  const pricePerKg = parseFloat(predictionOptions.price_per_kg || 80); // LKR per kg
+  const expectedRevenue = predictedTotalYield * pricePerKg;
+
+  // Estimate harvest date (4 months from planting date or now)
+  const plantingDate = predictionOptions.planting_date ? new Date(predictionOptions.planting_date) : new Date();
+  const harvestDate = new Date(plantingDate);
+  harvestDate.setMonth(harvestDate.getMonth() + 4); // Typical 4-month growing season for rice
+  const harvestDateStr = harvestDate.toISOString().split('T')[0];
+
+  // 7. Save prediction to database
+  const savedPrediction = await YieldPrediction.create({
+    field_id: fieldId,
+    prediction_date: new Date().toISOString().split('T')[0],
+    predicted_yield_per_ha: predictedYieldPerHa,
+    predicted_total_yield: predictedTotalYield,
+    confidence_lower: confidenceLower,
+    confidence_upper: confidenceUpper,
+    expected_revenue: expectedRevenue,
+    harvest_date_estimate: harvestDateStr,
+    model_version: mlResponse.result.data.model?.version || '1.0.0',
+    features_used: features[0],
+  });
+
+  // Invalidate cache
+  await redisDelPattern(`yields:field:${fieldId}:*`);
+  await redisDelPattern(`yields:user:${userId}:*`);
+
+  // Build response
+  const response = {
+    prediction_id: savedPrediction.prediction_id,
+    field_id: fieldId,
+    field_name: field.name,
+    field_area_ha: areaHa,
+    prediction_date: savedPrediction.prediction_date,
+    predicted_yield_per_ha: parseFloat(savedPrediction.predicted_yield_per_ha),
+    predicted_total_yield: parseFloat(savedPrediction.predicted_total_yield),
+    confidence_interval: {
+      lower: parseFloat(savedPrediction.confidence_lower),
+      upper: parseFloat(savedPrediction.confidence_upper),
+    },
+    expected_revenue: parseFloat(savedPrediction.expected_revenue),
+    harvest_date_estimate: savedPrediction.harvest_date_estimate,
+    model_version: savedPrediction.model_version,
+    features_used: savedPrediction.features_used,
+    ml_response: mlResponse.cacheHit ? 'cached' : 'fresh',
+  };
+
+  // Emit real-time update to WebSocket subscribers
+  try {
+    emitToField(fieldId, 'yield_prediction_ready', {
+      fieldId,
+      fieldName: field.name,
+      predictionId: savedPrediction.prediction_id,
+      predictedYieldPerHa: parseFloat(savedPrediction.predicted_yield_per_ha),
+      predictedTotalYield: parseFloat(savedPrediction.predicted_total_yield),
+      expectedRevenue: parseFloat(savedPrediction.expected_revenue),
+      harvestDateEstimate: savedPrediction.harvest_date_estimate,
+      timestamp: Date.now(),
+    });
+
+    emitToUser(userId, 'yield_prediction_ready', {
+      fieldId,
+      fieldName: field.name,
+      message: `Yield prediction ready: ${parseFloat(savedPrediction.predicted_total_yield).toFixed(0)} kg total (${parseFloat(savedPrediction.predicted_yield_per_ha).toFixed(0)} kg/ha)`,
+      expectedRevenue: parseFloat(savedPrediction.expected_revenue),
+      timestamp: Date.now(),
+    });
+  } catch (error) {
+    // Don't fail the request if WebSocket emit fails
+    console.error('Failed to emit yield prediction update:', error.message);
+  }
+
+  return response;
+}
+
+/**
+ * Get predictions for a field
+ * @param {string} userId - User ID
+ * @param {string} fieldId - Field ID
+ * @param {object} options - Query options (limit, sort, order)
+ * @returns {Promise<Array>} List of predictions
+ */
+async function getPredictions(userId, fieldId, options = {}) {
+  // Validate field exists and belongs to user
+  const field = await Field.findOne({
+    where: { field_id: fieldId, user_id: userId, status: 'active' },
+  });
+
+  if (!field) {
+    throw new NotFoundError('Field not found or does not belong to user', { field_id: fieldId });
+  }
+
+  const limit = Math.min(100, Math.max(1, parseInt(options.limit, 10) || 10));
+  const sortBy = options.sort || 'prediction_date';
+  const sortOrder = (options.order || 'desc').toUpperCase();
+
+  // Check cache
+  const cacheKey = `yields:predictions:field:${fieldId}:limit:${limit}:sort:${sortBy}:${sortOrder}`;
+  const cached = await redisGetJSON(cacheKey);
+  if (cached) {
+    return { predictions: cached, cacheHit: true };
+  }
+
+  // Query database
+  const predictions = await YieldPrediction.findAll({
+    where: { field_id: fieldId },
+    order: [[sortBy, sortOrder]],
+    limit,
+    attributes: [
+      'prediction_id',
+      'field_id',
+      'prediction_date',
+      'predicted_yield_per_ha',
+      'predicted_total_yield',
+      'confidence_lower',
+      'confidence_upper',
+      'expected_revenue',
+      'harvest_date_estimate',
+      'model_version',
+      'actual_yield',
+      'accuracy_mape',
+      'created_at',
+    ],
+  });
+
+  const result = predictions.map(p => ({
+    prediction_id: p.prediction_id,
+    field_id: p.field_id,
+    prediction_date: p.prediction_date,
+    predicted_yield_per_ha: parseFloat(p.predicted_yield_per_ha),
+    predicted_total_yield: parseFloat(p.predicted_total_yield),
+    confidence_interval: {
+      lower: parseFloat(p.confidence_lower),
+      upper: parseFloat(p.confidence_upper),
+    },
+    expected_revenue: parseFloat(p.expected_revenue),
+    harvest_date_estimate: p.harvest_date_estimate,
+    model_version: p.model_version,
+    actual_yield: p.actual_yield ? parseFloat(p.actual_yield) : null,
+    accuracy_mape: p.accuracy_mape ? parseFloat(p.accuracy_mape) : null,
+    created_at: p.created_at,
+  }));
+
+  // Cache result
+  await redisSetJSON(cacheKey, result, YIELD_CACHE_TTL_SEC);
+
+  return { predictions: result, cacheHit: false };
+}
+
+/**
  * Factory function to get service instance
  */
 function getYieldService() {
@@ -382,6 +623,8 @@ function getYieldService() {
     update,
     remove,
     getStatistics,
+    predictYield,
+    getPredictions,
   };
 }
 

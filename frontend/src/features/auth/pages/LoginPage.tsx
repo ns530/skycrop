@@ -19,7 +19,7 @@ export const LoginPage: React.FC = () => {
   const { loginWithEmail, startGoogleOAuth } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
-  const location = useLocation() as { state?: { from?: string } } & Location;
+  const location = useLocation() as unknown as { state?: { from?: string } } & Location;
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

@@ -34,7 +34,7 @@ const User = sequelize.define(
       allowNull: true,
     },
     role: {
-      type: DataTypes.ENUM('farmer', 'admin'),
+      type: DataTypes.ENUM('admin', 'manager', 'farmer', 'viewer'),
       allowNull: false,
       defaultValue: 'farmer',
     },
@@ -66,12 +66,12 @@ const User = sequelize.define(
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: sequelize.literal('NOW()'),
+      defaultValue: DataTypes.NOW,
     },
     updated_at: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: sequelize.literal('NOW()'),
+      defaultValue: DataTypes.NOW,
     },
     last_login: {
       type: DataTypes.DATE,

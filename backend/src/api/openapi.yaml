@@ -17,6 +17,12 @@ tags:
     description: User authentication and account management
   - name: System
     description: System status and utility endpoints
+  - name: Recommendations
+    description: Intelligent farming recommendations based on health data and weather conditions
+  - name: Yield Prediction
+    description: ML-powered yield prediction for fields
+  - name: Notifications
+    description: Device token registration and notification management
 
 paths:
   /health:
@@ -592,6 +598,638 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
+  /api/v1/fields/{fieldId}/recommendations/generate:
+    post:
+      tags: [Recommendations]
+      summary: Generate recommendations for a field
+      description: |
+        Generates intelligent farming recommendations based on field health data and weather forecast.
+        Applies rule-based logic for fertilizer, irrigation, pest control, and general health recommendations.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: fieldId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Field UUID
+      responses:
+        '200':
+          description: Recommendations generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    $ref: '#/components/schemas/RecommendationGenerationResult'
+                  meta:
+                    type: object
+                    properties:
+                      correlationId: { type: string, format: uuid }
+                      generatedAt: { type: string, format: date-time }
+        '403':
+          description: Forbidden - Field does not belong to user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Field not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/fields/{fieldId}/recommendations:
+    get:
+      tags: [Recommendations]
+      summary: Get recommendations for a field
+      description: Retrieves all recommendations for a specific field with filtering options
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: fieldId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Field UUID
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pending, in_progress, completed, dismissed]
+          description: Filter by recommendation status
+        - in: query
+          name: priority
+          schema:
+            type: string
+            enum: [critical, high, medium, low]
+          description: Filter by priority level
+        - in: query
+          name: validOnly
+          schema:
+            type: boolean
+          description: Only return recommendations that are still valid (not expired)
+      responses:
+        '200':
+          description: Field recommendations retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    properties:
+                      fieldId: { type: string, format: uuid }
+                      recommendations:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Recommendation'
+                      statistics:
+                        $ref: '#/components/schemas/RecommendationStatistics'
+                  meta:
+                    type: object
+                    properties:
+                      correlationId: { type: string, format: uuid }
+                      count: { type: integer }
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Field not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/recommendations:
+    get:
+      tags: [Recommendations]
+      summary: Get all recommendations for authenticated user
+      description: Retrieves all recommendations across all fields for the current user
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pending, in_progress, completed, dismissed]
+          description: Filter by recommendation status
+        - in: query
+          name: priority
+          schema:
+            type: string
+            enum: [critical, high, medium, low]
+          description: Filter by priority level
+        - in: query
+          name: validOnly
+          schema:
+            type: boolean
+          description: Only return recommendations that are still valid (not expired)
+      responses:
+        '200':
+          description: User recommendations retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    properties:
+                      recommendations:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Recommendation'
+                  meta:
+                    type: object
+                    properties:
+                      correlationId: { type: string, format: uuid }
+                      count: { type: integer }
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/recommendations/{recommendationId}/status:
+    patch:
+      tags: [Recommendations]
+      summary: Update recommendation status
+      description: Updates the status of a recommendation (e.g., mark as in_progress or completed)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: recommendationId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Recommendation UUID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [pending, in_progress, completed, dismissed]
+                  description: New status for the recommendation
+                notes:
+                  type: string
+                  description: Optional notes about the action taken
+      responses:
+        '200':
+          description: Recommendation status updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    $ref: '#/components/schemas/Recommendation'
+                  meta:
+                    type: object
+                    properties:
+                      correlationId: { type: string, format: uuid }
+        '400':
+          description: Invalid status or missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Recommendation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/recommendations/{recommendationId}:
+    delete:
+      tags: [Recommendations]
+      summary: Delete a recommendation
+      description: Permanently deletes a recommendation
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: recommendationId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Recommendation UUID
+      responses:
+        '200':
+          description: Recommendation deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  message: { type: string, example: "Recommendation deleted successfully" }
+                  meta:
+                    type: object
+                    properties:
+                      correlationId: { type: string, format: uuid }
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Recommendation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/fields/{fieldId}/yield/predict:
+    post:
+      tags: [Yield Prediction]
+      summary: Generate yield prediction for a field
+      description: |
+        Generates ML-powered yield prediction using Random Forest model.
+        Analyzes NDVI history, weather data, and field characteristics.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: fieldId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Field UUID
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                planting_date:
+                  type: string
+                  format: date
+                  description: Planting date (defaults to current date)
+                  example: "2024-01-15"
+                crop_variety:
+                  type: string
+                  maxLength: 100
+                  description: Rice variety (e.g., BG 300, BG 360)
+                  example: "BG 300"
+                soil_type:
+                  type: string
+                  maxLength: 50
+                  description: Soil type
+                  example: "clay-loam"
+                price_per_kg:
+                  type: number
+                  format: float
+                  description: Expected price per kg in LKR (defaults to 80)
+                  example: 80
+                model_version:
+                  type: string
+                  maxLength: 20
+                  description: ML model version (defaults to latest)
+                  example: "1.0.0"
+      responses:
+        '200':
+          description: Prediction generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    $ref: '#/components/schemas/YieldPredictionResult'
+                  meta:
+                    type: object
+                    properties:
+                      correlation_id: { type: string, format: uuid }
+                      latency_ms: { type: integer }
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Field not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: ML service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/fields/{fieldId}/yield/predictions:
+    get:
+      tags: [Yield Prediction]
+      summary: Get yield predictions for a field
+      description: Retrieves historical yield predictions for a specific field
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: fieldId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Field UUID
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+          description: Maximum number of predictions to return
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [prediction_date, predicted_yield_per_ha, created_at]
+            default: prediction_date
+          description: Sort field
+        - in: query
+          name: order
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Sort order
+      responses:
+        '200':
+          description: Predictions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/YieldPrediction'
+                  meta:
+                    type: object
+                    properties:
+                      correlation_id: { type: string, format: uuid }
+                      latency_ms: { type: integer }
+                      cache_hit: { type: boolean }
+                      count: { type: integer }
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Field not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/notifications/register:
+    post:
+      tags: [Notifications]
+      summary: Register device token for push notifications
+      description: |
+        Registers a device token for Firebase Cloud Messaging (FCM) to receive push notifications.
+        Required for mobile app users to receive alerts.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [deviceToken, platform]
+              properties:
+                deviceToken:
+                  type: string
+                  minLength: 10
+                  maxLength: 500
+                  description: FCM device token
+                  example: "fXxYyZz123...abc"
+                platform:
+                  type: string
+                  enum: [android, ios]
+                  description: Mobile platform
+                  example: "android"
+      responses:
+        '201':
+          description: Device token registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    properties:
+                      deviceId: { type: string, format: uuid }
+                      platform: { type: string, enum: [android, ios] }
+                  meta:
+                    type: object
+                    properties:
+                      correlation_id: { type: string, format: uuid }
+                      latency_ms: { type: integer }
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/notifications/unregister:
+    delete:
+      tags: [Notifications]
+      summary: Unregister device token
+      description: Deactivates a device token to stop receiving push notifications
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [deviceToken]
+              properties:
+                deviceToken:
+                  type: string
+                  description: FCM device token to unregister
+                  example: "fXxYyZz123...abc"
+      responses:
+        '200':
+          description: Device token unregistered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    properties:
+                      deviceId: { type: string, format: uuid }
+                      success: { type: boolean }
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/notifications/test:
+    post:
+      tags: [Notifications]
+      summary: Send test notification
+      description: |
+        Sends a test push notification to the authenticated user.
+        Useful for testing notification setup during development.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, message]
+              properties:
+                title:
+                  type: string
+                  maxLength: 100
+                  description: Notification title
+                  example: "Test Notification"
+                message:
+                  type: string
+                  maxLength: 500
+                  description: Notification message
+                  example: "This is a test notification from SkyCrop"
+                type:
+                  type: string
+                  enum: [info, warning, error, success]
+                  default: info
+                  description: Notification type
+      responses:
+        '200':
+          description: Test notification sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    properties:
+                      success: { type: boolean }
+                      channels: { type: array, items: { type: string } }
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/notifications/queue/stats:
+    get:
+      tags: [Notifications]
+      summary: Get notification queue statistics
+      description: Returns statistics about the notification queue (waiting, active, completed, failed jobs)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Queue statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    properties:
+                      waiting: { type: integer, description: "Jobs waiting to be processed" }
+                      active: { type: integer, description: "Jobs currently being processed" }
+                      completed: { type: integer, description: "Completed jobs" }
+                      failed: { type: integer, description: "Failed jobs" }
+                      provider: { type: string, enum: [bull, memory], description: "Queue provider" }
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
 components:
   securitySchemes:
     bearerAuth:
@@ -930,6 +1568,281 @@ components:
         pagination:
           $ref: '#/components/schemas/Pagination'
       required: [success, data]
+
+    # Phase 3: Recommendation Engine Schemas
+    RecommendationGenerationResult:
+      type: object
+      properties:
+        fieldId:
+          type: string
+          format: uuid
+          description: Field UUID
+        fieldName:
+          type: string
+          description: Field name
+        generatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when recommendations were generated
+        healthSummary:
+          type: object
+          properties:
+            currentScore:
+              type: number
+              format: float
+              example: 65
+              description: Current health score (0-100)
+            status:
+              type: string
+              enum: [excellent, good, fair, poor, critical, no_data]
+              example: fair
+            trend:
+              type: string
+              enum: [improving, stable, declining, unknown]
+              example: stable
+        recommendations:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecommendationDetail'
+        totalCount:
+          type: integer
+          description: Total number of recommendations generated
+        criticalCount:
+          type: integer
+          description: Number of critical priority recommendations
+        highCount:
+          type: integer
+          description: Number of high priority recommendations
+
+    RecommendationDetail:
+      type: object
+      properties:
+        recommendationId:
+          type: string
+          format: uuid
+        fieldId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [fertilizer, irrigation, pest_control, field_inspection, monitoring, water_management, general]
+          description: Type of recommendation
+        priority:
+          type: string
+          enum: [critical, high, medium, low]
+          description: Priority level
+        urgency:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Urgency score (0-100, higher is more urgent)
+        title:
+          type: string
+          example: "Apply nitrogen fertilizer"
+        description:
+          type: string
+          example: "NDVI is 0.45 and declining. This indicates low vegetation vigor."
+        reason:
+          type: string
+          example: "Low vegetation vigor indicates nitrogen deficiency"
+        actionSteps:
+          type: array
+          items:
+            type: string
+          example:
+            - "Purchase urea fertilizer (40-50 kg per hectare)"
+            - "Apply during dry weather conditions"
+            - "Water lightly after application"
+        estimatedCost:
+          type: number
+          format: float
+          nullable: true
+          description: Estimated cost in LKR
+          example: 2500
+        expectedBenefit:
+          type: string
+          nullable: true
+          example: "+15% yield increase"
+        timing:
+          type: string
+          nullable: true
+          example: "Within 3 days"
+        validUntil:
+          type: string
+          format: date-time
+          nullable: true
+          description: Date until which this recommendation is valid
+        status:
+          type: string
+          enum: [pending, in_progress, completed, dismissed]
+          default: pending
+        generatedAt:
+          type: string
+          format: date-time
+        actionedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the user started acting on this recommendation
+        notes:
+          type: string
+          nullable: true
+          description: User notes about actions taken
+
+    RecommendationStatistics:
+      type: object
+      properties:
+        total:
+          type: integer
+          description: Total recommendations
+        pending:
+          type: integer
+          description: Recommendations with pending status
+        inProgress:
+          type: integer
+          description: Recommendations currently being actioned
+        completed:
+          type: integer
+          description: Completed recommendations
+        dismissed:
+          type: integer
+          description: Dismissed recommendations
+        critical:
+          type: integer
+          description: Critical priority recommendations
+        high:
+          type: integer
+          description: High priority recommendations
+        medium:
+          type: integer
+          description: Medium priority recommendations
+        low:
+          type: integer
+          description: Low priority recommendations
+
+    # Phase 4: Yield Prediction Schemas
+    YieldPredictionResult:
+      type: object
+      properties:
+        prediction_id:
+          type: string
+          format: uuid
+          description: Unique prediction ID
+        field_id:
+          type: string
+          format: uuid
+          description: Field UUID
+        field_name:
+          type: string
+          description: Field name
+        field_area_ha:
+          type: number
+          format: float
+          description: Field area in hectares
+          example: 2.5
+        prediction_date:
+          type: string
+          format: date
+          description: Date of prediction
+        predicted_yield_per_ha:
+          type: number
+          format: float
+          description: Predicted yield per hectare (kg/ha)
+          example: 4800
+        predicted_total_yield:
+          type: number
+          format: float
+          description: Total predicted yield (kg)
+          example: 12000
+        confidence_interval:
+          type: object
+          properties:
+            lower:
+              type: number
+              format: float
+              example: 4200
+            upper:
+              type: number
+              format: float
+              example: 5400
+        expected_revenue:
+          type: number
+          format: float
+          description: Expected revenue in LKR
+          example: 960000
+        harvest_date_estimate:
+          type: string
+          format: date
+          description: Estimated harvest date
+        model_version:
+          type: string
+          description: ML model version used
+          example: "1.0.0"
+        features_used:
+          type: object
+          description: Features used for prediction
+          properties:
+            ndvi_avg: { type: number }
+            ndvi_max: { type: number }
+            ndvi_min: { type: number }
+            ndvi_std: { type: number }
+            rainfall_mm: { type: number }
+            temp_avg: { type: number }
+            humidity: { type: number }
+            area_ha: { type: number }
+        ml_response:
+          type: string
+          enum: [fresh, cached]
+          description: Whether prediction came from ML service or cache
+
+    YieldPrediction:
+      type: object
+      properties:
+        prediction_id:
+          type: string
+          format: uuid
+        field_id:
+          type: string
+          format: uuid
+        prediction_date:
+          type: string
+          format: date
+        predicted_yield_per_ha:
+          type: number
+          format: float
+          example: 4800
+        predicted_total_yield:
+          type: number
+          format: float
+          example: 12000
+        confidence_interval:
+          type: object
+          properties:
+            lower: { type: number, format: float }
+            upper: { type: number, format: float }
+        expected_revenue:
+          type: number
+          format: float
+          example: 960000
+        harvest_date_estimate:
+          type: string
+          format: date
+        model_version:
+          type: string
+          example: "1.0.0"
+        actual_yield:
+          type: number
+          format: float
+          nullable: true
+          description: Actual yield if harvest completed
+        accuracy_mape:
+          type: number
+          format: float
+          nullable: true
+          description: Mean Absolute Percentage Error if actual yield available
+        created_at:
+          type: string
+          format: date-time
 
   /api/v1/fields/{id}/health:
     parameters:

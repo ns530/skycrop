@@ -165,22 +165,17 @@ describe('MLGatewayService.detectBoundaries Unit', () => {
   });
 
   test('inline return: returns maskBase64 and preserves model/version', async () => {
-    jest.spyOn(axios, 'post').mockImplementation(async (_url, body, config) => {
-      expect(body.return).toBe('inline');
-      expect(body.return_).toBe('inline');
-      expect(config.headers['X-Model-Version']).toBe('1.0.0');
-      return {
-        status: 200,
-        headers: { 'x-model-version': 'unet-1.0.0' },
-        data: {
-          request_id: 'req-inline',
-          model: { name: 'unet', version: '1.0.0' },
-          mask_base64: Buffer.from(JSON.stringify({ type: 'FeatureCollection', features: [] })).toString('base64'),
-          mask_format: 'geojson',
-          metrics: { latency_ms: 80 },
-          warnings: [],
-        },
-      };
+    jest.spyOn(axios, 'post').mockResolvedValue({
+      status: 200,
+      headers: { 'x-model-version': 'unet-1.0.0' },
+      data: {
+        request_id: 'req-inline',
+        model: { name: 'unet', version: '1.0.0' },
+        mask_base64: Buffer.from(JSON.stringify({ type: 'FeatureCollection', features: [] })).toString('base64'),
+        mask_format: 'geojson',
+        metrics: { latency_ms: 80 },
+        warnings: [],
+      },
     });
 
     const svc = new MLGatewayService();

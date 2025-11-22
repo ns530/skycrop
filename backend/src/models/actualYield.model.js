@@ -1,6 +1,6 @@
 'use strict';
 
-const { DataTypes } = require('sequelize');
+const { DataTypes, Op } = require('sequelize');
 const { sequelize } = require('../config/database.config');
 
 /**
@@ -125,12 +125,12 @@ const ActualYield = sequelize.define(
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: sequelize.literal('NOW()'),
+      defaultValue: DataTypes.NOW,
     },
     updated_at: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: sequelize.literal('NOW()'),
+      defaultValue: DataTypes.NOW,
     },
   },
   {
@@ -150,7 +150,7 @@ const ActualYield = sequelize.define(
       // Unique constraint: one entry per field per harvest date
       { unique: true, fields: ['field_id', 'harvest_date'], name: 'idx_actual_yields_field_harvest_unique' },
       // Prediction lookup
-      { fields: ['prediction_id'], where: { prediction_id: { [sequelize.Op.ne]: null } } },
+      { fields: ['prediction_id'], where: { prediction_id: { [Op.ne]: null } } },
     ],
   }
 );

@@ -1,145 +1,225 @@
 'use strict';
 
-const { v4: uuidv4 } = require('uuid');
-const { QueryTypes } = require('sequelize');
-const { sequelize } = require('../../config/database.config');
-const { logger } = require('../../utils/logger');
-const { ValidationError } = require('../../errors/custom-errors');
-const { getRecommendationService } = require('../../services/recommendation.service');
-
-const recommendationService = getRecommendationService();
+const { AppError } = require('../../errors/custom-errors');
 
 /**
- * Count existing recommendations for a field on a specific date (by any type)
+ * Recommendation Controller
+ * Handles HTTP requests for recommendation engine
  */
-async function _countExistingForDate(fieldId, date) {
-  const rows = await sequelize.query(
-    `
-      SELECT COUNT(*)::int AS cnt
-      FROM recommendations
-      WHERE field_id = :fieldId
-        AND "timestamp" >= :from
-        AND "timestamp" <= :to
-    `,
-    {
-      type: QueryTypes.SELECT,
-      replacements: {
-        fieldId,
-        from: `${date}T00:00:00.000Z`,
-        to: `${date}T23:59:59.999Z`,
-      },
-    }
-  );
-  return rows?.[0]?.cnt || 0;
-}
+class RecommendationController {
+  constructor(recommendationEngineService, recommendationRepository, fieldModel) {
+    this.recommendationEngineService = recommendationEngineService;
+    this.recommendationRepository = recommendationRepository;
+    this.Field = fieldModel;
+  }
 
-module.exports = {
   /**
-   * POST /api/v1/fields/:id/recommendations/compute
-   * Body: { date: 'YYYY-MM-DD', recompute?: boolean }
-   * Orchestrates compute + upsert, responds 201 on first create else 200.
+   * Generate recommendations for a field
+   * POST /api/v1/fields/:fieldId/recommendations/generate
    */
-  async computeForField(req, res, next) {
-    const t0 = Date.now();
-    const correlationId = req.headers['x-correlation-id'] || uuidv4();
-
+  async generateRecommendations(req, res, next) {
     try {
-      const userId = req.user?.userId;
-      const fieldId = req.params.id;
-      const { date, recompute = false } = req.body || {};
+      const { fieldId } = req.params;
+      const userId = req.user.userId;
 
-      if (!fieldId) throw new ValidationError('Missing field id');
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date || ''))) {
-        throw new ValidationError('date must be YYYY-MM-DD', { field: 'date' });
+      const result = await this.recommendationEngineService.generateRecommendations(fieldId, userId);
+
+      res.status(200).json({
+        success: true,
+        data: result,
+        meta: {
+          correlationId: req.id,
+          generatedAt: new Date().toISOString(),
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get recommendations for a field
+   * GET /api/v1/fields/:fieldId/recommendations
+   */
+  async getFieldRecommendations(req, res, next) {
+    try {
+      const { fieldId } = req.params;
+      const userId = req.user.userId;
+      const { status, priority, validOnly } = req.query;
+
+      // Verify field ownership
+      const field = await this.Field.findByPk(fieldId);
+      if (!field) {
+        throw new AppError('FIELD_NOT_FOUND', `Field with ID ${fieldId} not found`, 404);
+      }
+      if (field.user_id !== userId) {
+        throw new AppError('FORBIDDEN', 'You do not have access to this field', 403);
       }
 
-      const preCount = await _countExistingForDate(fieldId, date);
-
-      const result = await recommendationService.computeRecommendationsForField(userId, fieldId, date, { recompute });
-      const persisted = await recommendationService.upsertRecommendations(fieldId, date, result.recommendations, {
-        recompute,
+      const recommendations = await this.recommendationRepository.findByFieldId(fieldId, {
+        status,
+        priority,
+        validOnly: validOnly === 'true',
       });
 
-      const postCount = await _countExistingForDate(fieldId, date);
-      const createdNow = preCount === 0 && postCount > 0;
-      const status = createdNow ? 201 : 200;
+      const stats = await this.recommendationRepository.getStatistics(fieldId);
 
-      // Collect severity summary
-      const severities = persisted.map((p) => ({ type: p.type, severity: p.severity }));
-      const rulesFired = Array.isArray(result?.meta?.rules_fired) ? result.meta.rules_fired : [];
-
-      logger.info('recommendations.compute.upsert', {
-        correlation_id: correlationId,
-        route: 'POST /api/v1/fields/:id/recommendations/compute',
-        field_id: fieldId,
-        date,
-        cache_hit: !!result?.meta?.cache_hit,
-        rules_fired: rulesFired,
-        severities,
-        latency_ms: Date.now() - t0,
-      });
-
-      return res.status(status).json({
+      res.status(200).json({
         success: true,
-        data: persisted,
+        data: {
+          fieldId,
+          recommendations: recommendations.map((r) => this._formatRecommendation(r)),
+          statistics: stats,
+        },
         meta: {
-          correlation_id: correlationId,
-          latency_ms: Date.now() - t0,
-          cache_hit: !!result?.meta?.cache_hit,
+          correlationId: req.id,
+          count: recommendations.length,
         },
       });
-    } catch (err) {
-      err.correlation_id = correlationId;
-      return next(err);
+    } catch (error) {
+      next(error);
     }
-  },
+  }
 
   /**
-   * GET /api/v1/fields/:id/recommendations?from=&to=&type=&page=&pageSize=
+   * Get all recommendations for a user
+   * GET /api/v1/recommendations
    */
-  async listForField(req, res, next) {
-    const t0 = Date.now();
-    const correlationId = req.headers['x-correlation-id'] || uuidv4();
-
+  async getUserRecommendations(req, res, next) {
     try {
-      const fieldId = req.params.id;
-      const { from, to, type, page, pageSize } = req.query || {};
-      if (!fieldId) throw new ValidationError('Missing field id');
+      const userId = req.user.userId;
+      const { status, priority, validOnly } = req.query;
 
-      const payload = await recommendationService.listRecommendations(fieldId, {
-        from,
-        to,
-        type,
-        page,
-        pageSize,
+      const recommendations = await this.recommendationRepository.findByUserId(userId, {
+        status,
+        priority,
+        validOnly: validOnly === 'true',
       });
 
-      // Severity quick summary for logging
-      const sevSummary = (payload.data || []).map((r) => ({ type: r.type, severity: r.severity }));
-
-      logger.info('recommendations.list', {
-        correlation_id: correlationId,
-        route: 'GET /api/v1/fields/:id/recommendations',
-        field_id: fieldId,
-        from,
-        to,
-        type,
-        count: payload.data?.length || 0,
-        latency_ms: Date.now() - t0,
-      });
-
-      return res.status(200).json({
+      res.status(200).json({
         success: true,
-        data: payload.data,
-        pagination: payload.pagination,
+        data: {
+          recommendations: recommendations.map((r) => this._formatRecommendation(r)),
+        },
         meta: {
-          correlation_id: correlationId,
-          severity: sevSummary,
+          correlationId: req.id,
+          count: recommendations.length,
         },
       });
-    } catch (err) {
-      err.correlation_id = correlationId;
-      return next(err);
+    } catch (error) {
+      next(error);
     }
-  },
-};
+  }
+
+  /**
+   * Update recommendation status
+   * PATCH /api/v1/recommendations/:recommendationId/status
+   */
+  async updateRecommendationStatus(req, res, next) {
+    try {
+      const { recommendationId } = req.params;
+      const { status, notes } = req.body;
+      const userId = req.user.userId;
+
+      if (!status) {
+        throw new AppError('VALIDATION_ERROR', 'Status is required', 400);
+      }
+
+      const validStatuses = ['pending', 'in_progress', 'completed', 'dismissed'];
+      if (!validStatuses.includes(status)) {
+        throw new AppError(
+          'VALIDATION_ERROR',
+          `Status must be one of: ${validStatuses.join(', ')}`,
+          400
+        );
+      }
+
+      // Verify recommendation exists and user owns the associated field
+      const recommendation = await this.recommendationRepository.findById(recommendationId);
+      if (!recommendation) {
+        throw new AppError('NOT_FOUND', 'Recommendation not found', 404);
+      }
+
+      if (recommendation.user_id !== userId) {
+        throw new AppError('FORBIDDEN', 'You do not have access to this recommendation', 403);
+      }
+
+      const updated = await this.recommendationRepository.updateStatus(
+        recommendationId,
+        status,
+        notes
+      );
+
+      res.status(200).json({
+        success: true,
+        data: this._formatRecommendation(updated),
+        meta: {
+          correlationId: req.id,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Delete recommendation
+   * DELETE /api/v1/recommendations/:recommendationId
+   */
+  async deleteRecommendation(req, res, next) {
+    try {
+      const { recommendationId } = req.params;
+      const userId = req.user.userId;
+
+      // Verify recommendation exists and user owns the associated field
+      const recommendation = await this.recommendationRepository.findById(recommendationId);
+      if (!recommendation) {
+        throw new AppError('NOT_FOUND', 'Recommendation not found', 404);
+      }
+
+      if (recommendation.user_id !== userId) {
+        throw new AppError('FORBIDDEN', 'You do not have access to this recommendation', 403);
+      }
+
+      await this.recommendationRepository.delete(recommendationId);
+
+      res.status(200).json({
+        success: true,
+        message: 'Recommendation deleted successfully',
+        meta: {
+          correlationId: req.id,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Format recommendation for API response
+   * @private
+   */
+  _formatRecommendation(rec) {
+    return {
+      recommendationId: rec.recommendation_id,
+      fieldId: rec.field_id,
+      type: rec.type,
+      priority: rec.priority,
+      urgency: rec.urgency_score,
+      title: rec.title,
+      description: rec.description,
+      reason: rec.reason,
+      actionSteps: rec.action_steps ? JSON.parse(rec.action_steps) : [],
+      estimatedCost: rec.estimated_cost ? parseFloat(rec.estimated_cost) : null,
+      expectedBenefit: rec.expected_benefit,
+      timing: rec.timing,
+      validUntil: rec.valid_until,
+      status: rec.status,
+      generatedAt: rec.generated_at,
+      actionedAt: rec.actioned_at,
+      notes: rec.notes,
+    };
+  }
+}
+
+module.exports = RecommendationController;

@@ -1,26 +1,13 @@
 'use strict';
 
-const { DataTypes } = require('sequelize');
+const { DataTypes, Model } = require('sequelize');
 const { sequelize } = require('../config/database.config');
 
-/**
- * Recommendation Model (Sprint 3 alerts)
- * Mirrors PostgreSQL "recommendations" table defined in backend/database/init.sql
- * Columns:
- * - id UUID PK
- * - field_id UUID FK → fields(field_id)
- * - timestamp TIMESTAMPTZ NOT NULL
- * - type TEXT CHECK IN ('water','fertilizer')
- * - severity TEXT CHECK IN ('low','medium','high')
- * - reason TEXT NOT NULL
- * - details JSONB
- * - created_at TIMESTAMPTZ DEFAULT now()
- * - updated_at TIMESTAMPTZ
- */
-const Recommendation = sequelize.define(
-  'Recommendation',
+class Recommendation extends Model {}
+
+Recommendation.init(
   {
-    id: {
+    recommendation_id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
@@ -28,53 +15,122 @@ const Recommendation = sequelize.define(
     field_id: {
       type: DataTypes.UUID,
       allowNull: false,
+      references: {
+        model: 'fields',
+        key: 'field_id',
+      },
     },
-    timestamp: {
-      type: DataTypes.DATE, // TIMESTAMPTZ
+    user_id: {
+      type: DataTypes.UUID,
       allowNull: false,
+      references: {
+        model: 'users',
+        key: 'user_id',
+      },
     },
     type: {
-      type: DataTypes.STRING,
+      type: DataTypes.ENUM(
+        'fertilizer',
+        'irrigation',
+        'pest_control',
+        'field_inspection',
+        'monitoring',
+        'water_management',
+        'general'
+      ),
       allowNull: false,
-      validate: { isIn: [['water', 'fertilizer']] },
     },
-    severity: {
-      type: DataTypes.STRING,
+    priority: {
+      type: DataTypes.ENUM('critical', 'high', 'medium', 'low'),
       allowNull: false,
-      validate: { isIn: [['low', 'medium', 'high']] },
+      defaultValue: 'medium',
     },
-    reason: {
+    urgency_score: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 50,
+      validate: {
+        min: 0,
+        max: 100,
+      },
+    },
+    title: {
+      type: DataTypes.STRING(200),
+      allowNull: false,
+    },
+    description: {
       type: DataTypes.TEXT,
       allowNull: false,
     },
-    details: {
-      type: DataTypes.JSONB,
+    reason: {
+      type: DataTypes.TEXT,
       allowNull: true,
     },
-    created_at: {
+    action_steps: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      comment: 'JSON array of action steps',
+    },
+    estimated_cost: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
+      comment: 'Estimated cost in LKR',
+    },
+    expected_benefit: {
+      type: DataTypes.STRING(200),
+      allowNull: true,
+    },
+    timing: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      comment: 'e.g., "Within 3 days", "Immediate"',
+    },
+    valid_until: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    status: {
+      type: DataTypes.ENUM('pending', 'in_progress', 'completed', 'dismissed'),
+      allowNull: false,
+      defaultValue: 'pending',
+    },
+    generated_at: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: sequelize.literal('NOW()'),
+      defaultValue: DataTypes.NOW,
     },
-    updated_at: {
+    actioned_at: {
       type: DataTypes.DATE,
+      allowNull: true,
+    },
+    notes: {
+      type: DataTypes.TEXT,
       allowNull: true,
     },
   },
   {
+    sequelize,
     tableName: 'recommendations',
-    timestamps: false,
+    timestamps: true,
     underscored: true,
-    freezeTableName: true,
     indexes: [
       {
-        name: 'uq_recommendations_field_ts_type',
-        unique: true,
-        fields: ['field_id', 'timestamp', 'type'],
+        fields: ['field_id'],
       },
       {
-        name: 'idx_recommendations_field_ts_desc_app',
-        fields: ['field_id', 'timestamp'],
+        fields: ['user_id'],
+      },
+      {
+        fields: ['status'],
+      },
+      {
+        fields: ['priority'],
+      },
+      {
+        fields: ['generated_at'],
+      },
+      {
+        fields: ['valid_until'],
       },
     ],
   }

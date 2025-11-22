@@ -68,8 +68,9 @@ export const configureAuthHandlers = (handlers: { refreshFn?: RefreshFn; onAuthE
   authState.onAuthError = handlers.onAuthError ?? null;
 };
 
-// Use environment variable for production, fallback to relative path for dev proxy
-const apiBaseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+// Use environment configuration (works in both Vite and Jest)
+import { env } from '../../config/env';
+const apiBaseURL = env.API_BASE_URL;
 
 const httpClient: AxiosInstance = axios.create({
   baseURL: apiBaseURL,
@@ -79,7 +80,7 @@ const httpClient: AxiosInstance = axios.create({
 /**
  * Attach Authorization header if we have an access token.
  */
-httpClient.interceptors.request.use((config: AxiosRequestConfig) => {
+httpClient.interceptors.request.use((config) => {
   if (authState.tokens.accessToken && config.headers) {
      
     config.headers.Authorization = `Bearer ${authState.tokens.accessToken}`;

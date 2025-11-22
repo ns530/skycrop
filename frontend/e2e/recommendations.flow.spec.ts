@@ -6,8 +6,8 @@ const TEST_PASSWORD = process.env.E2E_TEST_USER_PASSWORD ?? 'password123';
 async function login(page: Page) {
   await page.goto('/auth/login');
 
-  await page.getByLabelText(/email/i).fill(TEST_EMAIL);
-  await page.getByLabelText(/password/i).fill(TEST_PASSWORD);
+  await page.getByLabel(/email/i).fill(TEST_EMAIL);
+  await page.getByLabel(/password/i).fill(TEST_PASSWORD);
   await page.getByRole('button', { name: /continue/i }).click();
 
   await expect(page).toHaveURL(/\/dashboard/);

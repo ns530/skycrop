@@ -2,30 +2,25 @@
 
 const request = require('supertest');
 
-// OpenAPI contract assertion helper (optional if jest-openapi unavailable)
-let assertApiSpec = () => {};
-try {
-  const path = require('path');
-  const { matchers } = require('jest-openapi');
-  const jestOpenAPI = (require('jest-openapi').default || require('jest-openapi'));
-  expect.extend(matchers);
-  beforeAll(() => {
-    jestOpenAPI(path.join(__dirname, '../../src/api/openapi.yaml'));
-  });
-  assertApiSpec = (res) => {
-    expect(res).toSatisfyApiSpec();
-  };
-} catch (_e) {
-  assertApiSpec = () => {};
-}
+// Create mock instances that we can control
+const mockRecommendationEngineService = {
+  generateRecommendations: jest.fn(),
+};
 
-// Disable rate limiter for tests
-jest.mock('../../src/api/middleware/rateLimit.middleware', () => ({
-  apiLimiter: (_req, _res, next) => next(),
-  authLimiter: (_req, _res, next) => next(),
-}));
+const mockRecommendationRepository = {
+  findByFieldId: jest.fn(),
+  findByUserId: jest.fn(),
+  findById: jest.fn(),
+  updateStatus: jest.fn(),
+  delete: jest.fn(),
+  getStatistics: jest.fn(),
+};
 
-// Mock auth middleware to inject a test user
+const mockFieldModel = {
+  findByPk: jest.fn(),
+};
+
+// Mock auth middleware - must be before app import
 jest.mock('../../src/api/middleware/auth.middleware', () => ({
   authMiddleware: (req, _res, next) => {
     req.user = { userId: 'user-1' };
@@ -35,292 +30,417 @@ jest.mock('../../src/api/middleware/auth.middleware', () => ({
   requireAnyRole: () => (_req, _res, next) => next(),
 }));
 
-// In-memory fake Redis with scanIterator support
-const store = new Map();
-const fakeRedis = {
-  isOpen: true,
-  async get(key) {
-    return store.has(key) ? store.get(key) : null;
-  },
-  async setEx(key, _ttl, value) {
-    store.set(key, value);
-    return 'OK';
-  },
-  async setex(key, ttl, value) {
-    return this.setEx(key, ttl, value);
-  },
-  async del(keys) {
-    if (Array.isArray(keys)) {
-      let count = 0;
-      for (const k of keys) {
-        if (store.delete(k)) count += 1;
-      }
-      return count;
-    }
-    return store.delete(keys) ? 1 : 0;
-  },
-  // Minimal async iterator used by invalidateListCache
-  async *scanIterator({ MATCH } = {}) {
-    const regex = MATCH ? new RegExp('^' + MATCH.replace(/[.+^${}()|[\\]\\\\]/g, '\\$&').replace(/\\\*/g, '.*') + '$') : null;
-    for (const k of store.keys()) {
-      if (!regex || regex.test(k)) {
-        yield k;
-      }
-    }
-  },
-};
-// Hook Redis config
-jest.mock('../../src/config/redis.config', () => ({
-  initRedis: async () => fakeRedis,
-  getRedisClient: () => fakeRedis,
+// Mock rate limiter
+jest.mock('../../src/api/middleware/rateLimit.middleware', () => ({
+  apiLimiter: (_req, _res, next) => next(),
+  authLimiter: (_req, _res, next) => next(),
 }));
 
-// Deterministic mocks for health + weather used by recommendation service
-let mockSnapshots = [];
-let mockForecast = { data: { days: [], totals: { rain_3d_mm: 0, rain_7d_mm: 0 } } };
+// Mock the service and repository classes
+jest.mock('../../src/services/recommendationEngine.service', () => {
+  return jest.fn().mockImplementation(() => mockRecommendationEngineService);
+});
 
-jest.mock('../../src/services/health.service', () => ({
-  getHealthService: () => ({
-    listSnapshots: jest.fn(async (_userId, _fieldId, _opts) => {
-      return { items: mockSnapshots.slice() };
-    }),
-  }),
-}));
+jest.mock('../../src/repositories/recommendation.repository', () => {
+  return jest.fn().mockImplementation(() => mockRecommendationRepository);
+});
 
-jest.mock('../../src/services/weather.service', () => ({
-  getWeatherService: () => ({
-    getForecast: jest.fn(async (_userId, _fieldId) => mockForecast),
-  }),
-}));
-
-// In-memory "DB" for recommendations via sequelize.query
-const recStore = new Map(); // key = `${fieldId}|${ts}|${type}`
-let idCounter = 1;
-
-function recKey(fieldId, ts, type) {
-  return `${fieldId}|${ts}|${type}`;
-}
-
-function listRecs({ fieldId, fromISO, toISO, type }) {
-  const arr = [];
-  for (const r of recStore.values()) {
-    if (r.field_id !== fieldId) continue;
-    if (type && r.type !== type) continue;
-    const t = new Date(r.timestamp).getTime();
-    if (fromISO && t < new Date(fromISO).getTime()) continue;
-    if (toISO && t > new Date(toISO).getTime()) continue;
-    arr.push({ ...r });
-  }
-  arr.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp) || (a.id || '').localeCompare(b.id || ''));
-  return arr;
-}
-
-// Patch sequelize.query used by recommendation.service and controller helper count queries
-const { sequelize } = require('../../src/config/database.config');
-jest.spyOn(sequelize, 'query').mockImplementation(async (sql, { replacements } = {}) => {
-  const s = String(sql);
-
-  // Count existing for date window (controller helper _countExistingForDate)
-  if (/SELECT\s+COUNT\(\*\)::int\s+AS\s+cnt\s+FROM\s+recommendations/i.test(s)) {
-    const rows = listRecs({
-      fieldId: replacements.fieldId,
-      fromISO: replacements.from,
-      toISO: replacements.to,
-    });
-    return [{ cnt: rows.length }];
-  }
-
-  // INSERT INTO recommendations ... ON CONFLICT ...
-  if (/INSERT\s+INTO\s+recommendations/i.test(s)) {
-    const { fieldId, ts, type, severity, reason } = replacements;
-    const details = replacements.details ? JSON.parse(replacements.details) : null;
-    const k = recKey(fieldId, ts, type);
-
-    if (/DO\s+UPDATE\s+SET/i.test(s)) {
-      // Upsert with update
-      const existing = recStore.get(k);
-      if (existing) {
-        recStore.set(k, {
-          ...existing,
-          severity,
-          reason,
-          details,
-          updated_at: new Date().toISOString(),
-        });
-      } else {
-        recStore.set(k, {
-          id: `rec-${idCounter++}`,
-          field_id: fieldId,
-          timestamp: ts,
-          type,
-          severity,
-          reason,
-          details,
-          created_at: new Date().toISOString(),
-          updated_at: null,
-        });
-      }
-    } else {
-      // Insert-or-ignore
-      if (!recStore.has(k)) {
-        recStore.set(k, {
-          id: `rec-${idCounter++}`,
-          field_id: fieldId,
-          timestamp: ts,
-          type,
-          severity,
-          reason,
-          details,
-          created_at: new Date().toISOString(),
-          updated_at: null,
-        });
-      }
-    }
-    return [];
-  }
-
-  // SELECT by tuple to return the persisted row
-  if (/FROM\s+recommendations/i.test(s) && /WHERE\s+field_id\s*=\s*:fieldId/i.test(s) && /"timestamp"\s*=\s*:ts/.test(s) && /type\s*=\s*:type/.test(s)) {
-    const k = recKey(replacements.fieldId, replacements.ts, replacements.type);
-    const row = recStore.get(k);
-    return row ? [row] : [];
-  }
-
-  // Paginated list with COUNT(*) OVER()
-  if (/FROM\s+recommendations/i.test(s) && /COUNT\(\*\)\s+OVER\(\)/i.test(s)) {
-    const rows = listRecs({
-      fieldId: replacements.fieldId,
-      fromISO: replacements.from,
-      toISO: replacements.to,
-      type: replacements.type,
-    });
-    const pageSlice = rows.slice(replacements.offset, replacements.offset + replacements.limit).map((r) => ({
-      ...r,
-      total_count: rows.length,
-    }));
-    return pageSlice;
-  }
-
-  return [];
+jest.mock('../../src/models/field.model', () => mockFieldModel);
+jest.mock('../../src/models/recommendation.model', () => ({}));
+jest.mock('../../src/services/healthMonitoring.service', () => {
+  return jest.fn().mockImplementation(() => ({}));
+});
+jest.mock('../../src/services/notification.service', () => {
+  return jest.fn().mockImplementation(() => ({}));
+});
+jest.mock('../../src/repositories/health.repository', () => {
+  return jest.fn().mockImplementation(() => ({}));
+});
+jest.mock('../../src/repositories/field.repository', () => {
+  return jest.fn().mockImplementation(() => ({}));
 });
 
 const app = require('../../src/app');
 
-function makeSnapshot(isoTs, ndvi, ndwi, tdvi) {
-  return {
-    id: `snap-${isoTs}`,
-    field_id: 'field-1',
-    timestamp: isoTs,
-    source: 'sentinel2',
-    ndvi,
-    ndwi,
-    tdvi,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
-}
+describe('Recommendation API Integration Tests', () => {
+  const mockUserId = 'user-1';
+  const mockOtherUserId = 'user-2';
+  const mockFieldId = 'test-field-1';
 
-describe('Recommendation API', () => {
-  const fieldId = '11111111-1111-4111-8111-111111111111';
-  const date = '2025-01-15';
-  const ts = `${date}T00:00:00.000Z`;
+  beforeAll(() => {
+    process.env.NODE_ENV = 'test';
+    process.env.JWT_SECRET = 'test-secret';
+  });
 
   beforeEach(() => {
-    store.clear();
-    recStore.clear();
-    idCounter = 1;
+    jest.clearAllMocks();
 
-    // Default: water high (NDWI=0.04 and rain7=6) and fertilizer medium (delta=0.01, TDVI=0.55)
-    mockSnapshots = [
-      makeSnapshot(ts, 0.50, 0.04, 0.55),
-      makeSnapshot('2025-01-01T00:00:00.000Z', 0.49, 0.20, 0.30),
-    ];
-    mockForecast = {
-      data: {
-        days: [
-          { date: '2025-01-16', rain_mm: 0.4, tmin: 24, tmax: 33, wind: 2.0 },
-          { date: '2025-01-17', rain_mm: 0.3, tmin: 24, tmax: 33, wind: 2.0 },
-          { date: '2025-01-18', rain_mm: 0.2, tmin: 24, tmax: 33, wind: 2.0 },
+    // Default field model mock
+    mockFieldModel.findByPk.mockImplementation(async (id) => {
+      if (id === mockFieldId) {
+        return { field_id: mockFieldId, user_id: mockUserId, name: 'Test Field' };
+      }
+      if (id === 'other-user-field') {
+        return { field_id: 'other-user-field', user_id: mockOtherUserId, name: 'Other Field' };
+      }
+      return null;
+    });
+  });
+
+  describe('POST /api/v1/fields/:fieldId/recommendations/generate', () => {
+    it('should generate recommendations successfully', async () => {
+      mockRecommendationEngineService.generateRecommendations.mockResolvedValue({
+        fieldId: mockFieldId,
+        fieldName: 'Test Field',
+        generatedAt: new Date().toISOString(),
+        healthSummary: {
+          currentScore: 60,
+          status: 'fair',
+          trend: 'stable',
+        },
+        recommendations: [
+          {
+            recommendationId: 'rec-1',
+            type: 'irrigation',
+            priority: 'high',
+            urgency: 80,
+            title: 'Schedule irrigation soon',
+            description: 'NDWI indicates water stress',
+            actionSteps: ['Schedule irrigation within 2-3 days'],
+            estimatedCost: 1200,
+          },
         ],
-        totals: { rain_3d_mm: 0.9, rain_7d_mm: 6.0 },
-      },
-    };
+        totalCount: 1,
+        criticalCount: 0,
+        highCount: 1,
+      });
+
+      const response = await request(app)
+        .post(`/api/v1/fields/${mockFieldId}/recommendations/generate`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).toBeDefined();
+      expect(response.body.data.fieldId).toBe(mockFieldId);
+      expect(response.body.data.recommendations).toBeInstanceOf(Array);
+    });
+
+    it('should return 404 for non-existent field', async () => {
+      const error = new Error('Field not found');
+      error.statusCode = 404;
+      mockRecommendationEngineService.generateRecommendations.mockRejectedValue(error);
+
+      const response = await request(app)
+        .post('/api/v1/fields/non-existent/recommendations/generate')
+        .expect(404);
+
+      expect(response.body.success).toBe(false);
+    });
+
+    it('should return 403 for unauthorized field access', async () => {
+      const error = new Error('Unauthorized access to field');
+      error.statusCode = 403;
+      mockRecommendationEngineService.generateRecommendations.mockRejectedValue(error);
+
+      const response = await request(app)
+        .post('/api/v1/fields/other-user-field/recommendations/generate')
+        .expect(403);
+
+      expect(response.body.success).toBe(false);
+    });
   });
 
-  const postCompute = (id, body) =>
-    request(app)
-      .post(`/api/v1/fields/${id}/recommendations/compute`)
-      .set('Authorization', 'Bearer token')
-      .set('X-Correlation-Id', 'cid-reco-1')
-      .send(body);
+  describe('GET /api/v1/fields/:fieldId/recommendations', () => {
+    it('should retrieve field recommendations successfully', async () => {
+      mockRecommendationRepository.findByFieldId.mockResolvedValue([
+        {
+          recommendation_id: 'rec-1',
+          field_id: mockFieldId,
+          user_id: mockUserId,
+          type: 'fertilizer',
+          priority: 'high',
+          urgency_score: 85,
+          title: 'Apply nitrogen fertilizer',
+          description: 'NDVI is low and declining',
+          action_steps: JSON.stringify(['Purchase urea fertilizer']),
+          estimated_cost: 2500,
+          status: 'pending',
+          generated_at: new Date(),
+        },
+      ]);
 
-  const getList = (id, query) =>
-    request(app)
-      .get(`/api/v1/fields/${id}/recommendations${query ? `?${query}` : ''}`)
-      .set('Authorization', 'Bearer token')
-      .set('X-Correlation-Id', 'cid-reco-list-1');
+      mockRecommendationRepository.getStatistics.mockResolvedValue({
+        total: 1,
+        pending: 1,
+        inProgress: 0,
+        completed: 0,
+        dismissed: 0,
+        critical: 0,
+        high: 1,
+        medium: 0,
+        low: 0,
+      });
 
-  test('POST compute: 201 on first create; 200 if exists and recompute=false', async () => {
-    // First call -> 201
-    const r1 = await postCompute(fieldId, { date }).expect(201);
-    expect(r1.body.success).toBe(true);
-    expect(Array.isArray(r1.body.data)).toBe(true);
-    expect(r1.body.data.length).toBeGreaterThan(0);
-    expect(r1.body.meta).toHaveProperty('correlation_id');
+      const response = await request(app)
+        .get(`/api/v1/fields/${mockFieldId}/recommendations`)
+        .expect(200);
 
-    // Second call -> 200 (idempotent)
-    const r2 = await postCompute(fieldId, { date }).expect(200);
-    expect(r2.body.success).toBe(true);
-    expect(Array.isArray(r2.body.data)).toBe(true);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.recommendations).toBeInstanceOf(Array);
+      expect(response.body.data.statistics).toBeDefined();
+    });
+
+    it('should filter recommendations by status', async () => {
+      mockRecommendationRepository.findByFieldId.mockResolvedValue([]);
+      mockRecommendationRepository.getStatistics.mockResolvedValue({
+        total: 0,
+        pending: 0,
+        inProgress: 0,
+        completed: 0,
+        dismissed: 0,
+        critical: 0,
+        high: 0,
+        medium: 0,
+        low: 0,
+      });
+
+      const response = await request(app)
+        .get(`/api/v1/fields/${mockFieldId}/recommendations?status=completed`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should return 404 for non-existent field', async () => {
+      const response = await request(app)
+        .get('/api/v1/fields/non-existent/recommendations')
+        .expect(404);
+
+      expect(response.body.success).toBe(false);
+    });
+
+    it('should return 403 for unauthorized field access', async () => {
+      const response = await request(app)
+        .get('/api/v1/fields/other-user-field/recommendations')
+        .expect(403);
+
+      expect(response.body.success).toBe(false);
+    });
   });
 
-  test('POST compute: recompute=true updates existing record (200)', async () => {
-    await postCompute(fieldId, { date }).expect(201);
+  describe('GET /api/v1/recommendations', () => {
+    it('should retrieve all user recommendations successfully', async () => {
+      mockRecommendationRepository.findByUserId.mockResolvedValue([
+        {
+          recommendation_id: 'rec-1',
+          field_id: mockFieldId,
+          user_id: mockUserId,
+          type: 'irrigation',
+          priority: 'critical',
+          urgency_score: 95,
+          title: 'Immediate irrigation required',
+          description: 'NDWI is critically low',
+          action_steps: JSON.stringify(['Irrigate immediately']),
+          estimated_cost: 1500,
+          status: 'pending',
+          generated_at: new Date(),
+        },
+        {
+          recommendation_id: 'rec-2',
+          field_id: mockFieldId,
+          user_id: mockUserId,
+          type: 'fertilizer',
+          priority: 'high',
+          urgency_score: 85,
+          title: 'Apply nitrogen fertilizer',
+          description: 'NDVI is low',
+          action_steps: JSON.stringify(['Purchase urea']),
+          estimated_cost: 2500,
+          status: 'pending',
+          generated_at: new Date(),
+        },
+      ]);
 
-    // Change conditions to drive different severity: water medium case
-    mockSnapshots = [
-      makeSnapshot(ts, 0.50, 0.08, 0.40),
-      makeSnapshot('2025-01-01T00:00:00.000Z', 0.49, 0.20, 0.30),
-    ];
-    mockForecast = { data: { days: [], totals: { rain_3d_mm: 3.5, rain_7d_mm: 20.0 } } };
+      const response = await request(app).get('/api/v1/recommendations').expect(200);
 
-    const r = await postCompute(fieldId, { date, recompute: true }).expect(200);
-    expect(r.body.success).toBe(true);
-    expect(r.body.data.some((x) => x.type === 'water')).toBe(true);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.recommendations).toBeInstanceOf(Array);
+      expect(response.body.meta.count).toBe(2);
+    });
+
+    it('should filter user recommendations by priority', async () => {
+      mockRecommendationRepository.findByUserId.mockResolvedValue([
+        {
+          recommendation_id: 'rec-1',
+          field_id: mockFieldId,
+          user_id: mockUserId,
+          type: 'irrigation',
+          priority: 'critical',
+          urgency_score: 95,
+          title: 'Immediate irrigation required',
+          description: 'NDWI is critically low',
+          action_steps: JSON.stringify(['Irrigate immediately']),
+          estimated_cost: 1500,
+          status: 'pending',
+          generated_at: new Date(),
+        },
+      ]);
+
+      const response = await request(app)
+        .get('/api/v1/recommendations?priority=critical')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.recommendations).toBeInstanceOf(Array);
+    });
+
+    it('should return only valid recommendations when validOnly=true', async () => {
+      mockRecommendationRepository.findByUserId.mockResolvedValue([
+        {
+          recommendation_id: 'rec-1',
+          field_id: mockFieldId,
+          user_id: mockUserId,
+          type: 'irrigation',
+          priority: 'critical',
+          urgency_score: 95,
+          title: 'Immediate irrigation required',
+          description: 'NDWI is critically low',
+          action_steps: JSON.stringify(['Irrigate immediately']),
+          estimated_cost: 1500,
+          status: 'pending',
+          valid_until: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          generated_at: new Date(),
+        },
+      ]);
+
+      const response = await request(app)
+        .get('/api/v1/recommendations?validOnly=true')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+    });
   });
 
-  test('GET list pagination, filter by type and date range', async () => {
-    // Seed two days via compute with different types
-    mockSnapshots = [makeSnapshot('2025-01-14T00:00:00.000Z', 0.50, 0.12, 0.30)];
-    mockForecast = { data: { days: [], totals: { rain_3d_mm: 1.5, rain_7d_mm: 20.0 } } };
-    await postCompute(fieldId, { date: '2025-01-14', recompute: true }).expect(201);
+  describe('PATCH /api/v1/recommendations/:recommendationId/status', () => {
+    it('should update recommendation status successfully', async () => {
+      mockRecommendationRepository.findById.mockResolvedValue({
+        recommendation_id: 'rec-1',
+        user_id: mockUserId,
+        status: 'pending',
+      });
 
-    mockSnapshots = [makeSnapshot('2025-01-15T00:00:00.000Z', 0.50, 0.04, 0.55), makeSnapshot('2025-01-01T00:00:00.000Z', 0.49, 0.2, 0.3)];
-    mockForecast = { data: { days: [], totals: { rain_3d_mm: 0.9, rain_7d_mm: 6.0 } } };
-    await postCompute(fieldId, { date: '2025-01-15', recompute: true }).expect(200);
+      mockRecommendationRepository.updateStatus.mockResolvedValue({
+        recommendation_id: 'rec-1',
+        field_id: mockFieldId,
+        user_id: mockUserId,
+        type: 'fertilizer',
+        priority: 'high',
+        urgency_score: 85,
+        title: 'Apply nitrogen fertilizer',
+        description: 'NDVI is low',
+        action_steps: JSON.stringify(['Purchase urea']),
+        estimated_cost: 2500,
+        status: 'in_progress',
+        actioned_at: new Date(),
+        generated_at: new Date(),
+      });
 
-    // List only water in range
-    const res = await getList(fieldId, 'from=2025-01-14&to=2025-01-15&type=water&page=1&pageSize=10').expect(200);
-    expect(res.body.success).toBe(true);
-    expect(Array.isArray(res.body.data)).toBe(true);
-    expect(res.body.pagination).toMatchObject({ page: 1, pageSize: 10, total: expect.any(Number) });
-    for (const r of res.body.data) {
-      expect(['water']).toContain(r.type);
-    }
+      const response = await request(app)
+        .patch('/api/v1/recommendations/rec-1/status')
+        .send({ status: 'in_progress', notes: 'Started fertilizer application' })
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.status).toBe('in_progress');
+    });
+
+    it('should return 400 for missing status', async () => {
+      const response = await request(app)
+        .patch('/api/v1/recommendations/rec-1/status')
+        .send({})
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+    });
+
+    it('should return 400 for invalid status', async () => {
+      mockRecommendationRepository.findById.mockResolvedValue({
+        recommendation_id: 'rec-1',
+        user_id: mockUserId,
+      });
+
+      const response = await request(app)
+        .patch('/api/v1/recommendations/rec-1/status')
+        .send({ status: 'invalid_status' })
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+    });
+
+    it('should return 404 for non-existent recommendation', async () => {
+      mockRecommendationRepository.findById.mockResolvedValue(null);
+
+      const response = await request(app)
+        .patch('/api/v1/recommendations/non-existent/status')
+        .send({ status: 'completed' })
+        .expect(404);
+
+      expect(response.body.success).toBe(false);
+    });
+
+    it('should return 403 for unauthorized recommendation access', async () => {
+      mockRecommendationRepository.findById.mockResolvedValue({
+        recommendation_id: 'rec-1',
+        user_id: mockOtherUserId,
+      });
+
+      const response = await request(app)
+        .patch('/api/v1/recommendations/rec-1/status')
+        .send({ status: 'completed' })
+        .expect(403);
+
+      expect(response.body.success).toBe(false);
+    });
   });
 
-  test('Validation failures: bad date, from>to, type invalid, pagination bounds', async () => {
-    // POST compute bad date
-    await postCompute(fieldId, { date: '2025/01/15' }).expect(400);
+  describe('DELETE /api/v1/recommendations/:recommendationId', () => {
+    it('should delete recommendation successfully', async () => {
+      mockRecommendationRepository.findById.mockResolvedValue({
+        recommendation_id: 'rec-1',
+        user_id: mockUserId,
+      });
 
-    // GET list from > to
-    await getList(fieldId, 'from=2025-02-01&to=2025-01-01').expect(400);
+      mockRecommendationRepository.delete.mockResolvedValue(true);
 
-    // type invalid
-    await getList(fieldId, 'type=invalid').expect(400);
+      const response = await request(app)
+        .delete('/api/v1/recommendations/rec-1')
+        .expect(200);
 
-    // page bounds
-    await getList(fieldId, 'page=0').expect(400);
-    await getList(fieldId, 'pageSize=101').expect(400);
+      expect(response.body.success).toBe(true);
+      expect(response.body.message).toContain('deleted successfully');
+    });
+
+    it('should return 404 for non-existent recommendation', async () => {
+      mockRecommendationRepository.findById.mockResolvedValue(null);
+
+      const response = await request(app)
+        .delete('/api/v1/recommendations/non-existent')
+        .expect(404);
+
+      expect(response.body.success).toBe(false);
+    });
+
+    it('should return 403 for unauthorized recommendation access', async () => {
+      mockRecommendationRepository.findById.mockResolvedValue({
+        recommendation_id: 'rec-1',
+        user_id: mockOtherUserId,
+      });
+
+      const response = await request(app)
+        .delete('/api/v1/recommendations/rec-1')
+        .expect(403);
+
+      expect(response.body.success).toBe(false);
+    });
   });
 });

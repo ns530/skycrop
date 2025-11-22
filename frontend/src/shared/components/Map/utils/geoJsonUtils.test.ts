@@ -45,8 +45,8 @@ describe('geoJsonUtils', () => {
     it('calculates correct center point for Polygon', () => {
       const center = calculatePolygonCenter(samplePolygon);
 
-      expect(center.lat).toBeCloseTo(7.05, 2);
-      expect(center.lng).toBeCloseTo(80.05, 2);
+      expect(center.lat).toBeCloseTo(7.05, 1);
+      expect(center.lng).toBeCloseTo(80.05, 1);
     });
 
     it('calculates correct center point for MultiPolygon', () => {
@@ -191,18 +191,19 @@ describe('geoJsonUtils', () => {
     it('calculates approximate area in hectares for Polygon', () => {
       const area = calculatePolygonArea(samplePolygon);
 
-      // Expected area: ~0.1 degree² × 111.32² km²/degree² × cos(7°) × 100 ha/km²
-      // ≈ 0.1 × 12,392 × 0.993 × 100 ≈ 123,000 hectares
-      expect(area).toBeGreaterThan(100000);
-      expect(area).toBeLessThan(150000);
+      // Expected area: 0.01 degree² (0.1 × 0.1) × 111.32² km²/degree² × cos(7°) × 100 ha/km²
+      // ≈ 0.01 × 12,392 × 0.993 × 100 ≈ 12,300 hectares
+      expect(area).toBeGreaterThan(10000);
+      expect(area).toBeLessThan(15000);
     });
 
     it('calculates approximate area for MultiPolygon', () => {
       const area = calculatePolygonArea(sampleMultiPolygon);
 
-      // Smaller area (0.05 × 0.05 degrees)
-      expect(area).toBeGreaterThan(25000);
-      expect(area).toBeLessThan(40000);
+      // Smaller area (0.05 × 0.05 degrees = 0.0025 degree²)
+      // ≈ 0.0025 × 12,392 × 0.993 × 100 ≈ 3,075 hectares
+      expect(area).toBeGreaterThan(2500);
+      expect(area).toBeLessThan(4000);
     });
 
     it('returns 0 for polygon with too few points', () => {

@@ -239,6 +239,9 @@ describe('HealthService (vegetation indices) unit', () => {
     axios.post.mockImplementationOnce(async () => ({ status: 500, data: {} }));
     await expect(svc.computeIndicesForField(userId, fieldId, date)).rejects.toMatchObject({ statusCode: 503 });
 
+    // Clear cached OAuth token to force re-authentication
+    svc._oauthToken = null;
+
     // OAuth OK again
     axios.post.mockImplementationOnce(async () => ({ status: 200, data: { access_token: 'tok', expires_in: 3600 } }));
     // Process 400

@@ -1,42 +1,108 @@
 'use strict';
 
 const express = require('express');
-const Joi = require('joi');
 const { authMiddleware } = require('../middleware/auth.middleware');
 const { apiLimiter } = require('../middleware/rateLimit.middleware');
-const { validateRequest, schemas } = require('../middleware/validation.middleware');
 const RecommendationController = require('../controllers/recommendation.controller');
+const RecommendationEngineService = require('../../services/recommendationEngine.service');
+const HealthMonitoringService = require('../../services/healthMonitoring.service');
+const { getWeatherService } = require('../../services/weather.service');
+const RecommendationRepository = require('../../repositories/recommendation.repository');
+const HealthRepository = require('../../repositories/health.repository');
+const FieldRepository = require('../../repositories/field.repository');
+const Field = require('../../models/field.model');
+const Recommendation = require('../../models/recommendation.model');
+const { getNotificationService } = require('../../services/notification.service');
 
 const router = express.Router();
 
-// Path params schema and reusable validator for :id
-const uuidParam = Joi.object({
-  id: Joi.string().guid({ version: ['uuidv4', 'uuidv5', 'uuidv1'] }).required(),
-});
-const validateIdParam = (req, _res, next) => {
-  const { error } = uuidParam.validate({ id: req.params.id });
-  if (error) return next(error);
-  return next();
-};
+// Initialize dependencies
+const healthRepository = new HealthRepository();
+const fieldRepository = new FieldRepository();
+const notificationService = getNotificationService();
+const recommendationRepository = new RecommendationRepository();
 
-// All recommendation endpoints require authentication and rate limit
-router.use(authMiddleware);
-router.use(apiLimiter);
-
-// GET /api/v1/fields/:id/recommendations
-router.get(
-  '/:id/recommendations',
-  validateIdParam,
-  validateRequest(schemas.recommendationList, 'query'),
-  RecommendationController.listForField
+const healthMonitoringService = new HealthMonitoringService(
+  healthRepository,
+  fieldRepository,
+  notificationService
 );
 
-// POST /api/v1/fields/:id/recommendations/compute
+const weatherService = getWeatherService();
+
+const recommendationEngineService = new RecommendationEngineService(
+  healthMonitoringService,
+  weatherService,
+  Field,
+  Recommendation
+);
+
+const recommendationController = new RecommendationController(
+  recommendationEngineService,
+  recommendationRepository,
+  Field
+);
+
+// Routes
+
+/**
+ * @route POST /api/v1/fields/:fieldId/recommendations/generate
+ * @desc Generate new recommendations for a field
+ * @access Private
+ */
 router.post(
-  '/:id/recommendations/compute',
-  validateIdParam,
-  validateRequest(schemas.recommendationCompute, 'body'),
-  RecommendationController.computeForField
+  '/fields/:fieldId/recommendations/generate',
+  authMiddleware,
+  apiLimiter,
+  (req, res, next) => recommendationController.generateRecommendations(req, res, next)
+);
+
+/**
+ * @route GET /api/v1/fields/:fieldId/recommendations
+ * @desc Get all recommendations for a specific field
+ * @access Private
+ */
+router.get(
+  '/fields/:fieldId/recommendations',
+  authMiddleware,
+  apiLimiter,
+  (req, res, next) => recommendationController.getFieldRecommendations(req, res, next)
+);
+
+/**
+ * @route GET /api/v1/recommendations
+ * @desc Get all recommendations for the authenticated user
+ * @access Private
+ */
+router.get(
+  '/recommendations',
+  authMiddleware,
+  apiLimiter,
+  (req, res, next) => recommendationController.getUserRecommendations(req, res, next)
+);
+
+/**
+ * @route PATCH /api/v1/recommendations/:recommendationId/status
+ * @desc Update recommendation status
+ * @access Private
+ */
+router.patch(
+  '/recommendations/:recommendationId/status',
+  authMiddleware,
+  apiLimiter,
+  (req, res, next) => recommendationController.updateRecommendationStatus(req, res, next)
+);
+
+/**
+ * @route DELETE /api/v1/recommendations/:recommendationId
+ * @desc Delete a recommendation
+ * @access Private
+ */
+router.delete(
+  '/recommendations/:recommendationId',
+  authMiddleware,
+  apiLimiter,
+  (req, res, next) => recommendationController.deleteRecommendation(req, res, next)
 );
 
 module.exports = router;

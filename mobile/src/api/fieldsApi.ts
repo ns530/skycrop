@@ -1,0 +1,118 @@
+/**
+ * Fields API - Field Management Endpoints
+ * 
+ * API functions for fields CRUD operations
+ */
+
+import { apiClient } from './client';
+
+export interface Field {
+  field_id: string;
+  user_id: string;
+  name: string;
+  boundary: GeoJSON.Polygon;
+  area_sqm: number;
+  area_ha: number;
+  center: GeoJSON.Point;
+  created_at: string;
+  updated_at: string;
+  status: 'active' | 'archived' | 'deleted';
+}
+
+export interface FieldSummary {
+  field_id: string;
+  name: string;
+  area_ha: number;
+  health_status?: 'excellent' | 'good' | 'fair' | 'poor';
+  health_score?: number;
+  last_health_update?: string;
+  center: GeoJSON.Point;
+}
+
+export interface CreateFieldPayload {
+  name: string;
+  boundary: GeoJSON.Polygon;
+}
+
+export interface UpdateFieldPayload {
+  name?: string;
+  boundary?: GeoJSON.Polygon;
+}
+
+export interface ListFieldsParams {
+  page?: number;
+  limit?: number;
+  status?: 'active' | 'archived';
+  sort_by?: 'created_at' | 'name' | 'area_sqm';
+  sort_order?: 'asc' | 'desc';
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+  };
+}
+
+export const fieldsApi = {
+  /**
+   * Get all fields for current user
+   */
+  listFields: async (params?: ListFieldsParams): Promise<PaginatedResponse<FieldSummary>> => {
+    const response = await apiClient.get<PaginatedResponse<FieldSummary>>('/api/v1/fields', {
+      params,
+    });
+    return response.data;
+  },
+
+  /**
+   * Get field by ID
+   */
+  getFieldById: async (fieldId: string): Promise<Field> => {
+    const response = await apiClient.get<Field>(`/api/v1/fields/${fieldId}`);
+    return response.data;
+  },
+
+  /**
+   * Create new field
+   */
+  createField: async (payload: CreateFieldPayload): Promise<Field> => {
+    const response = await apiClient.post<Field>('/api/v1/fields', payload);
+    return response.data;
+  },
+
+  /**
+   * Update field
+   */
+  updateField: async (fieldId: string, payload: UpdateFieldPayload): Promise<Field> => {
+    const response = await apiClient.patch<Field>(`/api/v1/fields/${fieldId}`, payload);
+    return response.data;
+  },
+
+  /**
+   * Delete field (soft delete)
+   */
+  deleteField: async (fieldId: string): Promise<void> => {
+    await apiClient.delete(`/api/v1/fields/${fieldId}`);
+  },
+
+  /**
+   * Get field health summary
+   */
+  getFieldHealthSummary: async (fieldId: string) => {
+    const response = await apiClient.get(`/api/v1/fields/${fieldId}/health/summary`);
+    return response.data;
+  },
+
+  /**
+   * Get field recommendations
+   */
+  getFieldRecommendations: async (fieldId: string) => {
+    const response = await apiClient.get(`/api/v1/fields/${fieldId}/recommendations`);
+    return response.data;
+  },
+};
+

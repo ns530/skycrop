@@ -6,14 +6,32 @@ const app = require('./app');
 const { initDatabase } = require('./config/database.config');
 const { logger } = require('./utils/logger');
 const { runMigrations } = require('./scripts/migrate');
+const { initializeJobs, startJobs, stopJobs } = require('./jobs');
+const { initializeWebSocket } = require('./websocket/server');
 
 const PORT = Number(process.env.PORT) || 3000;
 
 const server = http.createServer(app);
 
+// Initialize WebSocket server
+const io = initializeWebSocket(server);
+logger.info('WebSocket server initialized');
+
 // Graceful shutdown
 function shutdown(signal) {
   logger.warn('[%s] received. Shutting down gracefully...', signal);
+  
+  // Stop scheduled jobs
+  stopJobs();
+  
+  // Close WebSocket connections
+  if (io) {
+    logger.info('Closing WebSocket connections...');
+    io.close(() => {
+      logger.info('WebSocket server closed.');
+    });
+  }
+  
   server.close(() => {
     logger.info('HTTP server closed.');
     process.exit(0);
@@ -37,8 +55,14 @@ async function start() {
     logger.info('Migrations complete. Initializing database connection...');
     
     await initDatabase();
+
+    // Initialize and start scheduled jobs
+    logger.info('Initializing scheduled jobs...');
+    initializeJobs();
+    startJobs();
+    logger.info('Scheduled jobs initialized and started');
   } catch (err) {
-    logger.error('Database initialization failed: %s', err.message);
+    logger.error('Initialization failed: %s', err.message);
     process.exit(1);
   }
 

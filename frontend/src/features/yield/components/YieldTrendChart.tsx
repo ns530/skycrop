@@ -259,7 +259,7 @@ export const YieldTrendChart: React.FC<YieldTrendChartProps> = ({
                 fontSize: 10,
                 fill: '#6B7280',
                 position: 'right',
-              }}
+              } as any}
             />
 
             {/* Actual yield bars */}

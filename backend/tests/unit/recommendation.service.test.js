@@ -71,21 +71,21 @@ jest.mock('../../src/services/weather.service', () => ({
 }));
 
 // In-memory "DB" for sequelize.query
-const recStore = new Map(); // key = `${fieldId}|${ts}|${type}`
-let idCounter = 1;
+const mockRecStore = new Map(); // key = `${fieldId}|${ts}|${type}`
+let mockIdCounter = 1;
 
-function keyOf(fieldId, ts, type) {
+function mockKeyOf(fieldId, ts, type) {
   return `${fieldId}|${ts}|${type}`;
 }
 
-function selectByKey(fieldId, ts, type) {
-  const k = keyOf(fieldId, ts, type);
-  return recStore.has(k) ? { ...recStore.get(k) } : null;
+function mockSelectByKey(fieldId, ts, type) {
+  const k = mockKeyOf(fieldId, ts, type);
+  return mockRecStore.has(k) ? { ...mockRecStore.get(k) } : null;
 }
 
-function listByWhere({ fieldId, fromISO, toISO, type }) {
+function mockListByWhere({ fieldId, fromISO, toISO, type }) {
   const all = [];
-  for (const v of recStore.values()) {
+  for (const v of mockRecStore.values()) {
     if (v.field_id !== fieldId) continue;
     if (type && v.type !== type) continue;
     const t = new Date(v.timestamp).getTime();
@@ -109,7 +109,7 @@ jest.mock('../../src/config/database.config', () => {
 
         // Count existing for date (controller helper)
         if (/SELECT\s+COUNT\(\*\)::int\s+AS\s+cnt\s+FROM\s+recommendations/i.test(s)) {
-          const rows = listByWhere({
+          const rows = mockListByWhere({
             fieldId: replacements.fieldId,
             fromISO: replacements.from,
             toISO: replacements.to,
@@ -121,12 +121,12 @@ jest.mock('../../src/config/database.config', () => {
         if (/INSERT\s+INTO\s+recommendations/i.test(s)) {
           const { fieldId, ts, type: rtype, severity, reason } = replacements;
           const detailsJSON = replacements.details ? JSON.parse(replacements.details) : null;
-          const k = keyOf(fieldId, ts, rtype);
+          const k = mockKeyOf(fieldId, ts, rtype);
           if (/DO\s+UPDATE\s+SET/i.test(s)) {
             // Upsert with update
-            const existing = recStore.get(k);
+            const existing = mockRecStore.get(k);
             if (existing) {
-              recStore.set(k, {
+              mockRecStore.set(k, {
                 ...existing,
                 severity,
                 reason,
@@ -134,8 +134,8 @@ jest.mock('../../src/config/database.config', () => {
                 updated_at: new Date().toISOString(),
               });
             } else {
-              recStore.set(k, {
-                id: `rec-${idCounter++}`,
+              mockRecStore.set(k, {
+                id: `rec-${mockIdCounter++}`,
                 field_id: fieldId,
                 timestamp: ts,
                 type: rtype,
@@ -148,9 +148,9 @@ jest.mock('../../src/config/database.config', () => {
             }
           } else {
             // DO NOTHING path
-            if (!recStore.has(k)) {
-              recStore.set(k, {
-                id: `rec-${idCounter++}`,
+            if (!mockRecStore.has(k)) {
+              mockRecStore.set(k, {
+                id: `rec-${mockIdCounter++}`,
                 field_id: fieldId,
                 timestamp: ts,
                 type: rtype,
@@ -167,13 +167,13 @@ jest.mock('../../src/config/database.config', () => {
 
         // SELECT single row by tuple
         if (/FROM\s+recommendations/i.test(s) && /WHERE\s+field_id\s*=\s*:fieldId/i.test(s) && /"timestamp"\s*=\s*:ts/i.test(s) && /type\s*=\s*:type/i.test(s)) {
-          const row = selectByKey(replacements.fieldId, replacements.ts, replacements.type);
+          const row = mockSelectByKey(replacements.fieldId, replacements.ts, replacements.type);
           return row ? [row] : [];
         }
 
         // Paginated list with COUNT(*) OVER()
         if (/FROM\s+recommendations/i.test(s) && /COUNT\(\*\)\s+OVER\(\)/i.test(s)) {
-          const rows = listByWhere({
+          const rows = mockListByWhere({
             fieldId: replacements.fieldId,
             fromISO: replacements.from,
             toISO: replacements.to,
@@ -194,7 +194,7 @@ jest.mock('../../src/config/database.config', () => {
 
 const { getRecommendationService } = require('../../src/services/recommendation.service');
 
-function makeSnapshot(tsISO, ndvi, ndwi, tdvi) {
+function mockMakeSnapshot(tsISO, ndvi, ndwi, tdvi) {
   return {
     id: uuidv4(),
     field_id: 'F1',
@@ -218,13 +218,13 @@ describe('RecommendationService unit', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     redisStore.clear();
-    recStore.clear();
-    idCounter = 1;
+    mockRecStore.clear();
+    mockIdCounter = 1;
 
     // Default snapshots window: two points 14 days apart
     mockSnapshots = [
-      makeSnapshot(ts, 0.50, 0.04, 0.55), // latest
-      makeSnapshot('2025-01-01T00:00:00.000Z', 0.49, 0.18, 0.30), // ~14d ago
+      mockMakeSnapshot(ts, 0.50, 0.04, 0.55), // latest
+      mockMakeSnapshot('2025-01-01T00:00:00.000Z', 0.49, 0.18, 0.30), // ~14d ago
     ];
 
     // Default forecast totals
@@ -255,8 +255,8 @@ describe('RecommendationService unit', () => {
   test('water alert severity: medium when NDWI in [0.05,0.1) and 3-day rain < 5 mm', async () => {
     // Adjust snapshots: NDWI=0.08
     mockSnapshots = [
-      makeSnapshot(ts, 0.50, 0.08, 0.30),
-      makeSnapshot('2025-01-01T00:00:00.000Z', 0.49, 0.18, 0.30),
+      mockMakeSnapshot(ts, 0.50, 0.08, 0.30),
+      mockMakeSnapshot('2025-01-01T00:00:00.000Z', 0.49, 0.18, 0.30),
     ];
     // 3-day rain below 5mm (keep totals default 1.8mm)
     mockForecastPayload.data.totals = { rain_3d_mm: 3.5, rain_7d_mm: 15.0 };
@@ -269,8 +269,8 @@ describe('RecommendationService unit', () => {
 
   test('water alert severity: low when NDWI in [0.1,0.15) and 3-day rain < 2 mm (low-only rule)', async () => {
     mockSnapshots = [
-      makeSnapshot(ts, 0.50, 0.12, 0.30),
-      makeSnapshot('2025-01-01T00:00:00.000Z', 0.49, 0.18, 0.30),
+      mockMakeSnapshot(ts, 0.50, 0.12, 0.30),
+      mockMakeSnapshot('2025-01-01T00:00:00.000Z', 0.49, 0.18, 0.30),
     ];
     mockForecastPayload.data.totals = { rain_3d_mm: 1.5, rain_7d_mm: 20.0 };
 
@@ -282,8 +282,8 @@ describe('RecommendationService unit', () => {
 
   test('fertilizer alert: medium when ΔNDVI < threshold and TDVI > threshold', async () => {
     mockSnapshots = [
-      makeSnapshot(ts, 0.50, 0.20, 0.55), // latest
-      makeSnapshot('2025-01-01T00:00:00.000Z', 0.49, 0.18, 0.30), // delta = 0.01
+      mockMakeSnapshot(ts, 0.50, 0.20, 0.55), // latest
+      mockMakeSnapshot('2025-01-01T00:00:00.000Z', 0.49, 0.18, 0.30), // delta = 0.01
     ];
 
     const { recommendations } = await svc.computeRecommendationsForField(userId, fieldId, date, { recompute: true });
@@ -295,8 +295,8 @@ describe('RecommendationService unit', () => {
   test('fertilizer alert: high when ΔNDVI < NDVI_GROWTH_MIN/2 OR TDVI > TDVI_STRESS_THRESHOLD+0.1', async () => {
     // Case A: Very small delta
     mockSnapshots = [
-      makeSnapshot(ts, 0.500, 0.20, 0.55),
-      makeSnapshot('2025-01-01T00:00:00.000Z', 0.495, 0.18, 0.30), // delta=0.005 < 0.01
+      mockMakeSnapshot(ts, 0.500, 0.20, 0.55),
+      mockMakeSnapshot('2025-01-01T00:00:00.000Z', 0.495, 0.18, 0.30), // delta=0.005 < 0.01
     ];
     let out = await svc.computeRecommendationsForField(userId, fieldId, date, { recompute: true });
     let fert = out.recommendations.find((r) => r.type === 'fertilizer');
@@ -305,8 +305,8 @@ describe('RecommendationService unit', () => {
 
     // Case B: TDVI strong stress
     mockSnapshots = [
-      makeSnapshot(ts, 0.505, 0.20, 0.62), // tdvi > 0.6 (0.5 + 0.1)
-      makeSnapshot('2025-01-01T00:00:00.000Z', 0.49, 0.18, 0.30),
+      mockMakeSnapshot(ts, 0.505, 0.20, 0.62), // tdvi > 0.6 (0.5 + 0.1)
+      mockMakeSnapshot('2025-01-01T00:00:00.000Z', 0.49, 0.18, 0.30),
     ];
     out = await svc.computeRecommendationsForField(userId, fieldId, date, { recompute: true });
     fert = out.recommendations.find((r) => r.type === 'fertilizer');
@@ -316,8 +316,8 @@ describe('RecommendationService unit', () => {
 
   test('compute cache: second call returns cache_hit = true and same recommendations', async () => {
     mockSnapshots = [
-      makeSnapshot(ts, 0.50, 0.04, 0.55),
-      makeSnapshot('2025-01-01T00:00:00.000Z', 0.49, 0.18, 0.30),
+      mockMakeSnapshot(ts, 0.50, 0.04, 0.55),
+      mockMakeSnapshot('2025-01-01T00:00:00.000Z', 0.49, 0.18, 0.30),
     ];
     const r1 = await svc.computeRecommendationsForField(userId, fieldId, date, { recompute: false });
     const r2 = await svc.computeRecommendationsForField(userId, fieldId, date, { recompute: false });
@@ -379,8 +379,8 @@ describe('RecommendationService unit', () => {
   test('forecast normalization shape consumed by recommendation engine', async () => {
     // Return a normalized forecast with days and totals; engine should read totals.rain_3d_mm / 7d
     mockSnapshots = [
-      makeSnapshot(ts, 0.50, 0.04, 0.55),
-      makeSnapshot('2025-01-01T00:00:00.000Z', 0.49, 0.48, 0.30),
+      mockMakeSnapshot(ts, 0.50, 0.04, 0.55),
+      mockMakeSnapshot('2025-01-01T00:00:00.000Z', 0.49, 0.48, 0.30),
     ];
     mockForecastPayload = {
       data: {

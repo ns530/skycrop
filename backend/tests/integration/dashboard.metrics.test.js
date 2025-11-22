@@ -41,11 +41,32 @@ jest.mock('../../src/config/redis.config', () => ({
 }));
 
 // Mock database queries
-jest.mock('../../src/config/database.config', () => ({
-  sequelize: {
-    query: jest.fn(),
-  },
-}));
+const { QueryTypes } = require('sequelize');
+jest.mock('../../src/config/database.config', () => {
+  const { QueryTypes: OriginalQueryTypes } = jest.requireActual('sequelize');
+  return {
+    sequelize: {
+      query: jest.fn(),
+      define: jest.fn((modelName) => {
+        // Return a minimal mock model
+        return {
+          name: modelName,
+          findOne: jest.fn(),
+          findAll: jest.fn(),
+          create: jest.fn(),
+          update: jest.fn(),
+          destroy: jest.fn(),
+          hasMany: jest.fn(),
+          belongsTo: jest.fn(),
+          scope: jest.fn(() => ({ findOne: jest.fn() })),
+        };
+      }),
+      literal: jest.fn((val) => val),
+      Op: {},
+      QueryTypes: OriginalQueryTypes,
+    },
+  };
+});
 
 const { sequelize } = require('../../src/config/database.config');
 

@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">61.53% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>8/13</span>
+                <span class='fraction'>13/13</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/15</span>
+                <span class='fraction'>15/15</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">28.57% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>2/7</span>
+                <span class='fraction'>7/7</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">61.53% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>8/13</span>
+                <span class='fraction'>13/13</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -124,52 +124,52 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">121x</span>
+<span class="cline-any cline-yes">121x</span>
+<span class="cline-any cline-yes">121x</span>
+<span class="cline-any cline-yes">121x</span>
+<span class="cline-any cline-yes">121x</span>
+<span class="cline-any cline-yes">121x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">59x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">69x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -180,7 +180,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">'use strict';
 &nbsp;
 class AppError extends Error {
-  constructor(code, message, statusCode = <span class="branch-0 cbranch-no" title="branch not covered" >500,</span> details = <span class="branch-0 cbranch-no" title="branch not covered" >{})</span> {
+  constructor(code, message, statusCode = 500, details = {}) {
     super(message);
     this.code = code;
     this.statusCode = statusCode;
@@ -191,38 +191,38 @@ class AppError extends Error {
 }
 &nbsp;
 class ValidationError extends AppError {
-  constructor(message = <span class="branch-0 cbranch-no" title="branch not covered" >'Validation error',</span> details = <span class="branch-0 cbranch-no" title="branch not covered" >{})</span> {
+  constructor(message = 'Validation error', details = {}) {
     super('VALIDATION_ERROR', message, 400, details);
   }
 }
 &nbsp;
 class NotFoundError extends AppError {
-<span class="fstat-no" title="function not covered" >  co</span>nstructor(message = <span class="branch-0 cbranch-no" title="branch not covered" >'Resource not found',</span> details = <span class="branch-0 cbranch-no" title="branch not covered" >{})</span> {
-<span class="cstat-no" title="statement not covered" >    super('NOT_FOUND', message, 404, details);</span>
+  constructor(message = 'Resource not found', details = {}) {
+    super('NOT_FOUND', message, 404, details);
   }
 }
 &nbsp;
 class UnauthorizedError extends AppError {
-<span class="fstat-no" title="function not covered" >  co</span>nstructor(message = <span class="branch-0 cbranch-no" title="branch not covered" >'Unauthorized',</span> details = <span class="branch-0 cbranch-no" title="branch not covered" >{})</span> {
-<span class="cstat-no" title="statement not covered" >    super('UNAUTHORIZED', message, 401, details);</span>
+  constructor(message = 'Unauthorized', details = {}) {
+    super('UNAUTHORIZED', message, 401, details);
   }
 }
 &nbsp;
 class ForbiddenError extends AppError {
-<span class="fstat-no" title="function not covered" >  co</span>nstructor(message = <span class="branch-0 cbranch-no" title="branch not covered" >'Forbidden',</span> details = <span class="branch-0 cbranch-no" title="branch not covered" >{})</span> {
-<span class="cstat-no" title="statement not covered" >    super('FORBIDDEN', message, 403, details);</span>
+  constructor(message = 'Forbidden', details = {}) {
+    super('FORBIDDEN', message, 403, details);
   }
 }
 &nbsp;
 class ConflictError extends AppError {
-<span class="fstat-no" title="function not covered" >  co</span>nstructor(message = <span class="branch-0 cbranch-no" title="branch not covered" >'Conflict',</span> details = <span class="branch-0 cbranch-no" title="branch not covered" >{})</span> {
-<span class="cstat-no" title="statement not covered" >    super('CONFLICT', message, 409, details);</span>
+  constructor(message = 'Conflict', details = {}) {
+    super('CONFLICT', message, 409, details);
   }
 }
 &nbsp;
 class BusinessError extends AppError {
-<span class="fstat-no" title="function not covered" >  co</span>nstructor(code = <span class="branch-0 cbranch-no" title="branch not covered" >'BUSINESS_ERROR',</span> message = <span class="branch-0 cbranch-no" title="branch not covered" >'Business rule violated',</span> details = <span class="branch-0 cbranch-no" title="branch not covered" >{})</span> {
-<span class="cstat-no" title="statement not covered" >    super(code, message, 422, details);</span>
+  constructor(code = 'BUSINESS_ERROR', message = 'Business rule violated', details = {}) {
+    super(code, message, 422, details);
   }
 }
 &nbsp;
@@ -241,7 +241,7 @@ module.exports = {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-19T20:12:50.994Z
+                at 2025-11-21T21:17:25.355Z
             </div>
         <script src="../prettify.js"></script>
         <script>

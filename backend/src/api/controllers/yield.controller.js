@@ -231,5 +231,84 @@ module.exports = {
       return next(err);
     }
   },
+
+  /**
+   * POST /api/v1/fields/:fieldId/yield/predict
+   * Generate yield prediction for a field
+   */
+  async predictYield(req, res, next) {
+    const started = Date.now();
+    const correlationId = req.headers['x-request-id'] || null;
+
+    try {
+      const userId = req.user.userId;
+      const { fieldId } = req.params;
+      const predictionOptions = req.body || {};
+
+      const result = await yieldService.predictYield(userId, fieldId, predictionOptions);
+
+      const latency = Date.now() - started;
+      logger.info('yields.predict', {
+        route: `/api/v1/fields/${fieldId}/yield/predict`,
+        method: 'POST',
+        user_id: userId,
+        field_id: fieldId,
+        prediction_id: result.prediction_id,
+        predicted_yield: result.predicted_yield_per_ha,
+        correlation_id: correlationId,
+        latency_ms: latency,
+      });
+
+      return res.status(200).json({
+        success: true,
+        data: result,
+        meta: { correlation_id: correlationId, latency_ms: latency },
+      });
+    } catch (err) {
+      return next(err);
+    }
+  },
+
+  /**
+   * GET /api/v1/fields/:fieldId/yield/predictions
+   * Get all yield predictions for a field
+   */
+  async getPredictions(req, res, next) {
+    const started = Date.now();
+    const correlationId = req.headers['x-request-id'] || null;
+
+    try {
+      const userId = req.user.userId;
+      const { fieldId } = req.params;
+      const options = req.query || {};
+
+      const result = await yieldService.getPredictions(userId, fieldId, options);
+
+      const latency = Date.now() - started;
+      logger.info('yields.getPredictions', {
+        route: `/api/v1/fields/${fieldId}/yield/predictions`,
+        method: 'GET',
+        user_id: userId,
+        field_id: fieldId,
+        count: result.predictions.length,
+        cache_hit: result.cacheHit,
+        correlation_id: correlationId,
+        latency_ms: latency,
+      });
+
+      return res.status(200).json({
+        success: true,
+        data: result.predictions,
+        meta: {
+          correlation_id: correlationId,
+          latency_ms: latency,
+          cache_hit: result.cacheHit,
+          count: result.predictions.length,
+        },
+      });
+    } catch (err) {
+      return next(err);
+    }
+  },
 };
 

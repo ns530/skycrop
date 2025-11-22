@@ -52,7 +52,7 @@ export const AdminUsersPage: React.FC = () => {
     });
   }, [users, roleFilter, statusFilter]);
 
-  const { mutateAsync: updateStatus, isLoading: isUpdatingStatus } = useUpdateUserStatus();
+  const { mutateAsync: updateStatus, isPending: isUpdatingStatus } = useUpdateUserStatus();
 
   const [pendingChange, setPendingChange] = useState<PendingStatusChange | null>(null);
 

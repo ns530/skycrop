@@ -7,46 +7,41 @@ import { MapFirstLayout } from '../app/layouts/MapFirstLayout';
 import { RootLayout } from '../app/layouts/RootLayout';
 import { RequireAuth } from '../features/auth/components/RequireAuth';
 import { RequireRole } from '../features/auth/components/RequireRole';
+import { PageLoader } from '../shared/ui/PageLoader';
 
-// Lazy load auth pages
-const LoginPage = React.lazy(() => import('../features/auth/pages/LoginPage'));
-const RegisterPage = React.lazy(() => import('../features/auth/pages/RegisterPage'));
-const ResetPasswordPage = React.lazy(() => import('../features/auth/pages/ResetPasswordPage'));
-const OAuthCallbackPage = React.lazy(() => import('../features/auth/pages/OAuthCallbackPage'));
+// Lazy load auth pages with prefetch hints
+const LoginPage = React.lazy(() => import(/* webpackChunkName: "auth-login" */ '../features/auth/pages/LoginPage'));
+const RegisterPage = React.lazy(() => import(/* webpackChunkName: "auth-register" */ '../features/auth/pages/RegisterPage'));
+const ResetPasswordPage = React.lazy(() => import(/* webpackChunkName: "auth-reset" */ '../features/auth/pages/ResetPasswordPage'));
+const OAuthCallbackPage = React.lazy(() => import(/* webpackChunkName: "auth-callback" */ '../features/auth/pages/OAuthCallbackPage'));
 
 // Lazy load field pages
-const DashboardPage = React.lazy(() => import('../features/fields/pages/DashboardPage'));
-const FieldsListPage = React.lazy(() => import('../features/fields/pages/FieldsListPage'));
-const FieldDetailPage = React.lazy(() => import('../features/fields/pages/FieldDetailPage'));
-const CreateFieldPage = React.lazy(() => import('../features/fields/pages/CreateFieldPage'));
-const CreateFieldWithMapPage = React.lazy(() => import('../features/fields/pages/CreateFieldWithMapPage'));
-const EditFieldBoundaryPage = React.lazy(() => import('../features/fields/pages/EditFieldBoundaryPage'));
+const DashboardPage = React.lazy(() => import(/* webpackChunkName: "fields-dashboard" */ '../features/fields/pages/DashboardPage'));
+const FieldsListPage = React.lazy(() => import(/* webpackChunkName: "fields-list" */ '../features/fields/pages/FieldsListPage'));
+const FieldDetailPage = React.lazy(() => import(/* webpackChunkName: "fields-detail" */ '../features/fields/pages/FieldDetailPage'));
+const CreateFieldPage = React.lazy(() => import(/* webpackChunkName: "fields-create" */ '../features/fields/pages/CreateFieldPage'));
+const CreateFieldWithMapPage = React.lazy(() => import(/* webpackChunkName: "fields-create-map" */ '../features/fields/pages/CreateFieldWithMapPage'));
+const EditFieldBoundaryPage = React.lazy(() => import(/* webpackChunkName: "fields-edit-boundary" */ '../features/fields/pages/EditFieldBoundaryPage'));
 
 // Lazy load feature pages
-const FieldHealthPage = React.lazy(() => import('../features/health/pages/FieldHealthPage'));
-const FieldRecommendationsPage = React.lazy(() => import('../features/recommendations/pages/FieldRecommendationsPage'));
-const FieldWeatherPage = React.lazy(() => import('../features/weather/pages/FieldWeatherPage'));
-const WeatherOverviewPage = React.lazy(() => import('../features/weather/pages/WeatherOverviewPage'));
+const FieldHealthPage = React.lazy(() => import(/* webpackChunkName: "health" */ '../features/health/pages/FieldHealthPage'));
+const FieldRecommendationsPage = React.lazy(() => import(/* webpackChunkName: "recommendations" */ '../features/recommendations/pages/FieldRecommendationsPage'));
+const FieldWeatherPage = React.lazy(() => import(/* webpackChunkName: "weather-field" */ '../features/weather/pages/FieldWeatherPage'));
+const FieldYieldPage = React.lazy(() => import(/* webpackChunkName: "yield" */ '../features/yield/pages/FieldYieldPage'));
+const WeatherOverviewPage = React.lazy(() => import(/* webpackChunkName: "weather-overview" */ '../features/weather/pages/WeatherOverviewPage'));
 
 // Lazy load admin pages
-const AdminOverviewPage = React.lazy(() => import('../features/admin/pages/AdminOverviewPage'));
-const AdminUsersPage = React.lazy(() => import('../features/admin/pages/AdminUsersPage'));
-const AdminContentPage = React.lazy(() => import('../features/admin/pages/AdminContentPage'));
-const AdminSystemHealthPage = React.lazy(() => import('../features/admin/pages/AdminSystemHealthPage'));
+const AdminOverviewPage = React.lazy(() => import(/* webpackChunkName: "admin-overview" */ '../features/admin/pages/AdminOverviewPage'));
+const AdminUsersPage = React.lazy(() => import(/* webpackChunkName: "admin-users" */ '../features/admin/pages/AdminUsersPage'));
+const AdminContentPage = React.lazy(() => import(/* webpackChunkName: "admin-content" */ '../features/admin/pages/AdminContentPage'));
+const AdminSystemHealthPage = React.lazy(() => import(/* webpackChunkName: "admin-system" */ '../features/admin/pages/AdminSystemHealthPage'));
 
 // Lazy load news pages
-const NewsListPage = React.lazy(() => import('../features/news/pages/NewsListPage'));
-const ArticleDetailPage = React.lazy(() => import('../features/news/pages/ArticleDetailPage'));
+const NewsListPage = React.lazy(() => import(/* webpackChunkName: "news-list" */ '../features/news/pages/NewsListPage'));
+const ArticleDetailPage = React.lazy(() => import(/* webpackChunkName: "news-detail" */ '../features/news/pages/ArticleDetailPage'));
 
 // Lazy load settings pages
-const NotificationSettingsPage = React.lazy(() => import('../features/settings/pages/NotificationSettingsPage'));
-
-// Loading component
-const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-screen">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-blue"></div>
-  </div>
-);
+const NotificationSettingsPage = React.lazy(() => import(/* webpackChunkName: "settings-notifications" */ '../features/settings/pages/NotificationSettingsPage'));
 
 export const router = createBrowserRouter([
   {
@@ -204,6 +199,14 @@ export const router = createBrowserRouter([
             element: (
               <Suspense fallback={<PageLoader />}>
                 <FieldWeatherPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'fields/:fieldId/yield',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <FieldYieldPage />
               </Suspense>
             ),
           },

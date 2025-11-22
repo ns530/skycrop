@@ -1,5 +1,37 @@
 'use strict';
 
+// ========== Sentry Error Tracking (Must be first!) ==========
+const Sentry = require('@sentry/node');
+const { ProfilingIntegration } = require('@sentry/profiling-node');
+
+// Initialize Sentry BEFORE importing anything else
+if (process.env.SENTRY_DSN && process.env.NODE_ENV !== 'test') {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV || 'development',
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0, // 10% in prod, 100% in dev
+    profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+    integrations: [
+      new Sentry.Integrations.Http({ tracing: true }),
+      new ProfilingIntegration(),
+    ],
+    beforeSend(event, hint) {
+      // Don't send test errors to Sentry
+      if (process.env.NODE_ENV === 'test') {
+        return null;
+      }
+      // Filter out 404 errors (not really errors)
+      if (event.exception && hint.originalException) {
+        const error = hint.originalException;
+        if (error.statusCode === 404 || error.status === 404) {
+          return null;
+        }
+      }
+      return event;
+    },
+  });
+}
+
 const express = require('express');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -7,6 +39,7 @@ const cors = require('cors');
 const compression = require('compression');
 const authRoutes = require('./api/routes/auth.routes');
 const fieldRoutes = require('./api/routes/field.routes');
+const fieldSharingRoutes = require('./api/routes/fieldSharing.routes');
 const healthRoutes = require('./api/routes/health.routes');
 const weatherRoutes = require('./api/routes/weather.routes');
 const fieldHealthRoutes = require('./api/routes/fieldHealth.routes');
@@ -15,10 +48,21 @@ const mlRoutes = require('./api/routes/ml.routes');
 const recommendationRoutes = require('./api/routes/recommendation.routes');
 const dashboardRoutes = require('./api/routes/dashboard.routes');
 const yieldRoutes = require('./api/routes/yield.routes');
+const jobsRoutes = require('./api/routes/jobs.routes');
+const notificationRoutes = require('./api/routes/notification.routes');
+const healthMonitoringRoutes = require('./api/routes/healthMonitoring.routes');
+const userManagementRoutes = require('./api/routes/userManagement.routes'); // User management (admin)
+const debugRoutes = require('./api/routes/debug.routes'); // Debug routes for testing
 const { apiLimiter } = require('./api/middleware/rateLimit.middleware');
 const { logger, loggerStream } = require('./utils/logger');
 
 const app = express();
+
+// ========== Sentry Request Handler (Must be first middleware!) ==========
+if (process.env.SENTRY_DSN && process.env.NODE_ENV !== 'test') {
+  app.use(Sentry.Handlers.requestHandler());
+  app.use(Sentry.Handlers.tracingHandler());
+}
 
 // Trust first proxy (if behind load balancer in production)
 app.set('trust proxy', 1);
@@ -66,14 +110,20 @@ app.get('/health', (req, res) => {
 app.use('/api', apiLimiter);
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/fields', fieldRoutes);
+app.use('/api/v1/fields', fieldSharingRoutes); // Field sharing & collaboration
 app.use('/api/v1/fields', healthRoutes);
 app.use('/api/v1/fields', fieldHealthRoutes);
-app.use('/api/v1/fields', recommendationRoutes);
+app.use('/api/v1', healthMonitoringRoutes); // Health monitoring time-series analysis
+app.use('/api/v1', recommendationRoutes); // Recommendation engine (includes field-specific and general routes)
+app.use('/api/v1/notifications', notificationRoutes); // Notification management
 app.use('/api/v1/weather', weatherRoutes);
 app.use('/api/v1/satellite', satelliteRoutes);
 app.use('/api/v1/ml', mlRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1', yieldRoutes); // Yield routes (both /fields/:id/yield and /yield/:id)
+app.use('/api/v1/admin/jobs', jobsRoutes); // Admin jobs management
+app.use('/api/v1/admin/users', userManagementRoutes); // Admin user management
+app.use('/debug', debugRoutes); // Debug routes (development/staging only)
 
 // 404 handler
 app.use((req, res, next) => {
@@ -86,6 +136,19 @@ app.use((req, res, next) => {
     meta: { timestamp: new Date().toISOString() },
   });
 });
+
+// ========== Sentry Error Handler (Must be before custom error handler!) ==========
+if (process.env.SENTRY_DSN && process.env.NODE_ENV !== 'test') {
+  app.use(Sentry.Handlers.errorHandler({
+    shouldHandleError(error) {
+      // Capture all errors except 404s
+      if (error.statusCode === 404 || error.status === 404) {
+        return false;
+      }
+      return true;
+    },
+  }));
+}
 
 // Error handler
 // eslint-disable-next-line no-unused-vars

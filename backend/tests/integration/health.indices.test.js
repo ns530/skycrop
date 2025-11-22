@@ -255,9 +255,13 @@ describe('Health Indices API (NDVI/NDWI/TDVI)', () => {
     });
 
     test('Sentinel 5xx maps to 503; 4xx maps to 400', async () => {
-      // 5xx
-      axios.post.mockImplementationOnce(async () => ({ status: 200, data: { access_token: 'tok', expires_in: 3600 } }));
-      axios.post.mockImplementationOnce(async () => ({ status: 500, data: {} }));
+      // 5xx: Mock to return 500 for Process API
+      axios.post.mockImplementation(async (url) => {
+        if (String(url).includes('/oauth/token')) {
+          return { status: 200, data: { access_token: 'tok', expires_in: 3600 } };
+        }
+        return { status: 500, data: {}, headers: {} };
+      });
 
       const r5 = await request(app)
         .post(path(fieldId))
@@ -269,9 +273,13 @@ describe('Health Indices API (NDVI/NDWI/TDVI)', () => {
       // reset memory to allow new snapshot attempt
       snapshotMemory = null;
 
-      // 4xx
-      axios.post.mockImplementationOnce(async () => ({ status: 200, data: { access_token: 'tok', expires_in: 3600 } }));
-      axios.post.mockImplementationOnce(async () => ({ status: 400, data: {} }));
+      // 4xx: Mock to return 400 for Process API
+      axios.post.mockImplementation(async (url) => {
+        if (String(url).includes('/oauth/token')) {
+          return { status: 200, data: { access_token: 'tok', expires_in: 3600 } };
+        }
+        return { status: 400, data: {}, headers: {} };
+      });
 
       const r4 = await request(app)
         .post(path(fieldId))

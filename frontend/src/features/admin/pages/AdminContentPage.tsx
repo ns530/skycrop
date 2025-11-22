@@ -54,7 +54,7 @@ export const AdminContentPage: React.FC = () => {
   const items = data?.data ?? [];
   const totalCount = data?.pagination.total ?? 0;
 
-  const { mutateAsync: upsertContent, isLoading: isSaving } = useUpsertAdminContent();
+  const { mutateAsync: upsertContent, isPending: isSaving } = useUpsertAdminContent();
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [editor, setEditor] = useState<EditorState>(() => toEditorState());

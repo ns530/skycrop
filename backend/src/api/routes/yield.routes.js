@@ -151,11 +151,69 @@ const listQuery = Joi.object({
     }),
 });
 
+// ========== Validation Schemas for Predictions ==========
+
+const predictYieldBody = Joi.object({
+  planting_date: Joi.date().iso().optional()
+    .messages({
+      'date.base': 'Planting date must be a valid date',
+    }),
+  crop_variety: Joi.string().max(100).optional()
+    .messages({
+      'string.max': 'Crop variety cannot exceed 100 characters',
+    }),
+  soil_type: Joi.string().max(50).optional()
+    .messages({
+      'string.max': 'Soil type cannot exceed 50 characters',
+    }),
+  price_per_kg: Joi.number().positive().optional()
+    .messages({
+      'number.positive': 'Price per kg must be positive',
+    }),
+  model_version: Joi.string().max(20).optional()
+    .messages({
+      'string.max': 'Model version cannot exceed 20 characters',
+    }),
+});
+
+const predictionsQuery = Joi.object({
+  limit: Joi.number().integer().min(1).max(100).default(10)
+    .messages({
+      'number.base': 'Limit must be a number',
+      'number.integer': 'Limit must be an integer',
+      'number.min': 'Limit must be at least 1',
+      'number.max': 'Limit cannot exceed 100',
+    }),
+  sort: Joi.string().valid('prediction_date', 'predicted_yield_per_ha', 'created_at').default('prediction_date')
+    .messages({
+      'any.only': 'Sort must be one of: prediction_date, predicted_yield_per_ha, created_at',
+    }),
+  order: Joi.string().valid('asc', 'desc').default('desc')
+    .messages({
+      'any.only': 'Order must be either asc or desc',
+    }),
+});
+
 // ========== Routes (All Protected) ==========
 
 // Apply authentication and rate limiting to all routes
 router.use(authMiddleware);
 router.use(apiLimiter);
+
+// Yield Prediction routes (must come before /fields/:fieldId/yield routes)
+router.post(
+  '/fields/:fieldId/yield/predict',
+  validateUuidParams,
+  validateRequest(predictYieldBody, 'body'),
+  YieldController.predictYield
+);
+
+router.get(
+  '/fields/:fieldId/yield/predictions',
+  validateUuidParams,
+  validateRequest(predictionsQuery, 'query'),
+  YieldController.getPredictions
+);
 
 // Field-specific yield routes
 router.post(

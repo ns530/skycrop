@@ -6,8 +6,8 @@ const TEST_PASSWORD = process.env.E2E_TEST_USER_PASSWORD ?? 'password123';
 async function login(page: Page) {
   await page.goto('/auth/login');
 
-  await page.getByLabelText(/email/i).fill(TEST_EMAIL);
-  await page.getByLabelText(/password/i).fill(TEST_PASSWORD);
+  await page.getByLabel(/email/i).fill(TEST_EMAIL);
+  await page.getByLabel(/password/i).fill(TEST_PASSWORD);
   await page.getByRole('button', { name: /continue/i }).click();
 
   await expect(page).toHaveURL(/\/dashboard/);
@@ -25,9 +25,9 @@ test.describe('Fields - Creation flow', () => {
 
     const fieldName = `E2E Field ${Date.now()}`;
 
-    await page.getByLabelText(/field name/i).fill(fieldName);
+    await page.getByLabel(/field name/i).fill(fieldName);
 
-    const notesLocator = page.getByLabelText(/notes \(optional\)/i);
+    const notesLocator = page.getByLabel(/notes \(optional\)/i);
     if (await notesLocator.count()) {
       await notesLocator.fill('Created via E2E test flow');
     }
