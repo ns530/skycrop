@@ -56,11 +56,20 @@ export const CreateFieldScreen: React.FC = () => {
       
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission Denied', 'Location permission is required to get your current location.');
+        Alert.alert(
+          'Permission Denied', 
+          'Location permission is required. Please enable location services in your device settings.',
+          [{ text: 'OK' }]
+        );
         return;
       }
 
-      const location = await Location.getCurrentPositionAsync({});
+      // Try to get current position with timeout
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+        timeout: 10000, // 10 second timeout
+      });
+      
       const { latitude, longitude } = location.coords;
       
       setCurrentLocation(`${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
@@ -81,9 +90,25 @@ export const CreateFieldScreen: React.FC = () => {
       setFieldBoundary(defaultBoundary);
       
       Alert.alert('Success', 'Current location captured!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error getting location:', error);
-      Alert.alert('Error', 'Failed to get current location');
+      
+      // Provide helpful error messages
+      let errorMessage = 'Failed to get current location.';
+      if (error.message?.includes('unavailable')) {
+        errorMessage = 'Location services are unavailable. Please:\n\n1. Enable location services on your device\n2. Make sure you are outdoors or have GPS signal\n3. Try tapping on the map to set location manually';
+      } else if (error.message?.includes('timeout')) {
+        errorMessage = 'Location request timed out. Please try again or tap on the map to set location manually.';
+      }
+      
+      Alert.alert(
+        'Location Error',
+        errorMessage,
+        [
+          { text: 'Use Map Instead', style: 'cancel' },
+          { text: 'Try Again', onPress: getCurrentLocation },
+        ]
+      );
     } finally {
       setLoadingLocation(false);
     }

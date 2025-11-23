@@ -81,7 +81,10 @@ export const FieldMap: React.FC<FieldMapProps> = ({
         return;
       }
 
-      const location = await Location.getCurrentPositionAsync({});
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+        timeout: 10000,
+      });
       const { latitude, longitude } = location.coords;
       
       setMapCenter({ latitude, longitude });
@@ -92,7 +95,8 @@ export const FieldMap: React.FC<FieldMapProps> = ({
         longitudeDelta: 0.01,
       });
     } catch (error) {
-      console.error('Error getting location:', error);
+      // Silently fail - user can tap on map instead
+      console.warn('Location unavailable, user can tap on map:', error);
     }
   };
 
