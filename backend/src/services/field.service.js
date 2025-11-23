@@ -371,18 +371,26 @@ class FieldService {
     const areaHa = Number(approxAreaHectares(boundary).toFixed(2));
 
     try {
-      // Set placeholder values for Sequelize validation
-      // The database trigger will compute the actual values from boundary
+      // Create field with placeholder values - trigger will compute actual center and area_sqm
+      // We use a simple point and 0 area as placeholders that satisfy Sequelize validation
+      const { sequelize } = Field;
+      
+      // Create a temporary point for center (trigger will override)
+      const tempCenter = {
+        type: 'Point',
+        coordinates: [0, 0],
+      };
+      
       const created = await Field.create({
         user_id: userId,
         name: name.trim(),
         boundary: normalized,
         area: areaHa,
         status: 'active',
-        // Set placeholders - trigger will override with actual computed values
-        center: Field.sequelize.literal(`ST_Centroid(ST_GeomFromGeoJSON('${JSON.stringify(normalized).replace(/'/g, "''")}'))`),
+        center: tempCenter, // Placeholder - trigger will override
         area_sqm: 0, // Placeholder - trigger will override
       });
+      
       await invalidateFieldCaches(userId, created.field_id);
       // Reload using raw to include computed columns as GeoJSON
       const one = await this.getById(userId, created.field_id);
