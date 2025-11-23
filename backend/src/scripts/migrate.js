@@ -39,8 +39,8 @@ async function retryWithBackoff(fn, maxRetries = 5, initialDelay = 1000) {
 }
 
 async function runMigrations() {
-  if (!DATABASE_URL) {
-    console.error('❌ DATABASE_URL not set. Cannot run migrations.');
+  if (!DB_CONNECTION_STRING) {
+    console.error('❌ DATABASE_URL or DATABASE_PRIVATE_URL not set. Cannot run migrations.');
     process.exit(1);
   }
 
@@ -51,12 +51,12 @@ async function runMigrations() {
   const isInternal = DATABASE_URL.includes('.railway.internal') || DATABASE_URL.includes('postgis.railway.internal');
   const isExternal = DATABASE_URL.includes('rlwy.net') || DATABASE_URL.includes('railway.app') || DATABASE_URL.includes('gondola.proxy');
   
-  // Try without SSL first (PostGIS might not be ready for SSL)
-  // If that fails, we'll retry with SSL
-  const sslConfig = false; // Start without SSL to avoid SSL handshake issues during startup
+  // Use private URL (internal) - no SSL needed
+  // If using external URL, Railway proxy handles SSL at network level
+  const sslConfig = false; // No SSL needed for Railway internal connections
 
   const pool = new Pool({
-    connectionString: DATABASE_URL,
+    connectionString: DB_CONNECTION_STRING,
     ssl: sslConfig,
     // Connection pool settings for resilience
     max: 5,
