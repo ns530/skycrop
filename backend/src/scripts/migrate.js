@@ -148,7 +148,14 @@ async function runMigrations() {
     } else {
       console.error('❌ Migration failed:', error.message);
       console.error(error);
-      process.exit(1);
+      // Only exit if called directly (not as a module)
+      // When called from server.js, let it handle the error
+      if (require.main === module) {
+        process.exit(1);
+      } else {
+        // Re-throw so server.js can handle it gracefully
+        throw error;
+      }
     }
   } finally {
     await pool.end();
