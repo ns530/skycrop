@@ -13,8 +13,12 @@ const { Pool } = require('pg');
 
 const {
   DATABASE_URL,
+  DATABASE_PRIVATE_URL, // Railway internal connection (no SSL needed)
   NODE_ENV = 'development',
 } = process.env;
+
+// Prefer private URL for internal connections (no SSL needed)
+const DB_CONNECTION_STRING = DATABASE_PRIVATE_URL || DATABASE_URL;
 
 // Retry helper with exponential backoff
 async function retryWithBackoff(fn, maxRetries = 5, initialDelay = 1000) {
