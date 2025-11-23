@@ -9,10 +9,10 @@ import { createStackNavigator } from '@react-navigation/stack';
 
 import FieldsListScreen from '../screens/fields/FieldsListScreen';
 import FieldDetailScreen from '../screens/fields/FieldDetailScreen';
-import CreateFieldScreen from '../screens/fields/CreateFieldScreen';
-import FieldHealthScreen from '../screens/fields/FieldHealthScreen';
-import FieldRecommendationsScreen from '../screens/fields/FieldRecommendationsScreen';
-import FieldYieldScreen from '../screens/fields/FieldYieldScreen';
+import { CreateFieldScreen } from '../screens/fields/CreateFieldScreen';
+import { FieldHealthScreen } from '../screens/fields/FieldHealthScreen';
+import { FieldRecommendationsScreen } from '../screens/fields/FieldRecommendationsScreen';
+import { FieldYieldScreen } from '../screens/fields/FieldYieldScreen';
 
 export type FieldsStackParamList = {
   FieldsList: undefined;

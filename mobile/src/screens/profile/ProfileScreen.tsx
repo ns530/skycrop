@@ -12,7 +12,7 @@ import {
   SafeAreaView,
   Alert,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons as Icon } from '@expo/vector-icons';
 
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
@@ -191,7 +191,7 @@ const ProfileScreen: React.FC = () => {
 };
 
 const MenuItem: React.FC<{
-  icon: string;
+  icon: React.ComponentProps<typeof Icon>['name'];
   label: string;
   onPress: () => void;
   rightContent?: React.ReactNode;
@@ -365,4 +365,5 @@ const styles = StyleSheet.create({
 });
 
 export default ProfileScreen;
+
 

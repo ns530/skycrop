@@ -13,25 +13,26 @@
 # PHASE 1: RAILWAY (Backend Infrastructure)
 # ============================================
 
-## PostgreSQL Database
-DATABASE_URL=postgresql://postgres:[password]@[host]:[port]/railway
-DATABASE_HOST=
-DATABASE_PORT=
+## PostgreSQL Database (PostGIS Template)
+DATABASE_URL=${{PostGIS.DATABASE_URL}}
+DATABASE_SERVICE=PostGIS
+DATABASE_TYPE=PostgreSQL 17 with PostGIS Extension
+DATABASE_HOST=postgis.railway.internal
+DATABASE_PORT=5432
 DATABASE_NAME=railway
 DATABASE_USER=postgres
-DATABASE_PASSWORD=
 
 ## Redis Cache
-REDIS_URL=redis://default:[password]@[host]:[port]
-REDIS_HOST=
-REDIS_PORT=
-REDIS_PASSWORD=
+REDIS_URL=${{Redis.REDIS_URL}}
+REDIS_SERVICE=Redis
+REDIS_HOST=redis.railway.internal
+REDIS_PORT=6379
 
 ## Backend Service
-RAILWAY_PROJECT_ID=
-RAILWAY_SERVICE_ID=
-BACKEND_PUBLIC_URL=https://skycrop-backend-production-[random].up.railway.app
-BACKEND_INTERNAL_URL=
+RAILWAY_PROJECT_ID=c8fd9cd7-1a90-482f-bf09-4097eb42a8ef
+RAILWAY_SERVICE_ID=cb21c2ea-a4cc-457d-870b-6a760ce1f157
+BACKEND_PUBLIC_URL=https://skycrop-staging-production.up.railway.app
+BACKEND_INTERNAL_URL=skycrop-staging.railway.internal
 
 ## Generated Secrets
 JWT_SECRET=[Generate with: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"]
@@ -44,14 +45,15 @@ JWT_SECRET=180913647ffcb30e5c662b0c1835aafefedbe6a18bd22a3288ddf01ec92d6330ab973
 # ============================================
 
 ## Vercel Project
-VERCEL_PROJECT_ID=
-VERCEL_TEAM_ID=
-VERCEL_DEPLOYMENT_URL=https://skycrop-[random].vercel.app
+VERCEL_PROJECT_ID=skycrop
+VERCEL_TEAM_ID=(Auto-detected by Vercel)
+VERCEL_DEPLOYMENT_URL=https://skycrop.vercel.app
 VERCEL_PRODUCTION_URL=https://skycrop.vercel.app
 
 ## Frontend Environment Variables (Set in Vercel Dashboard)
-VITE_API_BASE_URL=https://skycrop-backend-production-[random].up.railway.app/api/v1
-VITE_WS_URL=wss://skycrop-backend-production-[random].up.railway.app
+VITE_API_BASE_URL=https://skycrop-staging-production.up.railway.app/api/v1
+VITE_WS_URL=wss://skycrop-staging-production.up.railway.app
+VITE_APP_NAME=SkyCrop
 
 
 # ============================================

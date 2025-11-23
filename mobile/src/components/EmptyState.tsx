@@ -6,10 +6,10 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons as Icon } from '@expo/vector-icons';
 
 interface EmptyStateProps {
-  icon?: string;
+  icon?: React.ComponentProps<typeof Icon>['name'];
   title: string;
   message: string;
   action?: React.ReactNode;
@@ -56,4 +56,5 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
 });
+
 

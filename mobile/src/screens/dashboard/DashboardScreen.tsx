@@ -13,16 +13,26 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import Icon from 'react-native-vector-icons/Ionicons';
+import type { CompositeNavigationProp } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import { Ionicons as Icon } from '@expo/vector-icons';
 
 import { useAuth } from '../../context/AuthContext';
 import { useFields } from '../../hooks/useFields';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
+import type { MainTabParamList } from '../../navigation/MainNavigator';
+import type { FieldsStackParamList } from '../../navigation/FieldsNavigator';
+
+type NavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<MainTabParamList, 'Dashboard'>,
+  StackNavigationProp<FieldsStackParamList>
+>;
 
 const DashboardScreen: React.FC = () => {
   const { user } = useAuth();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
   const [refreshing, setRefreshing] = React.useState(false);
 
   const { data: fieldsData, isLoading, isError, error, refetch } = useFields({
@@ -174,7 +184,10 @@ const DashboardScreen: React.FC = () => {
               icon="add-circle"
               label="Add Field"
               color="#2563eb"
-              onPress={() => navigation.navigate('Fields', { screen: 'CreateField' })}
+              onPress={() => {
+                // @ts-ignore - Nested navigation typing issue
+                navigation.navigate('Fields', { screen: 'CreateField' });
+              }}
             />
             <QuickAction
               icon="pulse"
@@ -223,7 +236,7 @@ const HealthBar: React.FC<{ label: string; count: number; color: string }> = ({
 );
 
 const ActivityItem: React.FC<{
-  icon: string;
+  icon: React.ComponentProps<typeof Icon>['name'];
   iconColor: string;
   title: string;
   subtitle: string;
@@ -242,7 +255,7 @@ const ActivityItem: React.FC<{
 );
 
 const QuickAction: React.FC<{
-  icon: string;
+  icon: React.ComponentProps<typeof Icon>['name'];
   label: string;
   color: string;
   onPress: () => void;
@@ -437,4 +450,5 @@ const styles = StyleSheet.create({
 });
 
 export default DashboardScreen;
+
 

@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons as Icon } from '@expo/vector-icons';
 
 import { useFields } from '../../hooks/useFields';
 import { FieldCard } from '../../components/FieldCard';
@@ -185,4 +185,5 @@ const styles = StyleSheet.create({
 });
 
 export default FieldsListScreen;
+
 

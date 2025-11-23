@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons as Icon } from '@expo/vector-icons';
 
 import { FieldsNavigator } from './FieldsNavigator';
 import DashboardScreen from '../screens/dashboard/DashboardScreen';
@@ -27,7 +27,7 @@ export const MainNavigator: React.FC = () => {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName: string;
+          let iconName: React.ComponentProps<typeof Icon>['name'];
 
           switch (route.name) {
             case 'Dashboard':
@@ -65,4 +65,5 @@ export const MainNavigator: React.FC = () => {
     </Tab.Navigator>
   );
 };
+
 

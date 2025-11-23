@@ -11,7 +11,7 @@ import {
   SafeAreaView,
   RefreshControl,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons as Icon } from '@expo/vector-icons';
 
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
@@ -215,7 +215,7 @@ const WeatherScreen: React.FC = () => {
 };
 
 const WeatherDetail: React.FC<{
-  icon: string;
+  icon: React.ComponentProps<typeof Icon>['name'];
   label: string;
   value: string;
   light?: boolean;
@@ -232,7 +232,7 @@ const WeatherDetail: React.FC<{
 );
 
 const DetailCard: React.FC<{
-  icon: string;
+  icon: React.ComponentProps<typeof Icon>['name'];
   label: string;
   value: string;
   description: string;
@@ -249,7 +249,7 @@ const DetailCard: React.FC<{
 );
 
 const InsightCard: React.FC<{
-  icon: string;
+  icon: React.ComponentProps<typeof Icon>['name'];
   iconColor: string;
   title: string;
   description: string;
@@ -492,4 +492,5 @@ const styles = StyleSheet.create({
 });
 
 export default WeatherScreen;
+
 

@@ -95,7 +95,7 @@ export const FieldRecommendationsScreen: React.FC = () => {
     return (
       <View style={styles.container}>
         <EmptyState
-          icon="💡"
+          icon="bulb-outline"
           title="No Recommendations Yet"
           message="Generate AI-powered recommendations for this field"
         />

@@ -23,8 +23,8 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://skycrop-backend-production-xxxx.up.railway.app/api/v1",
-        "EXPO_PUBLIC_WS_URL": "wss://skycrop-backend-production-xxxx.up.railway.app",
+        "EXPO_PUBLIC_API_BASE_URL": "https://skycrop-staging-production.up.railway.app/api/v1",
+        "EXPO_PUBLIC_WS_URL": "wss://skycrop-staging-production.up.railway.app",
         "EXPO_PUBLIC_ENV": "preview"
       }
     },
@@ -33,8 +33,8 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://skycrop-backend-production-xxxx.up.railway.app/api/v1",
-        "EXPO_PUBLIC_WS_URL": "wss://skycrop-backend-production-xxxx.up.railway.app",
+        "EXPO_PUBLIC_API_BASE_URL": "https://skycrop-staging-production.up.railway.app/api/v1",
+        "EXPO_PUBLIC_WS_URL": "wss://skycrop-staging-production.up.railway.app",
         "EXPO_PUBLIC_ENV": "production"
       }
     },
@@ -43,8 +43,8 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://skycrop-backend-production-xxxx.up.railway.app/api/v1",
-        "EXPO_PUBLIC_WS_URL": "wss://skycrop-backend-production-xxxx.up.railway.app",
+        "EXPO_PUBLIC_API_BASE_URL": "https://skycrop-staging-production.up.railway.app/api/v1",
+        "EXPO_PUBLIC_WS_URL": "wss://skycrop-staging-production.up.railway.app",
         "EXPO_PUBLIC_ENV": "production"
       }
     }

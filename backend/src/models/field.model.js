@@ -41,15 +41,13 @@ const Field = sequelize.define(
     },
     area_sqm: {
       // square meters computed via ST_Area(geography) in DB trigger/service
-      // allowNull: true in model because trigger sets it BEFORE INSERT
       type: DataTypes.DECIMAL, // NUMERIC
-      allowNull: true, // DB constraint is NOT NULL, but trigger sets it
+      allowNull: false,
     },
     center: {
       // geometry(Point, 4326)
-      // allowNull: true in model because trigger sets it BEFORE INSERT
       type: DataTypes.GEOMETRY('POINT', 4326),
-      allowNull: true, // DB constraint is NOT NULL, but trigger sets it
+      allowNull: false,
     },
     status: {
       type: DataTypes.ENUM('active', 'archived', 'deleted'),

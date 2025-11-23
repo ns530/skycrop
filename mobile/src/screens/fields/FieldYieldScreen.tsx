@@ -101,6 +101,7 @@ export const FieldYieldScreen: React.FC = () => {
   };
 
   const confidencePercentage = (current_prediction.confidence_score * 100).toFixed(0);
+  const confidenceWidth = `${confidencePercentage}%` as const;
 
   return (
     <ScrollView
@@ -131,7 +132,7 @@ export const FieldYieldScreen: React.FC = () => {
               style={[
                 styles.confidenceFill,
                 {
-                  width: `${confidencePercentage}%`,
+                  width: confidenceWidth as any,
                   backgroundColor: current_prediction.confidence_score > 0.8 ? '#10b981' : '#f59e0b',
                 },
               ]}

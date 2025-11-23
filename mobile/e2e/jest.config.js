@@ -13,5 +13,10 @@ module.exports = {
   transform: {
     '^.+\\.tsx?$': 'ts-jest',
   },
+  globals: {
+    'ts-jest': {
+      tsconfig: 'e2e/tsconfig.json',
+    },
+  },
 };
 

@@ -1,92 +1,50 @@
 /**
- * Firebase Configuration
+ * Firebase Configuration - MVP Stub Version
  * 
- * Initialize Firebase services for push notifications and analytics
+ * This is a no-op version for MVP deployment without Firebase
+ * Will be replaced with full Firebase integration in v1.1
  */
 
-import messaging from '@react-native-firebase/messaging';
-import analytics from '@react-native-firebase/analytics';
-
 /**
- * Request notification permissions
+ * Request notification permission (stub)
  */
 export const requestNotificationPermission = async (): Promise<boolean> => {
-  try {
-    const authStatus = await messaging().requestPermission();
-    const enabled =
-      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
-    if (enabled) {
-      console.log('Notification permission granted:', authStatus);
-    }
-
-    return enabled;
-  } catch (error) {
-    console.error('Error requesting notification permission:', error);
-    return false;
-  }
+  console.log('[MVP] Notification permission (stub) - will be added in v1.1');
+  return false;
 };
 
 /**
- * Get FCM token
+ * Get FCM token (stub)
  */
 export const getFCMToken = async (): Promise<string | null> => {
-  try {
-    const token = await messaging().getToken();
-    console.log('FCM Token:', token);
-    return token;
-  } catch (error) {
-    console.error('Error getting FCM token:', error);
-    return null;
-  }
+  console.log('[MVP] FCM Token (stub) - will be added in v1.1');
+  return null;
 };
 
 /**
- * Subscribe to topic
+ * Subscribe to topic (stub)
  */
 export const subscribeToTopic = async (topic: string): Promise<void> => {
-  try {
-    await messaging().subscribeToTopic(topic);
-    console.log(`Subscribed to topic: ${topic}`);
-  } catch (error) {
-    console.error(`Error subscribing to topic ${topic}:`, error);
-  }
+  console.log(`[MVP] Subscribe to topic ${topic} (stub) - will be added in v1.1`);
 };
 
 /**
- * Unsubscribe from topic
+ * Unsubscribe from topic (stub)
  */
 export const unsubscribeFromTopic = async (topic: string): Promise<void> => {
-  try {
-    await messaging().unsubscribeFromTopic(topic);
-    console.log(`Unsubscribed from topic: ${topic}`);
-  } catch (error) {
-    console.error(`Error unsubscribing from topic ${topic}:`, error);
-  }
+  console.log(`[MVP] Unsubscribe from topic ${topic} (stub) - will be added in v1.1`);
 };
 
 /**
- * Log analytics event
+ * Log analytics event (stub)
  */
 export const logEvent = async (eventName: string, params?: { [key: string]: any }): Promise<void> => {
-  try {
-    await analytics().logEvent(eventName, params);
-  } catch (error) {
-    console.error('Error logging analytics event:', error);
-  }
+  console.log(`[MVP] Analytics event ${eventName} (stub) - will be added in v1.1`, params);
 };
 
 /**
- * Set user properties
+ * Set user properties (stub)
  */
 export const setUserProperties = async (properties: { [key: string]: string }): Promise<void> => {
-  try {
-    for (const [key, value] of Object.entries(properties)) {
-      await analytics().setUserProperty(key, value);
-    }
-  } catch (error) {
-    console.error('Error setting user properties:', error);
-  }
+  console.log('[MVP] Set user properties (stub) - will be added in v1.1', properties);
 };
-
