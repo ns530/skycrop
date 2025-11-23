@@ -44,14 +44,21 @@ async function runMigrations() {
     process.exit(1);
   }
 
+  // Determine SSL requirement based on connection string
+  // Railway internal connections may not need SSL, external ones do
+  const needsSSL = DATABASE_URL.includes('rlwy.net') || DATABASE_URL.includes('railway.app');
+  const sslConfig = NODE_ENV === 'production' && needsSSL 
+    ? { rejectUnauthorized: false } 
+    : false;
+
   const pool = new Pool({
     connectionString: DATABASE_URL,
-    ssl: NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    ssl: sslConfig,
     // Connection pool settings for resilience
     max: 5,
     min: 1,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 10000,
+    connectionTimeoutMillis: 15000, // Increased timeout
     // Retry connection on failure
     retry: {
       max: 3,
@@ -59,6 +66,7 @@ async function runMigrations() {
         /ECONNRESET/,
         /ECONNREFUSED/,
         /Connection terminated/,
+        /SSL connection/,
       ],
     },
   });

@@ -18,10 +18,16 @@ async function checkPostGISHealth() {
 
   console.log('🔍 Checking PostGIS service health...\n');
 
+  // Determine SSL requirement: external Railway URLs need SSL, internal don't
+  const needsSSL = DATABASE_URL.includes('rlwy.net') || DATABASE_URL.includes('railway.app');
+  const sslConfig = NODE_ENV === 'production' && needsSSL 
+    ? { rejectUnauthorized: false } 
+    : false;
+
   const pool = new Pool({
     connectionString: DATABASE_URL,
-    ssl: NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-    connectionTimeoutMillis: 5000,
+    ssl: sslConfig,
+    connectionTimeoutMillis: 10000, // Increased timeout
   });
 
   try {

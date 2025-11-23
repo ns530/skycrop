@@ -23,6 +23,15 @@ let sequelize;
 
 if (DATABASE_URL) {
   // Cloud deployment (Railway, Heroku, etc.) - use DATABASE_URL
+  // Determine SSL requirement: external Railway URLs need SSL, internal don't
+  const needsSSL = DATABASE_URL.includes('rlwy.net') || DATABASE_URL.includes('railway.app');
+  const sslConfig = NODE_ENV === 'production' && needsSSL
+    ? {
+        require: true,
+        rejectUnauthorized: false,
+      }
+    : false;
+
   sequelize = new Sequelize(DATABASE_URL, {
     dialect: 'postgres',
     logging: NODE_ENV === 'development' ? console.log : false,
@@ -33,10 +42,7 @@ if (DATABASE_URL) {
       acquire: Number(DB_POOL_ACQUIRE),
     },
     dialectOptions: {
-      ssl: NODE_ENV === 'production' ? {
-        require: true,
-        rejectUnauthorized: false,
-      } : false,
+      ssl: sslConfig,
     },
     define: {
       // Align timestamps with our schema (created_at, updated_at)
