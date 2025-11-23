@@ -49,6 +49,13 @@ process.on('SIGINT', () => shutdown('SIGINT'));
 
 async function start() {
   try {
+    // Wait a bit for PostGIS to be ready (especially after restart)
+    const waitTime = process.env.DB_WAIT_TIME ? parseInt(process.env.DB_WAIT_TIME) : 5000;
+    if (process.env.NODE_ENV === 'production') {
+      logger.info(`Waiting ${waitTime}ms for database to be ready...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+    
     // Run migrations first
     logger.info('Running database migrations...');
     await runMigrations();

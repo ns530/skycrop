@@ -16,6 +16,28 @@ const {
   NODE_ENV = 'development',
 } = process.env;
 
+// Retry helper with exponential backoff
+async function retryWithBackoff(fn, maxRetries = 5, initialDelay = 1000) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      const isConnectionError = error.code === 'ECONNRESET' || 
+                                error.code === 'ECONNREFUSED' ||
+                                error.message?.includes('Connection terminated') ||
+                                error.message?.includes('Connection closed');
+      
+      if (!isConnectionError || attempt === maxRetries) {
+        throw error;
+      }
+      
+      const delay = initialDelay * Math.pow(2, attempt - 1);
+      console.log(`⚠️  Connection error (attempt ${attempt}/${maxRetries}), retrying in ${delay}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+}
+
 async function runMigrations() {
   if (!DATABASE_URL) {
     console.error('❌ DATABASE_URL not set. Cannot run migrations.');
@@ -25,11 +47,27 @@ async function runMigrations() {
   const pool = new Pool({
     connectionString: DATABASE_URL,
     ssl: NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    // Connection pool settings for resilience
+    max: 5,
+    min: 1,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000,
+    // Retry connection on failure
+    retry: {
+      max: 3,
+      match: [
+        /ECONNRESET/,
+        /ECONNREFUSED/,
+        /Connection terminated/,
+      ],
+    },
   });
 
   try {
     console.log('🔍 Checking database connection...');
-    await pool.query('SELECT NOW()');
+    await retryWithBackoff(async () => {
+      await pool.query('SELECT NOW()');
+    });
     console.log('✅ Database connected');
 
     // Read init.sql first
@@ -44,7 +82,9 @@ async function runMigrations() {
     const initSql = fs.readFileSync(initSqlPath, 'utf8');
 
     console.log('🚀 Running init.sql...');
-    await pool.query(initSql);
+    await retryWithBackoff(async () => {
+      await pool.query(initSql);
+    });
     console.log('✅ init.sql completed');
 
     // Run migration files in order
@@ -62,7 +102,9 @@ async function runMigrations() {
         
         try {
           const migrationSql = fs.readFileSync(migrationPath, 'utf8');
-          await pool.query(migrationSql);
+          await retryWithBackoff(async () => {
+            await pool.query(migrationSql);
+          });
           console.log(`✅ ${file} completed`);
         } catch (error) {
           // If error is about already existing, that's okay (idempotent)

@@ -64,10 +64,9 @@ export const CreateFieldScreen: React.FC = () => {
         return;
       }
 
-      // Try to get current position with timeout
+      // Try to get current position
       const location = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
-        timeout: 10000, // 10 second timeout
       });
       
       const { latitude, longitude } = location.coords;
