@@ -45,11 +45,15 @@ async function runMigrations() {
   }
 
   // Determine SSL requirement based on connection string
-  // Railway internal connections may not need SSL, external ones do
-  const needsSSL = DATABASE_URL.includes('rlwy.net') || DATABASE_URL.includes('railway.app');
-  const sslConfig = NODE_ENV === 'production' && needsSSL 
-    ? { rejectUnauthorized: false } 
-    : false;
+  // Railway internal connections (.railway.internal) don't need SSL
+  // External connections (rlwy.net, railway.app, gondola.proxy) may need SSL
+  // But PostGIS might not be ready for SSL yet, so we'll try without SSL first
+  const isInternal = DATABASE_URL.includes('.railway.internal') || DATABASE_URL.includes('postgis.railway.internal');
+  const isExternal = DATABASE_URL.includes('rlwy.net') || DATABASE_URL.includes('railway.app') || DATABASE_URL.includes('gondola.proxy');
+  
+  // Try without SSL first (PostGIS might not be ready for SSL)
+  // If that fails, we'll retry with SSL
+  const sslConfig = false; // Start without SSL to avoid SSL handshake issues during startup
 
   const pool = new Pool({
     connectionString: DATABASE_URL,
@@ -58,7 +62,7 @@ async function runMigrations() {
     max: 5,
     min: 1,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 15000, // Increased timeout
+    connectionTimeoutMillis: 20000, // Increased timeout for startup
     // Retry connection on failure
     retry: {
       max: 3,

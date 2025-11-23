@@ -24,8 +24,11 @@ let sequelize;
 if (DATABASE_URL) {
   // Cloud deployment (Railway, Heroku, etc.) - use DATABASE_URL
   // Determine SSL requirement: external Railway URLs need SSL, internal don't
-  const needsSSL = DATABASE_URL.includes('rlwy.net') || DATABASE_URL.includes('railway.app');
-  const sslConfig = NODE_ENV === 'production' && needsSSL
+  const isInternal = DATABASE_URL.includes('.railway.internal') || DATABASE_URL.includes('postgis.railway.internal');
+  const isExternal = DATABASE_URL.includes('rlwy.net') || DATABASE_URL.includes('railway.app') || DATABASE_URL.includes('gondola.proxy');
+  
+  // Only use SSL for external connections, not internal
+  const sslConfig = (NODE_ENV === 'production' && isExternal && !isInternal)
     ? {
         require: true,
         rejectUnauthorized: false,
