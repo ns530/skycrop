@@ -8,9 +8,9 @@ import {
   Text,
   ScrollView,
   StyleSheet,
-  SafeAreaView,
   RefreshControl,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons as Icon } from '@expo/vector-icons';
 
 import { LoadingSpinner } from '../../components/LoadingSpinner';

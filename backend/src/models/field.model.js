@@ -43,11 +43,15 @@ const Field = sequelize.define(
       // square meters computed via ST_Area(geography) in DB trigger/service
       type: DataTypes.DECIMAL, // NUMERIC
       allowNull: false,
+      // Default value for Sequelize validation - trigger will override
+      defaultValue: 0,
     },
     center: {
       // geometry(Point, 4326)
       type: DataTypes.GEOMETRY('POINT', 4326),
       allowNull: false,
+      // Default point for Sequelize validation - trigger will override
+      defaultValue: sequelize.literal("ST_GeomFromText('POINT(0 0)', 4326)"),
     },
     status: {
       type: DataTypes.ENUM('active', 'archived', 'deleted'),
@@ -89,6 +93,9 @@ const Field = sequelize.define(
     },
   }
 );
+
+// Note: Placeholder values for center and area_sqm are set in field.service.js
+// The database trigger compute_field_metrics will override these with actual computed values
 
 // Optional association helper (to be called where models are wired together)
 // Field.associate = (models) => {

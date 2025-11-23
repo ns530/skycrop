@@ -9,9 +9,9 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation, type RouteProp } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons as Icon } from '@expo/vector-icons';

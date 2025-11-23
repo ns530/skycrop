@@ -10,8 +10,8 @@ import {
   Text,
   StyleSheet,
   RefreshControl,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons as Icon } from '@expo/vector-icons';
