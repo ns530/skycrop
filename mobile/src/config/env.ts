@@ -8,22 +8,9 @@ import { Platform } from 'react-native';
 
 // Determine API base URL based on platform and environment
 const getApiBaseUrl = (): string => {
-  // Development URLs
-  if (__DEV__) {
-    if (Platform.OS === 'android') {
-      // Android emulator localhost
-      return 'http://10.0.2.2:4000';
-    }
-    if (Platform.OS === 'ios') {
-      // iOS simulator localhost
-      return 'http://localhost:4000';
-    }
-    // Physical device - replace with your local network IP
-    return 'http://192.168.1.100:4000';
-  }
-
-  // Production URL
-  return 'https://api.skycrop.app';
+  // Use Railway backend for both development and production
+  // Note: Don't include /api/v1 here - it's added in individual API calls
+  return 'https://skycrop-staging-production.up.railway.app';
 };
 
 export const API_BASE_URL = getApiBaseUrl();

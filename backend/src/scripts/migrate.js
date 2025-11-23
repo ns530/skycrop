@@ -32,7 +32,7 @@ async function runMigrations() {
     await pool.query('SELECT NOW()');
     console.log('✅ Database connected');
 
-    // Read init.sql
+    // Read init.sql first
     const initSqlPath = path.join(__dirname, '../../database/init.sql');
     
     if (!fs.existsSync(initSqlPath)) {
@@ -40,14 +40,43 @@ async function runMigrations() {
       process.exit(1);
     }
 
-    console.log('📋 Reading migration file...');
-    const sql = fs.readFileSync(initSqlPath, 'utf8');
+    console.log('📋 Reading init.sql...');
+    const initSql = fs.readFileSync(initSqlPath, 'utf8');
 
-    console.log('🚀 Running migrations...');
-    
-    // Split by semicolon and run each statement
-    // Note: This is a simple approach. For production, consider using a migration tool like node-pg-migrate
-    await pool.query(sql);
+    console.log('🚀 Running init.sql...');
+    await pool.query(initSql);
+    console.log('✅ init.sql completed');
+
+    // Run migration files in order
+    const migrationsDir = path.join(__dirname, '../../database/migrations');
+    if (fs.existsSync(migrationsDir)) {
+      const migrationFiles = fs.readdirSync(migrationsDir)
+        .filter(file => file.endsWith('.sql'))
+        .sort(); // Run in alphabetical order
+
+      console.log(`📋 Found ${migrationFiles.length} migration files...`);
+      
+      for (const file of migrationFiles) {
+        const migrationPath = path.join(migrationsDir, file);
+        console.log(`🚀 Running migration: ${file}...`);
+        
+        try {
+          const migrationSql = fs.readFileSync(migrationPath, 'utf8');
+          await pool.query(migrationSql);
+          console.log(`✅ ${file} completed`);
+        } catch (error) {
+          // If error is about already existing, that's okay (idempotent)
+          if (error.message && (
+            error.message.includes('already exists') ||
+            error.message.includes('duplicate')
+          )) {
+            console.log(`ℹ️  ${file} - objects already exist (skipping)`);
+          } else {
+            throw error;
+          }
+        }
+      }
+    }
 
     console.log('✅ Migrations completed successfully');
     console.log('');

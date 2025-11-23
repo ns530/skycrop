@@ -14,11 +14,12 @@ import {
 } from 'react-native';
 import { useRoute, useNavigation, type RouteProp } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons as Icon } from '@expo/vector-icons';
 
 import { useFieldDetail, useDeleteField } from '../../hooks/useFields';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
+import { FieldMap } from '../../components/FieldMap';
 import type { FieldsStackParamList } from '../../navigation/FieldsNavigator';
 
 type RouteProps = RouteProp<FieldsStackParamList, 'FieldDetail'>;
@@ -139,6 +140,20 @@ const FieldDetailScreen: React.FC = () => {
               </View>
             </View>
           </View>
+        </View>
+
+        {/* Field Map */}
+        <View style={styles.mapCard}>
+          <Text style={styles.sectionTitle}>Field Location</Text>
+          <FieldMap
+            center={{
+              latitude: field.center.coordinates[1],
+              longitude: field.center.coordinates[0],
+            }}
+            boundary={field.boundary}
+            editable={false}
+            height={250}
+          />
         </View>
 
         {/* Quick Actions */}
@@ -287,6 +302,17 @@ const styles = StyleSheet.create({
   statusActive: {
     color: '#10b981',
   },
+  mapCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
   actionsCard: {
     backgroundColor: '#fff',
     borderRadius: 12,
@@ -358,4 +384,5 @@ const styles = StyleSheet.create({
 });
 
 export default FieldDetailScreen;
+
 

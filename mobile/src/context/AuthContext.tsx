@@ -6,7 +6,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Keychain from 'react-native-keychain';
+import * as SecureStore from 'expo-secure-store';
 import { authApi } from '../api/authApi';
 import type { User, LoginCredentials, RegisterData } from '../types/auth';
 
@@ -39,15 +39,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loadStoredAuth = async () => {
     try {
       setIsLoading(true);
+      console.log('[AuthContext] Loading stored auth data...');
       
       // Try to get token from secure storage first
-      const credentials = await Keychain.getGenericPassword();
-      let storedToken = credentials ? credentials.password : null;
+      let storedToken = await SecureStore.getItemAsync(TOKEN_KEY);
       
       // Fallback to AsyncStorage
       if (!storedToken) {
         storedToken = await AsyncStorage.getItem(TOKEN_KEY);
       }
+      
+      console.log('[AuthContext] Token found:', !!storedToken);
 
       if (storedToken) {
         setToken(storedToken);
@@ -59,15 +61,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(userData);
         }
 
-        // Verify token is still valid by fetching user profile
-        try {
-          const profile = await authApi.getProfile(storedToken);
-          setUser(profile);
-          await AsyncStorage.setItem(USER_KEY, JSON.stringify(profile));
-        } catch (error) {
-          // Token invalid, clear auth
-          await clearAuth();
-        }
+        // Note: Backend doesn't have a profile endpoint for token verification
+        // Token validity will be checked on the next API call that requires auth
       }
     } catch (error) {
       console.error('Error loading stored auth:', error);
@@ -79,7 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const saveAuth = async (newToken: string, newUser: User) => {
     try {
       // Save to secure storage (preferred)
-      await Keychain.setGenericPassword(USER_KEY, newToken);
+      await SecureStore.setItemAsync(TOKEN_KEY, newToken);
       
       // Also save to AsyncStorage as backup
       await AsyncStorage.setItem(TOKEN_KEY, newToken);
@@ -95,7 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const clearAuth = async () => {
     try {
-      await Keychain.resetGenericPassword();
+      await SecureStore.deleteItemAsync(TOKEN_KEY);
       await AsyncStorage.removeItem(TOKEN_KEY);
       await AsyncStorage.removeItem(USER_KEY);
       setToken(null);
@@ -141,13 +136,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshUser = useCallback(async () => {
     if (!token) return;
     
+    // Backend doesn't have a profile endpoint, so we'll use stored user data
+    // The user data is already stored locally after login/signup
     try {
-      const profile = await authApi.getProfile(token);
-      setUser(profile);
-      await AsyncStorage.setItem(USER_KEY, JSON.stringify(profile));
+      const storedUser = await AsyncStorage.getItem(USER_KEY);
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
     } catch (error) {
-      console.error('Error refreshing user:', error);
-      throw error;
+      console.error('Error refreshing user from storage:', error);
     }
   }, [token]);
 

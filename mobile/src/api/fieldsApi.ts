@@ -5,6 +5,7 @@
  */
 
 import { apiClient } from './client';
+import * as GeoJSON from 'geojson';
 
 export interface Field {
   field_id: string;
@@ -62,26 +63,36 @@ export const fieldsApi = {
    * Get all fields for current user
    */
   listFields: async (params?: ListFieldsParams): Promise<PaginatedResponse<FieldSummary>> => {
-    const response = await apiClient.get<PaginatedResponse<FieldSummary>>('/api/v1/fields', {
+    const response = await apiClient.get<any>('/api/v1/fields', {
       params,
     });
-    return response.data;
+    // Backend returns { success: true, data: {...}, pagination: {...} }
+    const backendData = response.data.data || response.data;
+    const pagination = response.data.pagination || response.data.data?.pagination;
+    return {
+      data: backendData?.data || backendData || [],
+      pagination: pagination || { page: 1, limit: 20, total: 0, total_pages: 0 },
+    };
   },
 
   /**
    * Get field by ID
    */
   getFieldById: async (fieldId: string): Promise<Field> => {
-    const response = await apiClient.get<Field>(`/api/v1/fields/${fieldId}`);
-    return response.data;
+    const response = await apiClient.get<any>(`/api/v1/fields/${fieldId}`);
+    // Backend returns { success: true, data: {...} }
+    const backendData = response.data.data || response.data;
+    return backendData;
   },
 
   /**
    * Create new field
    */
   createField: async (payload: CreateFieldPayload): Promise<Field> => {
-    const response = await apiClient.post<Field>('/api/v1/fields', payload);
-    return response.data;
+    const response = await apiClient.post<any>('/api/v1/fields', payload);
+    // Backend returns { success: true, data: {...} }
+    const backendData = response.data.data || response.data;
+    return backendData;
   },
 
   /**
