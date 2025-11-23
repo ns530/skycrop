@@ -4,6 +4,7 @@ const { Sequelize } = require('sequelize');
 
 const {
   DATABASE_URL,
+  DATABASE_PRIVATE_URL, // Railway internal connection (no SSL needed)
   DB_HOST = 'localhost',
   DB_PORT = '5432',
   DB_NAME = 'skycrop_dev',
@@ -17,25 +18,20 @@ const {
   NODE_ENV = 'development',
 } = process.env;
 
+// Prefer private URL for internal connections (no SSL needed)
+const DB_CONNECTION_STRING = DATABASE_PRIVATE_URL || DATABASE_URL;
+
 // Create Sequelize instance
 // Prefer DATABASE_URL (Railway/Cloud) over individual variables (local dev)
 let sequelize;
 
-if (DATABASE_URL) {
-  // Cloud deployment (Railway, Heroku, etc.) - use DATABASE_URL
-  // Determine SSL requirement: external Railway URLs need SSL, internal don't
-  const isInternal = DATABASE_URL.includes('.railway.internal') || DATABASE_URL.includes('postgis.railway.internal');
-  const isExternal = DATABASE_URL.includes('rlwy.net') || DATABASE_URL.includes('railway.app') || DATABASE_URL.includes('gondola.proxy');
-  
-  // Only use SSL for external connections, not internal
-  const sslConfig = (NODE_ENV === 'production' && isExternal && !isInternal)
-    ? {
-        require: true,
-        rejectUnauthorized: false,
-      }
-    : false;
+if (DB_CONNECTION_STRING) {
+  // Cloud deployment (Railway, Heroku, etc.) - use connection string
+  // Railway internal connections don't need SSL (handled at proxy level)
+  // Disable SSL to avoid handshake errors during PostGIS startup
+  const sslConfig = false; // No SSL needed for Railway internal connections
 
-  sequelize = new Sequelize(DATABASE_URL, {
+  sequelize = new Sequelize(DB_CONNECTION_STRING, {
     dialect: 'postgres',
     logging: NODE_ENV === 'development' ? console.log : false,
     pool: {

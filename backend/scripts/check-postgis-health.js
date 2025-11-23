@@ -8,29 +8,27 @@
 
 const { Pool } = require('pg');
 
-const { DATABASE_URL, NODE_ENV = 'development' } = process.env;
+const { DATABASE_URL, DATABASE_PRIVATE_URL, NODE_ENV = 'development' } = process.env;
+
+// Prefer private URL for internal connections (no SSL needed)
+const DB_CONNECTION_STRING = DATABASE_PRIVATE_URL || DATABASE_URL;
 
 async function checkPostGISHealth() {
-  if (!DATABASE_URL) {
-    console.error('❌ DATABASE_URL not set');
+  if (!DB_CONNECTION_STRING) {
+    console.error('❌ DATABASE_URL or DATABASE_PRIVATE_URL not set');
     process.exit(1);
   }
 
   console.log('🔍 Checking PostGIS service health...\n');
 
-  // Determine SSL requirement: external Railway URLs need SSL, internal don't
-  const isInternal = DATABASE_URL.includes('.railway.internal') || DATABASE_URL.includes('postgis.railway.internal');
-  const isExternal = DATABASE_URL.includes('rlwy.net') || DATABASE_URL.includes('railway.app') || DATABASE_URL.includes('gondola.proxy');
-  
-  // Only use SSL for external connections, not internal
-  const sslConfig = (NODE_ENV === 'production' && isExternal && !isInternal)
-    ? { rejectUnauthorized: false }
-    : false;
+  // Railway internal connections don't need SSL (handled at proxy level)
+  // Disable SSL to avoid handshake errors
+  const sslConfig = false;
 
   const pool = new Pool({
-    connectionString: DATABASE_URL,
+    connectionString: DB_CONNECTION_STRING,
     ssl: sslConfig,
-    connectionTimeoutMillis: 10000, // Increased timeout
+    connectionTimeoutMillis: 15000, // Increased timeout
   });
 
   try {
