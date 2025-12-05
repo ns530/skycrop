@@ -41,71 +41,97 @@ async function runRecommendationsGeneration() {
       errors: [],
     };
 
-    // Process each field
-    for (const field of fields) {
-      try {
-        logger.debug(`Generating recommendations for field: ${field.name} (${field.field_id})`);
+    // Process fields in parallel with rate limiting
+    const BATCH_SIZE = 3; // Process 3 fields concurrently (lighter than health monitoring)
+    const DELAY_BETWEEN_BATCHES = 2000; // 2 seconds between batches
 
-        // Check if we have recent recommendations (within last 6 days)
-        const recentRecommendations = await recommendationService.getRecentRecommendations(
-          field.field_id,
-          6 // days
-        );
+    for (let i = 0; i < fields.length; i += BATCH_SIZE) {
+      const batch = fields.slice(i, i + BATCH_SIZE);
+      logger.debug(`Processing batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(fields.length / BATCH_SIZE)} (${batch.length} fields)`);
 
-        if (recentRecommendations && recentRecommendations.length > 0) {
-          logger.debug(`Field ${field.name} has recent recommendations, skipping`);
-          results.skipped++;
-          continue;
+      // Process batch in parallel
+      const batchPromises = batch.map(async (field) => {
+        try {
+          logger.debug(`Generating recommendations for field: ${field.name} (${field.field_id})`);
+
+          // Check if we have recent recommendations (within last 6 days)
+          const recentRecommendations = await recommendationService.getRecentRecommendations(
+            field.field_id,
+            6 // days
+          );
+
+          if (recentRecommendations && recentRecommendations.length > 0) {
+            logger.debug(`Field ${field.name} has recent recommendations, skipping`);
+            return { status: 'skipped', field };
+          }
+
+          // Get latest health data
+          const latestHealth = await healthService.getLatestHealthRecord(field.field_id);
+          if (!latestHealth) {
+            logger.warn(`No health data available for field ${field.name}, skipping`);
+            return { status: 'skipped', field };
+          }
+
+          // Get weather forecast
+          const center = JSON.parse(field.center);
+          const latitude = center.coordinates[1];
+          const longitude = center.coordinates[0];
+
+          const weatherForecast = await weatherService.getForecast({
+            latitude,
+            longitude,
+          });
+
+          // Generate recommendations based on health and weather data
+          const recommendations = await recommendationService.generateRecommendations({
+            fieldId: field.field_id,
+            userId: field.user_id,
+            healthData: latestHealth,
+            weatherData: weatherForecast,
+          });
+
+          // Save recommendations
+          if (recommendations && recommendations.length > 0) {
+            await recommendationService.saveRecommendations(field.field_id, recommendations);
+            logger.info(`Generated ${recommendations.length} recommendations for field: ${field.name}`);
+            return { status: 'success', field, count: recommendations.length };
+          } else {
+            logger.warn(`No recommendations generated for field: ${field.name}`);
+            return { status: 'skipped', field };
+          }
+
+        } catch (error) {
+          logger.error(`Error generating recommendations for field ${field.field_id}:`, error);
+          return {
+            status: 'failed',
+            field,
+            error: error.message
+          };
         }
+      });
 
-        // Get latest health data
-        const latestHealth = await healthService.getLatestHealthRecord(field.field_id);
-        if (!latestHealth) {
-          logger.warn(`No health data available for field ${field.name}, skipping`);
-          results.skipped++;
-          continue;
-        }
+      // Wait for all promises in the batch to complete
+      const batchResults = await Promise.all(batchPromises);
 
-        // Get weather forecast
-        const center = JSON.parse(field.center);
-        const latitude = center.coordinates[1];
-        const longitude = center.coordinates[0];
-
-        const weatherForecast = await weatherService.getForecast({
-          latitude,
-          longitude,
-        });
-
-        // Generate recommendations based on health and weather data
-        const recommendations = await recommendationService.generateRecommendations({
-          fieldId: field.field_id,
-          userId: field.user_id,
-          healthData: latestHealth,
-          weatherData: weatherForecast,
-        });
-
-        // Save recommendations
-        if (recommendations && recommendations.length > 0) {
-          await recommendationService.saveRecommendations(field.field_id, recommendations);
-          logger.info(`Generated ${recommendations.length} recommendations for field: ${field.name}`);
+      // Update results
+      for (const result of batchResults) {
+        if (result.status === 'success') {
           results.success++;
-        } else {
-          logger.warn(`No recommendations generated for field: ${field.name}`);
+        } else if (result.status === 'skipped') {
           results.skipped++;
+        } else if (result.status === 'failed') {
+          results.failed++;
+          results.errors.push({
+            fieldId: result.field.field_id,
+            fieldName: result.field.name,
+            error: result.error,
+          });
         }
+      }
 
-        // Add delay to avoid overwhelming services
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
-      } catch (error) {
-        logger.error(`Error generating recommendations for field ${field.field_id}:`, error);
-        results.failed++;
-        results.errors.push({
-          fieldId: field.field_id,
-          fieldName: field.name,
-          error: error.message,
-        });
-        continue;
+      // Rate limiting delay between batches (except for the last batch)
+      if (i + BATCH_SIZE < fields.length) {
+        await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_BATCHES));
       }
     }
 

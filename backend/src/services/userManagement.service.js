@@ -1,7 +1,7 @@
 'use strict';
 
 const User = require('../models/user.model');
-const { Op } = require('sequelize');
+const Sequelize = require('sequelize');
 const { canManageUser } = require('../config/permissions.config');
 
 /**
@@ -39,9 +39,9 @@ class UserManagementService {
     }
 
     if (search) {
-      where[Op.or] = [
-        { email: { [Op.iLike]: `%${search}%` } },
-        { name: { [Op.iLike]: `%${search}%` } },
+      where[Sequelize.Op.or] = [
+        { email: { [Sequelize.Op.iLike]: `%${search}%` } },
+        { name: { [Sequelize.Op.iLike]: `%${search}%` } },
       ];
     }
 
@@ -233,9 +233,9 @@ class UserManagementService {
 
     const users = await User.findAll({
       where: {
-        [Op.or]: [
-          { email: { [Op.iLike]: `%${query}%` } },
-          { name: { [Op.iLike]: `%${query}%` } },
+        [Sequelize.Op.or]: [
+          { email: { [Sequelize.Op.iLike]: `%${query}%` } },
+          { name: { [Sequelize.Op.iLike]: `%${query}%` } },
         ],
       },
       limit,

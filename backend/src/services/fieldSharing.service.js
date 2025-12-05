@@ -3,7 +3,7 @@
 const FieldShare = require('../models/fieldShare.model');
 const Field = require('../models/field.model');
 const User = require('../models/user.model');
-const { Op } = require('sequelize');
+const Sequelize = require('sequelize');
 
 /**
  * Field Sharing Service
@@ -182,9 +182,9 @@ class FieldSharingService {
     const shares = await FieldShare.findAll({
       where: {
         shared_with_user_id: userId,
-        [Op.or]: [
+        [Sequelize.Op.or]: [
           { expires_at: null },
-          { expires_at: { [Op.gt]: new Date() } },
+          { expires_at: { [Sequelize.Op.gt]: new Date() } },
         ],
       },
       include: [
@@ -233,9 +233,9 @@ class FieldSharingService {
       where: {
         field_id: fieldId,
         shared_with_user_id: userId,
-        [Op.or]: [
+        [Sequelize.Op.or]: [
           { expires_at: null },
-          { expires_at: { [Op.gt]: new Date() } },
+          { expires_at: { [Sequelize.Op.gt]: new Date() } },
         ],
       },
     });

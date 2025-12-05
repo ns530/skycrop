@@ -1,6 +1,6 @@
 'use strict';
 
-const { Op } = require('sequelize');
+const Sequelize = require('sequelize');
 const { emitToField, emitToUser } = require('../websocket/server');
 
 /**
@@ -38,8 +38,8 @@ class HealthMonitoringService {
       where: {
         field_id: fieldId,
         measurement_date: {
-          [Op.gte]: startDate,
-          [Op.lte]: endDate,
+          [Sequelize.Op.gte]: startDate,
+          [Sequelize.Op.lte]: endDate,
         },
       },
       order: [['measurement_date', 'ASC']],

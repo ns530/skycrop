@@ -10,13 +10,13 @@ class MLGatewayService {
   constructor() {
     this.redis = null;
 
-    this.ML_BASE_URL = (process.env.ML_BASE_URL || 'http://localhost:8001').replace(/\/+$/,'');
+    this.ML_BASE_URL = (process.env.ML_BASE_URL || 'http://localhost:80').replace(/\/+$/,'');
     this.ML_INTERNAL_TOKEN = process.env.ML_INTERNAL_TOKEN || 'change-me';
     this.CACHE_TTL = parseInt(process.env.ML_PREDICT_CACHE_TTL_SECONDS || '86400', 10);
     this.TIMEOUT_MS = parseInt(process.env.ML_REQUEST_TIMEOUT_MS || '60000', 10);
 
     // New: alternate service/env keys used by detectBoundaries()
-    this.ML_SERVICE_URL = (process.env.ML_SERVICE_URL || this.ML_BASE_URL || 'http://localhost:8001').replace(/\/+$/,'');
+    this.ML_SERVICE_URL = (process.env.ML_SERVICE_URL || this.ML_BASE_URL || 'http://localhost:80').replace(/\/+$/,'');
     this.ML_SERVICE_TOKEN = process.env.ML_SERVICE_TOKEN || this.ML_INTERNAL_TOKEN || 'change-me';
     this.MODEL_UNET_VERSION = process.env.MODEL_UNET_VERSION || '1.0.0';
   }

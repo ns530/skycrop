@@ -1,7 +1,7 @@
 'use strict';
 
 const Recommendation = require('../models/recommendation.model');
-const { Op } = require('sequelize');
+const Sequelize = require('sequelize');
 
 /**
  * Repository for recommendation data access
@@ -37,7 +37,7 @@ class RecommendationRepository {
 
     if (validOnly) {
       where.valid_until = {
-        [Op.gte]: new Date(),
+        [Sequelize.Op.gte]: new Date(),
       };
     }
 
@@ -72,7 +72,7 @@ class RecommendationRepository {
 
     if (validOnly) {
       where.valid_until = {
-        [Op.gte]: new Date(),
+        [Sequelize.Op.gte]: new Date(),
       };
     }
 

@@ -26,12 +26,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . /opt/ml-service
 
 # Runtime env defaults (can be overridden by compose)
-ENV ML_PORT=8001 \
+ENV ML_PORT=80 \
     MODEL_NAME=unet \
     MODEL_VERSION=1.0.0 \
     ORT_PROVIDERS=CPUExecutionProvider
 
-EXPOSE 8001
+EXPOSE 80
 
 # Gunicorn w/ gthread worker, 60s timeout as per contract
-CMD ["gunicorn", "wsgi:app", "-w", "2", "-k", "gthread", "-t", "60", "-b", "0.0.0.0:8001"]
+CMD ["gunicorn", "wsgi:app", "-w", "2", "-k", "gthread", "-t", "60", "-b", "0.0.0.0:80"]

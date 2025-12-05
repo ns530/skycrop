@@ -76,7 +76,7 @@ class WeatherService {
           timeout: this.TIMEOUT_MS,
           maxRedirects: 0,
           // Avoid following redirects for SSRF safety
-          validateStatus: (s) => s >= 200 && s < 500, // treat 5xx as error to retry
+          validateStatus: (s) => s >= 200 && s < 600, // treat all errors as responses
         });
 
         if (resp.status >= 200 && resp.status < 300) {
@@ -95,12 +95,16 @@ class WeatherService {
           });
           const err = new ValidationError(`Weather API error (${resp.status}): ${resp.statusText}`);
           err.statusCode = resp.status;
-          throw err;
+          throw err; // This will exit the method immediately
         }
 
         // 5xx falls through to retry
         lastErr = new Error(`Weather API server error (${resp.status})`);
       } catch (err) {
+        // Only network errors or ValidationError from 4xx
+        if (err.name === 'ValidationError') {
+          throw err; // Re-throw ValidationError without retry
+        }
         lastErr = err;
       }
 

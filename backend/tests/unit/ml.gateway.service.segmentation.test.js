@@ -45,11 +45,11 @@ describe('MLGatewayService.detectBoundaries Unit', () => {
       ...ORIGINAL_ENV,
       NODE_ENV: 'test',
       // New ML-Service envs
-      ML_SERVICE_URL: 'http://ml-service.local:8001',
+      ML_SERVICE_URL: 'http://ml-service.local:80',
       ML_SERVICE_TOKEN: 'unet-token',
       MODEL_UNET_VERSION: '1.0.0',
       // Existing gateway envs (fallbacks still supported)
-      ML_BASE_URL: 'http://ml-service.local:8001',
+      ML_BASE_URL: 'http://ml-service.local:80',
       ML_INTERNAL_TOKEN: 'test-internal-token',
       ML_PREDICT_CACHE_TTL_SECONDS: '86400',
       ML_REQUEST_TIMEOUT_MS: '60000',
@@ -165,7 +165,7 @@ describe('MLGatewayService.detectBoundaries Unit', () => {
   });
 
   test('inline return: returns maskBase64 and preserves model/version', async () => {
-    jest.spyOn(axios, 'post').mockResolvedValue({
+    jest.spyOn(axios, 'post').mockImplementation(async () => ({
       status: 200,
       headers: { 'x-model-version': 'unet-1.0.0' },
       data: {
@@ -176,7 +176,7 @@ describe('MLGatewayService.detectBoundaries Unit', () => {
         metrics: { latency_ms: 80 },
         warnings: [],
       },
-    });
+    }));
 
     const svc = new MLGatewayService();
     const out = await svc.detectBoundaries([80, 7, 80.1, 7.1], { returnFormat: 'inline' });

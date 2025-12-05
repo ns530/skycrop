@@ -23,7 +23,7 @@ def app_instance(tmp_path, internal_token):
     static_dir.mkdir(parents=True, exist_ok=True)
 
     overrides = {
-        "ML_PORT": 8001,
+        "ML_PORT": 80,
         "ML_INTERNAL_TOKEN": internal_token,
         "STATIC_FOLDER": str(static_dir),  # absolute path accepted by factory
         "REQUEST_TIMEOUT_S": 1,  # speed up timeout test path

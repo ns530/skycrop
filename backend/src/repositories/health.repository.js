@@ -1,7 +1,7 @@
 'use strict';
 
 const HealthRecord = require('../models/health.model');
-const { Op } = require('sequelize');
+const Sequelize = require('sequelize');
 
 /**
  * Repository for health record data access
@@ -19,7 +19,7 @@ class HealthRepository {
       where: {
         field_id: fieldId,
         measurement_date: {
-          [Op.between]: [startDate, endDate],
+          [Sequelize.Op.between]: [startDate, endDate],
         },
       },
       order: [['measurement_date', 'ASC']],
@@ -74,7 +74,7 @@ class HealthRepository {
     return await HealthRecord.destroy({
       where: {
         measurement_date: {
-          [Op.lt]: beforeDate,
+          [Sequelize.Op.lt]: beforeDate,
         },
       },
     });

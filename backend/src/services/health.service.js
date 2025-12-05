@@ -1,7 +1,7 @@
 'use strict';
 
 const axios = require('axios');
-const { Op, QueryTypes } = require('sequelize');
+const Sequelize = require('sequelize');
 const { sequelize } = require('../config/database.config');
 const Field = require('../models/field.model');
 const HealthRecord = require('../models/health.model');
@@ -91,7 +91,7 @@ class HealthService {
       LIMIT 1
       `,
       {
-        type: QueryTypes.SELECT,
+        type: Sequelize.QueryTypes.SELECT,
         replacements: { fieldId, userId },
       }
     );
@@ -346,7 +346,7 @@ class HealthService {
             updated_at = NOW()
         `,
         {
-          type: QueryTypes.INSERT,
+          type: Sequelize.QueryTypes.INSERT,
           replacements: {
             fieldId,
             ts: isoTimestamp,
@@ -367,7 +367,7 @@ class HealthService {
           ON CONFLICT (field_id, "timestamp") DO NOTHING
         `,
         {
-          type: QueryTypes.INSERT,
+          type: Sequelize.QueryTypes.INSERT,
           replacements: {
             fieldId,
             ts: isoTimestamp,
@@ -390,7 +390,7 @@ class HealthService {
         LIMIT 1
       `,
       {
-        type: QueryTypes.SELECT,
+        type: Sequelize.QueryTypes.SELECT,
         replacements: { fieldId, ts: isoTimestamp },
       }
     );
@@ -410,7 +410,7 @@ class HealthService {
         LIMIT 1
       `,
       {
-        type: QueryTypes.SELECT,
+        type: Sequelize.QueryTypes.SELECT,
         replacements: { fieldId, ts },
       }
     );
@@ -445,7 +445,7 @@ class HealthService {
       LIMIT :limit OFFSET :offset
       `,
       {
-        type: QueryTypes.SELECT,
+        type: Sequelize.QueryTypes.SELECT,
         replacements: {
           ...params,
           limit: Math.min(100, Math.max(1, parseInt(pageSize, 10))),
@@ -488,14 +488,14 @@ class HealthService {
 
     if (from || to) {
       where.measurement_date = {};
-      if (from) where.measurement_date[Op.gte] = from;
-      if (to) where.measurement_date[Op.lte] = to;
+      if (from) where.measurement_date[Sequelize.Op.gte] = from;
+      if (to) where.measurement_date[Sequelize.Op.lte] = to;
     } else {
       const d = Number.isFinite(days) ? Number(days) : 180;
       // last d days (inclusive)
       const start = new Date();
       start.setUTCDate(start.getUTCDate() - d);
-      where.measurement_date = { [Op.gte]: start.toISOString().slice(0, 10) };
+      where.measurement_date = { [Sequelize.Op.gte]: start.toISOString().slice(0, 10) };
     }
 
     const records = await HealthRecord.findAll({

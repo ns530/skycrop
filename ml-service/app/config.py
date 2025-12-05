@@ -11,7 +11,7 @@ class Config:
 
     # Networking
     ML_HOST: str = os.getenv("ML_HOST", "0.0.0.0")
-    ML_PORT: int = int(os.getenv("ML_PORT", "8001"))
+    ML_PORT: int = int(os.getenv("ML_PORT", "80"))
 
     # Security
     # ML_INTERNAL_TOKEN: Default value is a cryptographically secure random token generated using Python's secrets module.
@@ -21,7 +21,7 @@ class Config:
     # Models (Segmentation - Sprint 2)
     MODEL_NAME: str = os.getenv("MODEL_NAME", "unet")
     # Effective default version used when not specified by header/body
-    UNET_DEFAULT_VERSION: str = os.getenv("UNET_DEFAULT_VERSION", os.getenv("MODEL_VERSION", "2.0.0"))
+    UNET_DEFAULT_VERSION: str = os.getenv("UNET_DEFAULT_VERSION", os.getenv("MODEL_VERSION", "1.0.0"))
 
     # Models (Sprint 3 additions)
     # Path to yield RF ONNX model (fallback to joblib if ORT unavailable)

@@ -1,6 +1,6 @@
 'use strict';
 
-const { DataTypes } = require('sequelize');
+const { DataTypes, literal } = require('sequelize');
 const { sequelize } = require('../config/database.config');
 
 /**
@@ -90,7 +90,7 @@ const YieldPrediction = sequelize.define(
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: sequelize.literal('NOW()'),
+      defaultValue: literal('NOW()'),
     },
   },
   {

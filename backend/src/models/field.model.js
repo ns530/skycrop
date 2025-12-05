@@ -1,6 +1,6 @@
 'use strict';
 
-const { DataTypes } = require('sequelize');
+const { DataTypes, literal } = require('sequelize');
 const { sequelize } = require('../config/database.config');
 
 /**
@@ -51,7 +51,7 @@ const Field = sequelize.define(
       type: DataTypes.GEOMETRY('POINT', 4326),
       allowNull: false,
       // Default point for Sequelize validation - trigger will override
-      defaultValue: sequelize.literal("ST_GeomFromText('POINT(0 0)', 4326)"),
+      defaultValue: literal("ST_GeomFromText('POINT(0 0)', 4326)"),
     },
     status: {
       type: DataTypes.ENUM('active', 'archived', 'deleted'),
@@ -61,12 +61,12 @@ const Field = sequelize.define(
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: sequelize.literal('NOW()'),
+      defaultValue: literal('NOW()'),
     },
     updated_at: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: sequelize.literal('NOW()'),
+      defaultValue: literal('NOW()'),
     },
   },
   {

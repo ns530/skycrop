@@ -1,6 +1,6 @@
 'use strict';
 
-const { DataTypes, Op } = require('sequelize');
+const Sequelize = require('sequelize');
 const { sequelize } = require('../config/database.config');
 
 /**
@@ -37,12 +37,12 @@ const ActualYield = sequelize.define(
   'ActualYield',
   {
     yield_id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
+      type: Sequelize.DataTypes.UUID,
+      defaultValue: Sequelize.DataTypes.UUIDV4,
       primaryKey: true,
     },
     field_id: {
-      type: DataTypes.UUID,
+      type: Sequelize.DataTypes.UUID,
       allowNull: false,
       references: {
         model: 'fields',
@@ -50,7 +50,7 @@ const ActualYield = sequelize.define(
       },
     },
     user_id: {
-      type: DataTypes.UUID,
+      type: Sequelize.DataTypes.UUID,
       allowNull: false,
       references: {
         model: 'users',
@@ -58,7 +58,7 @@ const ActualYield = sequelize.define(
       },
     },
     actual_yield_per_ha: {
-      type: DataTypes.DECIMAL(10, 2),
+      type: Sequelize.DataTypes.DECIMAL(10, 2),
       allowNull: false,
       validate: {
         min: 0,
@@ -66,7 +66,7 @@ const ActualYield = sequelize.define(
       },
     },
     total_yield_kg: {
-      type: DataTypes.DECIMAL(10, 2),
+      type: Sequelize.DataTypes.DECIMAL(10, 2),
       allowNull: false,
       validate: {
         min: 0,
@@ -74,7 +74,7 @@ const ActualYield = sequelize.define(
       },
     },
     harvest_date: {
-      type: DataTypes.DATEONLY,
+      type: Sequelize.DataTypes.DATEONLY,
       allowNull: false,
       validate: {
         isDate: true,
@@ -86,7 +86,7 @@ const ActualYield = sequelize.define(
       },
     },
     prediction_id: {
-      type: DataTypes.UUID,
+      type: Sequelize.DataTypes.UUID,
       allowNull: true,
       references: {
         model: 'yield_predictions',
@@ -94,7 +94,7 @@ const ActualYield = sequelize.define(
       },
     },
     predicted_yield_per_ha: {
-      type: DataTypes.DECIMAL(10, 2),
+      type: Sequelize.DataTypes.DECIMAL(10, 2),
       allowNull: true,
       validate: {
         min: 0,
@@ -102,7 +102,7 @@ const ActualYield = sequelize.define(
       },
     },
     accuracy_mape: {
-      type: DataTypes.DECIMAL(5, 2),
+      type: Sequelize.DataTypes.DECIMAL(5, 2),
       allowNull: true,
       validate: {
         min: 0,
@@ -111,26 +111,26 @@ const ActualYield = sequelize.define(
       },
     },
     notes: {
-      type: DataTypes.TEXT,
+      type: Sequelize.DataTypes.TEXT,
       allowNull: true,
     },
     crop_variety: {
-      type: DataTypes.STRING(100),
+      type: Sequelize.DataTypes.STRING(100),
       allowNull: true,
     },
     season: {
-      type: DataTypes.ENUM('maha', 'yala', 'other'),
+      type: Sequelize.DataTypes.ENUM('maha', 'yala', 'other'),
       allowNull: true,
     },
     created_at: {
-      type: DataTypes.DATE,
+      type: Sequelize.DataTypes.DATE,
       allowNull: false,
-      defaultValue: DataTypes.NOW,
+      defaultValue: Sequelize.DataTypes.NOW,
     },
     updated_at: {
-      type: DataTypes.DATE,
+      type: Sequelize.DataTypes.DATE,
       allowNull: false,
-      defaultValue: DataTypes.NOW,
+      defaultValue: Sequelize.DataTypes.NOW,
     },
   },
   {
@@ -150,7 +150,7 @@ const ActualYield = sequelize.define(
       // Unique constraint: one entry per field per harvest date
       { unique: true, fields: ['field_id', 'harvest_date'], name: 'idx_actual_yields_field_harvest_unique' },
       // Prediction lookup
-      { fields: ['prediction_id'], where: { prediction_id: { [Op.ne]: null } } },
+      { fields: ['prediction_id'], where: { prediction_id: { [Sequelize.Op.ne]: null } } },
     ],
   }
 );

@@ -13,7 +13,7 @@ APP_NAME=SkyCrop
 
 # ============ DATABASE (PostgreSQL + PostGIS) ============
 # Local Development:
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/skycrop_dev
+DATABASE_URL=postgresql://skycrop_user:skycrop_pass@localhost:5432/skycrop_dev
 
 # Railway Production (will be auto-set by Railway):
 # DATABASE_URL=${{Postgres.DATABASE_URL}}
@@ -77,7 +77,7 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret
 GOOGLE_CALLBACK_URL=http://localhost:3000/api/v1/auth/google/callback
 
 # ============ ML SERVICE ============
-ML_SERVICE_URL=http://localhost:5000
+ML_SERVICE_URL=http://localhost:80
 
 # ============ EXTERNAL APIs ============
 WEATHER_API_KEY=your-weather-api-key

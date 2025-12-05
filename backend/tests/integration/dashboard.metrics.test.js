@@ -40,34 +40,118 @@ jest.mock('../../src/config/redis.config', () => ({
   getRedisClient: () => fakeRedisClient,
 }));
 
-// Mock database queries
-const { QueryTypes } = require('sequelize');
-jest.mock('../../src/config/database.config', () => {
+// Mock weather service
+jest.mock('../../src/services/weather.service', () => ({
+  getWeatherService: jest.fn(() => ({
+    getForecast: jest.fn().mockResolvedValue({
+      data: {
+        days: [
+          { date: '2025-12-06', rain_mm: 0, tmin: 22, tmax: 32, wind: 5 },
+          { date: '2025-12-07', rain_mm: 2, tmin: 21, tmax: 31, wind: 4 },
+          { date: '2025-12-08', rain_mm: 0, tmin: 23, tmax: 33, wind: 6 },
+          { date: '2025-12-09', rain_mm: 1, tmin: 22, tmax: 32, wind: 5 },
+          { date: '2025-12-10', rain_mm: 0, tmin: 21, tmax: 31, wind: 4 },
+          { date: '2025-12-11', rain_mm: 3, tmin: 23, tmax: 33, wind: 6 },
+          { date: '2025-12-12', rain_mm: 0, tmin: 22, tmax: 32, wind: 5 }
+        ],
+        totals: { rain_3d_mm: 3, rain_7d_mm: 6 }
+      }
+    })
+  }))
+}));
+
+// Mock ML Gateway service
+jest.mock('../../src/services/mlGateway.service', () => ({
+  getMLGatewayService: jest.fn(() => ({
+    getDisasterAssessment: jest.fn().mockResolvedValue({
+      risk_level: 'low',
+      disaster_types: ['flood'],
+      confidence: 0.85,
+      assessed_at: new Date().toISOString()
+    })
+  }))
+}));
+
+// Mock Sequelize entirely
+jest.mock('sequelize', () => {
   const { QueryTypes: OriginalQueryTypes } = jest.requireActual('sequelize');
-  return {
-    sequelize: {
-      query: jest.fn(),
-      define: jest.fn((modelName) => {
-        // Return a minimal mock model
-        return {
-          name: modelName,
-          findOne: jest.fn(),
-          findAll: jest.fn(),
-          create: jest.fn(),
-          update: jest.fn(),
-          destroy: jest.fn(),
-          hasMany: jest.fn(),
-          belongsTo: jest.fn(),
-          scope: jest.fn(() => ({ findOne: jest.fn() })),
-        };
-      }),
-      literal: jest.fn((val) => val),
-      Op: {},
-      QueryTypes: OriginalQueryTypes,
+
+  // Create a mock Model class that mimics Sequelize Model
+  class MockModel {
+    constructor(data = {}) {
+      Object.assign(this, data);
+      this.name = 'MockModel';
+    }
+
+    static init(attributes, options) {
+      // Mock init method - just return the class
+      this._attributes = attributes;
+      this._options = options;
+      return this;
+    }
+
+    static findOne() { return Promise.resolve(null); }
+    static findAll() { return Promise.resolve([]); }
+    static create(data) { return Promise.resolve(new this(data)); }
+    static update() { return Promise.resolve([0]); }
+    static destroy() { return Promise.resolve(0); }
+    static hasMany() { return this; }
+    static belongsTo() { return this; }
+    static scope() { return this; }
+  }
+
+  const mockSequelize = {
+    query: jest.fn(),
+    define: jest.fn((modelName, attributes, options) => {
+      // Return a mock Model class
+      const ModelClass = class extends MockModel {
+        constructor(data = {}) {
+          super(data);
+          this.name = modelName;
+        }
+      };
+      // Pre-init the model with attributes
+      ModelClass.init(attributes, options);
+      return ModelClass;
+    }),
+    literal: jest.fn((val) => ({ val, _isSequelizeLiteral: true })),
+    Op: {
+      ne: Symbol('ne'),
+      gte: Symbol('gte'),
+      lte: Symbol('lte'),
+      or: Symbol('or'),
+      iLike: Symbol('iLike'),
+      gt: Symbol('gt'),
+      between: Symbol('between'),
+      lt: Symbol('lt'),
     },
+    QueryTypes: OriginalQueryTypes,
+  };
+
+  return {
+    Sequelize: jest.fn(() => mockSequelize),
+    Model: MockModel,
+    DataTypes: {
+      UUID: 'UUID',
+      UUIDV4: 'UUIDV4',
+      STRING: (length) => `STRING(${length})`,
+      TEXT: 'TEXT',
+      INTEGER: 'INTEGER',
+      DECIMAL: (precision, scale) => `DECIMAL(${precision},${scale})`,
+      DATE: 'DATE',
+      ENUM: (...values) => `ENUM(${values.join(',')})`,
+      BOOLEAN: 'BOOLEAN',
+      NOW: 'NOW',
+      GEOMETRY: (type, srid) => `GEOMETRY(${type}, ${srid})`,
+      POINT: 'POINT',
+    },
+    Op: mockSequelize.Op,
+    QueryTypes: OriginalQueryTypes,
   };
 });
 
+// Mock database queries
+const { QueryTypes } = require('sequelize');
 const { sequelize } = require('../../src/config/database.config');
 
 process.env.NODE_ENV = 'test';

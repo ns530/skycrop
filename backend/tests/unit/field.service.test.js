@@ -224,4 +224,34 @@ describe('FieldService unit', () => {
     // still 1 SQL call due to cache
     expect(sequelize.query).toHaveBeenCalledTimes(1);
   });
+
+  test('update changes name and invalidates cache', async () => {
+    const result = await service.update('user-1', 'f-123', { name: 'New Name' });
+    expect(result.name).toBe('New Name');
+    expect(Field.prototype.save).toHaveBeenCalled();
+  });
+
+  test('update rejects duplicate name', async () => {
+    Field.findOne.mockResolvedValueOnce({ field_id: 'other' });
+    await expect(
+      service.update('user-1', 'f-123', { name: 'Existing Name' })
+    ).rejects.toBeInstanceOf(ConflictError);
+  });
+
+  test('update changes status', async () => {
+    const result = await service.update('user-1', 'f-123', { status: 'archived' });
+    expect(result.status).toBe('archived');
+  });
+
+  test('update rejects invalid status', async () => {
+    await expect(
+      service.update('user-1', 'f-123', { status: 'invalid' })
+    ).rejects.toBeInstanceOf(ValidationError);
+  });
+
+  test('delete sets status to deleted and invalidates cache', async () => {
+    const result = await service.delete('user-1', 'f-123');
+    expect(result.success).toBe(true);
+    expect(Field.prototype.save).toHaveBeenCalled();
+  });
 });

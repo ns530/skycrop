@@ -70,35 +70,34 @@ jest.mock('../../src/services/weather.service', () => ({
   }),
 }));
 
-// In-memory "DB" for sequelize.query
-const mockRecStore = new Map(); // key = `${fieldId}|${ts}|${type}`
-let mockIdCounter = 1;
-
-function mockKeyOf(fieldId, ts, type) {
-  return `${fieldId}|${ts}|${type}`;
-}
-
-function mockSelectByKey(fieldId, ts, type) {
-  const k = mockKeyOf(fieldId, ts, type);
-  return mockRecStore.has(k) ? { ...mockRecStore.get(k) } : null;
-}
-
-function mockListByWhere({ fieldId, fromISO, toISO, type }) {
-  const all = [];
-  for (const v of mockRecStore.values()) {
-    if (v.field_id !== fieldId) continue;
-    if (type && v.type !== type) continue;
-    const t = new Date(v.timestamp).getTime();
-    if (fromISO && t < new Date(fromISO).getTime()) continue;
-    if (toISO && t > new Date(toISO).getTime()) continue;
-    all.push(v);
-  }
-  // mimic ORDER BY timestamp DESC, id
-  all.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp) || (a.id || '').localeCompare(b.id || ''));
-  return all;
-}
-
 jest.mock('../../src/config/database.config', () => {
+  const mockRecStore = new Map(); // key = `${fieldId}|${ts}|${type}`
+  let mockIdCounter = 1;
+
+  function mockKeyOf(fieldId, ts, type) {
+    return `${fieldId}|${ts}|${type}`;
+  }
+
+  function mockSelectByKey(fieldId, ts, type) {
+    const k = mockKeyOf(fieldId, ts, type);
+    return mockRecStore.has(k) ? { ...mockRecStore.get(k) } : null;
+  }
+
+  function mockListByWhere({ fieldId, fromISO, toISO, type }) {
+    const all = [];
+    for (const v of mockRecStore.values()) {
+      if (v.field_id !== fieldId) continue;
+      if (type && v.type !== type) continue;
+      const t = new Date(v.timestamp).getTime();
+      if (fromISO && t < new Date(fromISO).getTime()) continue;
+      if (toISO && t > new Date(toISO).getTime()) continue;
+      all.push(v);
+    }
+    // mimic ORDER BY timestamp DESC, id
+    all.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp) || (a.id || '').localeCompare(b.id || ''));
+    return all;
+  }
+
   const original = jest.requireActual('../../src/config/database.config');
   return {
     ...original,
@@ -188,11 +187,14 @@ jest.mock('../../src/config/database.config', () => {
 
         return [];
       }),
+      clearMockRecStore: () => mockRecStore.clear(),
+      resetMockIdCounter: () => { mockIdCounter = 1; },
     },
   };
 });
 
 const { getRecommendationService } = require('../../src/services/recommendation.service');
+const { sequelize } = require('../../src/config/database.config');
 
 function mockMakeSnapshot(tsISO, ndvi, ndwi, tdvi) {
   return {
@@ -218,8 +220,8 @@ describe('RecommendationService unit', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     redisStore.clear();
-    mockRecStore.clear();
-    mockIdCounter = 1;
+    sequelize.clearMockRecStore();
+    sequelize.resetMockIdCounter();
 
     // Default snapshots window: two points 14 days apart
     mockSnapshots = [

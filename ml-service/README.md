@@ -66,7 +66,7 @@ Prereqs: Python 3.11, venv
 
 3) Run dev server
 - make run
-- Service on http://localhost:8001
+- Service on http://localhost:80
 
 4) Run tests
 - make test
@@ -82,7 +82,7 @@ Build image
 - docker build -t skycrop-ml:local ./ml-service
 
 Run
-- docker run --rm -p 8001:8001 -e ML_INTERNAL_TOKEN=change-me skycrop-ml:local
+- docker run --rm -p 80:80 -e ML_INTERNAL_TOKEN=change-me skycrop-ml:local
 
 Compose (root docker-compose.yml)
 - docker compose up --build ml-service
@@ -92,10 +92,10 @@ Healthcheck uses GET /health.
 ## Example requests
 
 Health
-- curl -s http://localhost:8001/health | jq
+- curl -s http://localhost:80/health | jq
 
 Predict (bbox → mask_url)
-- curl -s -X POST http://localhost:8001/v1/segmentation/predict \
+- curl -s -X POST http://localhost:80/v1/segmentation/predict \
   -H "Content-Type: application/json" \
   -H "X-Internal-Token: change-me" \
   -H "X-Request-Id: 58bb0a2f-3f46-4d7d-a8c6-0b7f34dc4df1" \
@@ -103,18 +103,18 @@ Predict (bbox → mask_url)
   -d '{ "bbox":[80.10,7.20,80.12,7.22], "date":"2025-10-15", "return":"mask_url" }'
 
 Predict (bbox → inline base64)
-- curl -s -X POST http://localhost:8001/v1/segmentation/predict \
+- curl -s -X POST http://localhost:80/v1/segmentation/predict \
   -H "Content-Type: application/json" \
   -H "X-Internal-Token: change-me" \
   -d '{ "bbox":[80.11,7.21,80.12,7.22], "date":"2025-10-10", "return":"inline" }'
 
 Auth failure (401)
-- curl -s -X POST http://localhost:8001/v1/segmentation/predict -d '{}'
+- curl -s -X POST http://localhost:80/v1/segmentation/predict -d '{}'
 
 ## Configuration
 
 Key env vars
-- ML_PORT: default 8001
+- ML_PORT: default 80
 - ML_INTERNAL_TOKEN: required for internal auth
 - MODEL_NAME: "unet"
 - UNET_DEFAULT_VERSION / MODEL_VERSION: default version ("1.0.0")
@@ -284,19 +284,19 @@ Structured JSON logging includes route, method, status, latency_ms, correlation_
 - Optional GPU scaffold:
   - ARG ENABLE_GPU=true is available as a build-time toggle; switching to an NVIDIA CUDA base and onnxruntime-gpu is deferred (see comments in Dockerfile).
 - Run:
-  - docker run --rm -p 8001:8001 -e ML_INTERNAL_TOKEN=change-me skycrop-ml:local
+  - docker run --rm -p 80:80 -e ML_INTERNAL_TOKEN=change-me skycrop-ml:local
 
 ## Example cURL
 
 Yield Predict (features)
-- curl -s -X POST http://localhost:8001/v1/yield/predict \
+- curl -s -X POST http://localhost:80/v1/yield/predict \
   -H "Content-Type: application/json" \
   -H "X-Internal-Token: change-me" \
   -H "X-Model-Version: yield_rf-1.0.0" \
   -d '{ "features":[{"field_id":"f1","f1":1,"f2":2}], "model_version":"1.0.0" }'
 
 Disaster Analyze (both)
-- curl -s -X POST http://localhost:8001/v1/disaster/analyze \
+- curl -s -X POST http://localhost:80/v1/disaster/analyze \
   -H "Content-Type: application/json" \
   -H "X-Internal-Token: change-me" \
   -H "X-Model-Version: disaster_analysis-1.0.0" \

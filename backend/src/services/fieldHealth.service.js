@@ -1,6 +1,6 @@
 'use strict';
 
-const { Op } = require('sequelize');
+const Sequelize = require('sequelize');
 const { initRedis } = require('../config/redis.config');
 const Field = require('../models/field.model');
 const HealthRecord = require('../models/health.model');
@@ -44,7 +44,7 @@ class FieldHealthService {
     if (!userId) throw new ValidationError('userId is required');
     if (!fieldId) throw new ValidationError('fieldId is required');
     const field = await Field.findOne({
-      where: { user_id: userId, field_id: fieldId, status: { [Op.ne]: 'deleted' } },
+      where: { user_id: userId, field_id: fieldId, status: { [Sequelize.Op.ne]: 'deleted' } },
     });
     if (!field) throw new NotFoundError('Field not found');
     return field;

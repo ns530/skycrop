@@ -236,7 +236,7 @@ describe('HealthService (vegetation indices) unit', () => {
     // OAuth OK
     axios.post.mockImplementationOnce(async () => ({ status: 200, data: { access_token: 'tok', expires_in: 3600 } }));
     // Process 500
-    axios.post.mockImplementationOnce(async () => ({ status: 500, data: {} }));
+    axios.post.mockImplementationOnce(async () => ({ status: 500, data: Buffer.from('{}', 'utf8'), headers: { 'content-type': 'application/json' } }));
     await expect(svc.computeIndicesForField(userId, fieldId, date)).rejects.toMatchObject({ statusCode: 503 });
 
     // Clear cached OAuth token to force re-authentication
@@ -245,7 +245,7 @@ describe('HealthService (vegetation indices) unit', () => {
     // OAuth OK again
     axios.post.mockImplementationOnce(async () => ({ status: 200, data: { access_token: 'tok', expires_in: 3600 } }));
     // Process 400
-    axios.post.mockImplementationOnce(async () => ({ status: 400, data: {} }));
+    axios.post.mockImplementationOnce(async () => ({ status: 400, data: Buffer.from('{}', 'utf8'), headers: { 'content-type': 'application/json' } }));
     await expect(svc.computeIndicesForField(userId, fieldId, date)).rejects.toMatchObject({ statusCode: 400 });
   });
 
@@ -254,5 +254,255 @@ describe('HealthService (vegetation indices) unit', () => {
       name: 'ValidationError',
       code: 'VALIDATION_ERROR',
     });
+  });
+
+  test('_assertFieldOwnership throws ValidationError for missing userId or fieldId', async () => {
+    await expect(svc._assertFieldOwnership(null, 'field-1')).rejects.toMatchObject({
+      name: 'ValidationError',
+      message: 'userId is required',
+    });
+    await expect(svc._assertFieldOwnership('user-1', null)).rejects.toMatchObject({
+      name: 'ValidationError',
+      message: 'fieldId is required',
+    });
+  });
+
+  test('_assertFieldOwnership throws NotFoundError for non-existent or deleted field', async () => {
+    Field.scope = jest.fn(() => ({
+      findOne: jest.fn(async () => null), // no field
+    }));
+    await expect(svc._assertFieldOwnership('user-1', 'field-1')).rejects.toMatchObject({
+      name: 'NotFoundError',
+      message: 'Field not found',
+    });
+
+    Field.scope = jest.fn(() => ({
+      findOne: jest.fn(async () => ({ status: 'deleted' })), // deleted
+    }));
+    await expect(svc._assertFieldOwnership('user-1', 'field-1')).rejects.toMatchObject({
+      name: 'NotFoundError',
+      message: 'Field not found',
+    });
+  });
+
+  test('_assertFieldOwnership returns field for valid ownership', async () => {
+    const field = { field_id: 'field-1', user_id: 'user-1', status: 'active' };
+    Field.scope = jest.fn(() => ({
+      findOne: jest.fn(async () => field),
+    }));
+    const result = await svc._assertFieldOwnership('user-1', 'field-1');
+    expect(result).toEqual(field);
+  });
+
+  test('_getFieldGeometry calls ownership check and returns boundary', async () => {
+    const boundary = { type: 'MultiPolygon', coordinates: [] };
+    querySpy.mockResolvedValueOnce([{ boundary }]);
+    const result = await svc._getFieldGeometry('user-1', 'field-1');
+    expect(result).toEqual(boundary);
+  });
+
+  test('_getFieldGeometry throws NotFoundError when no boundary', async () => {
+    querySpy.mockResolvedValueOnce([{ boundary: null }]);
+    await expect(svc._getFieldGeometry('user-1', 'field-1')).rejects.toMatchObject({
+      name: 'NotFoundError',
+      message: 'Field boundary not found',
+    });
+  });
+
+  test('_getOAuthToken caches token and reuses when valid', async () => {
+    const token = 'cached-token';
+    svc._oauthToken = { access_token: token, expires_at: Date.now() + 60000 };
+    const result = await svc._getOAuthToken();
+    expect(result).toBe(token);
+    expect(axios.post).not.toHaveBeenCalled();
+  });
+
+  test('_getOAuthToken fetches new token when expired or missing', async () => {
+    svc._oauthToken = null;
+    axios.post.mockResolvedValueOnce({
+      status: 200,
+      data: { access_token: 'new-token', expires_in: 3600 },
+    });
+    const result = await svc._getOAuthToken();
+    expect(result).toBe('new-token');
+    expect(axios.post).toHaveBeenCalledWith(
+      'https://services.sentinel-hub.com/oauth/token',
+      expect.any(String),
+      expect.objectContaining({ headers: { 'Content-Type': 'application/x-www-form-urlencoded' } })
+    );
+  });
+
+  test('_getOAuthToken throws error on OAuth failure', async () => {
+    svc._oauthToken = null;
+    axios.post.mockResolvedValueOnce({ status: 400, data: {} });
+    await expect(svc._getOAuthToken()).rejects.toThrow('SentinelHub OAuth error (400)');
+  });
+
+  test('_buildProcessBodyForGeometry constructs correct request body', () => {
+    const geometry = { type: 'MultiPolygon', coordinates: [] };
+    const date = '2025-01-15';
+    const body = svc._buildProcessBodyForGeometry(geometry, date, 128);
+    expect(body.input.bounds.geometry).toEqual(geometry);
+    expect(body.input.data[0].dataFilter.timeRange.from).toBe('2025-01-15T00:00:00Z');
+    expect(body.input.data[0].dataFilter.timeRange.to).toBe('2025-01-15T23:59:59Z');
+    expect(body.output.width).toBe(128);
+    expect(body.output.height).toBe(128);
+    expect(body.evalscript).toBe(svc._buildIndicesEvalscript());
+  });
+
+  test('_parseProcessResponse parses JSON stats correctly', () => {
+    const buffer = Buffer.from(JSON.stringify({
+      stats: { ndvi: { mean: 0.5 }, ndwi: { mean: 0.2 }, tdvi: { mean: 0.3 } }
+    }), 'utf8');
+    const result = svc._parseProcessResponse(buffer, { 'content-type': 'application/json' });
+    expect(result).toEqual({ ndvi: 0.5, ndwi: 0.2, tdvi: 0.3 });
+  });
+
+  test('_parseProcessResponse parses data array and computes means', () => {
+    const buffer = Buffer.from(JSON.stringify({
+      data: [
+        [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]],
+        [[0.7, 0.8, 0.9]]
+      ]
+    }), 'utf8');
+    const result = svc._parseProcessResponse(buffer, { 'content-type': 'application/json' });
+    expect(result.ndvi).toBeCloseTo((0.1 + 0.4 + 0.7) / 3, 5);
+    expect(result.ndwi).toBeCloseTo((0.2 + 0.5 + 0.8) / 3, 5);
+    expect(result.tdvi).toBeCloseTo((0.3 + 0.6 + 0.9) / 3, 5);
+  });
+
+  test('_parseProcessResponse throws error for invalid JSON', () => {
+    const buffer = Buffer.from('invalid json', 'utf8');
+    expect(() => svc._parseProcessResponse(buffer, { 'content-type': 'application/json' })).toThrow(
+      'Failed to parse JSON stats from Process API'
+    );
+  });
+
+  test('_parseProcessResponse throws 501 for non-JSON content', () => {
+    const buffer = Buffer.from('tiff data', 'utf8');
+    expect(() => svc._parseProcessResponse(buffer, { 'content-type': 'image/tiff' })).toThrow(
+      'Raster decoding not implemented for Process API response'
+    );
+    expect(() => svc._parseProcessResponse(buffer, {})).toThrow(
+      'Raster decoding not implemented for Process API response'
+    );
+  });
+
+  test('findSnapshot returns snapshot by field and date', async () => {
+    const result = await svc.findSnapshot('field-1', '2025-01-15');
+    expect(result).toHaveProperty('field_id', 'field-1');
+    expect(result).toHaveProperty('timestamp', '2025-01-15T00:00:00.000Z');
+    expect(result).toHaveProperty('ndvi', 0.62);
+  });
+
+  test('findSnapshot returns null when no snapshot found', async () => {
+    querySpy.mockResolvedValueOnce([]);
+    const result = await svc.findSnapshot('field-1', '2025-01-15');
+    expect(result).toBeNull();
+  });
+
+  test('getLatest returns latest health record', async () => {
+    const HealthRecord = require('../../src/models/health.model');
+    HealthRecord.findOne = jest.fn().mockResolvedValue({
+      id: 1,
+      field_id: 'field-1',
+      measurement_date: '2025-01-15',
+      health_score: 85,
+    });
+    const result = await svc.getLatest('user-1', 'field-1');
+    expect(result).toHaveProperty('health_score', 85);
+  });
+
+  test('getLatest throws NotFoundError when no records', async () => {
+    const HealthRecord = require('../../src/models/health.model');
+    HealthRecord.findOne = jest.fn().mockResolvedValue(null);
+    await expect(svc.getLatest('user-1', 'field-1')).rejects.toMatchObject({
+      name: 'NotFoundError',
+      message: 'No health data found for this field',
+    });
+  });
+
+  test('getHistory returns records with default days filter', async () => {
+    const HealthRecord = require('../../src/models/health.model');
+    const records = [{ id: 1, measurement_date: '2025-01-15' }];
+    HealthRecord.findAll = jest.fn().mockResolvedValue(records);
+    const result = await svc.getHistory('user-1', 'field-1');
+    expect(result).toEqual(records);
+    expect(HealthRecord.findAll).toHaveBeenCalledWith({
+      where: expect.objectContaining({
+        field_id: 'field-1',
+        measurement_date: expect.objectContaining({ [require('sequelize').Op.gte]: expect.any(String) }),
+      }),
+      order: [['measurement_date', 'DESC']],
+    });
+  });
+
+  test('getHistory supports from/to date filters', async () => {
+    const HealthRecord = require('../../src/models/health.model');
+    HealthRecord.findAll = jest.fn().mockResolvedValue([]);
+    await svc.getHistory('user-1', 'field-1', { from: '2025-01-01', to: '2025-01-31' });
+    expect(HealthRecord.findAll).toHaveBeenCalledWith({
+      where: expect.objectContaining({
+        field_id: 'field-1',
+        measurement_date: {
+          [require('sequelize').Op.gte]: '2025-01-01',
+          [require('sequelize').Op.lte]: '2025-01-31',
+        },
+      }),
+      order: [['measurement_date', 'DESC']],
+    });
+  });
+
+  test('refresh returns success response', async () => {
+    const result = await svc.refresh('user-1', 'field-1');
+    expect(result).toEqual({
+      success: true,
+      message: 'Health refresh scheduled',
+      field_id: 'field-1',
+      scheduled_at: expect.any(String),
+    });
+  });
+
+  test('computeIndicesForField validates date format', async () => {
+    await expect(svc.computeIndicesForField('user-1', 'field-1', '')).rejects.toMatchObject({
+      name: 'ValidationError',
+    });
+    await expect(svc.computeIndicesForField('user-1', 'field-1', 'invalid')).rejects.toMatchObject({
+      name: 'ValidationError',
+    });
+  });
+
+  test('upsertSnapshot validates required parameters', async () => {
+    await expect(svc.upsertSnapshot(null, '2025-01-15T00:00:00.000Z', {})).rejects.toMatchObject({
+      name: 'ValidationError',
+      message: 'fieldId is required',
+    });
+    await expect(svc.upsertSnapshot('field-1', null, {})).rejects.toMatchObject({
+      name: 'ValidationError',
+      message: 'timestamp is required',
+    });
+  });
+
+  test('listSnapshots validates ownership', async () => {
+    Field.scope = jest.fn(() => ({
+      findOne: jest.fn(async () => null), // no ownership
+    }));
+    await expect(svc.listSnapshots('user-1', 'field-1')).rejects.toMatchObject({
+      name: 'NotFoundError',
+    });
+  });
+
+  test('listSnapshots handles pagination and range filters', async () => {
+    const res = await svc.listSnapshots('user-1', 'field-1', { page: 2, pageSize: 10, from: '2025-01-01', to: '2025-01-31' });
+    expect(res.page).toBe(2);
+    expect(res.pageSize).toBe(10);
+  });
+
+  test('getHealthService returns singleton instance', () => {
+    const { getHealthService } = require('../../src/services/health.service');
+    const svc1 = getHealthService();
+    const svc2 = getHealthService();
+    expect(svc1).toBeInstanceOf(HealthService);
+    expect(svc1).toBe(svc2);
   });
 });

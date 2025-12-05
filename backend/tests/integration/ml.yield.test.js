@@ -43,7 +43,7 @@ jest.mock('../../src/config/redis.config', () => ({
 
 process.env.NODE_ENV = 'test';
 process.env.JWT_SECRET = 'test-secret';
-process.env.ML_BASE_URL = 'http://ml-service.local:8001';
+process.env.ML_BASE_URL = 'http://ml-service.local:80';
 process.env.ML_INTERNAL_TOKEN = 'test-internal-token';
 process.env.ML_REQUEST_TIMEOUT_MS = '60000';
 

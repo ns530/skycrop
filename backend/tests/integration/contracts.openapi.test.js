@@ -107,7 +107,7 @@ process.env.SENTINELHUB_CLIENT_SECRET = 'client-secret';
 process.env.SATELLITE_TILE_TTL_SECONDS = '21600';
 
 // ML env
-process.env.ML_BASE_URL = 'http://ml-service.local:8001';
+process.env.ML_BASE_URL = 'http://ml-service.local:80';
 process.env.ML_INTERNAL_TOKEN = 'test-internal-token';
 process.env.ML_PREDICT_CACHE_TTL_SECONDS = '86400';
 process.env.ML_REQUEST_TIMEOUT_MS = '60000';

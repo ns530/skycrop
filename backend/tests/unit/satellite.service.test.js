@@ -48,6 +48,11 @@ jest.mock('../../src/config/redis.config', () => ({
   getRedisClient: () => fakeRedis,
 }));
 
+const axios = require('axios');
+jest.mock('axios', () => ({
+  post: jest.fn(),
+}));
+
 const crypto = require('crypto');
 const { SatelliteService } = require('../../src/services/satellite.service');
 
@@ -98,5 +103,187 @@ describe('SatelliteService unit', () => {
     const a = svc._stableHash({ a: 1, b: 2 });
     const b = svc._stableHash({ b: 2, a: 1 }); // different order, same content
     expect(a).toBe(b);
+  });
+
+  test('init initializes redis client', async () => {
+    svc.redis = null;
+    await svc.init();
+    expect(svc.redis).toBe(fakeRedis);
+  });
+
+  test('_cacheGetTile returns parsed cached data', async () => {
+    await svc.init();
+    const key = 'test:key';
+    const body = Buffer.from('image data');
+    const etag = svc._sha1(body);
+    const cachedData = {
+      data: body.toString('base64'),
+      etag,
+      contentType: 'image/png',
+      cached_at: new Date().toISOString(),
+    };
+    store.set(key, JSON.stringify(cachedData));
+    const result = await svc._cacheGetTile(key);
+    expect(result.body).toEqual(body);
+    expect(result.etag).toBe(etag);
+  });
+
+  test('_cacheSetTile stores data with TTL', async () => {
+    await svc.init();
+    const key = 'test:key';
+    const body = Buffer.from('image data');
+    const etag = svc._sha1(body);
+    await svc._cacheSetTile(key, body, 'image/png', etag);
+    const stored = JSON.parse(store.get(key));
+    expect(stored.data).toBe(body.toString('base64'));
+    expect(stored.etag).toBe(etag);
+  });
+
+  test('_getOAuthToken caches token and reuses when valid', async () => {
+    svc._oauthToken = { access_token: 'cached-token', expires_at: Date.now() + 60000 };
+    const result = await svc._getOAuthToken();
+    expect(result).toBe('cached-token');
+    expect(axios.post).not.toHaveBeenCalled();
+  });
+
+  test('_getOAuthToken fetches new token when expired', async () => {
+    svc._oauthToken = null;
+    axios.post.mockResolvedValueOnce({
+      status: 200,
+      data: { access_token: 'new-token', expires_in: 3600 },
+    });
+    const result = await svc._getOAuthToken();
+    expect(result).toBe('new-token');
+    expect(axios.post).toHaveBeenCalledWith(
+      'https://services.sentinel-hub.com/oauth/token',
+      expect.any(String),
+      expect.objectContaining({ headers: { 'Content-Type': 'application/x-www-form-urlencoded' } })
+    );
+  });
+
+  test('_buildEvalscript generates correct script for RGB', () => {
+    const script = svc._buildEvalscript('RGB');
+    expect(script).toContain('VERSION=3');
+    expect(script).toContain('["B04", "B03", "B02"]');
+    expect(script).toContain('[s.B04, s.B03, s.B02]');
+  });
+
+  test('_buildEvalscript generates correct script for custom bands', () => {
+    const script = svc._buildEvalscript('RED,NIR');
+    expect(script).toContain('["B04", "B08"]');
+    expect(script).toContain('[s.B04, s.B08]');
+  });
+
+  test('_buildProcessBody constructs correct request body', () => {
+    const bbox = [-180, -85, 180, 85];
+    const date = '2025-01-15';
+    const evalscript = 'test script';
+    const body = svc._buildProcessBody(bbox, date, evalscript);
+    expect(body.input.bounds.bbox).toEqual(bbox);
+    expect(body.input.data[0].dataFilter.timeRange.from).toBe('2025-01-15T00:00:00Z');
+    expect(body.input.data[0].dataFilter.timeRange.to).toBe('2025-01-15T23:59:59Z');
+    expect(body.evalscript).toBe(evalscript);
+  });
+
+  test('getTile validates date format', async () => {
+    await expect(svc.getTile({ z: 12, x: 0, y: 0, date: 'invalid' })).rejects.toMatchObject({
+      name: 'ValidationError',
+    });
+  });
+
+  test('getTile returns cached data with 304 for matching ETag', async () => {
+    await svc.init();
+    const key = svc._tileKey(12, 0, 0, '2025-01-15', 'RGB', 20);
+    const body = Buffer.from('cached image');
+    const etag = svc._sha1(body);
+    await svc._cacheSetTile(key, body, 'image/png', etag);
+
+    const result = await svc.getTile({ z: 12, x: 0, y: 0, date: '2025-01-15', ifNoneMatch: etag });
+    expect(result.status).toBe(304);
+    expect(result.meta.cache_hit).toBe(true);
+  });
+
+  test('getTile fetches from Sentinel Hub when not cached', async () => {
+    await svc.init();
+    // Mock OAuth token call
+    axios.post.mockResolvedValueOnce({
+      status: 200,
+      data: { access_token: 'token', expires_in: 3600 },
+    });
+    // Mock Process API call
+    axios.post.mockResolvedValueOnce({
+      status: 200,
+      data: Buffer.from('new image'),
+      headers: { 'content-type': 'image/png' },
+    });
+
+    const result = await svc.getTile({ z: 12, x: 0, y: 0, date: '2025-01-15' });
+    expect(result.status).toBe(200);
+    expect(result.meta.cache_hit).toBe(false);
+    expect(result.headers.ETag).toBeDefined();
+  });
+
+  test('queuePreprocess validates bbox', async () => {
+    await expect(svc.queuePreprocess({ bbox: 'invalid', date: '2025-01-15' })).rejects.toMatchObject({
+      name: 'ValidationError',
+    });
+    await expect(svc.queuePreprocess({ bbox: [0, 0, 0, 0], date: '2025-01-15' })).rejects.toMatchObject({
+      name: 'ValidationError',
+    });
+  });
+
+  test('queuePreprocess creates job with idempotency', async () => {
+    const params = { bbox: [80, 7, 81, 8], date: '2025-01-15', bands: ['RGB'] };
+    const result1 = await svc.queuePreprocess(params, 'idem-key');
+    expect(result1.status).toBe('queued');
+    expect(result1.job_id).toBeDefined();
+
+    const result2 = await svc.queuePreprocess(params, 'idem-key');
+    expect(result2.job_id).toBe(result1.job_id);
+  });
+
+  test('getJob returns job status', () => {
+    const job = svc.getJob('nonexistent');
+    expect(job).toBeNull();
+  });
+
+  test('_runPreprocess processes tiles and updates job status', async () => {
+    const jobId = 'test-job';
+    const job = {
+      job_id: jobId,
+      status: 'queued',
+      bbox: [80, 7, 81, 8],
+      date: '2025-01-15',
+      bands: ['RGB'],
+      cloud_mask: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    svc._jobs.set(jobId, job);
+
+    // Mock getTile to avoid actual API calls
+    svc.getTile = jest.fn().mockResolvedValue({});
+
+    await svc._runPreprocess(jobId);
+    const updatedJob = svc._jobs.get(jobId);
+    expect(updatedJob.status).toBe('completed');
+  });
+
+  test('_tilesForBBox computes tile indices for bbox', () => {
+    const tiles = svc._tilesForBBox([80, 7, 81, 8], 12);
+    expect(Array.isArray(tiles)).toBe(true);
+    expect(tiles.length).toBeGreaterThan(0);
+    const tile = tiles[0];
+    expect(tile).toHaveProperty('z', 12);
+    expect(tile).toHaveProperty('x');
+    expect(tile).toHaveProperty('y');
+  });
+
+  test('getSatelliteService returns singleton', () => {
+    const { getSatelliteService } = require('../../src/services/satellite.service');
+    const svc1 = getSatelliteService();
+    const svc2 = getSatelliteService();
+    expect(svc1).toBeInstanceOf(SatelliteService);
+    expect(svc1).toBe(svc2);
   });
 });
