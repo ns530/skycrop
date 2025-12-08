@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React, { PropsWithChildren, useMemo } from 'react';
 
 import { AuthProvider } from '../../features/auth/context/AuthContext';
+import { NotificationsProvider } from '../../shared/context/NotificationsContext';
 import { UiProvider } from '../../shared/context/UiContext';
 import { ToastProvider } from '../../shared/ui/Toast';
 
@@ -60,11 +61,15 @@ export const AppProviders: React.FC<PropsWithChildren> = ({ children }) => {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AuthProvider>
-          <UiProvider>
-            <ToastProvider>{children}</ToastProvider>
-          </UiProvider>
-        </AuthProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <UiProvider>
+              <NotificationsProvider>
+                {children}
+              </NotificationsProvider>
+            </UiProvider>
+          </AuthProvider>
+        </ToastProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
