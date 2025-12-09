@@ -1,13 +1,15 @@
 /**
  * Weather Forecast Job
- * 
+ *
  * Scheduled job to update weather forecasts for all active field locations
  * Runs every 6 hours
  */
 
-const logger = require('../config/logger.config');
-const { Field } = require('../models');
-const weatherService = require('../services/weather.service');
+'use strict';
+
+import logger from '../config/logger.config.js';
+import { Field } from '../models/index.js';
+import weatherService from '../services/weather.service.js';
 
 /**
  * Update weather forecasts for all active fields
@@ -155,7 +157,7 @@ async function runWeatherForecastUpdate() {
   }
 }
 
-module.exports = {
+export default {
   runWeatherForecastUpdate,
   schedule: '0 */6 * * *', // Every 6 hours
   description: 'Update weather forecasts for all active field locations',

@@ -1,8 +1,10 @@
 /**
  * Jobs Index - Initialize and Start All Scheduled Jobs
- * 
+ *
  * Central entry point for all background jobs
  */
+
+'use strict';
 
 const jobScheduler = require('./jobScheduler');
 const healthMonitoringJob = require('./healthMonitoringJob');

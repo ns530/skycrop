@@ -1,12 +1,14 @@
 /**
  * Job Scheduler - Central Scheduled Jobs Manager
- * 
+ *
  * Manages all cron jobs for automated tasks:
  * - Health monitoring updates
  * - Recommendations generation
  * - Weather forecast updates
  * - Yield prediction updates
  */
+
+'use strict';
 
 const cron = require('node-cron');
 const logger = require('../config/logger.config');

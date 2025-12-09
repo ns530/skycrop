@@ -1,15 +1,17 @@
 /**
  * Recommendations Job
- * 
+ *
  * Scheduled job to generate farming recommendations for all active fields
  * Runs every 7 days (adjustable)
  */
 
-const logger = require('../config/logger.config');
-const { Field } = require('../models');
-const recommendationService = require('../services/recommendation.service');
-const healthService = require('../services/fieldHealth.service');
-const weatherService = require('../services/weather.service');
+'use strict';
+
+import logger from '../config/logger.config.js';
+import { Field } from '../models/index.js';
+import recommendationService from '../services/recommendation.service.js';
+import healthService from '../services/fieldHealth.service.js';
+import weatherService from '../services/weather.service.js';
 
 /**
  * Generate recommendations for all active fields
@@ -159,7 +161,7 @@ async function runRecommendationsGeneration() {
   }
 }
 
-module.exports = {
+export default {
   runRecommendationsGeneration,
   schedule: '0 7 */7 * *', // Every 7 days at 7:00 AM
   description: 'Generate farming recommendations for all active fields',

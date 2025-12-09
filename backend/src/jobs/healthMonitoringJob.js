@@ -1,9 +1,11 @@
 /**
  * Health Monitoring Job
- * 
+ *
  * Scheduled job to update crop health data for all active fields
  * Runs daily at 6:00 AM (adjustable)
  */
+
+'use strict';
 
 const logger = require('../config/logger.config');
 const Field = require('../models/field.model');
