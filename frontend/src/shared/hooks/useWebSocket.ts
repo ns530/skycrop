@@ -69,7 +69,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
         onHealthUpdated(data);
         if (showToasts) {
           showToast({
-            variant: 'info',
+            variant: 'success',
             title: 'Field Health Updated',
             description: `${data.fieldName}: Health score ${data.health.score}`,
           });
@@ -105,7 +105,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
         onRecommendationCreated(data);
         if (showToasts) {
           showToast({
-            variant: 'info',
+            variant: 'success',
             title: 'New Recommendations',
             description: `${data.fieldName}: ${data.message}`,
           });

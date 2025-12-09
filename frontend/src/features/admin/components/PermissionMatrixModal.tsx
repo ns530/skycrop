@@ -44,7 +44,7 @@ export const PermissionMatrixModal: React.FC<PermissionMatrixModalProps> = ({
   const groupPermissions = (roles: RoleHierarchy) => {
     const resources = new Set<string>();
     Object.values(roles).forEach((role) => {
-      role.permissions.forEach((perm) => {
+      role.permissions.forEach((perm: string) => {
         if (perm !== '*') {
           const [resource] = perm.split('.');
           resources.add(resource);

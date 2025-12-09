@@ -15,12 +15,15 @@ function validateRequest(schema, source = 'body') {
       source === 'params' ? req.params :
       req.body;
 
+    console.log('validateRequest source:', source, 'input type:', typeof input, 'input:', input);
+
     const { error, value } = schema.validate(input, {
       abortEarly: false,
       stripUnknown: true,
     });
 
     if (error) {
+      console.log('Validation error:', error);
       const details = error.details.map((d) => ({
         field: d.path.join('.'),
         message: d.message,

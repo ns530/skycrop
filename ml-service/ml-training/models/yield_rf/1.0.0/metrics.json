@@ -1,0 +1,18 @@
+{
+  "rmse": 1.8610032295088876,
+  "mae": 1.6388795115425547,
+  "r2": 0.48400192023073196,
+  "n_features": 10,
+  "feature_names": [
+    "feature_0",
+    "feature_1",
+    "feature_2",
+    "feature_3",
+    "feature_4",
+    "feature_5",
+    "feature_6",
+    "feature_7",
+    "feature_8",
+    "feature_9"
+  ]
+}

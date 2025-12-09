@@ -5,7 +5,7 @@ import { useToast } from '../../../shared/hooks/useToast';
 interface ExportButtonProps {
   onExport: () => Promise<void> | void;
   label?: string;
-  variant?: 'primary' | 'secondary' | 'outline';
+  variant?: 'primary' | 'secondary';
   size?: 'sm' | 'md' | 'lg';
   className?: string;
 }

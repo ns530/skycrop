@@ -8,8 +8,8 @@
   },
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
+      "source": "/api/v1/(.*)",
+      "destination": "https://backend-production-9e94.up.railway.app/api/v1/$1"
     }
   ],
   "headers": [

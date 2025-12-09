@@ -1,5 +1,8 @@
 {
   "devDependencies": {
     "@types/jest": "^29.5.14"
+  },
+  "dependencies": {
+    "ws": "^8.18.3"
   }
 }
