@@ -48,52 +48,53 @@ process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
 
 async function start() {
-  // Start server first to avoid 502 errors
-  server.listen(PORT, () => {
-    logger.info('SkyCrop API listening on port %d', PORT);
-  });
+  try {
+    // Wait a bit for PostGIS to be ready (especially after restart)
+    const waitTime = process.env.DB_WAIT_TIME ? parseInt(process.env.DB_WAIT_TIME) : 10000;
+    if (process.env.NODE_ENV === 'production') {
+      logger.info(`Waiting ${waitTime}ms for database to be ready...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
 
-  // Run initialization in background (non-blocking)
-  (async () => {
+    // Run migrations BEFORE starting server (critical for Railway)
+    logger.info('Running database migrations...');
     try {
-      // Wait a bit for PostGIS to be ready (especially after restart)
-      const waitTime = process.env.DB_WAIT_TIME ? parseInt(process.env.DB_WAIT_TIME) : 10000;
+      await runMigrations();
+      logger.info('Migrations complete.');
+    } catch (migrationErr) {
+      // In production, migrations are critical - fail deployment if they don't work
       if (process.env.NODE_ENV === 'production') {
-        logger.info(`Waiting ${waitTime}ms for database to be ready...`);
-        await new Promise(resolve => setTimeout(resolve, waitTime));
-      }
-      
-      // Run migrations (non-blocking - server already started)
-      logger.info('Running database migrations...');
-      try {
-        await runMigrations();
-        logger.info('Migrations complete.');
-      } catch (migrationErr) {
-        // Don't crash server if migrations fail - log and continue
-        logger.warn('Migrations failed (non-critical): %s', migrationErr.message);
+        logger.error('Migrations failed in production: %s', migrationErr.message);
+        logger.error('Cannot start server without successful migrations');
+        process.exit(1);
+      } else {
+        // In development, log warning but continue
+        logger.warn('Migrations failed (non-critical in development): %s', migrationErr.message);
         logger.warn('Server will continue running. Migrations can be run manually later.');
       }
-      
-      // Initialize database connection
-      logger.info('Initializing database connection...');
-      try {
-        await initDatabase();
-        logger.info('Database connection established.');
-      } catch (dbErr) {
-        logger.error('Database connection failed: %s', dbErr.message);
-        logger.warn('Server is running but database is unavailable. Some features may not work.');
-      }
-
-      // Initialize and start scheduled jobs
-      logger.info('Initializing scheduled jobs...');
-      initializeJobs();
-      startJobs();
-      logger.info('Scheduled jobs initialized and started');
-    } catch (err) {
-      logger.error('Background initialization error: %s', err.message);
-      // Don't exit - server is already running
     }
-  })();
+
+    // Initialize database connection
+    logger.info('Initializing database connection...');
+    await initDatabase();
+    logger.info('Database connection established.');
+
+    // Start server after successful initialization
+    server.listen(PORT, () => {
+      logger.info('SkyCrop API listening on port %d', PORT);
+    });
+
+    // Initialize and start scheduled jobs
+    logger.info('Initializing scheduled jobs...');
+    initializeJobs();
+    startJobs();
+    logger.info('Scheduled jobs initialized and started');
+
+  } catch (err) {
+    logger.error('Initialization error: %s', err.message);
+    // Exit on critical initialization failure
+    process.exit(1);
+  }
 }
 
 start();

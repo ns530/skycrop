@@ -13,11 +13,15 @@
     "lint": "eslint . --ext .js",
     "format": "prettier --write \"**/*.{js,json,md,yml,yaml}\"",
     "test": "jest --config jest.config.js --runInBand",
-    "test:coverage": "jest --config jest.config.js --coverage --runInBand"
+    "test:coverage": "jest --config jest.config.js --coverage --runInBand",
+    "smoke-test": "bash scripts/smoke-tests.sh",
+    "monitor": "bash scripts/monitor-deployment.sh",
+    "rollback": "bash scripts/rollback.sh",
+    "blue-green-deploy": "bash scripts/blue-green-deploy.sh",
+    "canary-deploy": "bash scripts/canary-deploy.sh"
   },
   "dependencies": {
     "@sentry/node": "^7.114.0",
-    "@sentry/profiling-node": "^7.114.0",
     "axios": "^1.7.7",
     "bcrypt": "^5.1.1",
     "compression": "^1.7.4",

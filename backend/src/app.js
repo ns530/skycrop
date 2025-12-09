@@ -2,7 +2,6 @@
 
 // ========== Sentry Error Tracking (Must be first!) ==========
 const Sentry = require('@sentry/node');
-const { ProfilingIntegration } = require('@sentry/profiling-node');
 
 // Initialize Sentry BEFORE importing anything else
 if (process.env.SENTRY_DSN && process.env.NODE_ENV !== 'test') {
@@ -10,10 +9,8 @@ if (process.env.SENTRY_DSN && process.env.NODE_ENV !== 'test') {
     dsn: process.env.SENTRY_DSN,
     environment: process.env.NODE_ENV || 'development',
     tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0, // 10% in prod, 100% in dev
-    profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
     integrations: [
       new Sentry.Integrations.Http({ tracing: true }),
-      new ProfilingIntegration(),
     ],
     beforeSend(event, hint) {
       // Don't send test errors to Sentry

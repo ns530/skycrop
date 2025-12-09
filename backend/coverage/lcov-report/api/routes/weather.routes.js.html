@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>11/11</span>
+                <span class='fraction'>0/11</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>11/11</span>
+                <span class='fraction'>0/11</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -88,58 +88,58 @@
 <a name='L23'></a><a href='#L23'>23</a>
 <a name='L24'></a><a href='#L24'>24</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">14x</span>
-<span class="cline-any cline-yes">14x</span>
-<span class="cline-any cline-yes">14x</span>
-<span class="cline-any cline-yes">14x</span>
-<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">14x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">14x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">14x</span></td><td class="text"><pre class="prettyprint lang-js">'use strict';
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">'use strict';
 &nbsp;
-const express = require('express');
-const Joi = require('joi');
-const { authMiddleware } = require('../middleware/auth.middleware');
-const { validateRequest } = require('../middleware/validation.middleware');
-const WeatherController = require('../controllers/weather.controller');
+const express = <span class="cstat-no" title="statement not covered" >require('express');</span>
+const Joi = <span class="cstat-no" title="statement not covered" >require('joi');</span>
+const { authMiddleware } = <span class="cstat-no" title="statement not covered" >require('../middleware/auth.middleware');</span>
+const { validateRequest } = <span class="cstat-no" title="statement not covered" >require('../middleware/validation.middleware');</span>
+const WeatherController = <span class="cstat-no" title="statement not covered" >require('../controllers/weather.controller');</span>
 &nbsp;
-const router = express.Router();
+const router = <span class="cstat-no" title="statement not covered" >express.Router();</span>
 &nbsp;
-const fieldQuery = Joi.object({
+const fieldQuery = <span class="cstat-no" title="statement not covered" >Joi.object({</span>
   field_id: Joi.string().guid({ version: ['uuidv4', 'uuidv5', 'uuidv1'] }).required(),
 });
 &nbsp;
 // All weather endpoints require authentication
-router.use(authMiddleware);
+<span class="cstat-no" title="statement not covered" >router.use(authMiddleware);</span>
 &nbsp;
 // GET /api/v1/weather/current?field_id=UUID
-router.get('/current', validateRequest(fieldQuery, 'query'), WeatherController.current);
+<span class="cstat-no" title="statement not covered" >router.get('/current', validateRequest(fieldQuery, 'query'), WeatherController.current);</span>
 &nbsp;
 // GET /api/v1/weather/forecast?field_id=UUID
-router.get('/forecast', validateRequest(fieldQuery, 'query'), WeatherController.forecast);
+<span class="cstat-no" title="statement not covered" >router.get('/forecast', validateRequest(fieldQuery, 'query'), WeatherController.forecast);</span>
 &nbsp;
-module.exports = router;</pre></td></tr></table></pre>
+<span class="cstat-no" title="statement not covered" >module.exports = router;</span></pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-05T11:18:16.239Z
+                at 2025-12-08T07:19:04.026Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

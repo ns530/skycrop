@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>18/18</span>
+                <span class='fraction'>0/18</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>5/5</span>
+                <span class='fraction'>0/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/1</span>
+                <span class='fraction'>0/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>18/18</span>
+                <span class='fraction'>0/18</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -100,82 +100,82 @@
 <a name='L35'></a><a href='#L35'>35</a>
 <a name='L36'></a><a href='#L36'>36</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">15x</span></td><td class="text"><pre class="prettyprint lang-js">'use strict';
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">'use strict';
 &nbsp;
-const express = require('express');
-const MLController = require('../controllers/ml.controller');
-const { authMiddleware } = require('../middleware/auth.middleware');
-const { apiLimiter } = require('../middleware/rateLimit.middleware');
-const { validateRequest, schemas } = require('../middleware/validation.middleware');
+const express = <span class="cstat-no" title="statement not covered" >require('express');</span>
+const MLController = <span class="cstat-no" title="statement not covered" >require('../controllers/ml.controller');</span>
+const { authMiddleware } = <span class="cstat-no" title="statement not covered" >require('../middleware/auth.middleware');</span>
+const { apiLimiter } = <span class="cstat-no" title="statement not covered" >require('../middleware/rateLimit.middleware');</span>
+const { validateRequest, schemas } = <span class="cstat-no" title="statement not covered" >require('../middleware/validation.middleware');</span>
 &nbsp;
-const router = express.Router();
+const router = <span class="cstat-no" title="statement not covered" >express.Router();</span>
 &nbsp;
 // Protect all ML routes
-router.use(authMiddleware);
-router.use(apiLimiter);
+<span class="cstat-no" title="statement not covered" >router.use(authMiddleware);</span>
+<span class="cstat-no" title="statement not covered" >router.use(apiLimiter);</span>
 &nbsp;
 // Increase JSON body size limit to 10 MB for ML payloads
-router.use(express.json({ limit: '10mb' }));
+<span class="cstat-no" title="statement not covered" >router.use(express.json({ limit: '10mb' }));</span>
 &nbsp;
 // Map payload-too-large to API error schema via global handler
 // Express will pass errors from body parser to this error handler
 // eslint-disable-next-line no-unused-vars
-router.use((err, _req, _res, next) =&gt; {
-  if (err &amp;&amp; (err.type === 'entity.too.large' || err.status === 413)) {
-    err.statusCode = 413;
-    err.code = 'PAYLOAD_TOO_LARGE';
-    err.message = 'Request entity too large';
+<span class="cstat-no" title="statement not covered" >router.use(<span class="fstat-no" title="function not covered" >(e</span>rr, _req, _res, next) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >  if (err &amp;&amp; (err.type === 'entity.too.large' || err.status === 413)) {</span>
+<span class="cstat-no" title="statement not covered" >    err.statusCode = 413;</span>
+<span class="cstat-no" title="statement not covered" >    err.code = 'PAYLOAD_TOO_LARGE';</span>
+<span class="cstat-no" title="statement not covered" >    err.message = 'Request entity too large';</span>
   }
-  return next(err);
+<span class="cstat-no" title="statement not covered" >  return next(err);</span>
 });
 &nbsp;
 // POST /api/v1/ml/segmentation/predict
-router.post('/segmentation/predict', validateRequest(schemas.mlPredict), MLController.predict);
+<span class="cstat-no" title="statement not covered" >router.post('/segmentation/predict', validateRequest(schemas.mlPredict), MLController.predict);</span>
 &nbsp;
 // POST /api/v1/ml/yield/predict
-router.post('/yield/predict', validateRequest(schemas.yieldPredict), MLController.yieldPredict);
+<span class="cstat-no" title="statement not covered" >router.post('/yield/predict', validateRequest(schemas.yieldPredict), MLController.yieldPredict);</span>
 &nbsp;
-module.exports = router;</pre></td></tr></table></pre>
+<span class="cstat-no" title="statement not covered" >module.exports = router;</span></pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-05T11:18:16.239Z
+                at 2025-12-08T07:19:04.026Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

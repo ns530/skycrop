@@ -23,6 +23,7 @@ const STATUS = ['active', 'archived', 'deleted'];
  */
 async function getRedis() {
   const client = getRedisClient();
+  if (!client) return null;
   if (!client.isOpen) {
     await initRedis();
   }
@@ -31,6 +32,7 @@ async function getRedis() {
 
 async function redisGetJSON(key) {
   const redis = await getRedis();
+  if (!redis) return null;
   const raw = await redis.get(key);
   if (!raw) return null;
   try {
@@ -42,6 +44,7 @@ async function redisGetJSON(key) {
 
 async function redisSetJSON(key, value, ttlSec) {
   const redis = await getRedis();
+  if (!redis) return;
   const payload = JSON.stringify(value);
   if (typeof redis.setEx === 'function') {
     await redis.setEx(key, ttlSec, payload);
@@ -53,6 +56,7 @@ async function redisSetJSON(key, value, ttlSec) {
 
 async function redisDelPattern(pattern) {
   const redis = await getRedis();
+  if (!redis) return;
   // Iterate with SCAN for safety
   let cursor = '0';
   do {
@@ -233,7 +237,9 @@ async function invalidateFieldCaches(userId, fieldId) {
   await redisDelPattern(`fields:list:${userId}:*`);
   if (fieldId) {
     const redis = await getRedis();
-    await redis.del(byIdCacheKey(fieldId));
+    if (redis) {
+      await redis.del(byIdCacheKey(fieldId));
+    }
   }
 }
 

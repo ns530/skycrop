@@ -12,13 +12,17 @@ module.exports = {
   // POST /api/v1/auth/signup
   async signup(req, res, next) {
     try {
+      console.log('AuthController.signup called with body:', req.body);
       const { email, password, name } = req.body || {};
+      console.log('Extracted params:', { email, name, passwordLength: password?.length });
       const result = await authService.signup(email, password, name);
+      console.log('Signup result:', result);
       return res.status(201).json({
         success: true,
         data: result,
       });
     } catch (err) {
+      console.error('Signup error:', err);
       return next(err);
     }
   },

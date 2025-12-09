@@ -1,9 +1,11 @@
 // Quick script to enable PostGIS extension
+require('dotenv').config();
 const { Client } = require('pg');
 
 async function enablePostGIS() {
   const client = new Client({
-    connectionString: process.env.DATABASE_URL
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
   });
 
   try {
@@ -13,10 +15,14 @@ async function enablePostGIS() {
     // Enable PostGIS
     await client.query('CREATE EXTENSION IF NOT EXISTS postgis;');
     console.log('✅ PostGIS extension enabled');
-    
+
     // Enable PostGIS Topology
     await client.query('CREATE EXTENSION IF NOT EXISTS postgis_topology;');
     console.log('✅ PostGIS Topology extension enabled');
+
+    // Enable UUID extension
+    await client.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
+    console.log('✅ UUID extension enabled');
     
     // Verify PostGIS
     const result = await client.query('SELECT PostGIS_version();');

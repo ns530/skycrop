@@ -90,7 +90,9 @@ class AuthService {
 
     // Email verification token
     const verificationToken = crypto.randomUUID();
-    await this.redis.setEx(`email-verify:${verificationToken}`, EMAIL_VERIFY_TTL, user.user_id);
+    if (this.redis) {
+      await this.redis.setEx(`email-verify:${verificationToken}`, EMAIL_VERIFY_TTL, user.user_id);
+    }
 
     // Issue session token per SRS
     const token = generateJWT(user);
@@ -122,7 +124,7 @@ class AuthService {
     }
 
     const lockKey = `account-lock:${user.user_id}`;
-    const isLocked = await this.redis.get(lockKey);
+    const isLocked = this.redis ? await this.redis.get(lockKey) : null;
     if (isLocked) {
       throw new UnauthorizedError('Account locked. Try again in 30 minutes.');
     }
@@ -134,7 +136,9 @@ class AuthService {
     }
 
     // Success: clear failed attempts
-    await this.redis.del(`failed-attempts:${user.user_id}`);
+    if (this.redis) {
+      await this.redis.del(`failed-attempts:${user.user_id}`);
+    }
 
     // Update last login
     await user.update({ last_login: new Date() });
@@ -163,7 +167,7 @@ class AuthService {
         return { success: true }; // nothing to do
       }
       const ttl = secondsUntil(decoded.exp);
-      if (ttl > 0) {
+      if (ttl > 0 && this.redis) {
         await this.redis.setEx(`blacklist:${token}`, ttl, '1');
       }
       return { success: true };
@@ -177,13 +181,15 @@ class AuthService {
   async verifyEmail(token) {
     await this.init();
     const key = `email-verify:${token}`;
-    const userId = await this.redis.get(key);
+    const userId = this.redis ? await this.redis.get(key) : null;
     if (!userId) {
       throw new ValidationError('Verification link is invalid or expired');
     }
 
     await User.update({ email_verified: true }, { where: { user_id: userId } });
-    await this.redis.del(key);
+    if (this.redis) {
+      await this.redis.del(key);
+    }
     return { success: true };
   }
 
@@ -196,7 +202,9 @@ class AuthService {
       return { success: true };
     }
     const token = crypto.randomUUID();
-    await this.redis.setEx(`password-reset:${token}`, RESET_TTL, user.user_id);
+    if (this.redis) {
+      await this.redis.setEx(`password-reset:${token}`, RESET_TTL, user.user_id);
+    }
     return {
       success: true,
       reset: {
@@ -215,7 +223,7 @@ class AuthService {
         { field: 'password' }
       );
     }
-    const userId = await this.redis.get(`password-reset:${token}`);
+    const userId = this.redis ? await this.redis.get(`password-reset:${token}`) : null;
     if (!userId) {
       throw new ValidationError('Reset link is invalid or expired');
     }
@@ -224,11 +232,14 @@ class AuthService {
     await User.update({ password_hash }, { where: { user_id: userId } });
 
     // Invalidate token and existing sessions (blacklist strategy is per-JWT; user should log back in)
-    await this.redis.del(`password-reset:${token}`);
+    if (this.redis) {
+      await this.redis.del(`password-reset:${token}`);
+    }
     return { success: true };
   }
 
   async _handleFailedLogin(userId) {
+    if (!this.redis) return;
     const attemptsKey = `failed-attempts:${userId}`;
     const attempts = await this.redis.incr(attemptsKey);
     // Ensure window

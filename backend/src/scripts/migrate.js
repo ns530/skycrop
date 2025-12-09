@@ -7,6 +7,7 @@
  * Safe to run multiple times (idempotent)
  */
 
+require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const { Pool } = require('pg');
@@ -50,14 +51,13 @@ async function runMigrations() {
 
   // Determine SSL requirement based on connection string
   // Railway internal connections (.railway.internal) don't need SSL
-  // External connections (rlwy.net, railway.app, gondola.proxy) may need SSL
-  // But PostGIS might not be ready for SSL yet, so we'll try without SSL first
-  const isInternal = DATABASE_URL.includes('.railway.internal') || DATABASE_URL.includes('postgis.railway.internal');
-  const isExternal = DATABASE_URL.includes('rlwy.net') || DATABASE_URL.includes('railway.app') || DATABASE_URL.includes('gondola.proxy');
-  
+  // External connections (rlwy.net, railway.app, gondola.proxy) need SSL with rejectUnauthorized: false
+  const isInternal = DB_CONNECTION_STRING.includes('.railway.internal') || DB_CONNECTION_STRING.includes('postgis.railway.internal');
+  const isExternal = DB_CONNECTION_STRING.includes('rlwy.net') || DB_CONNECTION_STRING.includes('railway.app') || DB_CONNECTION_STRING.includes('gondola.proxy');
+
   // Use private URL (internal) - no SSL needed
-  // If using external URL, Railway proxy handles SSL at network level
-  const sslConfig = false; // No SSL needed for Railway internal connections
+  // If using external URL, use SSL with rejectUnauthorized: false
+  let sslConfig = isExternal ? { rejectUnauthorized: false } : false;
 
   const pool = new Pool({
     connectionString: DB_CONNECTION_STRING,
@@ -85,6 +85,27 @@ async function runMigrations() {
       await pool.query('SELECT NOW()');
     });
     console.log('✅ Database connected');
+
+    // Check PostGIS availability (critical for spatial operations)
+    console.log('🔍 Checking PostGIS availability...');
+    try {
+      const postgisResult = await retryWithBackoff(async () => {
+        return await pool.query('SELECT PostGIS_version()');
+      });
+      console.log('✅ PostGIS available:', postgisResult.rows[0].postgis_version);
+    } catch (postgisErr) {
+      console.error('❌ PostGIS not available:', postgisErr.message);
+      console.log('⚠️  Attempting to enable PostGIS...');
+      try {
+        await retryWithBackoff(async () => {
+          await pool.query('CREATE EXTENSION IF NOT EXISTS postgis;');
+        });
+        console.log('✅ PostGIS enabled');
+      } catch (enableErr) {
+        console.error('❌ Failed to enable PostGIS:', enableErr.message);
+        throw new Error('PostGIS is required but not available');
+      }
+    }
 
     // Read init.sql first
     const initSqlPath = path.join(__dirname, '../../database/init.sql');
@@ -152,6 +173,36 @@ async function runMigrations() {
     result.rows.forEach((row) => {
       console.log(`   - ${row.table_name}`);
     });
+
+    // Verify critical triggers exist
+    console.log('');
+    console.log('🔍 Verifying critical triggers...');
+    try {
+      const triggerResult = await pool.query(`
+        SELECT
+          tgname as trigger_name,
+          tgrelid::regclass as table_name,
+          proname as function_name
+        FROM pg_trigger t
+        JOIN pg_proc p ON t.tgfoid = p.oid
+        WHERE tgname IN ('trg_fields_compute', 'trg_actual_yields_accuracy')
+        ORDER BY tgname;
+      `);
+
+      if (triggerResult.rows.length >= 2) {
+        console.log('✅ Critical triggers verified:');
+        triggerResult.rows.forEach((row) => {
+          console.log(`   - ${row.trigger_name} on ${row.table_name} -> ${row.function_name}`);
+        });
+      } else {
+        console.warn('⚠️  Some triggers may be missing. Found:', triggerResult.rows.length);
+        triggerResult.rows.forEach((row) => {
+          console.log(`   - ${row.trigger_name}`);
+        });
+      }
+    } catch (triggerErr) {
+      console.warn('⚠️  Could not verify triggers:', triggerErr.message);
+    }
 
     console.log('');
     console.log('🎉 Database is ready!');

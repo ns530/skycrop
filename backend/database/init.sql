@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS fields (
   UNIQUE (user_id, name),
   CHECK (ST_IsValid(boundary)),
   CHECK (NOT ST_IsEmpty(boundary)),
-  CHECK (area_sqm >= 1000 AND area_sqm <= 500000)
+  CHECK (area_sqm >= 1 AND area_sqm <= 500000)
 );
 
 CREATE INDEX IF NOT EXISTS idx_fields_user_status ON fields(user_id, status);
