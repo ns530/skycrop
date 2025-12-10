@@ -48,8 +48,8 @@ export default defineConfig({
             if (id.includes('recharts')) {
               return 'chart-vendor';
             }
-            // All other node_modules go to common vendor chunk
-            return 'vendor';
+            // Don't create a common vendor chunk to avoid loading issues
+            return undefined;
           }
 
           // Route-based code splitting for features
@@ -77,7 +77,7 @@ export default defineConfig({
           if (id.includes('/features/news/')) {
             return 'feature-news';
           }
-          
+
           // Shared components in separate chunk
           if (id.includes('/shared/')) {
             return 'shared';

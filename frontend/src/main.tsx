@@ -14,9 +14,7 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 
 root.render(
-  <React.StrictMode>
-    <AppProviders>
-      <App />
-    </AppProviders>
-  </React.StrictMode>
+  <AppProviders>
+    <App />
+  </AppProviders>
 );
