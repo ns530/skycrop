@@ -30,9 +30,7 @@ export default defineConfig({
         manualChunks: (id) => {
           // Vendor chunks - npm packages
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('recharts')) {
-              return 'react-vendor';
-            }
+            // React is now in shared chunk
             if (id.includes('react-router')) {
               return 'router-vendor';
             }
@@ -44,6 +42,9 @@ export default defineConfig({
             }
             if (id.includes('axios')) {
               return 'http-vendor';
+            }
+            if (id.includes('recharts')) {
+              return 'chart-vendor';
             }
             // Don't create a common vendor chunk to avoid loading issues
             return undefined;
@@ -75,8 +76,8 @@ export default defineConfig({
             return 'feature-news';
           }
 
-          // Shared components in separate chunk
-          if (id.includes('/shared/')) {
+          // Shared components in separate chunk with React
+          if (id.includes('/shared/') || id.includes('react') || id.includes('react-dom')) {
             return 'shared';
           }
         },
