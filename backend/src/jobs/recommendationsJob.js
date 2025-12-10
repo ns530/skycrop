@@ -5,8 +5,6 @@
  * Runs every 7 days (adjustable)
  */
 
-'use strict';
-
 import logger from '../config/logger.config.js';
 import { Field } from '../models/index.js';
 import recommendationService from '../services/recommendation.service.js';

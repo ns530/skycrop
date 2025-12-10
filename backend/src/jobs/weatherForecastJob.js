@@ -5,8 +5,6 @@
  * Runs every 6 hours
  */
 
-'use strict';
-
 import logger from '../config/logger.config.js';
 import { Field } from '../models/index.js';
 import weatherService from '../services/weather.service.js';

@@ -8,10 +8,8 @@
  * - Yield prediction updates
  */
 
-'use strict';
-
-const cron = require('node-cron');
-const logger = require('../config/logger.config');
+import cron from 'node-cron';
+import logger from '../config/logger.config.js';
 
 class JobScheduler {
   constructor() {
@@ -249,5 +247,5 @@ class JobScheduler {
 // Singleton instance
 const jobScheduler = new JobScheduler();
 
-module.exports = jobScheduler;
+export default jobScheduler;
 

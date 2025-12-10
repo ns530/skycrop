@@ -5,12 +5,10 @@
  * Runs daily at 6:00 AM (adjustable)
  */
 
-'use strict';
-
-const logger = require('../config/logger.config');
-const Field = require('../models/field.model');
-const satelliteService = require('../services/satellite.service');
-const healthService = require('../services/fieldHealth.service');
+import logger from '../config/logger.config.js';
+import Field from '../models/field.model.js';
+import satelliteService from '../services/satellite.service.js';
+import healthService from '../services/fieldHealth.service.js';
 
 /**
  * Process health monitoring for all active fields
@@ -154,7 +152,7 @@ async function runHealthMonitoring() {
   }
 }
 
-module.exports = {
+export default {
   runHealthMonitoring,
   schedule: '0 6 * * *', // Daily at 6:00 AM
   description: 'Update crop health data for all active fields',

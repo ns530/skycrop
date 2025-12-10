@@ -120,7 +120,7 @@ jobs:
             -X POST \
             -H "Authorization: Bearer ${{ secrets.SENTRY_AUTH_TOKEN }}" \
             -H "Content-Type: application/json" \
-            -d "{\"version\":\"${{ github.sha }}\",\"refs\":[{\"repository\":\"${{ github.repository }}\",\"commit\":\"${{ github.sha }}\"}],\"projects\":[\"${{ secrets.SENTRY_PROJECT_STAGING }}\"]}"
+            -d "{\"version\":\"${{ github.sha }}\",\"refs\":[{\"repository\":\"${{ github.repository }}\",\"commit\":\"${{ github.sha }}\"}],\"projects\":[\"${{ secrets.SENTRY_PROJECT_PRODUCTION }}\"]}"
 
   deploy-production:
     name: Deploy to Production
@@ -153,7 +153,7 @@ jobs:
           sleep 60
           npm run smoke-test
         env:
-          STAGING_URL: ${{ secrets.PRODUCTION_API_URL }}
+          PRODUCTION_URL: ${{ secrets.PRODUCTION_API_URL }}
 
       - name: Notify Sentry of deployment
         run: |
