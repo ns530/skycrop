@@ -30,7 +30,7 @@ export default defineConfig({
         manualChunks: (id) => {
           // Vendor chunks - npm packages
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('recharts')) {
               return 'react-vendor';
             }
             if (id.includes('react-router')) {
@@ -44,9 +44,6 @@ export default defineConfig({
             }
             if (id.includes('axios')) {
               return 'http-vendor';
-            }
-            if (id.includes('recharts')) {
-              return 'chart-vendor';
             }
             // Don't create a common vendor chunk to avoid loading issues
             return undefined;
