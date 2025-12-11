@@ -6,6 +6,11 @@
 # BMAD (local only)
 .bmad-core/
 .bmad-*/
+.claude/commands/BMad/
+.clinerules/
+.cursor/rules/bmad/
+.gemini/commands/BMad/
+.github/chatmodes/
 AGENTS.md
 .kilocodemodes
 opencode.jsonc
