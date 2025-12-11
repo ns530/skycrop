@@ -125,16 +125,27 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
           </div>
         ) : (
           <div className="divide-y divide-gray-100">
-            {notifications.map((notification) => (
-              <div
-                key={notification.id}
-                onClick={() => onNotificationClick?.(notification)}
-                className={`
-                  px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors
-                  ${!notification.read ? 'bg-blue-50' : ''}
-                  ${getPriorityColor(notification.priority)}
-                `}
-              >
+            {notifications.map((notification) => {
+              const handleNotificationKeyDown = (event: React.KeyboardEvent) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  onNotificationClick?.(notification);
+                }
+              };
+
+              return (
+                <div
+                  key={notification.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onNotificationClick?.(notification)}
+                  onKeyDown={handleNotificationKeyDown}
+                  className={`
+                    px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors
+                    ${!notification.read ? 'bg-blue-50' : ''}
+                    ${getPriorityColor(notification.priority)}
+                  `}
+                >
                 <div className="flex items-start space-x-3">
                   <div className="flex-shrink-0 mt-1">
                     {getNotificationIcon(notification.type)}
@@ -162,7 +173,8 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

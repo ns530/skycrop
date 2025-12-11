@@ -3,3 +3,6 @@
 .env*
 .vercel
 .env*.local
+# BMAD (local only)
+.bmad-core/
+.bmad-*/

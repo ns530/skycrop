@@ -71,6 +71,8 @@ const createWrapper =
     );
   };
 
+createWrapper.displayName = 'TestRouterWrapper';
+
 describe('CreateFieldPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();

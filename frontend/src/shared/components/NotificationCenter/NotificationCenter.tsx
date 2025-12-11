@@ -229,9 +229,19 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onCli
     return new Date(timestamp).toLocaleDateString();
   };
 
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onClick();
+    }
+  };
+
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={handleKeyDown}
       className={`
         relative px-4 py-3 cursor-pointer transition-colors
         hover:bg-gray-50

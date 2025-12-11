@@ -96,19 +96,21 @@ export const calculateBounds = (boundary: FieldBoundary): MapBounds => {
  * Convert backend GeoJSON to Leaflet format
  * Handles various GeoJSON formats and normalizes them
  */
-export const normalizeGeoJson = (geoJson: any): FieldBoundary => {
+export const normalizeGeoJson = (geoJson: unknown): FieldBoundary => {
   if (!geoJson) {
     throw new Error('GeoJSON cannot be null or undefined');
   }
 
+  const data = geoJson as any;
+
   // If it's already in the correct format (Polygon or MultiPolygon)
-  if ((geoJson.type === 'Polygon' || geoJson.type === 'MultiPolygon') && geoJson.coordinates) {
-    return geoJson as FieldBoundary;
+  if ((data.type === 'Polygon' || data.type === 'MultiPolygon') && data.coordinates) {
+    return data as FieldBoundary;
   }
 
   // If it's wrapped in a Feature
-  if (geoJson.type === 'Feature' && geoJson.geometry) {
-    return geoJson.geometry as FieldBoundary;
+  if (data.type === 'Feature' && data.geometry) {
+    return data.geometry as FieldBoundary;
   }
 
   throw new Error('Invalid GeoJSON format');

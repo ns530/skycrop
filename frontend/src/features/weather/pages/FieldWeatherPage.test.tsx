@@ -85,6 +85,8 @@ const createWrapper =
     );
   };
 
+createWrapper.displayName = 'TestWeatherWrapper';
+
 describe('FieldWeatherPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();

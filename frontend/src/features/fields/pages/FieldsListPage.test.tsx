@@ -74,6 +74,8 @@ const createWrapper =
     );
   };
 
+createWrapper.displayName = 'TestFieldsWrapper';
+
 describe('FieldsListPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();

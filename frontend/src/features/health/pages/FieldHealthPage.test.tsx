@@ -85,6 +85,8 @@ const createWrapper =
     );
   };
 
+createWrapper.displayName = 'TestHealthWrapper';
+
 describe('FieldHealthPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();

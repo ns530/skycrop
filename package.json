@@ -4,5 +4,10 @@
   },
   "dependencies": {
     "ws": "^8.18.3"
+  },
+  "scripts": {
+    "bmad:refresh": "bmad-method install -f -i codex",
+    "bmad:list": "bmad-method list:agents",
+    "bmad:validate": "bmad-method validate"
   }
 }

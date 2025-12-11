@@ -166,7 +166,7 @@ class WebSocketService {
    * @param event Event name
    * @param callback Callback function
    */
-  on(event: string, callback: Function): void {
+  on(event: string, callback: (...args: any[]) => void): void {
     if (!this.eventCallbacks.has(event)) {
       this.eventCallbacks.set(event, new Set());
     }
@@ -183,7 +183,7 @@ class WebSocketService {
    * @param event Event name
    * @param callback Callback function
    */
-  off(event: string, callback: Function): void {
+  off(event: string, callback: (...args: any[]) => void): void {
     const callbacks = this.eventCallbacks.get(event);
     if (callbacks) {
       callbacks.delete(callback);
@@ -221,7 +221,7 @@ class WebSocketService {
 
     this.eventCallbacks.forEach((callbacks, event) => {
       callbacks.forEach((callback) => {
-        this.socket!.on(event, callback as any);
+        this.socket!.on(event, callback as (...args: any[]) => void);
       });
     });
   }

@@ -73,6 +73,8 @@ const createWrapper =
     );
   };
 
+createWrapper.displayName = 'TestRecommendationsWrapper';
+
 describe('FieldRecommendationsPage', () => {
   const mutateMock = jest.fn();
 

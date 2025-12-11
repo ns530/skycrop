@@ -80,9 +80,19 @@ export const NewsCard: React.FC<NewsCardProps> = ({ article, onPrefetch }) => {
     }
   };
 
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleClick();
+    }
+  };
+
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
       onMouseEnter={handleMouseEnter}
       className="cursor-pointer transition-transform hover:scale-[1.02] active:scale-[0.98]"
     >

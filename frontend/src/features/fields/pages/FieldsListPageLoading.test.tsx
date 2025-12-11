@@ -82,6 +82,8 @@ const createWrapper =
     );
   };
 
+createWrapper.displayName = 'TestLoadingWrapper';
+
 describe('FieldsListPage loading/error/offline states', () => {
   beforeEach(() => {
     jest.clearAllMocks();

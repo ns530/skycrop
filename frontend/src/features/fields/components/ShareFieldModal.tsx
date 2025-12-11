@@ -44,11 +44,11 @@ export const ShareFieldModal: React.FC<ShareFieldModalProps> = ({
       });
       handleClose();
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       showToast({
         variant: 'error',
         title: 'Share Failed',
-        description: error.response?.data?.error?.message || 'Failed to share field',
+        description: (error as any)?.response?.data?.error?.message || 'Failed to share field',
       });
     },
   });
@@ -76,7 +76,7 @@ export const ShareFieldModal: React.FC<ShareFieldModalProps> = ({
       return;
     }
 
-    const shareData: any = { email, permissionLevel };
+    const shareData: { email: string; permissionLevel: string; expiresAt?: string } = { email, permissionLevel };
     if (expiresAt) {
       shareData.expiresAt = expiresAt;
     }

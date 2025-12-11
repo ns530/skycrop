@@ -104,7 +104,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 
     // Health events
     if (onHealthUpdated) {
-      const handler = (data: any) => {
+      const handler = (data: HealthUpdatedEvent) => {
         onHealthUpdated(data);
         if (showToasts) {
           showToast({
@@ -118,7 +118,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
     }
 
     if (onHealthAlert) {
-      const handler = (data: any) => {
+      const handler = (data: HealthAlertEvent) => {
         onHealthAlert(data);
         if (showToasts) {
           showToast({
@@ -133,14 +133,14 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 
     // Recommendation events
     if (onRecommendationsUpdated) {
-      const handler = (data: any) => {
+      const handler = (data: RecommendationsUpdatedEvent) => {
         onRecommendationsUpdated(data);
       };
       websocketService.on('recommendations_updated', handler);
     }
 
     if (onRecommendationCreated) {
-      const handler = (data: any) => {
+      const handler = (data: RecommendationCreatedEvent) => {
         onRecommendationCreated(data);
         if (showToasts) {
           showToast({
@@ -155,7 +155,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 
     // Yield prediction events
     if (onYieldPredictionReady) {
-      const handler = (data: any) => {
+      const handler = (data: YieldPredictionReadyEvent) => {
         onYieldPredictionReady(data);
         if (showToasts) {
           showToast({

@@ -38,6 +38,8 @@ const createWrapper =
   ({ children }) =>
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 
+createWrapper.displayName = 'TestQueryClientWrapper';
+
 describe('useFields', () => {
   it('returns data from listFields and uses the expected query key', async () => {
     const params: ListParams = {
@@ -83,9 +85,13 @@ describe('useFields', () => {
     // Initially loading
     expect(result.current.isLoading).toBe(true);
 
-    // Wait for data to resolve
+    // Wait for loading to complete
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
+    });
+
+    // Then check data
+    await waitFor(() => {
       expect(result.current.data).toBeDefined();
     });
 

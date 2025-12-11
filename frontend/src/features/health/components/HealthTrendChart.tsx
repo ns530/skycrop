@@ -28,7 +28,7 @@ interface HealthTrendChartProps {
 /**
  * Custom tooltip for chart
  */
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) => {
   if (!active || !payload || !payload.length) return null;
 
   const data = payload[0];
