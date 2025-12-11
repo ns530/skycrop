@@ -6,6 +6,7 @@
 # BMAD (local only)
 .bmad-core/
 .bmad-*/
+.claude/
 .claude/commands/BMad/
 .clinerules/
 .cursor/rules/bmad/
