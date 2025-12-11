@@ -1,7 +1,5 @@
-'use strict';
-
-const { getWeatherService } = require('../../services/weather.service');
-const { ValidationError } = require('../../errors/custom-errors');
+import { getWeatherService } from '../../services/weather.service';
+import { ValidationError } from '../../errors/custom-errors';
 
 const weatherService = getWeatherService();
 
@@ -10,15 +8,15 @@ const weatherService = getWeatherService();
  * - current: GET /api/v1/weather/current?field_id=UUID
  * - forecast: GET /api/v1/weather/forecast?field_id=UUID
  */
-module.exports = {
+export default {
   async current(req, res, next) {
     try {
-      const userId = req.user.userId;
-      const fieldId = req.query.field_id;
-      if (!fieldId) {
+      const { user_id } = req.user;
+      const field_id = req.query.field_id;
+      if (!field_id) {
         throw new ValidationError('field_id query parameter is required', { field: 'field_id' });
       }
-      const result = await weatherService.getCurrentByField(userId, fieldId);
+      const result = await weatherService.getCurrentByField(user_id, field_id);
       return res.status(200).json({ success: true, data: result.data, meta: result.meta });
     } catch (err) {
       return next(err);
@@ -27,18 +25,20 @@ module.exports = {
 
   async forecast(req, res, next) {
     try {
-      const userId = req.user.userId;
+      const { user_id } = req.user;
       const { field_id, lat, lon } = req.query;
 
       let result;
       if (field_id) {
         // Use existing field-based method
-        result = await weatherService.getForecastByField(userId, field_id);
+        result = await weatherService.getForecastByField(user_id, field_id);
       } else if (lat && lon) {
         // Use new coordinates-based method
         result = await weatherService.getForecastByCoords(Number(lat), Number(lon));
       } else {
-        throw new ValidationError('Either field_id or lat/lon query parameters are required', { field: 'query' });
+        throw new ValidationError('Either field_id or lat/lon query parameters are required', {
+          field: 'query',
+        });
       }
 
       return res.status(200).json({ success: true, data: result.data, meta: result.meta });
@@ -49,8 +49,8 @@ module.exports = {
 
   async alerts(req, res, next) {
     try {
-      const userId = req.user.userId;
-      const result = await weatherService.getWeatherAlerts(userId);
+      const { user_id } = req.user;
+      const result = await weatherService.getWeatherAlerts(user_id);
       return res.status(200).json({ success: true, data: result.data, meta: result.meta });
     } catch (err) {
       return next(err);

@@ -1,17 +1,14 @@
-'use strict';
+import * as Sentry from '@sentry/node';
 
 // ========== Sentry Error Tracking (Must be first!) ==========
-const Sentry = require('@sentry/node');
 
 // Initialize Sentry BEFORE importing anything else
-if (process.env.SENTRY_DSN && process.env.NODE_ENV !== 'test') {
+if (process.env.SENTRYDSN && process.env.NODE_ENV !== 'test') {
   Sentry.init({
-    dsn: process.env.SENTRY_DSN,
+    dsn: process.env.SENTRYDSN,
     environment: process.env.NODE_ENV || 'development',
     tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0, // 10% in prod, 100% in dev
-    integrations: [
-      new Sentry.Integrations.Http({ tracing: true }),
-    ],
+    integrations: [new Sentry.Integrations.Http({ tracing: true })],
     beforeSend(event, hint) {
       // Don't send test errors to Sentry
       if (process.env.NODE_ENV === 'test') {
@@ -29,35 +26,37 @@ if (process.env.SENTRY_DSN && process.env.NODE_ENV !== 'test') {
   });
 }
 
-const express = require('express');
-const helmet = require('helmet');
-const morgan = require('morgan');
-const cors = require('cors');
-const compression = require('compression');
-const authRoutes = require('./api/routes/auth.routes');
-const fieldRoutes = require('./api/routes/field.routes');
-const fieldSharingRoutes = require('./api/routes/fieldSharing.routes');
-const healthRoutes = require('./api/routes/health.routes');
-const weatherRoutes = require('./api/routes/weather.routes');
-const fieldHealthRoutes = require('./api/routes/fieldHealth.routes');
-const satelliteRoutes = require('./api/routes/satellite.routes');
-const mlRoutes = require('./api/routes/ml.routes');
-const recommendationRoutes = require('./api/routes/recommendation.routes');
-const dashboardRoutes = require('./api/routes/dashboard.routes');
-const yieldRoutes = require('./api/routes/yield.routes');
-const jobsRoutes = require('./api/routes/jobs.routes');
-const notificationRoutes = require('./api/routes/notification.routes');
-const healthMonitoringRoutes = require('./api/routes/healthMonitoring.routes');
-const userManagementRoutes = require('./api/routes/userManagement.routes'); // User management (admin)
-const adminContentRoutes = require('./api/routes/adminContent.routes'); // Admin content management
-const debugRoutes = require('./api/routes/debug.routes'); // Debug routes for testing
-const { apiLimiter } = require('./api/middleware/rateLimit.middleware');
-const { logger, loggerStream } = require('./utils/logger');
+import express from 'express';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import cors from 'cors';
+import compression from 'compression';
+
+import authRoutes from './api/routes/auth.routes';
+import fieldRoutes from './api/routes/field.routes';
+import fieldSharingRoutes from './api/routes/fieldSharing.routes';
+import healthRoutes from './api/routes/health.routes';
+import weatherRoutes from './api/routes/weather.routes';
+import fieldHealthRoutes from './api/routes/fieldHealth.routes';
+import satelliteRoutes from './api/routes/satellite.routes';
+import mlRoutes from './api/routes/ml.routes';
+import recommendationRoutes from './api/routes/recommendation.routes';
+import dashboardRoutes from './api/routes/dashboard.routes';
+import yieldRoutes from './api/routes/yield.routes';
+import jobsRoutes from './api/routes/jobs.routes';
+import notificationRoutes from './api/routes/notification.routes';
+import healthMonitoringRoutes from './api/routes/healthMonitoring.routes';
+import userManagementRoutes from './api/routes/userManagement.routes'; // User management (admin)
+import adminContentRoutes from './api/routes/adminContent.routes'; // Admin content management
+import debugRoutes from './api/routes/debug.routes'; // Debug routes for testing
+
+import { apiLimiter } from './api/middleware/rateLimit.middleware';
+import { logger, loggerStream } from './utils/logger';
 
 const app = express();
 
 // ========== Sentry Request Handler (Must be first middleware!) ==========
-if (process.env.SENTRY_DSN && process.env.NODE_ENV !== 'test') {
+if (process.env.SENTRYDSN && process.env.NODE_ENV !== 'test') {
   app.use(Sentry.Handlers.requestHandler());
   app.use(Sentry.Handlers.tracingHandler());
 }
@@ -71,7 +70,7 @@ app.use(helmet());
 // CORS
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || '*',
+    origin: process.env.CORSORIGIN || '*',
     credentials: true,
   })
 );
@@ -129,7 +128,7 @@ app.use((req, res, next) => {
   return res.status(404).json({
     success: false,
     error: {
-      code: 'NOT_FOUND',
+      code: 'NOTFOUND',
       message: 'Route not found',
     },
     meta: { timestamp: new Date().toISOString() },
@@ -137,16 +136,18 @@ app.use((req, res, next) => {
 });
 
 // ========== Sentry Error Handler (Must be before custom error handler!) ==========
-if (process.env.SENTRY_DSN && process.env.NODE_ENV !== 'test') {
-  app.use(Sentry.Handlers.errorHandler({
-    shouldHandleError(error) {
-      // Capture all errors except 404s
-      if (error.statusCode === 404 || error.status === 404) {
-        return false;
-      }
-      return true;
-    },
-  }));
+if (process.env.SENTRYDSN && process.env.NODE_ENV !== 'test') {
+  app.use(
+    Sentry.Handlers.errorHandler({
+      shouldHandleError(error) {
+        // Capture all errors except 404s
+        if (error.statusCode === 404 || error.status === 404) {
+          return false;
+        }
+        return true;
+      },
+    })
+  );
 }
 
 // Error handler
@@ -155,12 +156,12 @@ app.use((err, req, res, next) => {
   // Map payload-too-large errors from body parser to standard schema
   if (err && (err.type === 'entity.too.large' || err.status === 413)) {
     err.statusCode = 413;
-    err.code = 'PAYLOAD_TOO_LARGE';
+    err.code = 'PAYLOADTOOLARGE';
     err.message = err.message || 'Request entity too large';
   }
 
   const status = err.statusCode || 500;
-  const code = err.code || 'INTERNAL_ERROR';
+  const code = err.code || 'INTERNALERROR';
 
   // Structured error logging
   if (process.env.NODE_ENV !== 'test') {
@@ -169,7 +170,7 @@ app.use((err, req, res, next) => {
       stack: err.stack,
       code,
       status,
-      user: req.user?.userId,
+      user: req.user?.user_id,
       endpoint: req.path,
       method: req.method,
     });
@@ -186,4 +187,4 @@ app.use((err, req, res, next) => {
   });
 });
 
-module.exports = app;
+export default app;

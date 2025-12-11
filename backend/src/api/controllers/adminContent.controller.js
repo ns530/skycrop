@@ -1,14 +1,12 @@
-'use strict';
-
-const { sequelize } = require('../../config/database.config');
-const { ValidationError, NotFoundError } = require('../../errors/custom-errors');
-const { logger } = require('../../utils/logger');
+import { sequelize } from '../../config/database.config';
+import { ValidationError, NotFoundError } from '../../errors/custom-errors';
+import { logger } from '../../utils/logger';
 
 /**
  * Admin Content Controller
  * Manages content items (news, articles, etc.) for admin users
  */
-module.exports = {
+export default {
   /**
    * GET /api/v1/admin/content
    * Get paginated list of content items
@@ -35,17 +33,17 @@ module.exports = {
       const [results] = await sequelize.query(
         `
         SELECT
-          content_id as id,
+          contentid as id,
           title,
           summary,
           body,
           status,
-          published_at,
-          created_at,
-          updated_at
+          publishedat,
+          createdat,
+          updatedat
         FROM content
         WHERE 1=1 ${whereClause}
-        ORDER BY created_at DESC
+        ORDER BY createdat DESC
         LIMIT :limit OFFSET :offset
         `,
         { replacements }
@@ -73,7 +71,7 @@ module.exports = {
           totalPages: Math.ceil(total / pageSize),
         },
         meta: {
-          correlation_id: req.headers['x-request-id'],
+          correlationid: req.headers['x-request-id'],
         },
       });
     } catch (err) {
@@ -87,22 +85,22 @@ module.exports = {
    */
   async createContent(req, res, next) {
     try {
-      const { title, summary, body, status, published_at } = req.body;
-      const userId = req.user.userId;
+      const { title, summary, body, status, publishedat } = req.body;
+      const { user_id } = req.user;
 
       const [result] = await sequelize.query(
         `
-        INSERT INTO content (title, summary, body, status, published_at, created_by, created_at, updated_at)
-        VALUES (:title, :summary, :body, :status, :published_at, :created_by, NOW(), NOW())
+        INSERT INTO content (title, summary, body, status, publishedat, createdby, createdat, updatedat)
+        VALUES (:title, :summary, :body, :status, :publishedat, :createdby, NOW(), NOW())
         RETURNING
-          content_id as id,
+          contentid as id,
           title,
           summary,
           body,
           status,
-          published_at,
-          created_at,
-          updated_at
+          publishedat,
+          createdat,
+          updatedat
         `,
         {
           replacements: {
@@ -110,15 +108,15 @@ module.exports = {
             summary,
             body,
             status: status || 'draft',
-            published_at: published_at || null,
-            created_by: userId,
+            publishedat: publishedat || null,
+            createdby: user_id,
           },
         }
       );
 
       logger.info('admin.content.created', {
-        content_id: result.id,
-        user_id: userId,
+        contentid: result.id,
+        user_id: user_id,
         title: result.title,
       });
 
@@ -126,7 +124,7 @@ module.exports = {
         success: true,
         data: result,
         meta: {
-          correlation_id: req.headers['x-request-id'],
+          correlationid: req.headers['x-request-id'],
         },
       });
     } catch (err) {
@@ -145,16 +143,16 @@ module.exports = {
       const [results] = await sequelize.query(
         `
         SELECT
-          content_id as id,
+          contentid as id,
           title,
           summary,
           body,
           status,
-          published_at,
-          created_at,
-          updated_at
+          publishedat,
+          createdat,
+          updatedat
         FROM content
-        WHERE content_id = :id
+        WHERE contentid = :id
         `,
         { replacements: { id } }
       );
@@ -167,7 +165,7 @@ module.exports = {
         success: true,
         data: results[0],
         meta: {
-          correlation_id: req.headers['x-request-id'],
+          correlationid: req.headers['x-request-id'],
         },
       });
     } catch (err) {
@@ -182,8 +180,8 @@ module.exports = {
   async updateContent(req, res, next) {
     try {
       const { id } = req.params;
-      const { title, summary, body, status, published_at } = req.body;
-      const userId = req.user.userId;
+      const { title, summary, body, status, publishedat } = req.body;
+      const { user_id } = req.user;
 
       const [result] = await sequelize.query(
         `
@@ -193,18 +191,18 @@ module.exports = {
           summary = :summary,
           body = :body,
           status = :status,
-          published_at = :published_at,
-          updated_at = NOW()
-        WHERE content_id = :id
+          publishedat = :publishedat,
+          updatedat = NOW()
+        WHERE contentid = :id
         RETURNING
-          content_id as id,
+          contentid as id,
           title,
           summary,
           body,
           status,
-          published_at,
-          created_at,
-          updated_at
+          publishedat,
+          createdat,
+          updatedat
         `,
         {
           replacements: {
@@ -213,7 +211,7 @@ module.exports = {
             summary,
             body,
             status,
-            published_at: published_at || null,
+            publishedat: publishedat || null,
           },
         }
       );
@@ -223,8 +221,8 @@ module.exports = {
       }
 
       logger.info('admin.content.updated', {
-        content_id: id,
-        user_id: userId,
+        contentid: id,
+        user_id: user_id,
         title: result[0].title,
       });
 
@@ -232,7 +230,7 @@ module.exports = {
         success: true,
         data: result[0],
         meta: {
-          correlation_id: req.headers['x-request-id'],
+          correlationid: req.headers['x-request-id'],
         },
       });
     } catch (err) {
@@ -247,13 +245,13 @@ module.exports = {
   async deleteContent(req, res, next) {
     try {
       const { id } = req.params;
-      const userId = req.user.userId;
+      const { user_id } = req.user;
 
       const [result] = await sequelize.query(
         `
         DELETE FROM content
-        WHERE content_id = :id
-        RETURNING content_id, title
+        WHERE contentid = :id
+        RETURNING contentid, title
         `,
         { replacements: { id } }
       );
@@ -263,8 +261,8 @@ module.exports = {
       }
 
       logger.info('admin.content.deleted', {
-        content_id: id,
-        user_id: userId,
+        contentid: id,
+        user_id: user_id,
         title: result[0].title,
       });
 
@@ -272,7 +270,7 @@ module.exports = {
         success: true,
         data: { deleted: true },
         meta: {
-          correlation_id: req.headers['x-request-id'],
+          correlationid: req.headers['x-request-id'],
         },
       });
     } catch (err) {
