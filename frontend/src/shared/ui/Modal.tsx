@@ -119,10 +119,12 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
   }
 
   return ReactDOM.createPortal(
-    // eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions
     <div
       className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 px-4 py-6"
       onClick={onClose}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClose(); }}
     >
       <div
         ref={dialogRef}

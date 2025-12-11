@@ -28,8 +28,10 @@ export const weatherKeys = {
   alerts: ['weather', 'alerts'] as const,
 };
 
+import type { YieldForecastRequest } from '../../features/yield/api/yieldApi';
+
 export const yieldKeys = {
-  forecast: (request: any) => ['yield', 'forecast', request] as const,
+  forecast: (request: YieldForecastRequest) => ['yield', 'forecast', request] as const,
   history: (fieldId: string) => ['yield', 'history', fieldId] as const,
 };
 

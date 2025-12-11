@@ -3,11 +3,12 @@
  * Manages boundary detection with progress simulation
  */
 
-import { useState, useEffect, useCallback } from 'react';
 import { useMutation } from '@tanstack/react-query';
+import { useState, useEffect, useCallback } from 'react';
+
+import type { FieldGeometry } from '../../../shared/types/geojson';
 import { detectFieldBoundary } from '../api/fieldsApi';
 import type { DetectBoundaryPayload } from '../api/fieldsApi';
-import type { FieldGeometry } from '../../../shared/types/geojson';
 
 interface BoundaryDetectionState {
   progress: number;

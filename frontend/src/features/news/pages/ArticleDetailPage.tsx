@@ -5,12 +5,13 @@
 
 import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+
 import { Button } from '../../../shared/ui/Button';
 import { Card } from '../../../shared/ui/Card';
 import { ErrorState } from '../../../shared/ui/ErrorState';
 import { LoadingState } from '../../../shared/ui/LoadingState';
-import { useNewsArticle } from '../hooks/useNews';
 import type { NewsCategory } from '../api/newsApi';
+import { useNewsArticle } from '../hooks/useNews';
 
 /**
  * Get category display info

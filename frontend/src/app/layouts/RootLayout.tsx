@@ -2,9 +2,9 @@ import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 
 import { useAuth } from '../../features/auth/context/AuthContext';
+import { NotificationBell, NotificationCenter } from '../../shared/components/NotificationCenter';
 import { useOnlineStatus } from '../../shared/hooks/useOnlineStatus';
 import { useToast } from '../../shared/hooks/useToast';
-import { NotificationBell, NotificationCenter } from '../../shared/components/NotificationCenter';
 import { PageContainer } from '../../shared/ui/layout/PageContainer';
  
 export const RootLayout: React.FC = () => {

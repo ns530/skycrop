@@ -2,8 +2,9 @@
  * Tests for News API
  */
 
-import { getNewsList, getNewsArticle, searchNews, getNewsByCategory } from './newsApi';
 import { httpClient } from '../../../shared/api';
+
+import { getNewsList, getNewsArticle, searchNews, getNewsByCategory } from './newsApi';
 
 // Mock httpClient
 jest.mock('../../../shared/api', () => ({

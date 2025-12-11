@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
 import { Bell } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+
 import { NotificationDropdown } from './NotificationDropdown';
 
 export interface Notification {

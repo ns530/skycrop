@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from 'react';
+
 import { Button } from '../../../shared/ui/Button';
 
 export interface YieldEntryValues {
@@ -151,10 +152,10 @@ export const YieldEntryForm: React.FC<YieldEntryFormProps> = ({
       </div>
 
       {/* Yield Input Type Toggle */}
-      <div>
-        <label className="block text-sm font-medium text-gray-900 mb-2">
+      <fieldset>
+        <legend className="block text-sm font-medium text-gray-900 mb-2">
           Enter yield as <span className="text-red-500">*</span>
-        </label>
+        </legend>
         <div className="flex gap-2">
           <button
             type="button"
@@ -179,7 +180,7 @@ export const YieldEntryForm: React.FC<YieldEntryFormProps> = ({
             Total Yield (kg)
           </button>
         </div>
-      </div>
+      </fieldset>
 
       {/* Yield Input */}
       <div>

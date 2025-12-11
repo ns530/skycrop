@@ -1,7 +1,9 @@
-import React, { useEffect, useRef } from 'react';
-import { X, CheckCheck, Trash2, AlertCircle, Activity, TrendingUp, Bell as BellIcon } from 'lucide-react';
-import { Notification } from './NotificationBell';
 import { formatDistanceToNow } from 'date-fns';
+import { X, CheckCheck, Trash2, AlertCircle, Activity, TrendingUp, Bell as BellIcon } from 'lucide-react';
+import React, { useEffect, useRef } from 'react';
+
+import { Notification } from './NotificationBell';
+
 
 interface NotificationDropdownProps {
   notifications: Notification[];

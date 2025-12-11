@@ -7,6 +7,7 @@ import React, { useRef, useEffect } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { Map as LeafletMap } from 'leaflet';
+
 import { DEFAULT_TILE_PROVIDER } from './utils/tileProviders';
 
 interface BaseMapProps {

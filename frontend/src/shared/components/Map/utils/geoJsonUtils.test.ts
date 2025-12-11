@@ -2,6 +2,8 @@
  * Tests for GeoJSON utility functions
  */
 
+import type { FieldBoundary } from '../types/map.types';
+
 import {
   calculatePolygonCenter,
   calculateBounds,
@@ -9,7 +11,6 @@ import {
   isValidPolygon,
   calculatePolygonArea,
 } from './geoJsonUtils';
-import type { FieldBoundary } from '../types/map.types';
 
 describe('geoJsonUtils', () => {
   // Sample polygon representing a small field in Sri Lanka

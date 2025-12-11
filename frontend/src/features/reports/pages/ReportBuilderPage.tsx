@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { Card } from '../../../shared/ui/Card';
+
+import { useToast } from '../../../shared/hooks/useToast';
 import { Button } from '../../../shared/ui/Button';
+import { Card } from '../../../shared/ui/Card';
+import { exportRecommendationsToExcel, exportRecommendationsSummaryToExcel } from '../../../shared/utils/excelReports';
+import { generateFieldHealthReportPDF, generateYieldForecastReportPDF, generateCombinedFieldReportPDF } from '../../../shared/utils/pdfReports';
 import { useFields } from '../../fields/hooks/useFields';
 import { useFieldHealth } from '../../health/hooks/useFieldHealth';
 import { useRecommendations } from '../../recommendations/hooks/useRecommendations';
-import { generateFieldHealthReportPDF, generateYieldForecastReportPDF, generateCombinedFieldReportPDF } from '../../../shared/utils/pdfReports';
-import { exportRecommendationsToExcel, exportRecommendationsSummaryToExcel } from '../../../shared/utils/excelReports';
-import { useToast } from '../../../shared/hooks/useToast';
 
 type ReportType = 'health' | 'yield' | 'recommendations' | 'combined';
 type ReportFormat = 'pdf' | 'excel';
@@ -39,7 +40,7 @@ export const ReportBuilderPage: React.FC = () => {
     if (selectedFieldIds.length === fields.length) {
       setSelectedFieldIds([]);
     } else {
-      setSelectedFieldIds(fields.map((field: any) => field.field_id));
+      setSelectedFieldIds(fields.map((field) => field.id));
     }
   };
 
@@ -85,15 +86,15 @@ export const ReportBuilderPage: React.FC = () => {
 
   const generateHealthReports = async () => {
     for (const fieldId of selectedFieldIds) {
-      const field = fields.find((f: any) => f.field_id === fieldId);
+      const field = fields.find((f) => f.id === fieldId);
       if (!field) continue;
 
       // Fetch health data (in real app, use API)
       const healthData = {
         field: {
           name: field.name,
-          crop_type: field.crop_type,
-          area: field.area,
+          crop_type: 'Unknown', // Crop type not available in FieldSummary
+          area: field.areaHa,
         },
         healthHistory: [
           // Mock data - in real app, fetch from API
@@ -111,15 +112,15 @@ export const ReportBuilderPage: React.FC = () => {
 
   const generateYieldReports = async () => {
     for (const fieldId of selectedFieldIds) {
-      const field = fields.find((f: any) => f.field_id === fieldId);
+      const field = fields.find((f) => f.id === fieldId);
       if (!field) continue;
 
       // Mock data - in real app, fetch from API
       const yieldData = {
         field: {
           name: field.name,
-          crop_type: field.crop_type,
-          area: field.area,
+          crop_type: 'Unknown', // Crop type not available in FieldSummary
+          area: field.areaHa,
         },
         predictions: [
           {
@@ -143,7 +144,7 @@ export const ReportBuilderPage: React.FC = () => {
   const generateRecommendationsReport = async () => {
     // Mock data - in real app, fetch from API
     const recommendations = selectedFieldIds.flatMap((fieldId) => {
-      const field = fields.find((f: any) => f.field_id === fieldId);
+      const field = fields.find((f) => f.id === fieldId);
       return [
         {
           recommendation_id: `rec-${fieldId}-1`,
@@ -169,15 +170,15 @@ export const ReportBuilderPage: React.FC = () => {
 
   const generateCombinedReports = async () => {
     for (const fieldId of selectedFieldIds) {
-      const field = fields.find((f: any) => f.field_id === fieldId);
+      const field = fields.find((f) => f.id === fieldId);
       if (!field) continue;
 
       // Mock data
       const healthData = {
         field: {
           name: field.name,
-          crop_type: field.crop_type,
-          area: field.area,
+          crop_type: 'Unknown', // Crop type not available in FieldSummary
+          area: field.areaHa,
         },
         healthHistory: [
           { measurement_date: '2024-03-01', ndvi_mean: 0.8, ndwi_mean: 0.7, tdvi_mean: 0.75, health_score: 85 },
@@ -190,8 +191,8 @@ export const ReportBuilderPage: React.FC = () => {
       const yieldData = {
         field: {
           name: field.name,
-          crop_type: field.crop_type,
-          area: field.area,
+          crop_type: 'Unknown', // Crop type not available in FieldSummary
+          area: field.areaHa,
         },
         predictions: [
           {
@@ -308,21 +309,21 @@ export const ReportBuilderPage: React.FC = () => {
               <div className="text-center py-8 text-gray-600">No fields available</div>
             ) : (
               <div className="space-y-2 max-h-64 overflow-y-auto">
-                {fields.map((field: any) => (
+                {fields.map((field) => (
                   <label
-                    key={field.field_id}
+                    key={field.id}
                     className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
                   >
                     <input
                       type="checkbox"
-                      checked={selectedFieldIds.includes(field.field_id)}
-                      onChange={() => handleFieldSelection(field.field_id)}
+                      checked={selectedFieldIds.includes(field.id)}
+                      onChange={() => handleFieldSelection(field.id)}
                       className="h-4 w-4 text-brand-blue focus:ring-brand-blue border-gray-300 rounded"
                     />
                     <span className="ml-3 flex-1">
                       <div className="font-medium text-gray-900">{field.name}</div>
                       <div className="text-sm text-gray-600">
-                        {field.crop_type} • {field.area} ha
+                        {field.areaHa} ha
                       </div>
                     </span>
                   </label>

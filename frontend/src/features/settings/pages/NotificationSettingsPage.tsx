@@ -5,10 +5,11 @@
  */
 
 import React, { useState, useEffect } from 'react';
+
 import { useToast } from '../../../shared/hooks/useToast';
+import { notificationService, type NotificationPreferences, type NotificationType } from '../../../shared/services/notificationService';
 import { Button } from '../../../shared/ui/Button';
 import { Card } from '../../../shared/ui/Card';
-import { notificationService, type NotificationPreferences, type NotificationType } from '../../../shared/services/notificationService';
 
 export const NotificationSettingsPage: React.FC = () => {
   const [preferences, setPreferences] = useState<NotificationPreferences>(notificationService.getPreferences());
@@ -281,13 +282,14 @@ export const NotificationSettingsPage: React.FC = () => {
             <p className="text-xs text-gray-600">
               Don't send non-critical notifications during these hours
             </p>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label htmlFor="start-time" className="block text-xs font-medium text-gray-700 mb-1">
                   Start time
                 </label>
                 <input
+                  id="start-time"
                   type="time"
                   value={preferences.quietHoursStart || '22:00'}
                   onChange={(e) => handleQuietHoursChange('quietHoursStart', e.target.value)}
@@ -297,10 +299,11 @@ export const NotificationSettingsPage: React.FC = () => {
               </div>
               
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label htmlFor="end-time" className="block text-xs font-medium text-gray-700 mb-1">
                   End time
                 </label>
                 <input
+                  id="end-time"
                   type="time"
                   value={preferences.quietHoursEnd || '07:00'}
                   onChange={(e) => handleQuietHoursChange('quietHoursEnd', e.target.value)}

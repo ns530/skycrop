@@ -4,10 +4,11 @@
  * Automatically sends notifications based on field data changes
  */
 
-import { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { sendHealthAlert, sendWeatherWarning, sendRecommendationNotification } from '../services/notificationService';
+import { useEffect, useRef } from 'react';
+
 import type { FieldDetail } from '../../features/fields/api/fieldsApi';
+import { sendHealthAlert, sendWeatherWarning, sendRecommendationNotification } from '../services/notificationService';
 
 interface NotificationTriggers {
   fieldData?: FieldDetail;

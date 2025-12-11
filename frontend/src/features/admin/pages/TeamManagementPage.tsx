@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Users, UserPlus, Shield, Search, MoreVertical, Mail } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Users, UserPlus, Shield, Search, MoreVertical, Mail } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+
 import { httpClient } from '../../../shared/api/httpClient';
 import { useToast } from '../../../shared/hooks/useToast';
-import { TeamMembersList } from '../components/TeamMembersList';
 import { InviteUserModal } from '../components/InviteUserModal';
 import { PermissionMatrixModal } from '../components/PermissionMatrixModal';
+import { TeamMembersList } from '../components/TeamMembersList';
 import { UserStatsCard } from '../components/UserStatsCard';
 
 interface User {

@@ -3,6 +3,7 @@
  */
 
 import { useState, useEffect } from 'react';
+
 import type { MapCenter } from '../types/map.types';
 import { SRI_LANKA_CENTER } from '../utils/tileProviders';
 

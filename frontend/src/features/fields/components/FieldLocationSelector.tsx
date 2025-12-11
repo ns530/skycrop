@@ -3,16 +3,17 @@
  * Interactive map for selecting field center location
  */
 
-import React, { useState } from 'react';
-import { Marker, useMapEvents } from 'react-leaflet';
-import { BaseMap, MapControls, useMapCenter, type MapCenter } from '../../../shared/components/Map';
-import { Button } from '../../../shared/ui/Button';
 import L from 'leaflet';
-
-// Fix for default marker icons in Leaflet
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import React, { useState } from 'react';
+import { Marker, useMapEvents } from 'react-leaflet';
+
+import { BaseMap, MapControls, useMapCenter, type MapCenter } from '../../../shared/components/Map';
+import { Button } from '../../../shared/ui/Button';
+
+// Fix for default marker icons in Leaflet
 
 // @ts-ignore
 delete L.Icon.Default.prototype._getIconUrl;

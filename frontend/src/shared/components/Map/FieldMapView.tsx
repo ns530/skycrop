@@ -5,15 +5,18 @@
 
 import React, { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
+
+import { useFieldDetail } from '../../../features/fields/hooks/useFields';
+import { ErrorState } from '../../ui/ErrorState';
+import { LoadingState } from '../../ui/LoadingState';
+
 import { BaseMap } from './BaseMap';
 import { FieldBoundaryLayer } from './FieldBoundaryLayer';
-import { MapControls } from './MapControls';
 import { useMapCenter } from './hooks/useMapCenter';
-import { calculatePolygonCenter } from './utils/geoJsonUtils';
-import { useFieldDetail } from '../../../features/fields/hooks/useFields';
+import { MapControls } from './MapControls';
 import type { FieldWithBoundary } from './types/map.types';
-import { LoadingState } from '../../ui/LoadingState';
-import { ErrorState } from '../../ui/ErrorState';
+import { calculatePolygonCenter } from './utils/geoJsonUtils';
+
 
 interface FieldMapViewProps {
   /** Optional: Override field ID from route params */

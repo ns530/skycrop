@@ -129,10 +129,12 @@ export const Drawer: React.FC<DrawerProps> = ({
       : 'right-0 rounded-l-lg';
 
   return ReactDOM.createPortal(
-    // eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions
     <div
       className="fixed inset-0 z-40 flex bg-black/40"
       onClick={onClose}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClose(); }}
     >
       <div
         ref={panelRef}

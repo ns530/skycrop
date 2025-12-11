@@ -3,9 +3,10 @@
  * Renders field boundaries as GeoJSON polygons on the map
  */
 
+import type { PathOptions } from 'leaflet';
 import React from 'react';
 import { GeoJSON } from 'react-leaflet';
-import type { PathOptions } from 'leaflet';
+
 import type { FieldWithBoundary } from './types/map.types';
 
 interface FieldBoundaryLayerProps {
@@ -84,7 +85,7 @@ export const FieldBoundaryLayer: React.FC<FieldBoundaryLayerProps> = ({
         return (
           <GeoJSON
             key={field.id}
-            data={field.boundary as any}
+            data={field.boundary}
             style={style}
             eventHandlers={{
               click: () => {

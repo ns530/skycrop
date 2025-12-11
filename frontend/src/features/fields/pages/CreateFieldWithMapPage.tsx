@@ -5,18 +5,19 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+import type { MapCenter } from '../../../shared/components/Map';
+import { calculatePolygonArea } from '../../../shared/components/Map/utils/geoJsonUtils';
 import { useUiState } from '../../../shared/context/UiContext';
 import { useToast } from '../../../shared/hooks/useToast';
-import type { MapCenter } from '../../../shared/components/Map';
 import type { FieldGeometry } from '../../../shared/types/geojson';
-import { FieldLocationSelector } from '../components/FieldLocationSelector';
-import { BoundaryDetectionProgress } from '../components/BoundaryDetectionProgress';
-import { BoundaryConfirmation } from '../components/BoundaryConfirmation';
-import { FieldForm, type FieldFormValues } from '../components/FieldForm';
 import { Card } from '../../../shared/ui/Card';
-import { useCreateField, useUpdateField } from '../hooks/useFields';
+import { BoundaryConfirmation } from '../components/BoundaryConfirmation';
+import { BoundaryDetectionProgress } from '../components/BoundaryDetectionProgress';
+import { FieldForm, type FieldFormValues } from '../components/FieldForm';
+import { FieldLocationSelector } from '../components/FieldLocationSelector';
 import { useBoundaryDetection } from '../hooks/useBoundaryDetection';
-import { calculatePolygonArea } from '../../../shared/components/Map/utils/geoJsonUtils';
+import { useCreateField, useUpdateField } from '../hooks/useFields';
 
 /**
  * Workflow steps for field creation

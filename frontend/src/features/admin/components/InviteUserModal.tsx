@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { X, Mail, Send } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
+import { X, Mail, Send } from 'lucide-react';
+import React, { useState } from 'react';
+
 import { httpClient } from '../../../shared/api/httpClient';
 import { useToast } from '../../../shared/hooks/useToast';
 

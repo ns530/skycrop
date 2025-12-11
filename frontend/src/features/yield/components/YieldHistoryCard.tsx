@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+
 import { Card } from '../../../shared/ui/Card';
 
 export interface YieldRecord {

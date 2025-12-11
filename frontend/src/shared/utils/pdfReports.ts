@@ -1,6 +1,12 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+interface JspdfWithAutoTable extends jsPDF {
+  lastAutoTable: {
+    finalY: number;
+  };
+}
+
 interface FieldHealthReportData {
   field: {
     name: string;
@@ -88,7 +94,7 @@ export const generateFieldHealthReportPDF = (data: FieldHealthReportData): void 
   
   // Anomalies Section
   if (data.anomalies.length > 0) {
-    const finalY = (doc as any).lastAutoTable.finalY || 140;
+    const finalY = (doc as JspdfWithAutoTable).lastAutoTable.finalY || 140;
     doc.setFontSize(14);
     doc.text('Detected Anomalies', 14, finalY + 10);
     
@@ -159,7 +165,7 @@ export const generateYieldForecastReportPDF = (data: YieldForecastReportData): v
   
   // Actual Yield Table
   if (data.actualYield.length > 0) {
-    const finalY = (doc as any).lastAutoTable.finalY || 120;
+    const finalY = (doc as JspdfWithAutoTable).lastAutoTable.finalY || 120;
     doc.setFontSize(14);
     doc.text('Actual Yield History', 14, finalY + 10);
     
@@ -178,7 +184,7 @@ export const generateYieldForecastReportPDF = (data: YieldForecastReportData): v
   // Summary Stats
   if (data.predictions.length > 0) {
     const latestPred = data.predictions[0];
-    const finalY = (doc as any).lastAutoTable.finalY || 160;
+    const finalY = (doc as JspdfWithAutoTable).lastAutoTable.finalY || 160;
     
     doc.setFontSize(14);
     doc.text('Forecast Summary', 14, finalY + 10);

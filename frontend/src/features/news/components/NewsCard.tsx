@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import { Card } from '../../../shared/ui/Card';
 import type { NewsArticle } from '../api/newsApi';
 

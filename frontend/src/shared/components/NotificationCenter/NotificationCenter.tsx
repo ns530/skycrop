@@ -7,6 +7,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import { notificationService, type StoredNotification } from '../../services/notificationService';
 import { Button } from '../../ui/Button';
 
@@ -146,7 +147,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
           <div className="px-4 py-12 text-center">
             <div className="text-4xl mb-3">🔔</div>
             <p className="text-sm font-medium text-gray-900 mb-1">No notifications</p>
-            <p className="text-xs text-gray-500">You're all caught up!</p>
+            <p className="text-xs text-gray-500">You&apos;re all caught up!</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-100">

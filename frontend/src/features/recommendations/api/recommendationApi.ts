@@ -1,8 +1,9 @@
 import { httpClient, normalizeApiError } from '../../../shared/api';
-import { generateAIRecommendations, type FieldAnalysisInput } from './aiRecommendationEngine';
 import { getFieldHealth } from '../../health/api/healthApi';
 import { getWeatherForecast } from '../../weather/api/weatherApi';
 import { getYieldForecast } from '../../yield/api/yieldApi';
+
+import { generateAIRecommendations, type FieldAnalysisInput } from './aiRecommendationEngine';
 
 export type RecommendationStatus = 'planned' | 'applied' | 'overdue';
 export type RecommendationPriority = 'low' | 'medium' | 'high';

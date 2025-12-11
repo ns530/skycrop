@@ -1,13 +1,52 @@
 import { useEffect, useCallback, useRef } from 'react';
+
 import { websocketService } from '../services/websocket';
+
 import { useToast } from './useToast';
 
+interface HealthUpdatedEvent {
+  fieldId: string;
+  fieldName: string;
+  health: {
+    score: number;
+    status: string;
+  };
+}
+
+interface HealthAlertEvent {
+  fieldId: string;
+  fieldName: string;
+  message: string;
+  severity: string;
+}
+
+interface RecommendationCreatedEvent {
+  fieldId: string;
+  fieldName: string;
+  message: string;
+  recommendations: Array<{
+    priority: string;
+  }>;
+}
+
+interface RecommendationsUpdatedEvent {
+  fieldId: string;
+  fieldName: string;
+  message: string;
+}
+
+interface YieldPredictionReadyEvent {
+  fieldId: string;
+  fieldName: string;
+  message: string;
+}
+
 interface UseWebSocketOptions {
-  onHealthUpdated?: (data: any) => void;
-  onHealthAlert?: (data: any) => void;
-  onRecommendationsUpdated?: (data: any) => void;
-  onRecommendationCreated?: (data: any) => void;
-  onYieldPredictionReady?: (data: any) => void;
+  onHealthUpdated?: (data: HealthUpdatedEvent) => void;
+  onHealthAlert?: (data: HealthAlertEvent) => void;
+  onRecommendationsUpdated?: (data: RecommendationsUpdatedEvent) => void;
+  onRecommendationCreated?: (data: RecommendationCreatedEvent) => void;
+  onYieldPredictionReady?: (data: YieldPredictionReadyEvent) => void;
   onConnect?: () => void;
   onDisconnect?: (reason: string) => void;
   onError?: (error: Error) => void;

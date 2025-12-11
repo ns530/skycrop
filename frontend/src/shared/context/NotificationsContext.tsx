@@ -1,7 +1,39 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+
 import { Notification } from '../components/NotificationBell';
-import { websocketService } from '../services/websocket';
 import { useToast } from '../hooks/useToast';
+import { websocketService } from '../services/websocket';
+
+interface HealthUpdatedEvent {
+  fieldId: string;
+  fieldName: string;
+  health: {
+    score: number;
+    status: string;
+  };
+}
+
+interface HealthAlertEvent {
+  fieldId: string;
+  fieldName: string;
+  message: string;
+  severity: string;
+}
+
+interface RecommendationCreatedEvent {
+  fieldId: string;
+  fieldName: string;
+  message: string;
+  recommendations: Array<{
+    priority: string;
+  }>;
+}
+
+interface YieldPredictionReadyEvent {
+  fieldId: string;
+  fieldName: string;
+  message: string;
+}
 
 interface NotificationsContextValue {
   notifications: Notification[];
@@ -58,7 +90,7 @@ export const NotificationsProvider: React.FC<NotificationsProviderProps> = ({ ch
 
   // Setup WebSocket listeners
   useEffect(() => {
-    const handleHealthUpdated = (data: any) => {
+    const handleHealthUpdated = (data: HealthUpdatedEvent) => {
       addNotification({
         type: 'health',
         title: 'Field Health Updated',
@@ -70,7 +102,7 @@ export const NotificationsProvider: React.FC<NotificationsProviderProps> = ({ ch
       });
     };
 
-    const handleHealthAlert = (data: any) => {
+    const handleHealthAlert = (data: HealthAlertEvent) => {
       addNotification({
         type: 'alert',
         title: `${data.severity?.toUpperCase() || 'ALERT'}: Field Health Alert`,
@@ -92,7 +124,7 @@ export const NotificationsProvider: React.FC<NotificationsProviderProps> = ({ ch
       }
     };
 
-    const handleRecommendationCreated = (data: any) => {
+    const handleRecommendationCreated = (data: RecommendationCreatedEvent) => {
       addNotification({
         type: 'recommendation',
         title: 'New Recommendations',
@@ -101,11 +133,11 @@ export const NotificationsProvider: React.FC<NotificationsProviderProps> = ({ ch
         read: false,
         fieldId: data.fieldId,
         fieldName: data.fieldName,
-        priority: data.recommendations?.some((r: any) => r.priority === 'critical') ? 'high' : 'medium',
+        priority: data.recommendations?.some((r) => r.priority === 'critical') ? 'high' : 'medium',
       });
     };
 
-    const handleYieldPredictionReady = (data: any) => {
+    const handleYieldPredictionReady = (data: YieldPredictionReadyEvent) => {
       addNotification({
         type: 'yield',
         title: 'Yield Prediction Ready',

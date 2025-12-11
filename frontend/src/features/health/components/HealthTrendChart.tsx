@@ -15,6 +15,7 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from 'recharts';
+
 import { Card } from '../../../shared/ui/Card';
 import type { FieldHealthTimeSeries } from '../api/healthApi';
 

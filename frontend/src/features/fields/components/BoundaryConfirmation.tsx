@@ -4,9 +4,10 @@
  */
 
 import React from 'react';
+
 import { BaseMap, FieldBoundaryLayer, MapControls, calculatePolygonCenter, type FieldWithBoundary } from '../../../shared/components/Map';
-import { Button } from '../../../shared/ui/Button';
 import type { FieldGeometry } from '../../../shared/types/geojson';
+import { Button } from '../../../shared/ui/Button';
 
 interface BoundaryConfirmationProps {
   boundary: FieldGeometry;

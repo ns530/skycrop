@@ -4,8 +4,9 @@
  */
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { getNewsList, getNewsArticle, searchNews, getNewsByCategory, trackArticleView, type NewsArticle, type NewsListParams, type NewsCategory } from '../api/newsApi';
+
 import type { ApiError, PaginatedResponse } from '../../../shared/api';
+import { getNewsList, getNewsArticle, searchNews, getNewsByCategory, trackArticleView, type NewsArticle, type NewsListParams, type NewsCategory } from '../api/newsApi';
 
 /**
  * Query keys for news data

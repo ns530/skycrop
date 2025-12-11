@@ -9,6 +9,7 @@
  */
 
 import type { HealthIndexPoint } from '../../health/api/healthApi';
+
 import type { Recommendation, RecommendationPriority } from './recommendationApi';
 
 // --------------------

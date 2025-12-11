@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { X, Shield, Check, Minus } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { X, Shield, Check, Minus } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+
 import { httpClient } from '../../../shared/api/httpClient';
 
 interface PermissionMatrixModalProps {

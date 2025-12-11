@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+
 import { LoadingState } from '../../../shared/ui/LoadingState';
 
 interface BoundaryDetectionProgressProps {

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { MoreVertical, Mail, Shield, Ban, Trash2, Check } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { MoreVertical, Mail, Shield, Ban, Trash2, Check } from 'lucide-react';
+import React, { useState } from 'react';
 
 interface User {
   user_id: string;

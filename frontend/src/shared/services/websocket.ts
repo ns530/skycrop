@@ -1,14 +1,52 @@
 import { io, Socket } from 'socket.io-client';
+
 import { env } from '../../config/env';
 
 const API_URL = env.API_BASE_URL.replace('/api/v1', ''); // Remove /api/v1 for WebSocket connection
 
+interface HealthUpdatedEvent {
+  fieldId: string;
+  fieldName: string;
+  health: {
+    score: number;
+    status: string;
+  };
+}
+
+interface HealthAlertEvent {
+  fieldId: string;
+  fieldName: string;
+  message: string;
+  severity: string;
+}
+
+interface RecommendationCreatedEvent {
+  fieldId: string;
+  fieldName: string;
+  message: string;
+  recommendations: Array<{
+    priority: string;
+  }>;
+}
+
+interface RecommendationsUpdatedEvent {
+  fieldId: string;
+  fieldName: string;
+  message: string;
+}
+
+interface YieldPredictionReadyEvent {
+  fieldId: string;
+  fieldName: string;
+  message: string;
+}
+
 interface WebSocketEvents {
-  health_updated: (data: any) => void;
-  health_alert: (data: any) => void;
-  recommendations_updated: (data: any) => void;
-  recommendation_created: (data: any) => void;
-  yield_prediction_ready: (data: any) => void;
+  health_updated: (data: HealthUpdatedEvent) => void;
+  health_alert: (data: HealthAlertEvent) => void;
+  recommendations_updated: (data: RecommendationsUpdatedEvent) => void;
+  recommendation_created: (data: RecommendationCreatedEvent) => void;
+  yield_prediction_ready: (data: YieldPredictionReadyEvent) => void;
   subscribed: (data: { fieldId: string }) => void;
   unsubscribed: (data: { fieldId: string }) => void;
   connect: () => void;
@@ -227,29 +265,29 @@ class WebSocketService {
     });
 
     // Health events
-    this.socket.on('health_updated', (data: any) => {
+    this.socket.on('health_updated', (data: HealthUpdatedEvent) => {
       console.log('[WebSocket] Health updated:', data);
       this._triggerCallbacks('health_updated', data);
     });
 
-    this.socket.on('health_alert', (data: any) => {
+    this.socket.on('health_alert', (data: HealthAlertEvent) => {
       console.log('[WebSocket] Health alert:', data);
       this._triggerCallbacks('health_alert', data);
     });
 
     // Recommendation events
-    this.socket.on('recommendations_updated', (data: any) => {
+    this.socket.on('recommendations_updated', (data: RecommendationsUpdatedEvent) => {
       console.log('[WebSocket] Recommendations updated:', data);
       this._triggerCallbacks('recommendations_updated', data);
     });
 
-    this.socket.on('recommendation_created', (data: any) => {
+    this.socket.on('recommendation_created', (data: RecommendationCreatedEvent) => {
       console.log('[WebSocket] Recommendation created:', data);
       this._triggerCallbacks('recommendation_created', data);
     });
 
     // Yield prediction events
-    this.socket.on('yield_prediction_ready', (data: any) => {
+    this.socket.on('yield_prediction_ready', (data: YieldPredictionReadyEvent) => {
       console.log('[WebSocket] Yield prediction ready:', data);
       this._triggerCallbacks('yield_prediction_ready', data);
     });
@@ -269,7 +307,7 @@ class WebSocketService {
   /**
    * Trigger registered callbacks for an event
    */
-  private _triggerCallbacks(event: string, data: any): void {
+  private _triggerCallbacks(event: string, data: unknown): void {
     const callbacks = this.eventCallbacks.get(event);
     if (callbacks) {
       callbacks.forEach((callback) => {

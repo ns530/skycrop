@@ -4,14 +4,15 @@
  */
 
 import React, { useState } from 'react';
+
 import { useOnlineStatus } from '../../../shared/hooks/useOnlineStatus';
 import { Button } from '../../../shared/ui/Button';
 import { Card } from '../../../shared/ui/Card';
 import { ErrorState } from '../../../shared/ui/ErrorState';
 import { LoadingState } from '../../../shared/ui/LoadingState';
+import type { NewsCategory } from '../api/newsApi';
 import { NewsCard } from '../components/NewsCard';
 import { useNewsList, usePrefetchNewsArticle } from '../hooks/useNews';
-import type { NewsCategory } from '../api/newsApi';
 
 const CATEGORIES: Array<{ value: NewsCategory | 'all'; label: string; icon: string }> = [
   { value: 'all', label: 'All', icon: '📰' },

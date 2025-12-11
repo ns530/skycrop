@@ -17,9 +17,29 @@ import {
   ResponsiveContainer,
   ReferenceLine,
   ComposedChart,
+  TooltipProps,
 } from 'recharts';
+
 import { Card } from '../../../shared/ui/Card';
 import type { ActualYieldRecord } from '../api/yieldApi';
+
+interface ChartDataPoint {
+  date: string;
+  actual: number;
+  predicted: number | null;
+  notes: string;
+}
+
+interface TooltipPayload {
+  dataKey: string;
+  value: number;
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: TooltipPayload[];
+  label?: string;
+}
 
 interface YieldTrendChartProps {
   records: ActualYieldRecord[];
@@ -31,11 +51,11 @@ interface YieldTrendChartProps {
 /**
  * Custom tooltip for chart
  */
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label }) => {
   if (!active || !payload || !payload.length) return null;
 
-  const actualData = payload.find((p: any) => p.dataKey === 'actual');
-  const predictedData = payload.find((p: any) => p.dataKey === 'predicted');
+  const actualData = payload.find((p: TooltipPayload) => p.dataKey === 'actual');
+  const predictedData = payload.find((p: TooltipPayload) => p.dataKey === 'predicted');
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3">
@@ -258,8 +278,8 @@ export const YieldTrendChart: React.FC<YieldTrendChartProps> = ({
                 value: `Avg: ${avgYield.toFixed(0)}`,
                 fontSize: 10,
                 fill: '#6B7280',
-                position: 'right',
-              } as any}
+                position: 'right' as const,
+              }}
             />
 
             {/* Actual yield bars */}
