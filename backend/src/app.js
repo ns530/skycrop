@@ -49,6 +49,7 @@ const jobsRoutes = require('./api/routes/jobs.routes');
 const notificationRoutes = require('./api/routes/notification.routes');
 const healthMonitoringRoutes = require('./api/routes/healthMonitoring.routes');
 const userManagementRoutes = require('./api/routes/userManagement.routes'); // User management (admin)
+const adminContentRoutes = require('./api/routes/adminContent.routes'); // Admin content management
 const debugRoutes = require('./api/routes/debug.routes'); // Debug routes for testing
 const { apiLimiter } = require('./api/middleware/rateLimit.middleware');
 const { logger, loggerStream } = require('./utils/logger');
@@ -120,6 +121,7 @@ app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1', yieldRoutes); // Yield routes (both /fields/:id/yield and /yield/:id)
 app.use('/api/v1/admin/jobs', jobsRoutes); // Admin jobs management
 app.use('/api/v1/admin/users', userManagementRoutes); // Admin user management
+app.use('/api/v1/admin/content', adminContentRoutes); // Admin content management
 app.use('/debug', debugRoutes); // Debug routes (development/staging only)
 
 // 404 handler

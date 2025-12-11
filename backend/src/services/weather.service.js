@@ -306,39 +306,75 @@ class WeatherService {
   }
 
   /**
-   * Provider-agnostic normalized 7-day forecast by coordinates.
-   * Returns { data: { coord, days[], totals }, meta }
-   */
-  async getForecastByCoords(lat, lon) {
-    await this.init();
-    const apiKey = this._requireApiKey();
+    * Provider-agnostic normalized 7-day forecast by coordinates.
+    * Returns { data: { coord, days[], totals }, meta }
+    */
+   async getForecastByCoords(lat, lon) {
+     await this.init();
+     const apiKey = this._requireApiKey();
 
-    const cacheKey = this._forecastCacheKeyByCoords(lat, lon);
-    const cachedStr = await this.redis.get(cacheKey);
-    if (cachedStr) {
-      const payload = JSON.parse(cachedStr);
-      return { data: payload, meta: { cache: 'hit', source: 'cache' } };
-    }
+     const cacheKey = this._forecastCacheKeyByCoords(lat, lon);
+     const cachedStr = await this.redis.get(cacheKey);
+     if (cachedStr) {
+       const payload = JSON.parse(cachedStr);
+       return { data: payload, meta: { cache: 'hit', source: 'cache' } };
+     }
 
-    const label = 'weather.forecast.normalized.coords';
-    const url = `${this.BASE_URL}?lat=${lat}&lon=${lon}&exclude=minutely,hourly,alerts,current&units=metric&appid=${encodeURIComponent(apiKey)}`;
+     const label = 'weather.forecast.normalized.coords';
+     const url = `${this.BASE_URL}?lat=${lat}&lon=${lon}&exclude=minutely,hourly,alerts,current&units=metric&appid=${encodeURIComponent(apiKey)}`;
 
-    const { json, duration } = await this._requestWithRetry(url, label);
-    const { days, totals } = this._normalizeDaily(json.daily || []);
+     const { json, duration } = await this._requestWithRetry(url, label);
+     const { days, totals } = this._normalizeDaily(json.daily || []);
 
-    const payload = {
-      coord: { lat, lon },
-      days,
-      totals,
-      source: 'openweathermap_onecall',
-      fetched_at: new Date().toISOString(),
-    };
+     const payload = {
+       coord: { lat, lon },
+       days,
+       totals,
+       source: 'openweathermap_onecall',
+       fetched_at: new Date().toISOString(),
+     };
 
-    await this.redis.setEx(cacheKey, this.TTL_SECONDS, JSON.stringify(payload));
-    logger.info('cache.set', { key: 'weather:forecast:LAT:LON', ttl: this.TTL_SECONDS });
+     await this.redis.setEx(cacheKey, this.TTL_SECONDS, JSON.stringify(payload));
+     logger.info('cache.set', { key: 'weather:forecast:LAT:LON', ttl: this.TTL_SECONDS });
 
-    return { data: payload, meta: { cache: 'miss', source: 'provider', duration_ms: duration } };
-  }
+     return { data: payload, meta: { cache: 'miss', source: 'provider', duration_ms: duration } };
+   }
+
+   /**
+    * Get weather alerts for user's location (simplified - OpenWeather alerts are limited).
+    * Returns { data: { alerts: [] }, meta }
+    */
+   async getWeatherAlerts(userId) {
+     await this.init();
+
+     // For now, return empty alerts array since OpenWeather One Call API
+     // doesn't provide comprehensive alerts in all regions
+     // In production, this could integrate with a dedicated weather alerts service
+     const payload = {
+       alerts: [],
+       source: 'openweathermap_onecall',
+       fetched_at: new Date().toISOString(),
+       note: 'Weather alerts not available for this region'
+     };
+
+     return {
+       data: payload,
+       meta: { cache: 'none', source: 'service', duration_ms: 0 }
+     };
+   }
+
+   /**
+    * Cache weather data for a field (used by background jobs).
+    * @param {string} fieldId - Field ID
+    * @param {object} data - Weather data to cache
+    */
+   async cacheWeatherData(fieldId, data) {
+     await this.init();
+
+     const cacheKey = `weather:field_data:${fieldId}`;
+     await this.redis.setEx(cacheKey, this.TTL_SECONDS, JSON.stringify(data));
+     logger.info('cache.set', { key: `weather:field_data:${fieldId}`, ttl: this.TTL_SECONDS });
+   }
 }
 
 let weatherServiceSingleton;
