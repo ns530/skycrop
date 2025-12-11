@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Real End-to-End Integration Tests
  * Tests complete workflows with actual service integration
@@ -9,37 +7,37 @@ const request = require('supertest');
 
 // Mock auth middleware
 jest.mock('../../src/api/middleware/auth.middleware', () => ({
-  authMiddleware: (req, _res, next) => {
-    req.user = { userId: 'e2e-test-user-1' };
+  authMiddleware: (req, res, next) => {
+    req.user = { user_id: 'e2e-test-user-1' };
     next();
   },
-  requireRole: () => (_req, _res, next) => next(),
-  requireAnyRole: () => (_req, _res, next) => next(),
+  requireRole: () => (req, res, next) => next(),
+  requireAnyRole: () => (req, res, next) => next(),
 }));
 
 // Mock rate limiter
 jest.mock('../../src/api/middleware/rateLimit.middleware', () => ({
-  apiLimiter: (_req, _res, next) => next(),
-  authLimiter: (_req, _res, next) => next(),
+  apiLimiter: (req, res, next) => next(),
+  authLimiter: (req, res, next) => next(),
 }));
 
 const app = require('../../src/app');
 
 describe('E2E Integration Tests - Real Workflows', () => {
-  const testUserId = 'e2e-test-user-1';
-  const testFieldId = 'e2e-field-123';
+  const testuser_id = 'e2e-test-user-1';
+  const testfield_id = 'e2e-field-123';
 
   beforeAll(() => {
     process.env.NODE_ENV = 'test';
-    process.env.JWT_SECRET = 'test-secret';
+    process.env.JWTSECRET = 'test-secret';
   });
 
   describe('Scenario 1: Health Monitoring API - Complete Flow', () => {
     it('should handle health history request', async () => {
       const response = await request(app)
-        .get(`/api/v1/fields/${testFieldId}/health/history`)
+        .get(`/api/v1/fields/${testfield_id}/health/history`)
         .query({ start: '2024-01-01', end: '2024-01-31' })
-        .expect(function(res) {
+        .expect(function (res) {
           // Accept both 200 (with data) and 404 (field not found) as valid
           if (res.status !== 200 && res.status !== 404) {
             throw new Error(`Expected 200 or 404, got ${res.status}`);
@@ -56,9 +54,9 @@ describe('E2E Integration Tests - Real Workflows', () => {
 
     it('should handle invalid date range gracefully', async () => {
       const response = await request(app)
-        .get(`/api/v1/fields/${testFieldId}/health/history`)
+        .get(`/api/v1/fields/${testfield_id}/health/history`)
         .query({ start: 'invalid-date', end: '2024-01-31' })
-        .expect(function(res) {
+        .expect(function (res) {
           // Should return 400 for invalid input or 404 for field not found
           if (res.status !== 400 && res.status !== 404) {
             throw new Error(`Expected 400 or 404, got ${res.status}`);
@@ -70,7 +68,7 @@ describe('E2E Integration Tests - Real Workflows', () => {
 
     it('should verify response structure for health history', async () => {
       const response = await request(app)
-        .get(`/api/v1/fields/${testFieldId}/health/history`)
+        .get(`/api/v1/fields/${testfield_id}/health/history`)
         .query({ start: '2024-01-01', end: '2024-01-31' });
 
       // Should have proper structure regardless of 200 or 404
@@ -85,12 +83,12 @@ describe('E2E Integration Tests - Real Workflows', () => {
   describe('Scenario 2: Recommendation Engine - Generation Flow', () => {
     it('should handle recommendation generation request', async () => {
       const response = await request(app)
-        .post(`/api/v1/fields/${testFieldId}/recommendations/generate`)
+        .post(`/api/v1/fields/${testfield_id}/recommendations/generate`)
         .send({
           date: '2024-01-15',
-          recompute: false
+          recompute: false,
         })
-        .expect(function(res) {
+        .expect(function (res) {
           // Accept 200, 404, or 500 as service may need real data
           if (![200, 404, 500].includes(res.status)) {
             throw new Error(`Expected 200, 404, or 500, got ${res.status}`);
@@ -102,12 +100,12 @@ describe('E2E Integration Tests - Real Workflows', () => {
 
     it('should validate request body for recommendations', async () => {
       const response = await request(app)
-        .post(`/api/v1/fields/${testFieldId}/recommendations/generate`)
+        .post(`/api/v1/fields/${testfield_id}/recommendations/generate`)
         .send({
           date: 'invalid-date',
-          recompute: 'not-boolean'
+          recompute: 'not-boolean',
         })
-        .expect(function(res) {
+        .expect(function (res) {
           // Should validate input or return field not found
           if (![400, 404, 500].includes(res.status)) {
             throw new Error(`Expected 400, 404, or 500, got ${res.status}`);
@@ -119,7 +117,7 @@ describe('E2E Integration Tests - Real Workflows', () => {
 
     it('should get recommendations for a field', async () => {
       const response = await request(app)
-        .get(`/api/v1/fields/${testFieldId}/recommendations`)
+        .get(`/api/v1/fields/${testfield_id}/recommendations`)
         .query({ status: 'pending', page: 1, pageSize: 10 });
 
       // Should return proper structure
@@ -133,13 +131,13 @@ describe('E2E Integration Tests - Real Workflows', () => {
   describe('Scenario 3: Yield Prediction - Full Flow', () => {
     it('should handle yield prediction request', async () => {
       const response = await request(app)
-        .post(`/api/v1/fields/${testFieldId}/yield/predict`)
+        .post(`/api/v1/fields/${testfield_id}/yield/predict`)
         .send({
-          planting_date: '2024-01-15',
-          crop_variety: 'BG 300',
-          price_per_kg: 80
+          plantingdate: '2024-01-15',
+          cropvariety: 'BG 300',
+          priceperkg: 80,
         })
-        .expect(function(res) {
+        .expect(function (res) {
           // May need real data, accept various statuses
           if (![200, 404, 500, 502].includes(res.status)) {
             throw new Error(`Expected 200, 404, 500, or 502, got ${res.status}`);
@@ -151,8 +149,8 @@ describe('E2E Integration Tests - Real Workflows', () => {
 
     it('should get yield predictions history', async () => {
       const response = await request(app)
-        .get(`/api/v1/fields/${testFieldId}/yield/predictions`)
-        .query({ limit: 5, sort: 'prediction_date', order: 'desc' });
+        .get(`/api/v1/fields/${testfield_id}/yield/predictions`)
+        .query({ limit: 5, sort: 'predictiondate', order: 'desc' });
 
       expect(response.body).toHaveProperty('success');
       if (response.status === 200) {
@@ -168,9 +166,9 @@ describe('E2E Integration Tests - Real Workflows', () => {
         .post('/api/v1/notifications/register')
         .send({
           deviceToken: 'test-fcm-token-12345',
-          platform: 'android'
+          platform: 'android',
         })
-        .expect(function(res) {
+        .expect(function (res) {
           // Should accept device registration or fail with known error
           if (![201, 400, 500].includes(res.status)) {
             throw new Error(`Expected 201, 400, or 500, got ${res.status}`);
@@ -185,7 +183,7 @@ describe('E2E Integration Tests - Real Workflows', () => {
         .post('/api/v1/notifications/register')
         .send({
           deviceToken: 'test-token',
-          platform: 'invalid-platform'
+          platform: 'invalid-platform',
         })
         .expect(400);
 
@@ -198,9 +196,9 @@ describe('E2E Integration Tests - Real Workflows', () => {
         .send({
           title: 'E2E Test Notification',
           message: 'This is a test from E2E suite',
-          type: 'info'
+          type: 'info',
         })
-        .expect(function(res) {
+        .expect(function (res) {
           // Should process notification or fail gracefully
           if (![200, 400, 500].includes(res.status)) {
             throw new Error(`Expected 200, 400, or 500, got ${res.status}`);
@@ -211,9 +209,7 @@ describe('E2E Integration Tests - Real Workflows', () => {
     });
 
     it('should get queue statistics', async () => {
-      const response = await request(app)
-        .get('/api/v1/notifications/queue/stats')
-        .expect(200);
+      const response = await request(app).get('/api/v1/notifications/queue/stats').expect(200);
 
       expect(response.body).toHaveProperty('success', true);
       expect(response.body).toHaveProperty('data');
@@ -233,7 +229,7 @@ describe('E2E Integration Tests - Real Workflows', () => {
     it('should handle authentication properly', async () => {
       // Auth is mocked, but verify middleware structure is correct
       const response = await request(app)
-        .get(`/api/v1/fields/${testFieldId}/health/history`)
+        .get(`/api/v1/fields/${testfield_id}/health/history`)
         .query({ start: '2024-01-01', end: '2024-01-31' });
 
       // Should not get 401 (auth middleware is mocked)
@@ -243,19 +239,17 @@ describe('E2E Integration Tests - Real Workflows', () => {
 
   describe('Scenario 6: Error Handling', () => {
     it('should return 404 for non-existent routes', async () => {
-      const response = await request(app)
-        .get('/api/v1/non-existent-route')
-        .expect(404);
+      const response = await request(app).get('/api/v1/non-existent-route').expect(404);
 
       expect(response.body).toBeDefined();
     });
 
     it('should handle malformed JSON gracefully', async () => {
       const response = await request(app)
-        .post(`/api/v1/fields/${testFieldId}/recommendations/generate`)
+        .post(`/api/v1/fields/${testfield_id}/recommendations/generate`)
         .set('Content-Type', 'application/json')
         .send('{"invalid-json":')
-        .expect(function(res) {
+        .expect(function (res) {
           // Should handle malformed JSON
           if (![400, 500].includes(res.status)) {
             throw new Error(`Expected 400 or 500 for malformed JSON, got ${res.status}`);
@@ -269,7 +263,7 @@ describe('E2E Integration Tests - Real Workflows', () => {
       const response = await request(app)
         .get('/api/v1/fields/invalid-uuid/health/history')
         .query({ start: '2024-01-01', end: '2024-01-31' })
-        .expect(function(res) {
+        .expect(function (res) {
           // Should validate UUID or pass through
           if (![400, 404, 500].includes(res.status)) {
             throw new Error(`Expected 400, 404, or 500 for invalid UUID, got ${res.status}`);
@@ -283,25 +277,24 @@ describe('E2E Integration Tests - Real Workflows', () => {
   describe('Scenario 7: Performance and Response Times', () => {
     it('should respond within reasonable time for health API', async () => {
       const startTime = Date.now();
-      
+
       await request(app)
-        .get(`/api/v1/fields/${testFieldId}/health/history`)
+        .get(`/api/v1/fields/${testfield_id}/health/history`)
         .query({ start: '2024-01-01', end: '2024-01-31' });
 
       const duration = Date.now() - startTime;
-      
+
       // Should respond within 2 seconds (lenient for test environment)
       expect(duration).toBeLessThan(2000);
     });
 
     it('should respond within reasonable time for notifications', async () => {
       const startTime = Date.now();
-      
-      await request(app)
-        .get('/api/v1/notifications/queue/stats');
+
+      await request(app).get('/api/v1/notifications/queue/stats');
 
       const duration = Date.now() - startTime;
-      
+
       // Notification queue should be very fast
       expect(duration).toBeLessThan(1000);
     });
@@ -309,10 +302,9 @@ describe('E2E Integration Tests - Real Workflows', () => {
 
   describe('Scenario 8: Concurrent Requests Simulation', () => {
     it('should handle multiple concurrent requests', async () => {
-      const requests = Array(10).fill(null).map(() => 
-        request(app)
-          .get('/api/v1/notifications/queue/stats')
-      );
+      const requests = Array(10)
+        .fill(null)
+        .map(() => request(app).get('/api/v1/notifications/queue/stats'));
 
       const responses = await Promise.all(requests);
 
@@ -323,11 +315,13 @@ describe('E2E Integration Tests - Real Workflows', () => {
     });
 
     it('should handle concurrent recommendation requests', async () => {
-      const requests = Array(5).fill(null).map(() => 
-        request(app)
-          .get(`/api/v1/fields/${testFieldId}/recommendations`)
-          .query({ page: 1, pageSize: 10 })
-      );
+      const requests = Array(5)
+        .fill(null)
+        .map(() =>
+          request(app)
+            .get(`/api/v1/fields/${testfield_id}/recommendations`)
+            .query({ page: 1, pageSize: 10 })
+        );
 
       const responses = await Promise.all(requests);
 
@@ -341,7 +335,7 @@ describe('E2E Integration Tests - Real Workflows', () => {
 
 /**
  * E2E Test Summary
- * 
+ *
  * Tests Implemented:
  * ✅ Health Monitoring API (3 tests)
  * ✅ Recommendation Engine API (3 tests)
@@ -351,9 +345,9 @@ describe('E2E Integration Tests - Real Workflows', () => {
  * ✅ Error Handling (3 tests)
  * ✅ Performance Testing (2 tests)
  * ✅ Concurrent Requests (2 tests)
- * 
+ *
  * Total: 21 E2E tests
- * 
+ *
  * Coverage:
  * - All 4 major APIs tested
  * - Error scenarios covered
@@ -361,4 +355,3 @@ describe('E2E Integration Tests - Real Workflows', () => {
  * - Concurrent access tested
  * - Cross-service integration verified
  */
-

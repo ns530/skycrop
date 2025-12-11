@@ -21,7 +21,7 @@ const User = sequelize.define(
       unique: true,
       validate: { isEmail: true, len: [3, 255] },
     },
-    password_hash: {
+    passwordhash: {
       type: DataTypes.STRING(255),
       allowNull: true, // null for OAuth users
     },
@@ -38,16 +38,16 @@ const User = sequelize.define(
       allowNull: false,
       defaultValue: 'farmer',
     },
-    auth_provider: {
+    authprovider: {
       type: DataTypes.ENUM('google', 'email'),
       allowNull: false,
     },
-    email_verified: {
+    emailverified: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false,
     },
-    profile_photo_url: {
+    profilephotourl: {
       type: DataTypes.STRING(500),
       allowNull: true,
       validate: {
@@ -63,17 +63,17 @@ const User = sequelize.define(
       allowNull: false,
       defaultValue: 'active',
     },
-    created_at: {
+    createdat: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
-    updated_at: {
+    updatedat: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
-    last_login: {
+    lastlogin: {
       type: DataTypes.DATE,
       allowNull: true,
     },
@@ -81,26 +81,26 @@ const User = sequelize.define(
   {
     tableName: 'users',
     timestamps: true,
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
+    createdAt: 'createdat',
+    updatedAt: 'updatedat',
     underscored: true,
     freezeTableName: true,
     indexes: [
       // Align with DB-side conditional indexes where possible
       { fields: ['email'] },
-      { fields: ['status', 'created_at'] },
-      { fields: ['last_login'] },
+      { fields: ['status', 'createdat'] },
+      { fields: ['lastlogin'] },
     ],
     defaultScope: {
       where: { status: 'active' },
       attributes: {
         // do not expose password hash by default
-        exclude: ['password_hash'],
+        exclude: ['passwordhash'],
       },
     },
     scopes: {
       withSensitive: {
-        attributes: { include: ['password_hash'] },
+        attributes: { include: ['passwordhash'] },
       },
       allStatuses: {
         where: {},
@@ -120,14 +120,14 @@ User.findByEmail = function findByEmail(email) {
 
 /**
  * Helper: soft-delete user by setting status
- * @param {string} userId
+ * @param {string} user_id
  * @returns {Promise<[affectedCount]>}
  */
-User.softDeleteById = function softDeleteById(userId) {
+User.softDeleteById = function softDeleteById(user_id) {
   return this.update(
     { status: 'deleted' },
     {
-      where: { user_id: userId },
+      where: { user_id: user_id },
       returning: false,
     }
   );

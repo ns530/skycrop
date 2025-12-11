@@ -1,10 +1,8 @@
-'use strict';
-
 const { getYieldService } = require('../../src/services/yield.service');
 
 // Mock dependencies
 jest.mock('../../src/models/field.model');
-jest.mock('../../src/models/yield_prediction.model');
+jest.mock('../../src/models/yieldprediction.model');
 jest.mock('../../src/repositories/health.repository');
 jest.mock('../../src/services/mlGateway.service');
 jest.mock('../../src/services/weather.service');
@@ -21,7 +19,7 @@ jest.mock('../../src/config/redis.config', () => ({
 }));
 
 const Field = require('../../src/models/field.model');
-const YieldPrediction = require('../../src/models/yield_prediction.model');
+const YieldPrediction = require('../../src/models/yieldprediction.model');
 const HealthRepository = require('../../src/repositories/health.repository');
 
 describe('Yield Prediction Service', () => {
@@ -47,9 +45,9 @@ describe('Yield Prediction Service', () => {
 
       // Mock health records
       const mockHealthRecords = [
-        { ndvi_mean: 0.65, measurement_date: '2024-01-01' },
-        { ndvi_mean: 0.68, measurement_date: '2024-01-05' },
-        { ndvi_mean: 0.70, measurement_date: '2024-01-10' },
+        { ndvimean: 0.65, measurementdate: '2024-01-01' },
+        { ndvimean: 0.68, measurementdate: '2024-01-05' },
+        { ndvimean: 0.7, measurementdate: '2024-01-10' },
       ];
       HealthRepository.mockImplementation(() => ({
         findByFieldAndDateRange: jest.fn().mockResolvedValue(mockHealthRecords),
@@ -75,13 +73,15 @@ describe('Yield Prediction Service', () => {
         yieldPredict: jest.fn().mockResolvedValue({
           result: {
             data: {
-              predictions: [{
-                predicted_yield: 4800,
-                confidence_interval: {
-                  lower: 4200,
-                  upper: 5400,
+              predictions: [
+                {
+                  predictedyield: 4800,
+                  confidenceinterval: {
+                    lower: 4200,
+                    upper: 5400,
+                  },
                 },
-              }],
+              ],
               model: { version: '1.0.0' },
             },
           },
@@ -91,28 +91,28 @@ describe('Yield Prediction Service', () => {
 
       // Mock yield prediction creation
       YieldPrediction.create = jest.fn().mockResolvedValue({
-        prediction_id: 'pred-1',
+        predictionid: 'pred-1',
         field_id: 'field-1',
-        prediction_date: '2024-01-15',
-        predicted_yield_per_ha: 4800,
-        predicted_total_yield: 12000,
-        confidence_lower: 4200,
-        confidence_upper: 5400,
-        expected_revenue: 960000,
-        harvest_date_estimate: '2024-05-15',
-        model_version: '1.0.0',
-        features_used: {},
+        predictiondate: '2024-01-15',
+        predictedyieldperha: 4800,
+        predictedtotalyield: 12000,
+        confidencelower: 4200,
+        confidenceupper: 5400,
+        expectedrevenue: 960000,
+        harvestdateestimate: '2024-05-15',
+        modelversion: '1.0.0',
+        featuresused: {},
       });
 
       const result = await yieldService.predictYield('user-1', 'field-1', {
-        planting_date: '2024-01-15',
-        price_per_kg: 80,
+        plantingdate: '2024-01-15',
+        priceperkg: 80,
       });
 
-      expect(result.prediction_id).toBe('pred-1');
-      expect(result.predicted_yield_per_ha).toBe(4800);
-      expect(result.predicted_total_yield).toBe(12000);
-      expect(result.confidence_interval).toEqual({
+      expect(result.predictionid).toBe('pred-1');
+      expect(result.predictedyieldperha).toBe(4800);
+      expect(result.predictedtotalyield).toBe(12000);
+      expect(result.confidenceinterval).toEqual({
         lower: 4200,
         upper: 5400,
       });
@@ -122,9 +122,9 @@ describe('Yield Prediction Service', () => {
     it('should throw error when field not found', async () => {
       Field.findOne = jest.fn().mockResolvedValue(null);
 
-      await expect(
-        yieldService.predictYield('user-1', 'field-1', {})
-      ).rejects.toThrow('Field not found');
+      await expect(yieldService.predictYield('user-1', 'field-1', {})).rejects.toThrow(
+        'Field not found'
+      );
     });
 
     it('should handle weather service failure gracefully', async () => {
@@ -139,9 +139,7 @@ describe('Yield Prediction Service', () => {
       Field.findOne = jest.fn().mockResolvedValue(mockField);
 
       HealthRepository.mockImplementation(() => ({
-        findByFieldAndDateRange: jest.fn().mockResolvedValue([
-          { ndvi_mean: 0.65 },
-        ]),
+        findByFieldAndDateRange: jest.fn().mockResolvedValue([{ ndvimean: 0.65 }]),
       }));
 
       // Mock weather service failure
@@ -156,13 +154,15 @@ describe('Yield Prediction Service', () => {
         yieldPredict: jest.fn().mockResolvedValue({
           result: {
             data: {
-              predictions: [{
-                predicted_yield: 4500,
-                confidence_interval: {
-                  lower: 4000,
-                  upper: 5000,
+              predictions: [
+                {
+                  predictedyield: 4500,
+                  confidenceinterval: {
+                    lower: 4000,
+                    upper: 5000,
+                  },
                 },
-              }],
+              ],
               model: { version: '1.0.0' },
             },
           },
@@ -171,27 +171,27 @@ describe('Yield Prediction Service', () => {
       });
 
       YieldPrediction.create = jest.fn().mockResolvedValue({
-        prediction_id: 'pred-1',
+        predictionid: 'pred-1',
         field_id: 'field-1',
-        prediction_date: '2024-01-15',
-        predicted_yield_per_ha: 4500,
-        predicted_total_yield: 11250,
-        confidence_lower: 4000,
-        confidence_upper: 5000,
-        expected_revenue: 900000,
-        harvest_date_estimate: '2024-05-15',
-        model_version: '1.0.0',
-        features_used: {},
+        predictiondate: '2024-01-15',
+        predictedyieldperha: 4500,
+        predictedtotalyield: 11250,
+        confidencelower: 4000,
+        confidenceupper: 5000,
+        expectedrevenue: 900000,
+        harvestdateestimate: '2024-05-15',
+        modelversion: '1.0.0',
+        featuresused: {},
       });
 
       const result = await yieldService.predictYield('user-1', 'field-1', {});
 
       // Should succeed with default weather values
-      expect(result.prediction_id).toBe('pred-1');
-      expect(result.predicted_yield_per_ha).toBe(4500);
+      expect(result.predictionid).toBe('pred-1');
+      expect(result.predictedyieldperha).toBe(4500);
     });
 
-    it('should calculate revenue based on price_per_kg', async () => {
+    it('should calculate revenue based on priceperkg', async () => {
       const mockField = {
         field_id: 'field-1',
         user_id: 'user-1',
@@ -203,9 +203,7 @@ describe('Yield Prediction Service', () => {
       Field.findOne = jest.fn().mockResolvedValue(mockField);
 
       HealthRepository.mockImplementation(() => ({
-        findByFieldAndDateRange: jest.fn().mockResolvedValue([
-          { ndvi_mean: 0.65 },
-        ]),
+        findByFieldAndDateRange: jest.fn().mockResolvedValue([{ ndvimean: 0.65 }]),
       }));
 
       const { getWeatherService } = require('../../src/services/weather.service');
@@ -220,10 +218,12 @@ describe('Yield Prediction Service', () => {
         yieldPredict: jest.fn().mockResolvedValue({
           result: {
             data: {
-              predictions: [{
-                predicted_yield: 5000, // 5000 kg/ha
-                confidence_interval: { lower: 4500, upper: 5500 },
-              }],
+              predictions: [
+                {
+                  predictedyield: 5000, // 5000 kg/ha
+                  confidenceinterval: { lower: 4500, upper: 5500 },
+                },
+              ],
               model: { version: '1.0.0' },
             },
           },
@@ -231,17 +231,19 @@ describe('Yield Prediction Service', () => {
         }),
       });
 
-      YieldPrediction.create = jest.fn().mockImplementation((data) => Promise.resolve({
-        ...data,
-        prediction_id: 'pred-1',
-      }));
+      YieldPrediction.create = jest.fn().mockImplementation(data =>
+        Promise.resolve({
+          ...data,
+          predictionid: 'pred-1',
+        })
+      );
 
       const result = await yieldService.predictYield('user-1', 'field-1', {
-        price_per_kg: 100, // 100 LKR per kg
+        priceperkg: 100, // 100 LKR per kg
       });
 
       // Expected revenue = 5000 kg * 100 LKR = 500,000 LKR
-      expect(result.expected_revenue).toBe(500000);
+      expect(result.expectedrevenue).toBe(500000);
     });
   });
 
@@ -257,19 +259,19 @@ describe('Yield Prediction Service', () => {
 
       const mockPredictions = [
         {
-          prediction_id: 'pred-1',
+          predictionid: 'pred-1',
           field_id: 'field-1',
-          prediction_date: '2024-01-15',
-          predicted_yield_per_ha: 4800,
-          predicted_total_yield: 12000,
-          confidence_lower: 4200,
-          confidence_upper: 5400,
-          expected_revenue: 960000,
-          harvest_date_estimate: '2024-05-15',
-          model_version: '1.0.0',
-          actual_yield: null,
-          accuracy_mape: null,
-          created_at: new Date(),
+          predictiondate: '2024-01-15',
+          predictedyieldperha: 4800,
+          predictedtotalyield: 12000,
+          confidencelower: 4200,
+          confidenceupper: 5400,
+          expectedrevenue: 960000,
+          harvestdateestimate: '2024-05-15',
+          modelversion: '1.0.0',
+          actualyield: null,
+          accuracymape: null,
+          createdat: new Date(),
         },
       ];
 
@@ -278,16 +280,16 @@ describe('Yield Prediction Service', () => {
       const result = await yieldService.getPredictions('user-1', 'field-1', {});
 
       expect(result.predictions).toHaveLength(1);
-      expect(result.predictions[0].prediction_id).toBe('pred-1');
-      expect(result.predictions[0].predicted_yield_per_ha).toBe(4800);
+      expect(result.predictions[0].predictionid).toBe('pred-1');
+      expect(result.predictions[0].predictedyieldperha).toBe(4800);
     });
 
     it('should throw error when field not found', async () => {
       Field.findOne = jest.fn().mockResolvedValue(null);
 
-      await expect(
-        yieldService.getPredictions('user-1', 'field-1', {})
-      ).rejects.toThrow('Field not found');
+      await expect(yieldService.getPredictions('user-1', 'field-1', {})).rejects.toThrow(
+        'Field not found'
+      );
     });
 
     it('should respect limit and sort options', async () => {
@@ -303,17 +305,16 @@ describe('Yield Prediction Service', () => {
 
       await yieldService.getPredictions('user-1', 'field-1', {
         limit: 5,
-        sort: 'predicted_yield_per_ha',
+        sort: 'predictedyieldperha',
         order: 'asc',
       });
 
       expect(YieldPrediction.findAll).toHaveBeenCalledWith({
         where: { field_id: 'field-1' },
-        order: [['predicted_yield_per_ha', 'ASC']],
+        order: [['predictedyieldperha', 'ASC']],
         limit: 5,
         attributes: expect.any(Array),
       });
     });
   });
 });
-

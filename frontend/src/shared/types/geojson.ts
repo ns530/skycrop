@@ -4,17 +4,17 @@ export type GeoJSONPosition = [number, number] | [number, number, number];
 export type GeoJSONLinearRing = GeoJSONPosition[];
 
 export interface GeoJSONPolygon {
-  type: 'Polygon';
+  type: "Polygon";
   coordinates: GeoJSONLinearRing[];
 }
 
 export interface GeoJSONMultiPolygon {
-  type: 'MultiPolygon';
+  type: "MultiPolygon";
   coordinates: GeoJSONLinearRing[][];
 }
 
 export interface GeoJSONPoint {
-  type: 'Point';
+  type: "Point";
   coordinates: GeoJSONPosition;
 }
 

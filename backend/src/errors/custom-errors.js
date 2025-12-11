@@ -13,13 +13,13 @@ class AppError extends Error {
 
 class ValidationError extends AppError {
   constructor(message = 'Validation error', details = {}) {
-    super('VALIDATION_ERROR', message, 400, details);
+    super('VALIDATIONERROR', message, 400, details);
   }
 }
 
 class NotFoundError extends AppError {
   constructor(message = 'Resource not found', details = {}) {
-    super('NOT_FOUND', message, 404, details);
+    super('NOTFOUND', message, 404, details);
   }
 }
 
@@ -42,7 +42,7 @@ class ConflictError extends AppError {
 }
 
 class BusinessError extends AppError {
-  constructor(code = 'BUSINESS_ERROR', message = 'Business rule violated', details = {}) {
+  constructor(code = 'BUSINESSERROR', message = 'Business rule violated', details = {}) {
     super(code, message, 422, details);
   }
 }

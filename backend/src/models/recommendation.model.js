@@ -7,7 +7,7 @@ class Recommendation extends Model {}
 
 Recommendation.init(
   {
-    recommendation_id: {
+    recommendationid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
@@ -32,10 +32,10 @@ Recommendation.init(
       type: DataTypes.ENUM(
         'fertilizer',
         'irrigation',
-        'pest_control',
-        'field_inspection',
+        'pestcontrol',
+        'fieldinspection',
         'monitoring',
-        'water_management',
+        'watermanagement',
         'general'
       ),
       allowNull: false,
@@ -45,7 +45,7 @@ Recommendation.init(
       allowNull: false,
       defaultValue: 'medium',
     },
-    urgency_score: {
+    urgencyscore: {
       type: DataTypes.INTEGER,
       allowNull: false,
       defaultValue: 50,
@@ -66,17 +66,17 @@ Recommendation.init(
       type: DataTypes.TEXT,
       allowNull: true,
     },
-    action_steps: {
+    actionsteps: {
       type: DataTypes.TEXT,
       allowNull: true,
       comment: 'JSON array of action steps',
     },
-    estimated_cost: {
+    estimatedcost: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: true,
       comment: 'Estimated cost in LKR',
     },
-    expected_benefit: {
+    expectedbenefit: {
       type: DataTypes.STRING(200),
       allowNull: true,
     },
@@ -85,21 +85,21 @@ Recommendation.init(
       allowNull: true,
       comment: 'e.g., "Within 3 days", "Immediate"',
     },
-    valid_until: {
+    validuntil: {
       type: DataTypes.DATE,
       allowNull: true,
     },
     status: {
-      type: DataTypes.ENUM('pending', 'in_progress', 'completed', 'dismissed'),
+      type: DataTypes.ENUM('pending', 'inprogress', 'completed', 'dismissed'),
       allowNull: false,
       defaultValue: 'pending',
     },
-    generated_at: {
+    generatedat: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
-    actioned_at: {
+    actionedat: {
       type: DataTypes.DATE,
       allowNull: true,
     },
@@ -127,10 +127,10 @@ Recommendation.init(
         fields: ['priority'],
       },
       {
-        fields: ['generated_at'],
+        fields: ['generatedat'],
       },
       {
-        fields: ['valid_until'],
+        fields: ['validuntil'],
       },
     ],
   }

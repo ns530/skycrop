@@ -1,8 +1,8 @@
-import { io, Socket } from 'socket.io-client';
+import { io, Socket } from "socket.io-client";
 
-import { env } from '../../config/env';
+import { env } from "../../config/env";
 
-const API_URL = env.API_BASE_URL.replace('/api/v1', ''); // Remove /api/v1 for WebSocket connection
+const API_URL = env.API_BASE_URL.replace("/api/v1", ""); // Remove /api/v1 for WebSocket connection
 
 interface HealthUpdatedEvent {
   fieldId: string;
@@ -73,17 +73,17 @@ class WebSocketService {
    */
   async connect(token: string): Promise<void> {
     if (this.socket?.connected) {
-      console.log('[WebSocket] Already connected');
+      console.log("[WebSocket] Already connected");
       return;
     }
 
     if (this.isConnecting) {
-      console.log('[WebSocket] Connection already in progress');
+      console.log("[WebSocket] Connection already in progress");
       return;
     }
 
     if (!token) {
-      console.warn('[WebSocket] No authentication token available');
+      console.warn("[WebSocket] No authentication token available");
       return;
     }
 
@@ -91,11 +91,11 @@ class WebSocketService {
     this.isConnecting = true;
 
     try {
-      console.log('[WebSocket] Connecting to', API_URL);
+      console.log("[WebSocket] Connecting to", API_URL);
 
       this.socket = io(API_URL, {
         auth: { token: this.token },
-        transports: ['websocket', 'polling'],
+        transports: ["websocket", "polling"],
         reconnection: true,
         reconnectionDelay: 1000,
         reconnectionDelayMax: 5000,
@@ -103,10 +103,10 @@ class WebSocketService {
       });
 
       this._setupEventListeners();
-      
+
       this.isConnecting = false;
     } catch (error) {
-      console.error('[WebSocket] Connection failed:', error);
+      console.error("[WebSocket] Connection failed:", error);
       this.isConnecting = false;
       throw error;
     }
@@ -117,7 +117,7 @@ class WebSocketService {
    */
   disconnect(): void {
     if (this.socket) {
-      console.log('[WebSocket] Disconnecting');
+      console.log("[WebSocket] Disconnecting");
       this.socket.disconnect();
       this.socket = null;
       this.subscribedFields.clear();
@@ -138,12 +138,12 @@ class WebSocketService {
    */
   subscribeToField(fieldId: string): void {
     if (!this.socket?.connected) {
-      console.warn('[WebSocket] Not connected, cannot subscribe to field');
+      console.warn("[WebSocket] Not connected, cannot subscribe to field");
       return;
     }
 
-    console.log('[WebSocket] Subscribing to field:', fieldId);
-    this.socket.emit('subscribe_field', fieldId);
+    console.log("[WebSocket] Subscribing to field:", fieldId);
+    this.socket.emit("subscribe_field", fieldId);
     this.subscribedFields.add(fieldId);
   }
 
@@ -156,8 +156,8 @@ class WebSocketService {
       return;
     }
 
-    console.log('[WebSocket] Unsubscribing from field:', fieldId);
-    this.socket.emit('unsubscribe_field', fieldId);
+    console.log("[WebSocket] Unsubscribing from field:", fieldId);
+    this.socket.emit("unsubscribe_field", fieldId);
     this.subscribedFields.delete(fieldId);
   }
 
@@ -207,9 +207,13 @@ class WebSocketService {
       return;
     }
 
-    console.log('[WebSocket] Resubscribing to', this.subscribedFields.size, 'fields');
+    console.log(
+      "[WebSocket] Resubscribing to",
+      this.subscribedFields.size,
+      "fields",
+    );
     this.subscribedFields.forEach((fieldId) => {
-      this.socket?.emit('subscribe_field', fieldId);
+      this.socket?.emit("subscribe_field", fieldId);
     });
   }
 
@@ -233,74 +237,83 @@ class WebSocketService {
     if (!this.socket) return;
 
     // Connection events
-    this.socket.on('connect', () => {
-      console.log('[WebSocket] Connected, Socket ID:', this.socket?.id);
+    this.socket.on("connect", () => {
+      console.log("[WebSocket] Connected, Socket ID:", this.socket?.id);
       this.reconnectAttempts = 0;
-      
+
       // Resubscribe to fields and re-attach event listeners after reconnection
       this._resubscribeToFields();
       this._reattachEventListeners();
 
       // Notify registered connect callbacks
-      this._triggerCallbacks('connect', {});
+      this._triggerCallbacks("connect", {});
     });
 
-    this.socket.on('disconnect', (reason: string) => {
-      console.log('[WebSocket] Disconnected:', reason);
-      
+    this.socket.on("disconnect", (reason: string) => {
+      console.log("[WebSocket] Disconnected:", reason);
+
       // Notify registered disconnect callbacks
-      this._triggerCallbacks('disconnect', { reason });
+      this._triggerCallbacks("disconnect", { reason });
     });
 
-    this.socket.on('connect_error', (error: Error) => {
-      console.error('[WebSocket] Connection error:', error.message);
+    this.socket.on("connect_error", (error: Error) => {
+      console.error("[WebSocket] Connection error:", error.message);
       this.reconnectAttempts++;
 
       if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-        console.error('[WebSocket] Max reconnect attempts reached');
+        console.error("[WebSocket] Max reconnect attempts reached");
       }
 
       // Notify registered error callbacks
-      this._triggerCallbacks('connect_error', { error });
+      this._triggerCallbacks("connect_error", { error });
     });
 
     // Health events
-    this.socket.on('health_updated', (data: HealthUpdatedEvent) => {
-      console.log('[WebSocket] Health updated:', data);
-      this._triggerCallbacks('health_updated', data);
+    this.socket.on("health_updated", (data: HealthUpdatedEvent) => {
+      console.log("[WebSocket] Health updated:", data);
+      this._triggerCallbacks("health_updated", data);
     });
 
-    this.socket.on('health_alert', (data: HealthAlertEvent) => {
-      console.log('[WebSocket] Health alert:', data);
-      this._triggerCallbacks('health_alert', data);
+    this.socket.on("health_alert", (data: HealthAlertEvent) => {
+      console.log("[WebSocket] Health alert:", data);
+      this._triggerCallbacks("health_alert", data);
     });
 
     // Recommendation events
-    this.socket.on('recommendations_updated', (data: RecommendationsUpdatedEvent) => {
-      console.log('[WebSocket] Recommendations updated:', data);
-      this._triggerCallbacks('recommendations_updated', data);
-    });
+    this.socket.on(
+      "recommendations_updated",
+      (data: RecommendationsUpdatedEvent) => {
+        console.log("[WebSocket] Recommendations updated:", data);
+        this._triggerCallbacks("recommendations_updated", data);
+      },
+    );
 
-    this.socket.on('recommendation_created', (data: RecommendationCreatedEvent) => {
-      console.log('[WebSocket] Recommendation created:', data);
-      this._triggerCallbacks('recommendation_created', data);
-    });
+    this.socket.on(
+      "recommendation_created",
+      (data: RecommendationCreatedEvent) => {
+        console.log("[WebSocket] Recommendation created:", data);
+        this._triggerCallbacks("recommendation_created", data);
+      },
+    );
 
     // Yield prediction events
-    this.socket.on('yield_prediction_ready', (data: YieldPredictionReadyEvent) => {
-      console.log('[WebSocket] Yield prediction ready:', data);
-      this._triggerCallbacks('yield_prediction_ready', data);
-    });
+    this.socket.on(
+      "yield_prediction_ready",
+      (data: YieldPredictionReadyEvent) => {
+        console.log("[WebSocket] Yield prediction ready:", data);
+        this._triggerCallbacks("yield_prediction_ready", data);
+      },
+    );
 
     // Subscription confirmation events
-    this.socket.on('subscribed', (data: { fieldId: string }) => {
-      console.log('[WebSocket] Subscribed to field:', data.fieldId);
-      this._triggerCallbacks('subscribed', data);
+    this.socket.on("subscribed", (data: { fieldId: string }) => {
+      console.log("[WebSocket] Subscribed to field:", data.fieldId);
+      this._triggerCallbacks("subscribed", data);
     });
 
-    this.socket.on('unsubscribed', (data: { fieldId: string }) => {
-      console.log('[WebSocket] Unsubscribed from field:', data.fieldId);
-      this._triggerCallbacks('unsubscribed', data);
+    this.socket.on("unsubscribed", (data: { fieldId: string }) => {
+      console.log("[WebSocket] Unsubscribed from field:", data.fieldId);
+      this._triggerCallbacks("unsubscribed", data);
     });
   }
 
@@ -324,4 +337,3 @@ class WebSocketService {
 // Export singleton instance
 export const websocketService = new WebSocketService();
 export default websocketService;
-

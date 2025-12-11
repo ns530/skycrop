@@ -2,20 +2,20 @@
  * GeoJSON utility functions for map operations
  */
 
-import type { FieldBoundary, MapCenter, MapBounds } from '../types/map.types';
+import type { FieldBoundary, MapCenter, MapBounds } from "../types/map.types";
 
 /**
  * Calculate the center point of a GeoJSON polygon
  * Uses simple centroid calculation (average of all coordinates)
  */
 export const calculatePolygonCenter = (boundary: FieldBoundary): MapCenter => {
-  if (boundary.type === 'MultiPolygon') {
+  if (boundary.type === "MultiPolygon") {
     // For MultiPolygon, use the first polygon
     const coordinates = boundary.coordinates[0]?.[0];
     if (!coordinates || coordinates.length === 0) {
       return { lat: 7.9403, lng: 81.0188 };
     }
-    
+
     let sumLat = 0;
     let sumLng = 0;
     const count = coordinates.length;
@@ -31,10 +31,10 @@ export const calculatePolygonCenter = (boundary: FieldBoundary): MapCenter => {
       lng: sumLng / count,
     };
   }
-  
+
   // For Polygon
   const coordinates = boundary.coordinates[0]; // Get outer ring
-  
+
   if (!coordinates || coordinates.length === 0) {
     // Default to Sri Lanka center if no coordinates
     return { lat: 7.9403, lng: 81.0188 };
@@ -61,9 +61,10 @@ export const calculatePolygonCenter = (boundary: FieldBoundary): MapCenter => {
  * Returns the min/max lat/lng bounds
  */
 export const calculateBounds = (boundary: FieldBoundary): MapBounds => {
-  const coordinates = boundary.type === 'Polygon' 
-    ? boundary.coordinates[0] 
-    : boundary.coordinates[0]?.[0];
+  const coordinates =
+    boundary.type === "Polygon"
+      ? boundary.coordinates[0]
+      : boundary.coordinates[0]?.[0];
 
   if (!coordinates || coordinates.length === 0) {
     // Return default bounds for Sri Lanka
@@ -98,29 +99,35 @@ export const calculateBounds = (boundary: FieldBoundary): MapBounds => {
  */
 export const normalizeGeoJson = (geoJson: unknown): FieldBoundary => {
   if (!geoJson) {
-    throw new Error('GeoJSON cannot be null or undefined');
+    throw new Error("GeoJSON cannot be null or undefined");
   }
 
   const data = geoJson as any;
 
   // If it's already in the correct format (Polygon or MultiPolygon)
-  if ((data.type === 'Polygon' || data.type === 'MultiPolygon') && data.coordinates) {
+  if (
+    (data.type === "Polygon" || data.type === "MultiPolygon") &&
+    data.coordinates
+  ) {
     return data as FieldBoundary;
   }
 
   // If it's wrapped in a Feature
-  if (data.type === 'Feature' && data.geometry) {
+  if (data.type === "Feature" && data.geometry) {
     return data.geometry as FieldBoundary;
   }
 
-  throw new Error('Invalid GeoJSON format');
+  throw new Error("Invalid GeoJSON format");
 };
 
 /**
  * Validate if a GeoJSON polygon is valid
  */
 export const isValidPolygon = (boundary: FieldBoundary): boolean => {
-  if (!boundary || (boundary.type !== 'Polygon' && boundary.type !== 'MultiPolygon')) {
+  if (
+    !boundary ||
+    (boundary.type !== "Polygon" && boundary.type !== "MultiPolygon")
+  ) {
     return false;
   }
 
@@ -128,7 +135,7 @@ export const isValidPolygon = (boundary: FieldBoundary): boolean => {
     return false;
   }
 
-  if (boundary.type === 'MultiPolygon') {
+  if (boundary.type === "MultiPolygon") {
     // For MultiPolygon, check the first polygon
     const outerRing = boundary.coordinates[0]?.[0];
     if (!outerRing || outerRing.length < 4) {
@@ -141,7 +148,7 @@ export const isValidPolygon = (boundary: FieldBoundary): boolean => {
 
   // For Polygon
   const outerRing = boundary.coordinates[0];
-  
+
   // Must have at least 4 points (3 unique + 1 closing point)
   if (outerRing.length < 4) {
     return false;
@@ -150,7 +157,7 @@ export const isValidPolygon = (boundary: FieldBoundary): boolean => {
   // First and last points must be the same (closed polygon)
   const first = outerRing[0];
   const last = outerRing[outerRing.length - 1];
-  
+
   if (first[0] !== last[0] || first[1] !== last[1]) {
     return false;
   }
@@ -164,10 +171,11 @@ export const isValidPolygon = (boundary: FieldBoundary): boolean => {
  * Note: For production, consider using turf.js for accurate geodesic calculations
  */
 export const calculatePolygonArea = (boundary: FieldBoundary): number => {
-  const coordinates = boundary.type === 'Polygon' 
-    ? boundary.coordinates[0] 
-    : boundary.coordinates[0]?.[0];
-  
+  const coordinates =
+    boundary.type === "Polygon"
+      ? boundary.coordinates[0]
+      : boundary.coordinates[0]?.[0];
+
   if (!coordinates || coordinates.length < 4) {
     return 0;
   }
@@ -185,9 +193,9 @@ export const calculatePolygonArea = (boundary: FieldBoundary): number => {
   // 1 degree ≈ 111 km at equator
   // For Sri Lanka (lat ~7°), use correction factor
   const kmPerDegree = 111.32;
-  const areaInKm2 = area * kmPerDegree * kmPerDegree * Math.cos((7 * Math.PI) / 180);
+  const areaInKm2 =
+    area * kmPerDegree * kmPerDegree * Math.cos((7 * Math.PI) / 180);
   const areaInHectares = areaInKm2 * 100; // 1 km² = 100 hectares
 
   return areaInHectares;
 };
-

@@ -17,7 +17,7 @@ module.exports = {
       console.log('Extracted params:', { email, name, passwordLength: password?.length });
       const result = await authService.signup(email, password, name);
       console.log('Signup result:', result);
-      return res.status(201).json({
+      return res.status(201)on({
         success: true,
         data: result,
       });
@@ -32,7 +32,7 @@ module.exports = {
     try {
       const { email, password } = req.body || {};
       const result = await authService.login(email, password);
-      return res.status(200).json({
+      return res.status(200)on({
         success: true,
         data: result,
       });
@@ -45,14 +45,12 @@ module.exports = {
   async logout(req, res, next) {
     try {
       const authHeader = req.headers.authorization || '';
-      const token = authHeader.startsWith('Bearer ')
-        ? authHeader.slice(7)
-        : null;
+      const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
 
       if (token) {
         await authService.logout(token);
       }
-      return res.status(200).json({ success: true });
+      return res.status(200)on({ success: true });
     } catch (err) {
       return next(err);
     }
@@ -63,7 +61,7 @@ module.exports = {
     try {
       const { token } = req.query || {};
       const result = await authService.verifyEmail(token);
-      return res.status(200).json({ success: true, data: result });
+      return res.status(200)on({ success: true, data: result });
     } catch (err) {
       return next(err);
     }
@@ -74,7 +72,7 @@ module.exports = {
     try {
       const { email } = req.body || {};
       const result = await authService.requestPasswordReset(email);
-      return res.status(200).json({ success: true, data: result });
+      return res.status(200)on({ success: true, data: result });
     } catch (err) {
       return next(err);
     }
@@ -85,7 +83,7 @@ module.exports = {
     try {
       const { token, newPassword } = req.body || {};
       const result = await authService.resetPassword(token, newPassword);
-      return res.status(200).json({ success: true, data: result });
+      return res.status(200)on({ success: true, data: result });
     } catch (err) {
       return next(err);
     }

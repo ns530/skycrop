@@ -1,7 +1,13 @@
-import clsx from 'clsx';
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import clsx from "clsx";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
 
-type ToastVariant = 'default' | 'success' | 'error' | 'warning';
+type ToastVariant = "default" | "success" | "error" | "warning";
 
 export interface ToastItem {
   id: string;
@@ -13,7 +19,7 @@ export interface ToastItem {
 
 export interface ToastContextValue {
   toasts: ToastItem[];
-  showToast: (toast: Omit<ToastItem, 'id'>) => void;
+  showToast: (toast: Omit<ToastItem, "id">) => void;
   dismissToast: (id: string) => void;
   clearToasts: () => void;
 }
@@ -22,7 +28,9 @@ const ToastContext = createContext<ToastContextValue | undefined>(undefined);
 
 const DEFAULT_DURATION = 4000;
 
-export const ToastProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
+export const ToastProvider: React.FC<React.PropsWithChildren> = ({
+  children,
+}) => {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
   const dismissToast = useCallback((id: string) => {
@@ -34,7 +42,7 @@ export const ToastProvider: React.FC<React.PropsWithChildren> = ({ children }) =
   }, []);
 
   const showToast = useCallback(
-    (toast: Omit<ToastItem, 'id'>) => {
+    (toast: Omit<ToastItem, "id">) => {
       const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
       const next: ToastItem = {
         id,
@@ -48,7 +56,7 @@ export const ToastProvider: React.FC<React.PropsWithChildren> = ({ children }) =
         window.setTimeout(() => dismissToast(id), next.duration);
       }
     },
-    [dismissToast]
+    [dismissToast],
   );
 
   const value = useMemo<ToastContextValue>(
@@ -58,7 +66,7 @@ export const ToastProvider: React.FC<React.PropsWithChildren> = ({ children }) =
       dismissToast,
       clearToasts,
     }),
-    [toasts, showToast, dismissToast, clearToasts]
+    [toasts, showToast, dismissToast, clearToasts],
   );
 
   return (
@@ -70,7 +78,11 @@ export const ToastProvider: React.FC<React.PropsWithChildren> = ({ children }) =
       >
         <h2 className="sr-only">Toast notifications</h2>
         {toasts.map((toast) => (
-          <Toast key={toast.id} toast={toast} onDismiss={() => dismissToast(toast.id)} />
+          <Toast
+            key={toast.id}
+            toast={toast}
+            onDismiss={() => dismissToast(toast.id)}
+          />
         ))}
       </section>
     </ToastContext.Provider>
@@ -83,30 +95,32 @@ interface ToastProps {
 }
 
 const variantClasses: Record<ToastVariant, string> = {
-  default: 'bg-gray-900 text-white',
-  success: 'bg-status-excellent text-white',
-  error: 'bg-status-poor text-white',
-  warning: 'bg-status-fair text-gray-900',
+  default: "bg-gray-900 text-white",
+  success: "bg-status-excellent text-white",
+  error: "bg-status-poor text-white",
+  warning: "bg-status-fair text-gray-900",
 };
 
 const Toast: React.FC<ToastProps> = ({ toast, onDismiss }) => {
-  const { title, description, variant = 'default' } = toast;
-  const isError = variant === 'error';
-  const role: 'status' | 'alert' = isError ? 'alert' : 'status';
-  const ariaLive: 'polite' | 'assertive' = isError ? 'assertive' : 'polite';
+  const { title, description, variant = "default" } = toast;
+  const isError = variant === "error";
+  const role: "status" | "alert" = isError ? "alert" : "status";
+  const ariaLive: "polite" | "assertive" = isError ? "assertive" : "polite";
 
   return (
     <div
       role={role}
       aria-live={ariaLive}
       className={clsx(
-        'flex items-start gap-3 rounded-md shadow-lg px-4 py-3 text-sm focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-brand-blue',
-        variantClasses[variant]
+        "flex items-start gap-3 rounded-md shadow-lg px-4 py-3 text-sm focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-brand-blue",
+        variantClasses[variant],
       )}
     >
       <div className="flex-1">
         {title && <p className="font-medium">{title}</p>}
-        {description && <p className="mt-0.5 text-xs opacity-90">{description}</p>}
+        {description && (
+          <p className="mt-0.5 text-xs opacity-90">{description}</p>
+        )}
       </div>
       <button
         type="button"
@@ -123,7 +137,7 @@ const Toast: React.FC<ToastProps> = ({ toast, onDismiss }) => {
 export const useToastContext = (): ToastContextValue => {
   const ctx = useContext(ToastContext);
   if (!ctx) {
-    throw new Error('useToastContext must be used within a ToastProvider');
+    throw new Error("useToastContext must be used within a ToastProvider");
   }
   return ctx;
 };

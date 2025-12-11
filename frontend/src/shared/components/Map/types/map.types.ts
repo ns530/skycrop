@@ -3,7 +3,7 @@
  * Used across all map components in SkyCrop
  */
 
-import type { GeoJSONPolygonLike } from '../../../../shared/types/geojson';
+import type { GeoJSONPolygonLike } from "../../../../shared/types/geojson";
 
 export interface MapCenter {
   lat: number;
@@ -21,7 +21,7 @@ export interface FieldWithBoundary {
   name: string;
   boundary: FieldBoundary;
   area: number; // in hectares
-  healthStatus?: 'excellent' | 'good' | 'fair' | 'poor';
+  healthStatus?: "excellent" | "good" | "fair" | "poor";
   ndvi?: number;
   createdAt?: string;
   updatedAt?: string;
@@ -44,4 +44,3 @@ export interface MapInteractionEvent {
   lng: number;
   originalEvent: MouseEvent | TouchEvent;
 }
-

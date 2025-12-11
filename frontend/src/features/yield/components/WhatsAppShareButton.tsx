@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 
-import { Button } from '../../../shared/ui/Button';
+import { Button } from "../../../shared/ui/Button";
 
 export interface WhatsAppShareButtonProps {
   yieldKgHa: number;
@@ -10,16 +10,16 @@ export interface WhatsAppShareButtonProps {
 }
 
 const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
 };
 
 const formatNumber = (num: number): string => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 1,
   }).format(num);
@@ -27,10 +27,10 @@ const formatNumber = (num: number): string => {
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   }).format(date);
 };
 
@@ -41,7 +41,8 @@ export const WhatsAppShareButton: React.FC<WhatsAppShareButtonProps> = ({
   harvestDate,
 }) => {
   const handleShare = () => {
-    const message = `🌾 My field yield forecast:\n\n` +
+    const message =
+      `🌾 My field yield forecast:\n\n` +
       `• Predicted yield: ${formatNumber(yieldKgHa)} kg/ha\n` +
       `• Total yield: ${formatNumber(totalYield)} kg\n` +
       `• Expected revenue: ${formatCurrency(revenue)}\n` +
@@ -51,7 +52,7 @@ export const WhatsAppShareButton: React.FC<WhatsAppShareButtonProps> = ({
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
 
-    window.open(whatsappUrl, '_blank');
+    window.open(whatsappUrl, "_blank");
   };
 
   return (

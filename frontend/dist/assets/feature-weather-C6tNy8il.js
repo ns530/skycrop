@@ -1,7 +1,251 @@
-var W=(s,t,a)=>new Promise((o,i)=>{var l=c=>{try{n(a.next(c))}catch(d){i(d)}},r=c=>{try{n(a.throw(c))}catch(d){i(d)}},n=c=>c.done?o(c.value):Promise.resolve(c.value).then(l,r);n((a=a.apply(s,t)).next())});import{r as ie}from"./chart-vendor-C7uCl44m.js";
-import{j as e}from"./feature-admin-Bw8S4RZv.js";import{u as ne}from"./feature-fields-fUbMVOqT.js";import{u as Z}from"./query-vendor-B8e9_Lvn.js";
-import{b as le,a as ce}from"./router-vendor-D1DOKBjT.js";import{h as Q,n as J,w as V,u as X,b as re,B as R,C as h}from"./shared-B32_tFWT.js";
-const oe=(s,t)=>W(void 0,null,function*(){try{return(yield Q.get("/weather/forecast",{params:{lat:s,lon:t}})).data.data}catch(a){throw J(a)}}),de=()=>W(void 0,null,function*(){try{return(yield Q.get("/weather/alerts")).data.data}catch(s){throw J(s)}}),xe=(s,t)=>{if(t)return"Today";const a=new Date(s);return Number.isNaN(a.getTime())?"Unknown":a.toLocaleDateString(void 0,{weekday:"short",day:"numeric"})},me=s=>{const t=s.toLowerCase();return t.includes("thunder")||t.includes("storm")?"⛈️":t.includes("rain")||t.includes("shower")?"🌧️":t.includes("snow")?"❄️":t.includes("cloud")?"☁️":t.includes("fog")||t.includes("mist")?"🌫️":t.includes("sun")||t.includes("clear")?"☀️":"🌤️"},he=(s,t)=>t?s.precipMm>=20?"Heavy rain":s.maxTempC>=35?"Heat":"Risky conditions":null,ge=s=>{switch(s){case"severe":return"bg-red-100 text-red-800 border-red-200";case"warning":return"bg-amber-100 text-amber-800 border-amber-200";case"info":default:return"bg-sky-100 text-sky-800 border-sky-200"}},ue=s=>{const{forecast:t,isToday:a=!1,isRisky:o=!1,alerts:i}=s,l=i!=null?i:[],r=xe(t.date,a),n=me(t.condition),c=he(t,o),d=l[0],m=l.length>1?l.length-1:0;return e.jsxs("article",{className:"flex h-full flex-col rounded-lg border border-gray-100 bg-white p-3 text-xs shadow-sm transition hover:shadow-md focus-within:ring-2 focus-within:ring-brand-blue focus-within:ring-offset-2 sm:text-sm","aria-label":`${r} forecast`,children:[e.jsxs("header",{className:"mb-2 flex items-center justify-between gap-2",children:[e.jsxs("div",{className:"flex items-baseline gap-2",children:[e.jsx("p",{className:"text-xs font-semibold uppercase tracking-wide text-gray-700",children:r}),a&&e.jsx("span",{className:"rounded-full bg-brand-blue/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-brand-blue",children:"Today"})]}),e.jsxs("div",{className:"flex items-center gap-1 text-right text-xs text-gray-600",children:[e.jsx("span",{"aria-hidden":"true",className:"text-base sm:text-lg",children:n}),e.jsx("span",{className:"line-clamp-1",children:t.condition})]})]}),e.jsxs("div",{className:"mb-2 flex flex-wrap items-end justify-between gap-2",children:[e.jsxs("div",{className:"space-y-0.5",children:[e.jsx("p",{className:"text-[11px] uppercase tracking-wide text-gray-500",children:"Temperature"}),e.jsxs("p",{className:"text-sm font-semibold text-gray-900",children:[Math.round(t.maxTempC),"° / ",Math.round(t.minTempC),"°"]})]}),e.jsxs("div",{className:"space-y-0.5 text-right",children:[e.jsx("p",{className:"text-[11px] uppercase tracking-wide text-gray-500",children:"Rain"}),e.jsxs("p",{className:"text-sm font-semibold text-gray-900",children:[t.precipMm.toFixed(1)," mm"]})]})]}),e.jsxs("div",{className:"mt-auto flex flex-wrap gap-1.5",children:[c&&e.jsxs("span",{className:"inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-700",children:[e.jsx("span",{"aria-hidden":"true",children:"⚠"}),e.jsx("span",{children:c})]}),d&&e.jsxs("span",{className:`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ${ge(d.severity)}`,children:[e.jsx("span",{"aria-hidden":"true",children:"⚠"}),e.jsx("span",{children:d.title||"Weather alert"})]}),m>0&&e.jsxs("span",{className:"inline-flex items-center rounded-full bg-gray-50 px-2 py-0.5 text-[10px] font-medium text-gray-600",children:["+",m," more"]})]})]})},pe=20,ye=35,fe=(s,t)=>s.getFullYear()===t.getFullYear()&&s.getMonth()===t.getMonth()&&s.getDate()===t.getDate(),je=s=>{const t=new Date(s);if(Number.isNaN(t.getTime()))return null;const a=new Date(t);a.setHours(0,0,0,0);const o=new Date(t);return o.setHours(23,59,59,999),{start:a,end:o}},Ne=(s,t)=>{const a=je(t);if(!a)return[];const{start:o,end:i}=a;return s.filter(l=>{const r=new Date(l.startTime),n=new Date(l.endTime);return Number.isNaN(r.getTime())||Number.isNaN(n.getTime())?!1:r<=i&&n>=o})},ee=s=>{const{forecast:t,alerts:a}=s,o=a!=null?a:[],i=new Date;return!(t!=null&&t.daily)||t.daily.length===0?null:e.jsx("section",{"aria-label":"7-day forecast",className:"space-y-2",children:e.jsx("div",{className:`\r
+var W = (s, t, a) =>
+  new Promise((o, i) => {
+    var l = (c) => {
+        try {
+          n(a.next(c));
+        } catch (d) {
+          i(d);
+        }
+      },
+      r = (c) => {
+        try {
+          n(a.throw(c));
+        } catch (d) {
+          i(d);
+        }
+      },
+      n = (c) => (c.done ? o(c.value) : Promise.resolve(c.value).then(l, r));
+    n((a = a.apply(s, t)).next());
+  });
+import { r as ie } from "./chart-vendor-C7uCl44m.js";
+import { j as e } from "./feature-admin-Bw8S4RZv.js";
+import { u as ne } from "./feature-fields-fUbMVOqT.js";
+import { u as Z } from "./query-vendor-B8e9_Lvn.js";
+import { b as le, a as ce } from "./router-vendor-D1DOKBjT.js";
+import {
+  h as Q,
+  n as J,
+  w as V,
+  u as X,
+  b as re,
+  B as R,
+  C as h,
+} from "./shared-B32_tFWT.js";
+const oe = (s, t) =>
+    W(void 0, null, function* () {
+      try {
+        return (yield Q.get("/weather/forecast", {
+          params: { lat: s, lon: t },
+        })).data.data;
+      } catch (a) {
+        throw J(a);
+      }
+    }),
+  de = () =>
+    W(void 0, null, function* () {
+      try {
+        return (yield Q.get("/weather/alerts")).data.data;
+      } catch (s) {
+        throw J(s);
+      }
+    }),
+  xe = (s, t) => {
+    if (t) return "Today";
+    const a = new Date(s);
+    return Number.isNaN(a.getTime())
+      ? "Unknown"
+      : a.toLocaleDateString(void 0, { weekday: "short", day: "numeric" });
+  },
+  me = (s) => {
+    const t = s.toLowerCase();
+    return t.includes("thunder") || t.includes("storm")
+      ? "⛈️"
+      : t.includes("rain") || t.includes("shower")
+        ? "🌧️"
+        : t.includes("snow")
+          ? "❄️"
+          : t.includes("cloud")
+            ? "☁️"
+            : t.includes("fog") || t.includes("mist")
+              ? "🌫️"
+              : t.includes("sun") || t.includes("clear")
+                ? "☀️"
+                : "🌤️";
+  },
+  he = (s, t) =>
+    t
+      ? s.precipMm >= 20
+        ? "Heavy rain"
+        : s.maxTempC >= 35
+          ? "Heat"
+          : "Risky conditions"
+      : null,
+  ge = (s) => {
+    switch (s) {
+      case "severe":
+        return "bg-red-100 text-red-800 border-red-200";
+      case "warning":
+        return "bg-amber-100 text-amber-800 border-amber-200";
+      case "info":
+      default:
+        return "bg-sky-100 text-sky-800 border-sky-200";
+    }
+  },
+  ue = (s) => {
+    const { forecast: t, isToday: a = !1, isRisky: o = !1, alerts: i } = s,
+      l = i != null ? i : [],
+      r = xe(t.date, a),
+      n = me(t.condition),
+      c = he(t, o),
+      d = l[0],
+      m = l.length > 1 ? l.length - 1 : 0;
+    return e.jsxs("article", {
+      className:
+        "flex h-full flex-col rounded-lg border border-gray-100 bg-white p-3 text-xs shadow-sm transition hover:shadow-md focus-within:ring-2 focus-within:ring-brand-blue focus-within:ring-offset-2 sm:text-sm",
+      "aria-label": `${r} forecast`,
+      children: [
+        e.jsxs("header", {
+          className: "mb-2 flex items-center justify-between gap-2",
+          children: [
+            e.jsxs("div", {
+              className: "flex items-baseline gap-2",
+              children: [
+                e.jsx("p", {
+                  className:
+                    "text-xs font-semibold uppercase tracking-wide text-gray-700",
+                  children: r,
+                }),
+                a &&
+                  e.jsx("span", {
+                    className:
+                      "rounded-full bg-brand-blue/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-brand-blue",
+                    children: "Today",
+                  }),
+              ],
+            }),
+            e.jsxs("div", {
+              className:
+                "flex items-center gap-1 text-right text-xs text-gray-600",
+              children: [
+                e.jsx("span", {
+                  "aria-hidden": "true",
+                  className: "text-base sm:text-lg",
+                  children: n,
+                }),
+                e.jsx("span", {
+                  className: "line-clamp-1",
+                  children: t.condition,
+                }),
+              ],
+            }),
+          ],
+        }),
+        e.jsxs("div", {
+          className: "mb-2 flex flex-wrap items-end justify-between gap-2",
+          children: [
+            e.jsxs("div", {
+              className: "space-y-0.5",
+              children: [
+                e.jsx("p", {
+                  className:
+                    "text-[11px] uppercase tracking-wide text-gray-500",
+                  children: "Temperature",
+                }),
+                e.jsxs("p", {
+                  className: "text-sm font-semibold text-gray-900",
+                  children: [
+                    Math.round(t.maxTempC),
+                    "° / ",
+                    Math.round(t.minTempC),
+                    "°",
+                  ],
+                }),
+              ],
+            }),
+            e.jsxs("div", {
+              className: "space-y-0.5 text-right",
+              children: [
+                e.jsx("p", {
+                  className:
+                    "text-[11px] uppercase tracking-wide text-gray-500",
+                  children: "Rain",
+                }),
+                e.jsxs("p", {
+                  className: "text-sm font-semibold text-gray-900",
+                  children: [t.precipMm.toFixed(1), " mm"],
+                }),
+              ],
+            }),
+          ],
+        }),
+        e.jsxs("div", {
+          className: "mt-auto flex flex-wrap gap-1.5",
+          children: [
+            c &&
+              e.jsxs("span", {
+                className:
+                  "inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-700",
+                children: [
+                  e.jsx("span", { "aria-hidden": "true", children: "⚠" }),
+                  e.jsx("span", { children: c }),
+                ],
+              }),
+            d &&
+              e.jsxs("span", {
+                className: `inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ${ge(d.severity)}`,
+                children: [
+                  e.jsx("span", { "aria-hidden": "true", children: "⚠" }),
+                  e.jsx("span", { children: d.title || "Weather alert" }),
+                ],
+              }),
+            m > 0 &&
+              e.jsxs("span", {
+                className:
+                  "inline-flex items-center rounded-full bg-gray-50 px-2 py-0.5 text-[10px] font-medium text-gray-600",
+                children: ["+", m, " more"],
+              }),
+          ],
+        }),
+      ],
+    });
+  },
+  pe = 20,
+  ye = 35,
+  fe = (s, t) =>
+    s.getFullYear() === t.getFullYear() &&
+    s.getMonth() === t.getMonth() &&
+    s.getDate() === t.getDate(),
+  je = (s) => {
+    const t = new Date(s);
+    if (Number.isNaN(t.getTime())) return null;
+    const a = new Date(t);
+    a.setHours(0, 0, 0, 0);
+    const o = new Date(t);
+    return (o.setHours(23, 59, 59, 999), { start: a, end: o });
+  },
+  Ne = (s, t) => {
+    const a = je(t);
+    if (!a) return [];
+    const { start: o, end: i } = a;
+    return s.filter((l) => {
+      const r = new Date(l.startTime),
+        n = new Date(l.endTime);
+      return Number.isNaN(r.getTime()) || Number.isNaN(n.getTime())
+        ? !1
+        : r <= i && n >= o;
+    });
+  },
+  ee = (s) => {
+    const { forecast: t, alerts: a } = s,
+      o = a != null ? a : [],
+      i = new Date();
+    return !(t != null && t.daily) || t.daily.length === 0
+      ? null
+      : e.jsx("section", {
+          "aria-label": "7-day forecast",
+          className: "space-y-2",
+          children: e.jsx("div", {
+            className: `\r
           grid gap-3\r
           grid-cols-1\r
           sm:grid-cols-2\r
@@ -9,4 +253,686 @@ const oe=(s,t)=>W(void 0,null,function*(){try{return(yield Q.get("/weather/forec
           lg:grid-cols-4\r
           xl:grid-cols-5\r
           2xl:grid-cols-7\r
-        `,children:t.daily.map(l=>{const r=new Date(l.date),n=!Number.isNaN(r.getTime())&&fe(r,i),c=l.precipMm>=pe||l.maxTempC>=ye,d=o.length>0?Ne(o,l.date):[];return e.jsx(ue,{forecast:l,isToday:n,isRisky:c,alerts:d},l.date)})})})},q={severe:3,warning:2,info:1},we=s=>{switch(s){case"severe":return{container:"border-red-300 bg-red-50 text-red-900",icon:"text-red-600"};case"warning":return{container:"border-amber-300 bg-amber-50 text-amber-900",icon:"text-amber-600"};case"info":default:return{container:"border-sky-300 bg-sky-50 text-sky-900",icon:"text-sky-600"}}},te=({alerts:s})=>{if(!s||s.length===0)return null;const a=[...s].sort((d,m)=>{var y,u;return((y=q[m.severity])!=null?y:0)-((u=q[d.severity])!=null?u:0)})[0],o=s.length-1,{container:i,icon:l}=we(a.severity),r=new Date(a.startTime),n=new Date(a.endTime),c=!Number.isNaN(r.getTime())&&!Number.isNaN(n.getTime())?`${r.toLocaleString(void 0,{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})} → ${n.toLocaleString(void 0,{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}`:void 0;return e.jsxs("section",{className:`flex items-start gap-3 rounded-lg border px-3 py-2 text-xs sm:text-sm ${i}`,role:"status","aria-live":"polite",children:[e.jsx("div",{className:"mt-0.5 shrink-0",children:e.jsx("span",{className:`text-base sm:text-lg ${l}`,"aria-hidden":"true",children:"⚠"})}),e.jsxs("div",{className:"flex-1 space-y-0.5",children:[e.jsx("p",{className:"text-xs font-semibold uppercase tracking-wide",children:a.severity==="severe"?"Severe weather alert":a.severity==="warning"?"Weather warning":"Weather information"}),e.jsx("p",{className:"font-medium",children:a.title}),a.description&&e.jsx("p",{className:"text-[11px] sm:text-xs opacity-90 line-clamp-3",children:a.description}),c&&e.jsx("p",{className:"text-[11px] sm:text-xs opacity-80",children:c})]}),o>0&&e.jsx("div",{className:"ml-2 shrink-0",children:e.jsxs("span",{className:"inline-flex items-center rounded-full bg-white/40 px-2 py-0.5 text-[10px] font-medium text-current",children:["+",o," more alerts"]})})]})},se=(s,t)=>Z({queryKey:V.forecast(s,t),queryFn:()=>oe(s,t),enabled:Number.isFinite(s)&&Number.isFinite(t),staleTime:10*60*1e3,gcTime:60*60*1e3}),ae=()=>Z({queryKey:V.alerts,queryFn:()=>de(),staleTime:5*60*1e3}),B=()=>{var L,E,M,O,H,z,U,$,P,I;const{fieldId:s}=le(),t=ce(),{showToast:a}=X(),{state:{currentFieldId:o},setCurrentField:i}=re(),l=(L=s!=null?s:o)!=null?L:"";ie.useEffect(()=>{s&&i(s)},[s,i]);const{data:r,isLoading:n,isError:c}=ne(l),d=(M=(E=r==null?void 0:r.centroidLatLon)==null?void 0:E.lat)!=null?M:Number.NaN,m=(H=(O=r==null?void 0:r.centroidLatLon)==null?void 0:O.lon)!=null?H:Number.NaN,y=Number.isFinite(d)&&Number.isFinite(m),{data:u,isLoading:j,isError:w,error:f,refetch:D,isFetching:S}=se(d,m),{data:g,isLoading:b,isError:v,error:p,refetch:x,isFetching:k}=ae(),N=((U=(z=u==null?void 0:u.daily)==null?void 0:z.length)!=null?U:0)>0,A=(($=g==null?void 0:g.length)!=null?$:0)>0,C=()=>{var T;D(),a({title:"Retrying weather forecast",description:(T=f==null?void 0:f.message)!=null?T:"Attempting to reload weather forecast for this field.",variant:"default"})},_=()=>{var T;x(),a({title:"Retrying weather alerts",description:(T=p==null?void 0:p.message)!=null?T:"Attempting to reload active weather alerts.",variant:"default"})};if(!s)return e.jsxs("section",{"aria-labelledby":"field-weather-heading",className:"space-y-4",children:[e.jsxs("header",{className:"space-y-1",children:[e.jsx("h1",{id:"field-weather-heading",className:"text-lg font-semibold text-gray-900",children:"Field not found"}),e.jsx("p",{className:"text-sm text-gray-600",children:"The requested field could not be identified from the URL. Please return to your fields list and try again."})]}),e.jsx(R,{size:"sm",variant:"secondary",onClick:()=>t("/fields"),children:"Back to fields"})]});const F=!n&&!c&&r!=null&&!y;return e.jsxs("section",{"aria-labelledby":"field-weather-heading",className:"space-y-4",children:[e.jsxs("header",{className:"space-y-1",children:[e.jsx("h1",{id:"field-weather-heading",className:"text-lg font-semibold text-gray-900",children:"Weather"}),e.jsx("p",{className:"text-sm text-gray-600",children:"7-day forecast and active weather alerts for this field's location."}),e.jsxs("div",{className:"mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-500",children:[r&&!n&&!c&&e.jsxs(e.Fragment,{children:[e.jsx("span",{className:"font-medium text-gray-700",children:r.name}),e.jsxs("span",{children:["Area: ",r.areaHa.toFixed(2)," ha"]}),y&&e.jsxs("span",{children:["Lat/Lon: ",d.toFixed(3),", ",m.toFixed(3)]})]}),(S||k)&&e.jsx("span",{children:"Refreshing…"})]})]}),!b&&!v&&A&&e.jsx(te,{alerts:g!=null?g:[]}),b&&e.jsx(h,{children:e.jsx("p",{className:"text-sm text-gray-600",children:"Loading weather alerts…"})}),v&&e.jsx(h,{title:"Unable to load weather alerts",status:"poor",showStatusStripe:!0,children:e.jsxs("div",{className:"space-y-3",children:[e.jsx("p",{className:"text-sm text-gray-700",children:(P=p==null?void 0:p.message)!=null?P:"Something went wrong while loading active weather alerts."}),e.jsx(R,{size:"sm",variant:"secondary",onClick:_,children:"Retry"})]})}),F&&e.jsx(h,{title:"Weather unavailable",children:e.jsx("p",{className:"text-sm text-gray-700",children:"Weather forecast is unavailable because this field does not have a valid location. Edit the field boundary to enable location-based forecasts."})}),!F&&y&&e.jsxs(e.Fragment,{children:[j&&!N&&e.jsx(h,{children:e.jsx("p",{className:"text-sm text-gray-600",children:"Loading weather forecast…"})}),w&&e.jsx(h,{title:"Unable to load weather forecast",status:"poor",showStatusStripe:!0,children:e.jsxs("div",{className:"space-y-3",children:[e.jsx("p",{className:"text-sm text-gray-700",children:(I=f==null?void 0:f.message)!=null?I:"Something went wrong while loading the weather forecast for this field."}),e.jsx(R,{size:"sm",variant:"secondary",onClick:C,children:"Retry"})]})}),!j&&!w&&N&&u&&e.jsx(h,{title:"7-day forecast",children:e.jsx(ee,{forecast:u,alerts:g!=null?g:[]})}),!j&&!w&&!N&&u&&e.jsx(h,{title:"No forecast available",children:e.jsx("p",{className:"text-sm text-gray-700",children:"There is no forecast data available for this field yet. Try again later."})})]})]})},ke=Object.freeze(Object.defineProperty({__proto__:null,FieldWeatherPage:B,default:B},Symbol.toStringTag,{value:"Module"})),K=7.5,G=80.7,Y=()=>{var S,g,b,v,p;const{showToast:s}=X(),{data:t,isLoading:a,isError:o,error:i,refetch:l,isFetching:r}=ae(),{data:n,isLoading:c,isError:d,error:m,refetch:y,isFetching:u}=se(K,G),j=((S=t==null?void 0:t.length)!=null?S:0)>0,w=((b=(g=n==null?void 0:n.daily)==null?void 0:g.length)!=null?b:0)>0,f=()=>{var x;l(),s({title:"Retrying weather alerts",description:(x=i==null?void 0:i.message)!=null?x:"Attempting to reload active weather alerts.",variant:"default"})},D=()=>{var x;y(),s({title:"Retrying regional forecast",description:(x=m==null?void 0:m.message)!=null?x:"Attempting to reload the regional 7-day forecast.",variant:"default"})};return e.jsxs("section",{"aria-labelledby":"weather-overview-heading",className:"space-y-4",children:[e.jsxs("header",{className:"space-y-1",children:[e.jsx("h1",{id:"weather-overview-heading",className:"text-lg font-semibold text-gray-900",children:"Weather overview"}),e.jsx("p",{className:"text-sm text-gray-600",children:"Region-wide 7-day outlook and active alerts that may affect your fields."}),e.jsxs("div",{className:"mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-500",children:[e.jsxs("span",{children:["Regional centroid: ",K.toFixed(2),", ",G.toFixed(2)]}),(r||u)&&e.jsx("span",{children:"Refreshing…"})]})]}),!a&&!o&&j&&e.jsx(te,{alerts:t!=null?t:[]}),a&&e.jsx(h,{children:e.jsx("p",{className:"text-sm text-gray-600",children:"Loading weather alerts…"})}),o&&e.jsx(h,{title:"Unable to load weather alerts",status:"poor",showStatusStripe:!0,children:e.jsxs("div",{className:"space-y-3",children:[e.jsx("p",{className:"text-sm text-gray-700",children:(v=i==null?void 0:i.message)!=null?v:"Something went wrong while loading active weather alerts."}),e.jsx(R,{size:"sm",variant:"secondary",onClick:f,children:"Retry"})]})}),!a&&!o&&e.jsx(h,{title:"Active alerts",children:j?e.jsx("div",{className:"overflow-x-auto",children:e.jsxs("table",{className:"min-w-full divide-y divide-gray-200 text-xs sm:text-sm",children:[e.jsx("thead",{className:"bg-gray-50",children:e.jsxs("tr",{children:[e.jsx("th",{scope:"col",className:"px-3 py-2 text-left font-medium text-gray-700",children:"Title"}),e.jsx("th",{scope:"col",className:"px-3 py-2 text-left font-medium text-gray-700",children:"Severity"}),e.jsx("th",{scope:"col",className:"px-3 py-2 text-left font-medium text-gray-700",children:"Start"}),e.jsx("th",{scope:"col",className:"px-3 py-2 text-left font-medium text-gray-700",children:"End"}),e.jsx("th",{scope:"col",className:"px-3 py-2 text-left font-medium text-gray-700",children:"Related fields"})]})}),e.jsx("tbody",{className:"divide-y divide-gray-100 bg-white",children:t==null?void 0:t.map(x=>{var F,L;const k=new Date(x.startTime),N=new Date(x.endTime),A=(L=(F=x.relatedFieldIds)==null?void 0:F.length)!=null?L:0,C=Number.isNaN(k.getTime())?"—":k.toLocaleString(void 0,{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"}),_=Number.isNaN(N.getTime())?"—":N.toLocaleString(void 0,{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});return e.jsxs("tr",{children:[e.jsxs("td",{className:"px-3 py-2 align-top",children:[e.jsx("div",{className:"font-medium text-gray-900",children:x.title}),x.description&&e.jsx("div",{className:"mt-0.5 text-[11px] sm:text-xs text-gray-600 line-clamp-2",children:x.description})]}),e.jsx("td",{className:"px-3 py-2 align-top",children:e.jsx("span",{className:"inline-flex rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-gray-700",children:x.severity})}),e.jsx("td",{className:"px-3 py-2 align-top text-gray-700",children:C}),e.jsx("td",{className:"px-3 py-2 align-top text-gray-700",children:_}),e.jsx("td",{className:"px-3 py-2 align-top text-gray-700",children:A>0?`${A} field(s)`:"—"})]},x.id)})})]})}):e.jsx("p",{className:"text-sm text-gray-700",children:"There are currently no active weather alerts for your region."})}),!c&&!d&&w&&n&&e.jsx(h,{title:"Regional 7-day forecast",children:e.jsx(ee,{forecast:n,alerts:t!=null?t:[]})}),c&&e.jsx(h,{children:e.jsx("p",{className:"text-sm text-gray-600",children:"Loading regional forecast…"})}),d&&e.jsx(h,{title:"Unable to load regional forecast",status:"poor",showStatusStripe:!0,children:e.jsxs("div",{className:"space-y-3",children:[e.jsx("p",{className:"text-sm text-gray-700",children:(p=m==null?void 0:m.message)!=null?p:"Something went wrong while loading the regional forecast."}),e.jsx(R,{size:"sm",variant:"secondary",onClick:D,children:"Retry"})]})})]})},Ae=Object.freeze(Object.defineProperty({__proto__:null,WeatherOverviewPage:Y,default:Y},Symbol.toStringTag,{value:"Module"}));export{ke as F,Ae as W,oe as g};
+        `,
+            children: t.daily.map((l) => {
+              const r = new Date(l.date),
+                n = !Number.isNaN(r.getTime()) && fe(r, i),
+                c = l.precipMm >= pe || l.maxTempC >= ye,
+                d = o.length > 0 ? Ne(o, l.date) : [];
+              return e.jsx(
+                ue,
+                { forecast: l, isToday: n, isRisky: c, alerts: d },
+                l.date,
+              );
+            }),
+          }),
+        });
+  },
+  q = { severe: 3, warning: 2, info: 1 },
+  we = (s) => {
+    switch (s) {
+      case "severe":
+        return {
+          container: "border-red-300 bg-red-50 text-red-900",
+          icon: "text-red-600",
+        };
+      case "warning":
+        return {
+          container: "border-amber-300 bg-amber-50 text-amber-900",
+          icon: "text-amber-600",
+        };
+      case "info":
+      default:
+        return {
+          container: "border-sky-300 bg-sky-50 text-sky-900",
+          icon: "text-sky-600",
+        };
+    }
+  },
+  te = ({ alerts: s }) => {
+    if (!s || s.length === 0) return null;
+    const a = [...s].sort((d, m) => {
+        var y, u;
+        return (
+          ((y = q[m.severity]) != null ? y : 0) -
+          ((u = q[d.severity]) != null ? u : 0)
+        );
+      })[0],
+      o = s.length - 1,
+      { container: i, icon: l } = we(a.severity),
+      r = new Date(a.startTime),
+      n = new Date(a.endTime),
+      c =
+        !Number.isNaN(r.getTime()) && !Number.isNaN(n.getTime())
+          ? `${r.toLocaleString(void 0, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })} → ${n.toLocaleString(void 0, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}`
+          : void 0;
+    return e.jsxs("section", {
+      className: `flex items-start gap-3 rounded-lg border px-3 py-2 text-xs sm:text-sm ${i}`,
+      role: "status",
+      "aria-live": "polite",
+      children: [
+        e.jsx("div", {
+          className: "mt-0.5 shrink-0",
+          children: e.jsx("span", {
+            className: `text-base sm:text-lg ${l}`,
+            "aria-hidden": "true",
+            children: "⚠",
+          }),
+        }),
+        e.jsxs("div", {
+          className: "flex-1 space-y-0.5",
+          children: [
+            e.jsx("p", {
+              className: "text-xs font-semibold uppercase tracking-wide",
+              children:
+                a.severity === "severe"
+                  ? "Severe weather alert"
+                  : a.severity === "warning"
+                    ? "Weather warning"
+                    : "Weather information",
+            }),
+            e.jsx("p", { className: "font-medium", children: a.title }),
+            a.description &&
+              e.jsx("p", {
+                className: "text-[11px] sm:text-xs opacity-90 line-clamp-3",
+                children: a.description,
+              }),
+            c &&
+              e.jsx("p", {
+                className: "text-[11px] sm:text-xs opacity-80",
+                children: c,
+              }),
+          ],
+        }),
+        o > 0 &&
+          e.jsx("div", {
+            className: "ml-2 shrink-0",
+            children: e.jsxs("span", {
+              className:
+                "inline-flex items-center rounded-full bg-white/40 px-2 py-0.5 text-[10px] font-medium text-current",
+              children: ["+", o, " more alerts"],
+            }),
+          }),
+      ],
+    });
+  },
+  se = (s, t) =>
+    Z({
+      queryKey: V.forecast(s, t),
+      queryFn: () => oe(s, t),
+      enabled: Number.isFinite(s) && Number.isFinite(t),
+      staleTime: 10 * 60 * 1e3,
+      gcTime: 60 * 60 * 1e3,
+    }),
+  ae = () =>
+    Z({ queryKey: V.alerts, queryFn: () => de(), staleTime: 5 * 60 * 1e3 }),
+  B = () => {
+    var L, E, M, O, H, z, U, $, P, I;
+    const { fieldId: s } = le(),
+      t = ce(),
+      { showToast: a } = X(),
+      {
+        state: { currentFieldId: o },
+        setCurrentField: i,
+      } = re(),
+      l = (L = s != null ? s : o) != null ? L : "";
+    ie.useEffect(() => {
+      s && i(s);
+    }, [s, i]);
+    const { data: r, isLoading: n, isError: c } = ne(l),
+      d =
+        (M =
+          (E = r == null ? void 0 : r.centroidLatLon) == null
+            ? void 0
+            : E.lat) != null
+          ? M
+          : Number.NaN,
+      m =
+        (H =
+          (O = r == null ? void 0 : r.centroidLatLon) == null
+            ? void 0
+            : O.lon) != null
+          ? H
+          : Number.NaN,
+      y = Number.isFinite(d) && Number.isFinite(m),
+      {
+        data: u,
+        isLoading: j,
+        isError: w,
+        error: f,
+        refetch: D,
+        isFetching: S,
+      } = se(d, m),
+      {
+        data: g,
+        isLoading: b,
+        isError: v,
+        error: p,
+        refetch: x,
+        isFetching: k,
+      } = ae(),
+      N =
+        ((U = (z = u == null ? void 0 : u.daily) == null ? void 0 : z.length) !=
+        null
+          ? U
+          : 0) > 0,
+      A = (($ = g == null ? void 0 : g.length) != null ? $ : 0) > 0,
+      C = () => {
+        var T;
+        (D(),
+          a({
+            title: "Retrying weather forecast",
+            description:
+              (T = f == null ? void 0 : f.message) != null
+                ? T
+                : "Attempting to reload weather forecast for this field.",
+            variant: "default",
+          }));
+      },
+      _ = () => {
+        var T;
+        (x(),
+          a({
+            title: "Retrying weather alerts",
+            description:
+              (T = p == null ? void 0 : p.message) != null
+                ? T
+                : "Attempting to reload active weather alerts.",
+            variant: "default",
+          }));
+      };
+    if (!s)
+      return e.jsxs("section", {
+        "aria-labelledby": "field-weather-heading",
+        className: "space-y-4",
+        children: [
+          e.jsxs("header", {
+            className: "space-y-1",
+            children: [
+              e.jsx("h1", {
+                id: "field-weather-heading",
+                className: "text-lg font-semibold text-gray-900",
+                children: "Field not found",
+              }),
+              e.jsx("p", {
+                className: "text-sm text-gray-600",
+                children:
+                  "The requested field could not be identified from the URL. Please return to your fields list and try again.",
+              }),
+            ],
+          }),
+          e.jsx(R, {
+            size: "sm",
+            variant: "secondary",
+            onClick: () => t("/fields"),
+            children: "Back to fields",
+          }),
+        ],
+      });
+    const F = !n && !c && r != null && !y;
+    return e.jsxs("section", {
+      "aria-labelledby": "field-weather-heading",
+      className: "space-y-4",
+      children: [
+        e.jsxs("header", {
+          className: "space-y-1",
+          children: [
+            e.jsx("h1", {
+              id: "field-weather-heading",
+              className: "text-lg font-semibold text-gray-900",
+              children: "Weather",
+            }),
+            e.jsx("p", {
+              className: "text-sm text-gray-600",
+              children:
+                "7-day forecast and active weather alerts for this field's location.",
+            }),
+            e.jsxs("div", {
+              className:
+                "mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-500",
+              children: [
+                r &&
+                  !n &&
+                  !c &&
+                  e.jsxs(e.Fragment, {
+                    children: [
+                      e.jsx("span", {
+                        className: "font-medium text-gray-700",
+                        children: r.name,
+                      }),
+                      e.jsxs("span", {
+                        children: ["Area: ", r.areaHa.toFixed(2), " ha"],
+                      }),
+                      y &&
+                        e.jsxs("span", {
+                          children: [
+                            "Lat/Lon: ",
+                            d.toFixed(3),
+                            ", ",
+                            m.toFixed(3),
+                          ],
+                        }),
+                    ],
+                  }),
+                (S || k) && e.jsx("span", { children: "Refreshing…" }),
+              ],
+            }),
+          ],
+        }),
+        !b && !v && A && e.jsx(te, { alerts: g != null ? g : [] }),
+        b &&
+          e.jsx(h, {
+            children: e.jsx("p", {
+              className: "text-sm text-gray-600",
+              children: "Loading weather alerts…",
+            }),
+          }),
+        v &&
+          e.jsx(h, {
+            title: "Unable to load weather alerts",
+            status: "poor",
+            showStatusStripe: !0,
+            children: e.jsxs("div", {
+              className: "space-y-3",
+              children: [
+                e.jsx("p", {
+                  className: "text-sm text-gray-700",
+                  children:
+                    (P = p == null ? void 0 : p.message) != null
+                      ? P
+                      : "Something went wrong while loading active weather alerts.",
+                }),
+                e.jsx(R, {
+                  size: "sm",
+                  variant: "secondary",
+                  onClick: _,
+                  children: "Retry",
+                }),
+              ],
+            }),
+          }),
+        F &&
+          e.jsx(h, {
+            title: "Weather unavailable",
+            children: e.jsx("p", {
+              className: "text-sm text-gray-700",
+              children:
+                "Weather forecast is unavailable because this field does not have a valid location. Edit the field boundary to enable location-based forecasts.",
+            }),
+          }),
+        !F &&
+          y &&
+          e.jsxs(e.Fragment, {
+            children: [
+              j &&
+                !N &&
+                e.jsx(h, {
+                  children: e.jsx("p", {
+                    className: "text-sm text-gray-600",
+                    children: "Loading weather forecast…",
+                  }),
+                }),
+              w &&
+                e.jsx(h, {
+                  title: "Unable to load weather forecast",
+                  status: "poor",
+                  showStatusStripe: !0,
+                  children: e.jsxs("div", {
+                    className: "space-y-3",
+                    children: [
+                      e.jsx("p", {
+                        className: "text-sm text-gray-700",
+                        children:
+                          (I = f == null ? void 0 : f.message) != null
+                            ? I
+                            : "Something went wrong while loading the weather forecast for this field.",
+                      }),
+                      e.jsx(R, {
+                        size: "sm",
+                        variant: "secondary",
+                        onClick: C,
+                        children: "Retry",
+                      }),
+                    ],
+                  }),
+                }),
+              !j &&
+                !w &&
+                N &&
+                u &&
+                e.jsx(h, {
+                  title: "7-day forecast",
+                  children: e.jsx(ee, {
+                    forecast: u,
+                    alerts: g != null ? g : [],
+                  }),
+                }),
+              !j &&
+                !w &&
+                !N &&
+                u &&
+                e.jsx(h, {
+                  title: "No forecast available",
+                  children: e.jsx("p", {
+                    className: "text-sm text-gray-700",
+                    children:
+                      "There is no forecast data available for this field yet. Try again later.",
+                  }),
+                }),
+            ],
+          }),
+      ],
+    });
+  },
+  ke = Object.freeze(
+    Object.defineProperty(
+      { __proto__: null, FieldWeatherPage: B, default: B },
+      Symbol.toStringTag,
+      { value: "Module" },
+    ),
+  ),
+  K = 7.5,
+  G = 80.7,
+  Y = () => {
+    var S, g, b, v, p;
+    const { showToast: s } = X(),
+      {
+        data: t,
+        isLoading: a,
+        isError: o,
+        error: i,
+        refetch: l,
+        isFetching: r,
+      } = ae(),
+      {
+        data: n,
+        isLoading: c,
+        isError: d,
+        error: m,
+        refetch: y,
+        isFetching: u,
+      } = se(K, G),
+      j = ((S = t == null ? void 0 : t.length) != null ? S : 0) > 0,
+      w =
+        ((b = (g = n == null ? void 0 : n.daily) == null ? void 0 : g.length) !=
+        null
+          ? b
+          : 0) > 0,
+      f = () => {
+        var x;
+        (l(),
+          s({
+            title: "Retrying weather alerts",
+            description:
+              (x = i == null ? void 0 : i.message) != null
+                ? x
+                : "Attempting to reload active weather alerts.",
+            variant: "default",
+          }));
+      },
+      D = () => {
+        var x;
+        (y(),
+          s({
+            title: "Retrying regional forecast",
+            description:
+              (x = m == null ? void 0 : m.message) != null
+                ? x
+                : "Attempting to reload the regional 7-day forecast.",
+            variant: "default",
+          }));
+      };
+    return e.jsxs("section", {
+      "aria-labelledby": "weather-overview-heading",
+      className: "space-y-4",
+      children: [
+        e.jsxs("header", {
+          className: "space-y-1",
+          children: [
+            e.jsx("h1", {
+              id: "weather-overview-heading",
+              className: "text-lg font-semibold text-gray-900",
+              children: "Weather overview",
+            }),
+            e.jsx("p", {
+              className: "text-sm text-gray-600",
+              children:
+                "Region-wide 7-day outlook and active alerts that may affect your fields.",
+            }),
+            e.jsxs("div", {
+              className:
+                "mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-500",
+              children: [
+                e.jsxs("span", {
+                  children: [
+                    "Regional centroid: ",
+                    K.toFixed(2),
+                    ", ",
+                    G.toFixed(2),
+                  ],
+                }),
+                (r || u) && e.jsx("span", { children: "Refreshing…" }),
+              ],
+            }),
+          ],
+        }),
+        !a && !o && j && e.jsx(te, { alerts: t != null ? t : [] }),
+        a &&
+          e.jsx(h, {
+            children: e.jsx("p", {
+              className: "text-sm text-gray-600",
+              children: "Loading weather alerts…",
+            }),
+          }),
+        o &&
+          e.jsx(h, {
+            title: "Unable to load weather alerts",
+            status: "poor",
+            showStatusStripe: !0,
+            children: e.jsxs("div", {
+              className: "space-y-3",
+              children: [
+                e.jsx("p", {
+                  className: "text-sm text-gray-700",
+                  children:
+                    (v = i == null ? void 0 : i.message) != null
+                      ? v
+                      : "Something went wrong while loading active weather alerts.",
+                }),
+                e.jsx(R, {
+                  size: "sm",
+                  variant: "secondary",
+                  onClick: f,
+                  children: "Retry",
+                }),
+              ],
+            }),
+          }),
+        !a &&
+          !o &&
+          e.jsx(h, {
+            title: "Active alerts",
+            children: j
+              ? e.jsx("div", {
+                  className: "overflow-x-auto",
+                  children: e.jsxs("table", {
+                    className:
+                      "min-w-full divide-y divide-gray-200 text-xs sm:text-sm",
+                    children: [
+                      e.jsx("thead", {
+                        className: "bg-gray-50",
+                        children: e.jsxs("tr", {
+                          children: [
+                            e.jsx("th", {
+                              scope: "col",
+                              className:
+                                "px-3 py-2 text-left font-medium text-gray-700",
+                              children: "Title",
+                            }),
+                            e.jsx("th", {
+                              scope: "col",
+                              className:
+                                "px-3 py-2 text-left font-medium text-gray-700",
+                              children: "Severity",
+                            }),
+                            e.jsx("th", {
+                              scope: "col",
+                              className:
+                                "px-3 py-2 text-left font-medium text-gray-700",
+                              children: "Start",
+                            }),
+                            e.jsx("th", {
+                              scope: "col",
+                              className:
+                                "px-3 py-2 text-left font-medium text-gray-700",
+                              children: "End",
+                            }),
+                            e.jsx("th", {
+                              scope: "col",
+                              className:
+                                "px-3 py-2 text-left font-medium text-gray-700",
+                              children: "Related fields",
+                            }),
+                          ],
+                        }),
+                      }),
+                      e.jsx("tbody", {
+                        className: "divide-y divide-gray-100 bg-white",
+                        children:
+                          t == null
+                            ? void 0
+                            : t.map((x) => {
+                                var F, L;
+                                const k = new Date(x.startTime),
+                                  N = new Date(x.endTime),
+                                  A =
+                                    (L =
+                                      (F = x.relatedFieldIds) == null
+                                        ? void 0
+                                        : F.length) != null
+                                      ? L
+                                      : 0,
+                                  C = Number.isNaN(k.getTime())
+                                    ? "—"
+                                    : k.toLocaleString(void 0, {
+                                        month: "short",
+                                        day: "numeric",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      }),
+                                  _ = Number.isNaN(N.getTime())
+                                    ? "—"
+                                    : N.toLocaleString(void 0, {
+                                        month: "short",
+                                        day: "numeric",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      });
+                                return e.jsxs(
+                                  "tr",
+                                  {
+                                    children: [
+                                      e.jsxs("td", {
+                                        className: "px-3 py-2 align-top",
+                                        children: [
+                                          e.jsx("div", {
+                                            className:
+                                              "font-medium text-gray-900",
+                                            children: x.title,
+                                          }),
+                                          x.description &&
+                                            e.jsx("div", {
+                                              className:
+                                                "mt-0.5 text-[11px] sm:text-xs text-gray-600 line-clamp-2",
+                                              children: x.description,
+                                            }),
+                                        ],
+                                      }),
+                                      e.jsx("td", {
+                                        className: "px-3 py-2 align-top",
+                                        children: e.jsx("span", {
+                                          className:
+                                            "inline-flex rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-gray-700",
+                                          children: x.severity,
+                                        }),
+                                      }),
+                                      e.jsx("td", {
+                                        className:
+                                          "px-3 py-2 align-top text-gray-700",
+                                        children: C,
+                                      }),
+                                      e.jsx("td", {
+                                        className:
+                                          "px-3 py-2 align-top text-gray-700",
+                                        children: _,
+                                      }),
+                                      e.jsx("td", {
+                                        className:
+                                          "px-3 py-2 align-top text-gray-700",
+                                        children: A > 0 ? `${A} field(s)` : "—",
+                                      }),
+                                    ],
+                                  },
+                                  x.id,
+                                );
+                              }),
+                      }),
+                    ],
+                  }),
+                })
+              : e.jsx("p", {
+                  className: "text-sm text-gray-700",
+                  children:
+                    "There are currently no active weather alerts for your region.",
+                }),
+          }),
+        !c &&
+          !d &&
+          w &&
+          n &&
+          e.jsx(h, {
+            title: "Regional 7-day forecast",
+            children: e.jsx(ee, { forecast: n, alerts: t != null ? t : [] }),
+          }),
+        c &&
+          e.jsx(h, {
+            children: e.jsx("p", {
+              className: "text-sm text-gray-600",
+              children: "Loading regional forecast…",
+            }),
+          }),
+        d &&
+          e.jsx(h, {
+            title: "Unable to load regional forecast",
+            status: "poor",
+            showStatusStripe: !0,
+            children: e.jsxs("div", {
+              className: "space-y-3",
+              children: [
+                e.jsx("p", {
+                  className: "text-sm text-gray-700",
+                  children:
+                    (p = m == null ? void 0 : m.message) != null
+                      ? p
+                      : "Something went wrong while loading the regional forecast.",
+                }),
+                e.jsx(R, {
+                  size: "sm",
+                  variant: "secondary",
+                  onClick: D,
+                  children: "Retry",
+                }),
+              ],
+            }),
+          }),
+      ],
+    });
+  },
+  Ae = Object.freeze(
+    Object.defineProperty(
+      { __proto__: null, WeatherOverviewPage: Y, default: Y },
+      Symbol.toStringTag,
+      { value: "Module" },
+    ),
+  );
+export { ke as F, Ae as W, oe as g };

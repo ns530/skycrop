@@ -1,6 +1,6 @@
-import { httpClient, normalizeApiError } from '../../../shared/api';
+import { httpClient, normalizeApiError } from "../../../shared/api";
 
-export type HealthIndexType = 'NDVI' | 'NDWI' | 'TDVI';
+export type HealthIndexType = "NDVI" | "NDWI" | "TDVI";
 
 export interface HealthIndexPoint {
   date: string; // ISO date string
@@ -13,7 +13,7 @@ export interface FieldHealthTimeSeries {
   points: HealthIndexPoint[];
 }
 
-export type HealthSummaryLabel = 'Excellent' | 'Good' | 'Fair' | 'Poor';
+export type HealthSummaryLabel = "Excellent" | "Good" | "Fair" | "Poor";
 
 export interface HealthSummaryBucket {
   label: HealthSummaryLabel;
@@ -66,19 +66,25 @@ interface BackendHealthIndicesEnvelope {
  *
  * GET /api/v1/fields/{id}/health
  */
-export const getFieldHealth = async (fieldId: string, params: {
-  startDate: string;
-  endDate: string;
-  indexType?: HealthIndexType;
-}): Promise<FieldHealthResponse> => {
+export const getFieldHealth = async (
+  fieldId: string,
+  params: {
+    startDate: string;
+    endDate: string;
+    indexType?: HealthIndexType;
+  },
+): Promise<FieldHealthResponse> => {
   try {
-    const res = await httpClient.get<BackendFieldHealthEnvelope>(`/fields/${fieldId}/health`, {
-      params: {
-        startDate: params.startDate,
-        endDate: params.endDate,
-        indexType: params.indexType,
+    const res = await httpClient.get<BackendFieldHealthEnvelope>(
+      `/fields/${fieldId}/health`,
+      {
+        params: {
+          startDate: params.startDate,
+          endDate: params.endDate,
+          indexType: params.indexType,
+        },
       },
-    });
+    );
 
     return res.data.data;
   } catch (error) {
@@ -91,11 +97,13 @@ export const getFieldHealth = async (fieldId: string, params: {
  *
  * GET /api/v1/health/indices
  */
-export const getHealthIndicesMetadata = async (): Promise<HealthIndicesDictionary> => {
-  try {
-    const res = await httpClient.get<BackendHealthIndicesEnvelope>('/health/indices');
-    return res.data.data;
-  } catch (error) {
-    throw normalizeApiError(error);
-  }
-};
+export const getHealthIndicesMetadata =
+  async (): Promise<HealthIndicesDictionary> => {
+    try {
+      const res =
+        await httpClient.get<BackendHealthIndicesEnvelope>("/health/indices");
+      return res.data.data;
+    } catch (error) {
+      throw normalizeApiError(error);
+    }
+  };

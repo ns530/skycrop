@@ -5,10 +5,10 @@
  * Runs daily at 6:00 AM (adjustable)
  */
 
-import logger from '../config/logger.config.js';
-import Field from '../models/field.model.js';
-import satelliteService from '../services/satellite.service.js';
-import healthService from '../services/fieldHealth.service.js';
+import logger from '../config/logger.config';
+import Field from '../models/field.model';
+import satelliteService from '../services/satellite.service';
+import healthService from '../services/fieldHealth.service';
 
 /**
  * Process health monitoring for all active fields
@@ -22,7 +22,7 @@ async function runHealthMonitoring() {
       where: {
         status: 'active',
       },
-      attributes: ['field_id', 'user_id', 'name', 'boundary', 'center', 'area_sqm'],
+      attributes: ['field_id', 'user_id', 'name', 'boundary', 'center', 'areasqm'],
     });
 
     logger.info(`Found ${fields.length} active fields for health monitoring`);
@@ -41,24 +41,29 @@ async function runHealthMonitoring() {
     };
 
     // Process fields in parallel with rate limiting
-    const BATCH_SIZE = 5; // Process 5 fields concurrently
-    const DELAY_BETWEEN_BATCHES = 1000; // 1 second between batches
+    const BATCHSIZE = 5; // Process 5 fields concurrently
+    const DELAYBETWEENBATCHES = 1000; // 1 second between batches
 
-    for (let i = 0; i < fields.length; i += BATCH_SIZE) {
-      const batch = fields.slice(i, i + BATCH_SIZE);
-      logger.debug(`Processing batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(fields.length / BATCH_SIZE)} (${batch.length} fields)`);
+    for (let i = 0; i < fields.length; i += BATCHSIZE) {
+      const batch = fields.slice(i, i + BATCHSIZE);
+      logger.debug(
+        `Processing batch ${Math.floor(i / BATCHSIZE) + 1}/${Math.ceil(fields.length / BATCHSIZE)} (${batch.length} fields)`
+      );
 
       // Process batch in parallel
-      const batchPromises = batch.map(async (field) => {
+      const batchPromises = batch.map(async field => {
         try {
           logger.debug(`Processing health for field: ${field.name} (${field.field_id})`);
 
           // Check if we already have recent health data (within last 24 hours)
           const latestHealth = await healthService.getLatestHealthRecord(field.field_id);
           if (latestHealth) {
-            const hoursSinceLastUpdate = (Date.now() - new Date(latestHealth.measurement_date).getTime()) / (1000 * 60 * 60);
+            const hoursSinceLastUpdate =
+              (Date.now() - new Date(latestHealth.measurementdate).getTime()) / (1000 * 60 * 60);
             if (hoursSinceLastUpdate < 23) {
-              logger.debug(`Field ${field.name} has recent health data (${hoursSinceLastUpdate.toFixed(1)}h ago), skipping`);
+              logger.debug(
+                `Field ${field.name} has recent health data (${hoursSinceLastUpdate.toFixed(1)}h ago), skipping`
+              );
               return { status: 'skipped', field };
             }
           }
@@ -82,7 +87,7 @@ async function runHealthMonitoring() {
 
           // Calculate health indices (NDVI, NDWI, TDVI)
           const healthData = await healthService.calculateHealthIndices({
-            fieldId: field.field_id,
+            field_id: field.field_id,
             satelliteData,
             measurementDate: date,
           });
@@ -92,13 +97,12 @@ async function runHealthMonitoring() {
 
           logger.info(`Successfully updated health for field: ${field.name}`);
           return { status: 'success', field };
-
         } catch (error) {
           logger.error(`Error processing health for field ${field.field_id}:`, error);
           return {
             status: 'failed',
             field,
-            error: error.message
+            error: error.message,
           };
         }
       });
@@ -115,7 +119,7 @@ async function runHealthMonitoring() {
         } else if (result.status === 'failed') {
           results.failed++;
           results.errors.push({
-            fieldId: result.field.field_id,
+            field_id: result.field.field_id,
             fieldName: result.field.name,
             error: result.error,
           });
@@ -123,8 +127,8 @@ async function runHealthMonitoring() {
       }
 
       // Rate limiting delay between batches (except for the last batch)
-      if (i + BATCH_SIZE < fields.length) {
-        await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_BATCHES));
+      if (i + BATCHSIZE < fields.length) {
+        await new Promise(resolve => setTimeout(resolve, DELAYBETWEENBATCHES));
       }
     }
 
@@ -145,7 +149,6 @@ async function runHealthMonitoring() {
     }
 
     return results;
-
   } catch (error) {
     logger.error('Fatal error in health monitoring job:', error);
     throw error;
@@ -159,4 +162,3 @@ export default {
   enabled: true,
   critical: true,
 };
-

@@ -10,7 +10,7 @@ const { sequelize } = require('../config/database.config');
 const DeviceToken = sequelize.define(
   'DeviceToken',
   {
-    token_id: {
+    tokenid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
@@ -25,7 +25,7 @@ const DeviceToken = sequelize.define(
       onDelete: 'CASCADE',
       onUpdate: 'CASCADE',
     },
-    device_token: {
+    devicetoken: {
       type: DataTypes.STRING(500),
       allowNull: false,
       unique: true,
@@ -39,24 +39,24 @@ const DeviceToken = sequelize.define(
       defaultValue: true,
       allowNull: false,
     },
-    last_used: {
+    lastused: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
       allowNull: false,
     },
   },
   {
-    tableName: 'device_tokens',
+    tableName: 'devicetokens',
     timestamps: true,
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
+    createdAt: 'createdat',
+    updatedAt: 'updatedat',
     underscored: true,
     indexes: [
       {
         fields: ['user_id'],
       },
       {
-        fields: ['device_token'],
+        fields: ['devicetoken'],
         unique: true,
       },
       {
@@ -67,4 +67,3 @@ const DeviceToken = sequelize.define(
 );
 
 module.exports = DeviceToken;
-

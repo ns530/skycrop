@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
-import { ApiError } from '../../../shared/api/httpClient';
-import { useToast } from '../../../shared/hooks/useToast';
-import { Card } from '../../../shared/ui/Card';
-import { useAuth } from '../context/AuthContext';
+import { ApiError } from "../../../shared/api/httpClient";
+import { useToast } from "../../../shared/hooks/useToast";
+import { Card } from "../../../shared/ui/Card";
+import { useAuth } from "../context/AuthContext";
 
-const POST_LOGIN_REDIRECT_KEY = 'skycrop_post_login_redirect';
+const POST_LOGIN_REDIRECT_KEY = "skycrop_post_login_redirect";
 
 /**
  * OAuthCallbackPage
@@ -22,21 +22,24 @@ export const OAuthCallbackPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [statusMessage, setStatusMessage] = useState('Signing you in with Google…');
+  const [statusMessage, setStatusMessage] = useState(
+    "Signing you in with Google…",
+  );
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    const token = searchParams.get('token');
+    const token = searchParams.get("token");
 
     const run = async () => {
       if (!token) {
-        setStatusMessage('Missing token in callback URL.');
+        setStatusMessage("Missing token in callback URL.");
         showToast({
-          variant: 'error',
-          title: 'Google sign-in failed',
-          description: 'We could not complete sign-in because the token was missing.',
+          variant: "error",
+          title: "Google sign-in failed",
+          description:
+            "We could not complete sign-in because the token was missing.",
         });
-        navigate('/auth/login', { replace: true });
+        navigate("/auth/login", { replace: true });
         return;
       }
 
@@ -44,19 +47,22 @@ export const OAuthCallbackPage: React.FC = () => {
         await completeOAuthLogin(token);
 
         const redirectTarget =
-          window.sessionStorage.getItem(POST_LOGIN_REDIRECT_KEY) || '/dashboard';
+          window.sessionStorage.getItem(POST_LOGIN_REDIRECT_KEY) ||
+          "/dashboard";
         window.sessionStorage.removeItem(POST_LOGIN_REDIRECT_KEY);
 
         navigate(redirectTarget, { replace: true });
       } catch (error) {
         const apiError = error as ApiError;
-        setStatusMessage('Google sign-in failed.');
+        setStatusMessage("Google sign-in failed.");
         showToast({
-          variant: 'error',
-          title: 'Google sign-in failed',
-          description: apiError?.message || 'Something went wrong while completing sign-in.',
+          variant: "error",
+          title: "Google sign-in failed",
+          description:
+            apiError?.message ||
+            "Something went wrong while completing sign-in.",
         });
-        navigate('/auth/login', { replace: true });
+        navigate("/auth/login", { replace: true });
       }
     };
 
@@ -66,7 +72,10 @@ export const OAuthCallbackPage: React.FC = () => {
   return (
     <section aria-labelledby="oauth-callback-heading" className="space-y-6">
       <header className="space-y-1">
-        <h1 id="oauth-callback-heading" className="text-xl font-semibold text-gray-900">
+        <h1
+          id="oauth-callback-heading"
+          className="text-xl font-semibold text-gray-900"
+        >
           Completing sign-in
         </h1>
         <p className="text-sm text-gray-600">{statusMessage}</p>

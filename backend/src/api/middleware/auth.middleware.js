@@ -21,7 +21,7 @@ function extractToken(req) {
  * Auth middleware:
  * - Validates JWT
  * - Checks Redis blacklist
- * - Attaches req.user = { userId, email, role }
+ * - Attaches req.user = { user_id, email, role }
  */
 async function authMiddleware(req, res, next) {
   try {
@@ -43,7 +43,7 @@ async function authMiddleware(req, res, next) {
 
     let decoded;
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
+      decoded = jwt.verify(token, process.env.JWTSECRET);
     } catch (err) {
       if (err.name === 'TokenExpiredError') {
         throw new UnauthorizedError('Token expired');
@@ -52,7 +52,7 @@ async function authMiddleware(req, res, next) {
     }
 
     req.user = {
-      userId: decoded.user_id,
+      user_id: decoded.user_id,
       email: decoded.email,
       role: decoded.role || 'farmer',
       token,
@@ -69,7 +69,7 @@ async function authMiddleware(req, res, next) {
  * Usage: app.get('/admin', authMiddleware, requireRole('admin'), handler)
  */
 function requireRole(role) {
-  return (req, _res, next) => {
+  return (req, res, next) => {
     if (!req.user) {
       return next(new UnauthorizedError('Not authenticated'));
     }
@@ -84,7 +84,7 @@ function requireRole(role) {
  * Allow any of provided roles.
  */
 function requireAnyRole(roles = []) {
-  return (req, _res, next) => {
+  return (req, res, next) => {
     if (!req.user) {
       return next(new UnauthorizedError('Not authenticated'));
     }

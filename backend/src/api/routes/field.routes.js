@@ -1,17 +1,19 @@
 'use strict';
 
 const express = require('express');
+const Joi = require('joi');
 const FieldController = require('../controllers/field.controller');
 const { authMiddleware } = require('../middleware/auth.middleware');
 const { validateRequest } = require('../middleware/validation.middleware');
 const { apiLimiter } = require('../middleware/rateLimit.middleware');
-const Joi = require('joi');
 
 const router = express.Router();
 
 // Schemas
 const uuidParam = Joi.object({
-  id: Joi.string().guid({ version: ['uuidv4', 'uuidv5', 'uuidv1'] }).required(),
+  id: Joi.string()
+    .guid({ version: ['uuidv4', 'uuidv5', 'uuidv1'] })
+    .required(),
 });
 
 // Reusable params validator for :id
@@ -45,8 +47,8 @@ const listQuery = Joi.object({
     .optional(),
   intersects: Joi.string().optional(),
   page: Joi.number().integer().min(1).default(1),
-  page_size: Joi.number().integer().min(1).max(100).default(20),
-  sort: Joi.string().valid('name', 'created_at', 'area_sqm').default('created_at'),
+  pagesize: Joi.number().integer().min(1).max(100).default(20),
+  sort: Joi.string().valid('name', 'createdat', 'areasqm').default('createdat'),
   order: Joi.string().valid('asc', 'desc').default('desc'),
 });
 
@@ -65,7 +67,6 @@ router.get('/:id', validateIdParam, FieldController.getById);
 
 // PATCH /api/v1/fields/:id
 router.patch('/:id', validateIdParam, validateRequest(updateFieldBody), FieldController.update);
-
 
 // DELETE /api/v1/fields/:id
 router.delete('/:id', validateIdParam, FieldController.remove);

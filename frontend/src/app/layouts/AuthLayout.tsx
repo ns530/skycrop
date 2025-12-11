@@ -1,8 +1,8 @@
-import React from 'react';
-import { Outlet } from 'react-router-dom';
+import React from "react";
+import { Outlet } from "react-router-dom";
 
-import { Card } from '../../shared/ui/Card';
-import { PageContainer } from '../../shared/ui/layout/PageContainer';
+import { Card } from "../../shared/ui/Card";
+import { PageContainer } from "../../shared/ui/layout/PageContainer";
 
 /**
  * AuthLayout
@@ -26,17 +26,25 @@ export const AuthLayout: React.FC = () => {
                       SC
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-sm font-semibold tracking-tight">SkyCrop</span>
-                      <span className="text-xs text-white/80">Map-first crop intelligence</span>
+                      <span className="text-sm font-semibold tracking-tight">
+                        SkyCrop
+                      </span>
+                      <span className="text-xs text-white/80">
+                        Map-first crop intelligence
+                      </span>
                     </div>
                   </div>
-                  <h1 className="text-xl font-semibold mb-2">Welcome to SkyCrop</h1>
+                  <h1 className="text-xl font-semibold mb-2">
+                    Welcome to SkyCrop
+                  </h1>
                   <p className="text-sm text-white/90">
-                    Monitor field health, weather, and recommendations in a single, map-first dashboard.
+                    Monitor field health, weather, and recommendations in a
+                    single, map-first dashboard.
                   </p>
                 </div>
                 <p className="mt-6 text-[11px] text-white/70">
-                  UX placeholder copy. This panel can later show seasonal tips, system status, or onboarding.
+                  UX placeholder copy. This panel can later show seasonal tips,
+                  system status, or onboarding.
                 </p>
               </aside>
 

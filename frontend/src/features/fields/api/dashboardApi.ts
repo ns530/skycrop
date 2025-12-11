@@ -1,4 +1,4 @@
-import { httpClient, normalizeApiError } from '../../../shared/api';
+import { httpClient, normalizeApiError } from "../../../shared/api";
 
 export interface DashboardFieldMetrics {
   total: number;
@@ -31,7 +31,7 @@ export interface DashboardAlertMetrics {
 }
 
 export interface DashboardActivityItem {
-  type: 'health_assessment' | 'recommendation';
+  type: "health_assessment" | "recommendation";
   date: string;
   field_name: string;
   details: {
@@ -139,7 +139,10 @@ interface BackendDashboardMetricsResponse {
  */
 export const getDashboardMetrics = async (): Promise<DashboardMetrics> => {
   try {
-    const res = await httpClient.get<BackendDashboardMetricsResponse>('/dashboard/metrics');
+    const res =
+      await httpClient.get<BackendDashboardMetricsResponse>(
+        "/dashboard/metrics",
+      );
     return res.data.data;
   } catch (error) {
     throw normalizeApiError(error);

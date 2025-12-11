@@ -3,9 +3,9 @@
  * Form for farmers to enter actual harvest yield data
  */
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
-import { Button } from '../../../shared/ui/Button';
+import { Button } from "../../../shared/ui/Button";
 
 export interface YieldEntryValues {
   harvestDate: string; // ISO date string
@@ -25,10 +25,10 @@ interface YieldEntryFormProps {
 
 /**
  * YieldEntryForm
- * 
+ *
  * Simple form for farmers to log their actual harvest yield
  * Compares against predicted yield and calculates accuracy
- * 
+ *
  * @example
  * ```tsx
  * <YieldEntryForm
@@ -47,13 +47,15 @@ export const YieldEntryForm: React.FC<YieldEntryFormProps> = ({
   onCancel,
   isSubmitting = false,
 }) => {
-  const today = new Date().toISOString().split('T')[0];
-  
+  const today = new Date().toISOString().split("T")[0];
+
   const [harvestDate, setHarvestDate] = useState(today);
-  const [yieldInputType, setYieldInputType] = useState<'per_ha' | 'total'>('per_ha');
-  const [yieldKgPerHa, setYieldKgPerHa] = useState<string>('');
-  const [totalYieldKg, setTotalYieldKg] = useState<string>('');
-  const [notes, setNotes] = useState('');
+  const [yieldInputType, setYieldInputType] = useState<"per_ha" | "total">(
+    "per_ha",
+  );
+  const [yieldKgPerHa, setYieldKgPerHa] = useState<string>("");
+  const [totalYieldKg, setTotalYieldKg] = useState<string>("");
+  const [notes, setNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Calculate the other field when one is entered
@@ -78,7 +80,7 @@ export const YieldEntryForm: React.FC<YieldEntryFormProps> = ({
     if (!predictedYieldKgPerHa || !yieldKgPerHa) return null;
     const actual = parseFloat(yieldKgPerHa);
     if (isNaN(actual)) return null;
-    
+
     const error = Math.abs(actual - predictedYieldKgPerHa);
     const mape = (error / actual) * 100;
     return {
@@ -92,20 +94,22 @@ export const YieldEntryForm: React.FC<YieldEntryFormProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!harvestDate) {
-      newErrors.harvestDate = 'Harvest date is required';
+      newErrors.harvestDate = "Harvest date is required";
     }
 
-    const yieldValue = yieldInputType === 'per_ha' ? yieldKgPerHa : totalYieldKg;
-    if (!yieldValue || yieldValue.trim() === '') {
-      newErrors.yield = 'Yield amount is required';
+    const yieldValue =
+      yieldInputType === "per_ha" ? yieldKgPerHa : totalYieldKg;
+    if (!yieldValue || yieldValue.trim() === "") {
+      newErrors.yield = "Yield amount is required";
     } else {
       const num = parseFloat(yieldValue);
       if (isNaN(num) || num <= 0) {
-        newErrors.yield = 'Yield must be a positive number';
-      } else if (yieldInputType === 'per_ha' && num > 15000) {
-        newErrors.yield = 'Yield per hectare seems unusually high (>15,000 kg/ha)';
-      } else if (yieldInputType === 'total' && num > 50000) {
-        newErrors.yield = 'Total yield seems unusually high';
+        newErrors.yield = "Yield must be a positive number";
+      } else if (yieldInputType === "per_ha" && num > 15000) {
+        newErrors.yield =
+          "Yield per hectare seems unusually high (>15,000 kg/ha)";
+      } else if (yieldInputType === "total" && num > 50000) {
+        newErrors.yield = "Total yield seems unusually high";
       }
     }
 
@@ -115,7 +119,7 @@ export const YieldEntryForm: React.FC<YieldEntryFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validate()) return;
 
     const actualYieldKgPerHa = parseFloat(yieldKgPerHa);
@@ -135,7 +139,10 @@ export const YieldEntryForm: React.FC<YieldEntryFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Harvest Date */}
       <div>
-        <label htmlFor="harvest-date" className="block text-sm font-medium text-gray-900 mb-1">
+        <label
+          htmlFor="harvest-date"
+          className="block text-sm font-medium text-gray-900 mb-1"
+        >
           Harvest Date <span className="text-red-500">*</span>
         </label>
         <input
@@ -159,22 +166,22 @@ export const YieldEntryForm: React.FC<YieldEntryFormProps> = ({
         <div className="flex gap-2">
           <button
             type="button"
-            onClick={() => setYieldInputType('per_ha')}
+            onClick={() => setYieldInputType("per_ha")}
             className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-              yieldInputType === 'per_ha'
-                ? 'bg-brand-blue text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              yieldInputType === "per_ha"
+                ? "bg-brand-blue text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
             Per Hectare (kg/ha)
           </button>
           <button
             type="button"
-            onClick={() => setYieldInputType('total')}
+            onClick={() => setYieldInputType("total")}
             className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-              yieldInputType === 'total'
-                ? 'bg-brand-blue text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              yieldInputType === "total"
+                ? "bg-brand-blue text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
             Total Yield (kg)
@@ -184,34 +191,45 @@ export const YieldEntryForm: React.FC<YieldEntryFormProps> = ({
 
       {/* Yield Input */}
       <div>
-        <label htmlFor="yield-input" className="block text-sm font-medium text-gray-900 mb-1">
-          {yieldInputType === 'per_ha' ? 'Yield per Hectare (kg/ha)' : 'Total Yield (kg)'}
+        <label
+          htmlFor="yield-input"
+          className="block text-sm font-medium text-gray-900 mb-1"
+        >
+          {yieldInputType === "per_ha"
+            ? "Yield per Hectare (kg/ha)"
+            : "Total Yield (kg)"}
           <span className="text-red-500 ml-1">*</span>
         </label>
         <input
           id="yield-input"
           type="number"
           step="0.1"
-          value={yieldInputType === 'per_ha' ? yieldKgPerHa : totalYieldKg}
+          value={yieldInputType === "per_ha" ? yieldKgPerHa : totalYieldKg}
           onChange={(e) =>
-            yieldInputType === 'per_ha'
+            yieldInputType === "per_ha"
               ? handlePerHaChange(e.target.value)
               : handleTotalChange(e.target.value)
           }
-          placeholder={yieldInputType === 'per_ha' ? 'e.g., 4500' : 'e.g., 11250'}
+          placeholder={
+            yieldInputType === "per_ha" ? "e.g., 4500" : "e.g., 11250"
+          }
           className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue"
         />
         {errors.yield && (
           <p className="mt-1 text-xs text-red-600">{errors.yield}</p>
         )}
-        
+
         {/* Calculated value display */}
         {yieldKgPerHa && totalYieldKg && (
           <p className="mt-1 text-xs text-gray-600">
-            {yieldInputType === 'per_ha' ? (
-              <>≈ {totalYieldKg} kg total for {fieldAreaHa.toFixed(2)} ha</>
+            {yieldInputType === "per_ha" ? (
+              <>
+                ≈ {totalYieldKg} kg total for {fieldAreaHa.toFixed(2)} ha
+              </>
             ) : (
-              <>≈ {yieldKgPerHa} kg/ha for {fieldAreaHa.toFixed(2)} ha</>
+              <>
+                ≈ {yieldKgPerHa} kg/ha for {fieldAreaHa.toFixed(2)} ha
+              </>
             )}
           </p>
         )}
@@ -222,8 +240,8 @@ export const YieldEntryForm: React.FC<YieldEntryFormProps> = ({
         <div
           className={`rounded-lg border p-3 ${
             accuracy.isAccurate
-              ? 'bg-green-50 border-green-200'
-              : 'bg-yellow-50 border-yellow-200'
+              ? "bg-green-50 border-green-200"
+              : "bg-yellow-50 border-yellow-200"
           }`}
         >
           <p className="text-sm font-medium text-gray-900 mb-1">
@@ -231,25 +249,34 @@ export const YieldEntryForm: React.FC<YieldEntryFormProps> = ({
           </p>
           <div className="space-y-1 text-xs text-gray-700">
             <p>
-              <strong>Predicted:</strong> {predictedYieldKgPerHa.toFixed(0)} kg/ha
+              <strong>Predicted:</strong> {predictedYieldKgPerHa.toFixed(0)}{" "}
+              kg/ha
             </p>
             <p>
-              <strong>Actual:</strong> {parseFloat(yieldKgPerHa).toFixed(0)} kg/ha
+              <strong>Actual:</strong> {parseFloat(yieldKgPerHa).toFixed(0)}{" "}
+              kg/ha
             </p>
             <p>
-              <strong>Difference:</strong>{' '}
-              <span className={accuracy.difference >= 0 ? 'text-green-700' : 'text-red-700'}>
-                {accuracy.difference >= 0 ? '+' : ''}
-                {accuracy.difference.toFixed(0)} kg/ha ({accuracy.percentageError.toFixed(1)}% error)
+              <strong>Difference:</strong>{" "}
+              <span
+                className={
+                  accuracy.difference >= 0 ? "text-green-700" : "text-red-700"
+                }
+              >
+                {accuracy.difference >= 0 ? "+" : ""}
+                {accuracy.difference.toFixed(0)} kg/ha (
+                {accuracy.percentageError.toFixed(1)}% error)
               </span>
             </p>
             {accuracy.isAccurate ? (
               <p className="text-green-700 font-medium mt-2">
-                ✓ Our prediction was accurate! This helps improve future predictions.
+                ✓ Our prediction was accurate! This helps improve future
+                predictions.
               </p>
             ) : (
               <p className="text-yellow-700 font-medium mt-2">
-                ⚠ Significant difference. We'll use this data to improve future predictions.
+                ⚠ Significant difference. We'll use this data to improve future
+                predictions.
               </p>
             )}
           </div>
@@ -258,7 +285,10 @@ export const YieldEntryForm: React.FC<YieldEntryFormProps> = ({
 
       {/* Notes */}
       <div>
-        <label htmlFor="yield-notes" className="block text-sm font-medium text-gray-900 mb-1">
+        <label
+          htmlFor="yield-notes"
+          className="block text-sm font-medium text-gray-900 mb-1"
+        >
           Notes (Optional)
         </label>
         <textarea
@@ -274,10 +304,15 @@ export const YieldEntryForm: React.FC<YieldEntryFormProps> = ({
       {/* Actions */}
       <div className="flex gap-2 pt-2">
         <Button type="submit" disabled={isSubmitting} className="flex-1">
-          {isSubmitting ? 'Saving...' : 'Save Yield Data'}
+          {isSubmitting ? "Saving..." : "Save Yield Data"}
         </Button>
         {onCancel && (
-          <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting}>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onCancel}
+            disabled={isSubmitting}
+          >
             Cancel
           </Button>
         )}
@@ -285,11 +320,11 @@ export const YieldEntryForm: React.FC<YieldEntryFormProps> = ({
 
       {/* Help Text */}
       <p className="text-xs text-gray-500">
-        💡 <strong>Tip:</strong> Entering accurate yield data helps our AI improve predictions for your next season.
+        💡 <strong>Tip:</strong> Entering accurate yield data helps our AI
+        improve predictions for your next season.
       </p>
     </form>
   );
 };
 
 export default YieldEntryForm;
-

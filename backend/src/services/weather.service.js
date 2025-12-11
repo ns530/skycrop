@@ -18,10 +18,10 @@ class WeatherService {
     this.redis = null;
 
     // Config (env-overridable)
-    this.BASE_URL = 'https://api.openweathermap.org/data/2.5/onecall';
-    this.TTL_SECONDS = Number(process.env.WEATHER_TTL_SECONDS || 21600); // 6 hours default
-    this.TIMEOUT_MS = Number(process.env.WEATHER_TIMEOUT_MS || 10000); // overall axios timeout
-    this.RETRIES = Number(process.env.WEATHER_RETRIES || 2);
+    this.BASEURL = 'https://api.openweathermap.org/data/2.5/onecall';
+    this.TTLSECONDS = Number(process.env.WEATHERTTLSECONDS || 21600); // 6 hours default
+    this.TIMEOUTMS = Number(process.env.WEATHERTIMEOUTMS || 10000); // overall axios timeout
+    this.RETRIES = Number(process.env.WEATHERRETRIES || 2);
   }
 
   async init() {
@@ -31,7 +31,7 @@ class WeatherService {
     return this;
   }
 
-  _requireApiKey() {
+  requireApiKey() {
     // Prefer OPENWEATHER_API_KEY; fallback to legacy WEATHER_API_KEY if present
     const key = process.env.OPENWEATHER_API_KEY || process.env.WEATHER_API_KEY;
     if (!key) {
@@ -40,7 +40,7 @@ class WeatherService {
     return key;
   }
 
-  _fieldCenterToLatLon(field) {
+  fieldCenterToLatLon(field) {
     if (!field?.center?.coordinates || !Array.isArray(field.center.coordinates)) {
       throw new ValidationError('Field center point is missing or invalid');
     }
@@ -48,16 +48,16 @@ class WeatherService {
     return { lat, lon };
   }
 
-  _cacheKey(type, fieldId) {
-    return `weather:${type}:${fieldId}`;
+  cacheKey(type, field_id) {
+    return `weather:${type}:${field_id}`;
   }
 
-  async _getFieldOrThrow(userId, fieldId) {
-    if (!userId) throw new ValidationError('userId is required');
-    if (!fieldId) throw new ValidationError('fieldId is required');
+  async getFieldOrThrow(user_id, field_id) {
+    if (!user_id) throw new ValidationError('user_id is required');
+    if (!field_id) throw new ValidationError('field_id is required');
 
     const field = await Field.findOne({
-      where: { user_id: userId, field_id: fieldId, status: 'active' },
+      where: { user_id: user_id, field_id: field_id, status: 'active' },
     });
     if (!field) {
       throw new NotFoundError('Field not found');
@@ -65,7 +65,7 @@ class WeatherService {
     return field;
   }
 
-  async _requestWithRetry(url, label) {
+  async requestWithRetry(url, label) {
     let attempt = 0;
     let lastErr = null;
 
@@ -73,15 +73,15 @@ class WeatherService {
     while (attempt <= this.RETRIES) {
       try {
         const resp = await axios.get(url, {
-          timeout: this.TIMEOUT_MS,
+          timeout: this.TIMEOUTMS,
           maxRedirects: 0,
           // Avoid following redirects for SSRF safety
-          validateStatus: (s) => s >= 200 && s < 600, // treat all errors as responses
+          validateStatus: s => s >= 200 && s < 600, // treat all errors as responses
         });
 
         if (resp.status >= 200 && resp.status < 300) {
           const duration = Date.now() - start;
-          logger.info('%s.response', label, { status: resp.status, duration_ms: duration });
+          logger.info('%s.response', label, { status: resp.status, durationms: duration });
           return { json: resp.data, duration };
         }
 
@@ -90,7 +90,7 @@ class WeatherService {
           const duration = Date.now() - start;
           logger.error('%s.error', label, {
             status: resp.status,
-            duration_ms: duration,
+            durationms: duration,
             message: 'Client error from weather provider',
           });
           const err = new ValidationError(`Weather API error (${resp.status}): ${resp.statusText}`);
@@ -110,8 +110,8 @@ class WeatherService {
 
       // Retry with capped exponential backoff
       if (attempt < this.RETRIES) {
-        const backoff = Math.min(500 * (2 ** attempt), 1000); // 500ms, 1000ms
-        await new Promise((r) => setTimeout(r, backoff));
+        const backoff = Math.min(500 * 2 ** attempt, 1000); // 500ms, 1000ms
+        await new Promise(r => setTimeout(r, backoff));
         attempt += 1;
         continue;
       }
@@ -120,7 +120,7 @@ class WeatherService {
 
     const duration = Date.now() - start;
     logger.error('%s.error', label, {
-      duration_ms: duration,
+      durationms: duration,
       message: lastErr?.message || 'Unknown weather error',
     });
 
@@ -134,13 +134,13 @@ class WeatherService {
    * Get current weather by field center.
    * Returns { data, meta } where meta includes cache hit/miss and source.
    */
-  async getCurrentByField(userId, fieldId) {
+  async getCurrentByField(user_id, field_id) {
     await this.init();
-    const apiKey = this._requireApiKey();
-    const field = await this._getFieldOrThrow(userId, fieldId);
-    const { lat, lon } = this._fieldCenterToLatLon(field);
+    const apiKey = this.requireApiKey();
+    const field = await this.getFieldOrThrow(user_id, field_id);
+    const { lat, lon } = this.fieldCenterToLatLon(field);
 
-    const cacheKey = this._cacheKey('current', fieldId);
+    const cacheKey = this.cacheKey('current', field_id);
     const cachedStr = await this.redis.get(cacheKey);
     if (cachedStr) {
       const payload = JSON.parse(cachedStr);
@@ -151,25 +151,25 @@ class WeatherService {
     }
 
     const label = 'weather.current';
-    const url = `${this.BASE_URL}?lat=${lat}&lon=${lon}&exclude=minutely,hourly,alerts,daily&units=metric&appid=${encodeURIComponent(
+    const url = `${this.BASEURL}?lat=${lat}&lon=${lon}&exclude=minutely,hourly,alerts,daily&units=metric&appid=${encodeURIComponent(
       apiKey
     )}`;
 
     try {
-      const { json, duration } = await this._requestWithRetry(url, label);
+      const { json, duration } = await this.requestWithRetry(url, label);
       const payload = {
-        field_id: fieldId,
+        field_id: field_id,
         coord: { lat, lon },
         current: json.current || null,
-        source: 'openweathermap_onecall',
-        fetched_at: new Date().toISOString(),
+        source: 'openweathermaponecall',
+        fetchedat: new Date().toISOString(),
       };
 
-      await this.redis.setEx(cacheKey, this.TTL_SECONDS, JSON.stringify(payload));
-      logger.info('cache.set', { key: 'weather:current:FIELD_ID', ttl: this.TTL_SECONDS });
+      await this.redis.setEx(cacheKey, this.TTLSECONDS, JSON.stringify(payload));
+      logger.info('cache.set', { key: 'weather:current:field_id', ttl: this.TTLSECONDS });
       return {
         data: payload,
-        meta: { cache: 'miss', source: 'provider', duration_ms: duration },
+        meta: { cache: 'miss', source: 'provider', durationms: duration },
       };
     } catch (err) {
       // Provider failed; if any older cache exists (unlikely since we missed), try again for fallback
@@ -189,13 +189,13 @@ class WeatherService {
    * Get 7-day forecast by field center.
    * Returns { data, meta } where meta includes cache hit/miss and source.
    */
-  async getForecastByField(userId, fieldId) {
+  async getForecastByField(user_id, field_id) {
     await this.init();
-    const apiKey = this._requireApiKey();
-    const field = await this._getFieldOrThrow(userId, fieldId);
-    const { lat, lon } = this._fieldCenterToLatLon(field);
+    const apiKey = this.requireApiKey();
+    const field = await this.getFieldOrThrow(user_id, field_id);
+    const { lat, lon } = this.fieldCenterToLatLon(field);
 
-    const cacheKey = this._cacheKey('forecast', fieldId);
+    const cacheKey = this.cacheKey('forecast', field_id);
     const cachedStr = await this.redis.get(cacheKey);
     if (cachedStr) {
       const payload = JSON.parse(cachedStr);
@@ -206,25 +206,25 @@ class WeatherService {
     }
 
     const label = 'weather.forecast';
-    const url = `${this.BASE_URL}?lat=${lat}&lon=${lon}&exclude=minutely,hourly,alerts,current&units=metric&appid=${encodeURIComponent(
+    const url = `${this.BASEURL}?lat=${lat}&lon=${lon}&exclude=minutely,hourly,alerts,current&units=metric&appid=${encodeURIComponent(
       apiKey
     )}`;
 
     try {
-      const { json, duration } = await this._requestWithRetry(url, label);
+      const { json, duration } = await this.requestWithRetry(url, label);
       const payload = {
-        field_id: fieldId,
+        field_id: field_id,
         coord: { lat, lon },
         daily: Array.isArray(json.daily) ? json.daily.slice(0, 7) : [],
-        source: 'openweathermap_onecall',
-        fetched_at: new Date().toISOString(),
+        source: 'openweathermaponecall',
+        fetchedat: new Date().toISOString(),
       };
 
-      await this.redis.setEx(cacheKey, this.TTL_SECONDS, JSON.stringify(payload));
-      logger.info('cache.set', { key: 'weather:forecast:FIELD_ID', ttl: this.TTL_SECONDS });
+      await this.redis.setEx(cacheKey, this.TTLSECONDS, JSON.stringify(payload));
+      logger.info('cache.set', { key: 'weather:forecast:field_id', ttl: this.TTLSECONDS });
       return {
         data: payload,
-        meta: { cache: 'miss', source: 'provider', duration_ms: duration },
+        meta: { cache: 'miss', source: 'provider', durationms: duration },
       };
     } catch (err) {
       const fallbackStr = await this.redis.get(cacheKey);
@@ -238,14 +238,15 @@ class WeatherService {
       throw err;
     }
   }
+
   /**
    * Normalize provider-specific daily forecasts into provider-agnostic shape.
    * Input: OpenWeather OneCall "daily" array
    * Output: [{ date, rain_mm, tmin, tmax, wind }]
    */
-  _normalizeDaily(daily) {
+  normalizeDaily(daily) {
     const arr = Array.isArray(daily) ? daily.slice(0, 7) : [];
-    const days = arr.map((d) => {
+    const days = arr.map(d => {
       const tsMs = typeof d.dt === 'number' ? d.dt * 1000 : Date.now();
       const isoDate = new Date(tsMs).toISOString().slice(0, 10);
       const rain = Number(d.rain || 0);
@@ -260,7 +261,7 @@ class WeatherService {
     return { days, totals: { rain_3d_mm, rain_7d_mm } };
   }
 
-  _forecastCacheKeyByCoords(lat, lon) {
+  forecastCacheKeyByCoords(lat, lon) {
     const latKey = Number(lat).toFixed(4);
     const lonKey = Number(lon).toFixed(4);
     return `weather:forecast:${latKey}:${lonKey}`;
@@ -271,13 +272,13 @@ class WeatherService {
    * Returns { data: { field_id, coord, days[], totals }, meta }
    * Cache key: weather:forecast:{lat}:{lon}
    */
-  async getForecast(userId, fieldId) {
+  async getForecast(user_id, field_id) {
     await this.init();
-    const apiKey = this._requireApiKey();
-    const field = await this._getFieldOrThrow(userId, fieldId);
-    const { lat, lon } = this._fieldCenterToLatLon(field);
+    const apiKey = this.requireApiKey();
+    const field = await this.getFieldOrThrow(user_id, field_id);
+    const { lat, lon } = this.fieldCenterToLatLon(field);
 
-    const cacheKey = this._forecastCacheKeyByCoords(lat, lon);
+    const cacheKey = this.forecastCacheKeyByCoords(lat, lon);
     const cachedStr = await this.redis.get(cacheKey);
     if (cachedStr) {
       const payload = JSON.parse(cachedStr);
@@ -285,96 +286,96 @@ class WeatherService {
     }
 
     const label = 'weather.forecast.normalized';
-    const url = `${this.BASE_URL}?lat=${lat}&lon=${lon}&exclude=minutely,hourly,alerts,current&units=metric&appid=${encodeURIComponent(apiKey)}`;
+    const url = `${this.BASEURL}?lat=${lat}&lon=${lon}&exclude=minutely,hourly,alerts,current&units=metric&appid=${encodeURIComponent(apiKey)}`;
 
-    const { json, duration } = await this._requestWithRetry(url, label);
-    const { days, totals } = this._normalizeDaily(json.daily || []);
+    const { json, duration } = await this.requestWithRetry(url, label);
+    const { days, totals } = this.normalizeDaily(json.daily || []);
 
     const payload = {
-      field_id: fieldId,
+      field_id: field_id,
       coord: { lat, lon },
       days,
       totals,
-      source: 'openweathermap_onecall',
-      fetched_at: new Date().toISOString(),
+      source: 'openweathermaponecall',
+      fetchedat: new Date().toISOString(),
     };
 
-    await this.redis.setEx(cacheKey, this.TTL_SECONDS, JSON.stringify(payload));
-    logger.info('cache.set', { key: 'weather:forecast:LAT:LON', ttl: this.TTL_SECONDS });
+    await this.redis.setEx(cacheKey, this.TTLSECONDS, JSON.stringify(payload));
+    logger.info('cache.set', { key: 'weather:forecast:LAT:LON', ttl: this.TTLSECONDS });
 
-    return { data: payload, meta: { cache: 'miss', source: 'provider', duration_ms: duration } };
+    return { data: payload, meta: { cache: 'miss', source: 'provider', durationms: duration } };
   }
 
   /**
-    * Provider-agnostic normalized 7-day forecast by coordinates.
-    * Returns { data: { coord, days[], totals }, meta }
-    */
-   async getForecastByCoords(lat, lon) {
-     await this.init();
-     const apiKey = this._requireApiKey();
+   * Provider-agnostic normalized 7-day forecast by coordinates.
+   * Returns { data: { coord, days[], totals }, meta }
+   */
+  async getForecastByCoords(lat, lon) {
+    await this.init();
+    const apiKey = this.requireApiKey();
 
-     const cacheKey = this._forecastCacheKeyByCoords(lat, lon);
-     const cachedStr = await this.redis.get(cacheKey);
-     if (cachedStr) {
-       const payload = JSON.parse(cachedStr);
-       return { data: payload, meta: { cache: 'hit', source: 'cache' } };
-     }
+    const cacheKey = this.forecastCacheKeyByCoords(lat, lon);
+    const cachedStr = await this.redis.get(cacheKey);
+    if (cachedStr) {
+      const payload = JSON.parse(cachedStr);
+      return { data: payload, meta: { cache: 'hit', source: 'cache' } };
+    }
 
-     const label = 'weather.forecast.normalized.coords';
-     const url = `${this.BASE_URL}?lat=${lat}&lon=${lon}&exclude=minutely,hourly,alerts,current&units=metric&appid=${encodeURIComponent(apiKey)}`;
+    const label = 'weather.forecast.normalized.coords';
+    const url = `${this.BASEURL}?lat=${lat}&lon=${lon}&exclude=minutely,hourly,alerts,current&units=metric&appid=${encodeURIComponent(apiKey)}`;
 
-     const { json, duration } = await this._requestWithRetry(url, label);
-     const { days, totals } = this._normalizeDaily(json.daily || []);
+    const { json, duration } = await this.requestWithRetry(url, label);
+    const { days, totals } = this.normalizeDaily(json.daily || []);
 
-     const payload = {
-       coord: { lat, lon },
-       days,
-       totals,
-       source: 'openweathermap_onecall',
-       fetched_at: new Date().toISOString(),
-     };
+    const payload = {
+      coord: { lat, lon },
+      days,
+      totals,
+      source: 'openweathermaponecall',
+      fetchedat: new Date().toISOString(),
+    };
 
-     await this.redis.setEx(cacheKey, this.TTL_SECONDS, JSON.stringify(payload));
-     logger.info('cache.set', { key: 'weather:forecast:LAT:LON', ttl: this.TTL_SECONDS });
+    await this.redis.setEx(cacheKey, this.TTLSECONDS, JSON.stringify(payload));
+    logger.info('cache.set', { key: 'weather:forecast:LAT:LON', ttl: this.TTLSECONDS });
 
-     return { data: payload, meta: { cache: 'miss', source: 'provider', duration_ms: duration } };
-   }
+    return { data: payload, meta: { cache: 'miss', source: 'provider', durationms: duration } };
+  }
 
-   /**
-    * Get weather alerts for user's location (simplified - OpenWeather alerts are limited).
-    * Returns { data: { alerts: [] }, meta }
-    */
-   async getWeatherAlerts(userId) {
-     await this.init();
+  /**
+   * Get weather alerts for user's location (simplified - OpenWeather alerts are limited).
+   * Returns { data: { alerts: [] }, meta }
+   */
+  async getWeatherAlerts(user_id) {
+    await this.init();
 
-     // For now, return empty alerts array since OpenWeather One Call API
-     // doesn't provide comprehensive alerts in all regions
-     // In production, this could integrate with a dedicated weather alerts service
-     const payload = {
-       alerts: [],
-       source: 'openweathermap_onecall',
-       fetched_at: new Date().toISOString(),
-       note: 'Weather alerts not available for this region'
-     };
+    // For now, return empty alerts array since OpenWeather One Call API
+    // doesn't provide comprehensive alerts in all regions
+    // In production, this could integrate with a dedicated weather alerts service
+    const payload = {
+      alerts: [],
+      source: 'openweathermaponecall',
+      fetchedat: new Date().toISOString(),
+      note: 'Weather alerts not available for this region',
+    };
 
-     return {
-       data: payload,
-       meta: { cache: 'none', source: 'service', duration_ms: 0 }
-     };
-   }
+    return {
+      data: payload,
+      meta: { cache: 'none', source: 'service', durationms: 0 },
+    };
+  }
 
-   /**
-    * Cache weather data for a field (used by background jobs).
-    * @param {string} fieldId - Field ID
-    * @param {object} data - Weather data to cache
-    */
-   async cacheWeatherData(fieldId, data) {
-     await this.init();
+  /**
+   * Cache weather data for a field (used by background jobs).
+   * @param {string} field_id - Field ID
+   * @param {object} data - Weather data to cache
+   */
+  async cacheWeatherData(field_id, data) {
+    await this.init();
 
-     const cacheKey = `weather:field_data:${fieldId}`;
-     await this.redis.setEx(cacheKey, this.TTL_SECONDS, JSON.stringify(data));
-     logger.info('cache.set', { key: `weather:field_data:${fieldId}`, ttl: this.TTL_SECONDS });
-   }
+    const cacheKey = `weather:fielddata:${field_id}`;
+    await this.redis.setEx(cacheKey, this.TTLSECONDS, JSON.stringify(data));
+    logger.info('cache.set', { key: `weather:fielddata:${field_id}`, ttl: this.TTLSECONDS });
+  }
 }
 
 let weatherServiceSingleton;

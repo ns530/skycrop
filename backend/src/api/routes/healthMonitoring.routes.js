@@ -12,26 +12,16 @@ const Field = require('../../models/field.model');
 const router = express.Router();
 
 // Dependency injection
-const healthMonitoringService = new HealthMonitoringService(
-  HealthRecord,
-  Field
-);
-const healthMonitoringController = new HealthMonitoringController(
-  healthMonitoringService,
-  Field
-);
+const healthMonitoringService = new HealthMonitoringService(HealthRecord, Field);
+const healthMonitoringController = new HealthMonitoringController(healthMonitoringService, Field);
 
 /**
- * @route GET /api/v1/fields/:fieldId/health/history
+ * @route GET /api/v1/fields/:field_id/health/history
  * @desc Get field health history with time-series analysis
  * @access Private
  */
-router.get(
-  '/fields/:fieldId/health/history',
-  authMiddleware,
-  (req, res, next) =>
-    healthMonitoringController.getFieldHealthHistory(req, res, next)
+router.get('/fields/:field_id/health/history', authMiddleware, (req, res, next) =>
+  healthMonitoringController.getFieldHealthHistory(req, res, next)
 );
 
 module.exports = router;
-

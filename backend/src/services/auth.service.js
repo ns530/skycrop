@@ -7,11 +7,11 @@ const User = require('../models/user.model');
 const { initRedis, getRedisClient } = require('../config/redis.config');
 const { ValidationError, UnauthorizedError, ConflictError } = require('../errors/custom-errors');
 
-const JWT_EXPIRES = '30d';
-const EMAIL_VERIFY_TTL = 60 * 60 * 24; // 24 hours
-const RESET_TTL = 60 * 60 * 24; // 24 hours
-const LOCKOUT_TTL = 60 * 30; // 30 minutes
-const FAILED_ATTEMPTS_LIMIT = 5;
+const JWTEXPIRES = '30d';
+const EMAILVERIFYTTL = 60 * 60 * 24; // 24 hours
+const RESETTTL = 60 * 60 * 24; // 24 hours
+const LOCKOUTTTL = 60 * 30; // 30 minutes
+const FAILEDATTEMPTSLIMIT = 5;
 
 function isValidEmail(email) {
   // RFC5322-lite
@@ -34,7 +34,7 @@ function generateJWT(user) {
     email: user.email,
     role: user.role || 'farmer',
   };
-  return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: JWT_EXPIRES });
+  return jwt.sign(payload, process.env.JWTSECRET, { expiresIn: JWTEXPIRES });
 }
 
 function secondsUntil(expUnix) {
@@ -76,22 +76,22 @@ class AuthService {
       throw new ConflictError('Email already registered', { email });
     }
 
-    const password_hash = await bcrypt.hash(password, 10);
+    const passwordhash = await bcrypt.hash(password, 10);
 
     const user = await User.create({
       email,
-      password_hash,
+      passwordhash,
       name,
       role: 'farmer',
-      auth_provider: 'email',
-      email_verified: false,
+      authprovider: 'email',
+      emailverified: false,
       status: 'active',
     });
 
     // Email verification token
     const verificationToken = crypto.randomUUID();
     if (this.redis) {
-      await this.redis.setEx(`email-verify:${verificationToken}`, EMAIL_VERIFY_TTL, user.user_id);
+      await this.redis.setEx(`email-verify:${verificationToken}`, EMAILVERIFYTTL, user.user_id);
     }
 
     // Issue session token per SRS
@@ -103,12 +103,12 @@ class AuthService {
         email: user.email,
         name: user.name,
         role: user.role,
-        email_verified: user.email_verified,
+        emailverified: user.emailverified,
       },
       token,
       verification: {
         token: verificationToken, // For dev/testing. In prod, send via email
-        expires_in_seconds: EMAIL_VERIFY_TTL,
+        expiresinseconds: EMAILVERIFYTTL,
       },
     };
   }
@@ -129,9 +129,9 @@ class AuthService {
       throw new UnauthorizedError('Account locked. Try again in 30 minutes.');
     }
 
-    const valid = user.password_hash && (await bcrypt.compare(password, user.password_hash));
+    const valid = user.passwordhash && (await bcrypt.compare(password, user.passwordhash));
     if (!valid) {
-      await this._handleFailedLogin(user.user_id);
+      await this.handleFailedLogin(user.user_id);
       throw new UnauthorizedError('Invalid credentials');
     }
 
@@ -141,7 +141,7 @@ class AuthService {
     }
 
     // Update last login
-    await user.update({ last_login: new Date() });
+    await user.update({ lastlogin: new Date() });
 
     const token = generateJWT(user);
 
@@ -151,7 +151,7 @@ class AuthService {
         email: user.email,
         name: user.name,
         role: user.role,
-        email_verified: user.email_verified,
+        emailverified: user.emailverified,
       },
       token,
     };
@@ -171,7 +171,7 @@ class AuthService {
         await this.redis.setEx(`blacklist:${token}`, ttl, '1');
       }
       return { success: true };
-    } catch (_e) {
+    } catch (e) {
       // best-effort
       return { success: true };
     }
@@ -181,12 +181,12 @@ class AuthService {
   async verifyEmail(token) {
     await this.init();
     const key = `email-verify:${token}`;
-    const userId = this.redis ? await this.redis.get(key) : null;
-    if (!userId) {
+    const user_id = this.redis ? await this.redis.get(key) : null;
+    if (!user_id) {
       throw new ValidationError('Verification link is invalid or expired');
     }
 
-    await User.update({ email_verified: true }, { where: { user_id: userId } });
+    await User.update({ emailverified: true }, { where: { user_id: user_id } });
     if (this.redis) {
       await this.redis.del(key);
     }
@@ -203,13 +203,13 @@ class AuthService {
     }
     const token = crypto.randomUUID();
     if (this.redis) {
-      await this.redis.setEx(`password-reset:${token}`, RESET_TTL, user.user_id);
+      await this.redis.setEx(`password-reset:${token}`, RESETTTL, user.user_id);
     }
     return {
       success: true,
       reset: {
         token, // In prod: email this to user
-        expires_in_seconds: RESET_TTL,
+        expiresinseconds: RESETTTL,
       },
     };
   }
@@ -223,13 +223,13 @@ class AuthService {
         { field: 'password' }
       );
     }
-    const userId = this.redis ? await this.redis.get(`password-reset:${token}`) : null;
-    if (!userId) {
+    const user_id = this.redis ? await this.redis.get(`password-reset:${token}`) : null;
+    if (!user_id) {
       throw new ValidationError('Reset link is invalid or expired');
     }
 
-    const password_hash = await bcrypt.hash(newPassword, 10);
-    await User.update({ password_hash }, { where: { user_id: userId } });
+    const passwordhash = await bcrypt.hash(newPassword, 10);
+    await User.update({ passwordhash }, { where: { user_id: user_id } });
 
     // Invalidate token and existing sessions (blacklist strategy is per-JWT; user should log back in)
     if (this.redis) {
@@ -238,15 +238,15 @@ class AuthService {
     return { success: true };
   }
 
-  async _handleFailedLogin(userId) {
+  async handleFailedLogin(user_id) {
     if (!this.redis) return;
-    const attemptsKey = `failed-attempts:${userId}`;
+    const attemptsKey = `failed-attempts:${user_id}`;
     const attempts = await this.redis.incr(attemptsKey);
     // Ensure window
-    await this.redis.expire(attemptsKey, LOCKOUT_TTL);
+    await this.redis.expire(attemptsKey, LOCKOUTTTL);
 
-    if (attempts >= FAILED_ATTEMPTS_LIMIT) {
-      await this.redis.setEx(`account-lock:${userId}`, LOCKOUT_TTL, 'locked');
+    if (attempts >= FAILEDATTEMPTSLIMIT) {
+      await this.redis.setEx(`account-lock:${user_id}`, LOCKOUTTTL, 'locked');
     }
   }
 }

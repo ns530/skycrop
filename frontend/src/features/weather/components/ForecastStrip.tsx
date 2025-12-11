@@ -1,8 +1,12 @@
-import React from 'react';
+import React from "react";
 
-import type { WeatherForecastResponse, WeatherAlert, DailyForecast } from '../api/weatherApi';
+import type {
+  WeatherForecastResponse,
+  WeatherAlert,
+  DailyForecast,
+} from "../api/weatherApi";
 
-import { DailyForecastCard } from './DailyForecastCard';
+import { DailyForecastCard } from "./DailyForecastCard";
 
 export interface ForecastStripProps {
   forecast: WeatherForecastResponse;
@@ -16,7 +20,11 @@ const RAIN_RISK_THRESHOLD_MM = 20;
 const HEAT_RISK_THRESHOLD_C = 35;
 
 const isSameDay = (a: Date, b: Date): boolean => {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
 };
 
 const getDayRange = (dateStr: string): { start: Date; end: Date } | null => {
@@ -34,7 +42,10 @@ const getDayRange = (dateStr: string): { start: Date; end: Date } | null => {
   return { start, end };
 };
 
-const getAlertsForDay = (alerts: WeatherAlert[], dateStr: string): WeatherAlert[] => {
+const getAlertsForDay = (
+  alerts: WeatherAlert[],
+  dateStr: string,
+): WeatherAlert[] => {
   const range = getDayRange(dateStr);
   if (!range) return [];
 
@@ -44,7 +55,10 @@ const getAlertsForDay = (alerts: WeatherAlert[], dateStr: string): WeatherAlert[
     const alertStart = new Date(alert.startTime);
     const alertEnd = new Date(alert.endTime);
 
-    if (Number.isNaN(alertStart.getTime()) || Number.isNaN(alertEnd.getTime())) {
+    if (
+      Number.isNaN(alertStart.getTime()) ||
+      Number.isNaN(alertEnd.getTime())
+    ) {
       return false;
     }
 
@@ -53,7 +67,9 @@ const getAlertsForDay = (alerts: WeatherAlert[], dateStr: string): WeatherAlert[
   });
 };
 
-export const ForecastStrip: React.FC<ForecastStripProps> = (props: ForecastStripProps) => {
+export const ForecastStrip: React.FC<ForecastStripProps> = (
+  props: ForecastStripProps,
+) => {
   const { forecast, alerts } = props;
   const alertsList: WeatherAlert[] = alerts ?? [];
   const today = new Date();
@@ -77,9 +93,13 @@ export const ForecastStrip: React.FC<ForecastStripProps> = (props: ForecastStrip
       >
         {forecast.daily.map((day: DailyForecast) => {
           const date = new Date(day.date);
-          const isToday = !Number.isNaN(date.getTime()) && isSameDay(date, today);
-          const isRisky = day.precipMm >= RAIN_RISK_THRESHOLD_MM || day.maxTempC >= HEAT_RISK_THRESHOLD_C;
-          const dayAlerts = alertsList.length > 0 ? getAlertsForDay(alertsList, day.date) : [];
+          const isToday =
+            !Number.isNaN(date.getTime()) && isSameDay(date, today);
+          const isRisky =
+            day.precipMm >= RAIN_RISK_THRESHOLD_MM ||
+            day.maxTempC >= HEAT_RISK_THRESHOLD_C;
+          const dayAlerts =
+            alertsList.length > 0 ? getAlertsForDay(alertsList, day.date) : [];
 
           return (
             <DailyForecastCard

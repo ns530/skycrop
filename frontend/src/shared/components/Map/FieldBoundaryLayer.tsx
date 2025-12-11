@@ -3,11 +3,11 @@
  * Renders field boundaries as GeoJSON polygons on the map
  */
 
-import type { PathOptions } from 'leaflet';
-import React from 'react';
-import { GeoJSON } from 'react-leaflet';
+import type { PathOptions } from "leaflet";
+import React from "react";
+import { GeoJSON } from "react-leaflet";
 
-import type { FieldWithBoundary } from './types/map.types';
+import type { FieldWithBoundary } from "./types/map.types";
 
 interface FieldBoundaryLayerProps {
   fields: FieldWithBoundary[];
@@ -22,26 +22,26 @@ interface FieldBoundaryLayerProps {
  */
 const getFieldColor = (field: FieldWithBoundary): string => {
   if (!field.healthStatus) {
-    return '#3B82F6'; // Blue (default/no data)
+    return "#3B82F6"; // Blue (default/no data)
   }
 
   const colorMap: Record<string, string> = {
-    excellent: '#059669', // Dark Green (status-excellent)
-    good: '#10B981',      // Green (status-good)
-    fair: '#F59E0B',      // Yellow (status-fair)
-    poor: '#EF4444',      // Red (status-poor)
+    excellent: "#059669", // Dark Green (status-excellent)
+    good: "#10B981", // Green (status-good)
+    fair: "#F59E0B", // Yellow (status-fair)
+    poor: "#EF4444", // Red (status-poor)
   };
 
-  return colorMap[field.healthStatus] || '#3B82F6';
+  return colorMap[field.healthStatus] || "#3B82F6";
 };
 
 /**
  * FieldBoundaryLayer
- * 
+ *
  * Renders field boundaries as interactive polygons
  * Colors based on health status (excellent/good/fair/poor)
  * Supports selection highlighting and click events
- * 
+ *
  * @example
  * ```tsx
  * <BaseMap center={[7.94, 81.02]}>
@@ -110,4 +110,3 @@ export const FieldBoundaryLayer: React.FC<FieldBoundaryLayerProps> = ({
 };
 
 export default FieldBoundaryLayer;
-

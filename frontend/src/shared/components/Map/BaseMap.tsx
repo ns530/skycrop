@@ -3,12 +3,12 @@
  * Core map component using Leaflet for SkyCrop
  */
 
-import React, { useRef, useEffect } from 'react';
-import { MapContainer, TileLayer, useMap } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import type { Map as LeafletMap } from 'leaflet';
+import React, { useRef, useEffect } from "react";
+import { MapContainer, TileLayer, useMap } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import type { Map as LeafletMap } from "leaflet";
 
-import { DEFAULT_TILE_PROVIDER } from './utils/tileProviders';
+import { DEFAULT_TILE_PROVIDER } from "./utils/tileProviders";
 
 interface BaseMapProps {
   center: [number, number]; // [lat, lng]
@@ -36,10 +36,10 @@ function MapReadyHandler({ onReady }: { onReady?: (map: LeafletMap) => void }) {
 
 /**
  * BaseMap
- * 
+ *
  * Core interactive map component for SkyCrop
  * Displays satellite imagery using free Esri World Imagery tiles
- * 
+ *
  * @example
  * ```tsx
  * <BaseMap center={[7.94, 81.02]} zoom={14}>
@@ -53,7 +53,7 @@ export const BaseMap: React.FC<BaseMapProps> = ({
   zoom = 14,
   onMapReady,
   children,
-  className = 'h-full w-full',
+  className = "h-full w-full",
   scrollWheelZoom = true,
 }) => {
   return (
@@ -63,7 +63,7 @@ export const BaseMap: React.FC<BaseMapProps> = ({
       className={className}
       zoomControl={false} // We'll add custom controls
       scrollWheelZoom={scrollWheelZoom}
-      style={{ height: '100%', width: '100%' }}
+      style={{ height: "100%", width: "100%" }}
     >
       {/* Satellite Tiles */}
       <TileLayer
@@ -82,4 +82,3 @@ export const BaseMap: React.FC<BaseMapProps> = ({
 };
 
 export default BaseMap;
-

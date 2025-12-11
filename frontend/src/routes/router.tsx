@@ -1,51 +1,161 @@
-import React, { Suspense } from 'react';
-import { Navigate, createBrowserRouter } from 'react-router-dom';
+import React, { Suspense } from "react";
+import { Navigate, createBrowserRouter } from "react-router-dom";
 
-import { AuthLayout } from '../app/layouts/AuthLayout';
-import { DashboardLayout } from '../app/layouts/DashboardLayout';
-import { MapFirstLayout } from '../app/layouts/MapFirstLayout';
-import { RootLayout } from '../app/layouts/RootLayout';
-import { RequireAuth } from '../features/auth/components/RequireAuth';
-import { RequireRole } from '../features/auth/components/RequireRole';
-import { PageLoader } from '../shared/ui/PageLoader';
+import { AuthLayout } from "../app/layouts/AuthLayout";
+import { DashboardLayout } from "../app/layouts/DashboardLayout";
+import { MapFirstLayout } from "../app/layouts/MapFirstLayout";
+import { RootLayout } from "../app/layouts/RootLayout";
+import { RequireAuth } from "../features/auth/components/RequireAuth";
+import { RequireRole } from "../features/auth/components/RequireRole";
+import { PageLoader } from "../shared/ui/PageLoader";
 
 // Lazy load auth pages with prefetch hints
-const LoginPage = React.lazy(() => import(/* webpackChunkName: "auth-login" */ '../features/auth/pages/LoginPage'));
-const RegisterPage = React.lazy(() => import(/* webpackChunkName: "auth-register" */ '../features/auth/pages/RegisterPage'));
-const ResetPasswordPage = React.lazy(() => import(/* webpackChunkName: "auth-reset" */ '../features/auth/pages/ResetPasswordPage'));
-const OAuthCallbackPage = React.lazy(() => import(/* webpackChunkName: "auth-callback" */ '../features/auth/pages/OAuthCallbackPage'));
+const LoginPage = React.lazy(
+  () =>
+    import(
+      /* webpackChunkName: "auth-login" */ "../features/auth/pages/LoginPage"
+    ),
+);
+const RegisterPage = React.lazy(
+  () =>
+    import(
+      /* webpackChunkName: "auth-register" */ "../features/auth/pages/RegisterPage"
+    ),
+);
+const ResetPasswordPage = React.lazy(
+  () =>
+    import(
+      /* webpackChunkName: "auth-reset" */ "../features/auth/pages/ResetPasswordPage"
+    ),
+);
+const OAuthCallbackPage = React.lazy(
+  () =>
+    import(
+      /* webpackChunkName: "auth-callback" */ "../features/auth/pages/OAuthCallbackPage"
+    ),
+);
 
 // Lazy load field pages
-const DashboardPage = React.lazy(() => import(/* webpackChunkName: "fields-dashboard" */ '../features/fields/pages/DashboardPage'));
-const FieldsListPage = React.lazy(() => import(/* webpackChunkName: "fields-list" */ '../features/fields/pages/FieldsListPage'));
-const FieldDetailPage = React.lazy(() => import(/* webpackChunkName: "fields-detail" */ '../features/fields/pages/FieldDetailPage'));
-const CreateFieldPage = React.lazy(() => import(/* webpackChunkName: "fields-create" */ '../features/fields/pages/CreateFieldPage'));
-const CreateFieldWithMapPage = React.lazy(() => import(/* webpackChunkName: "fields-create-map" */ '../features/fields/pages/CreateFieldWithMapPage'));
-const EditFieldBoundaryPage = React.lazy(() => import(/* webpackChunkName: "fields-edit-boundary" */ '../features/fields/pages/EditFieldBoundaryPage'));
+const DashboardPage = React.lazy(
+  () =>
+    import(
+      /* webpackChunkName: "fields-dashboard" */ "../features/fields/pages/DashboardPage"
+    ),
+);
+const FieldsListPage = React.lazy(
+  () =>
+    import(
+      /* webpackChunkName: "fields-list" */ "../features/fields/pages/FieldsListPage"
+    ),
+);
+const FieldDetailPage = React.lazy(
+  () =>
+    import(
+      /* webpackChunkName: "fields-detail" */ "../features/fields/pages/FieldDetailPage"
+    ),
+);
+const CreateFieldPage = React.lazy(
+  () =>
+    import(
+      /* webpackChunkName: "fields-create" */ "../features/fields/pages/CreateFieldPage"
+    ),
+);
+const CreateFieldWithMapPage = React.lazy(
+  () =>
+    import(
+      /* webpackChunkName: "fields-create-map" */ "../features/fields/pages/CreateFieldWithMapPage"
+    ),
+);
+const EditFieldBoundaryPage = React.lazy(
+  () =>
+    import(
+      /* webpackChunkName: "fields-edit-boundary" */ "../features/fields/pages/EditFieldBoundaryPage"
+    ),
+);
 
 // Lazy load feature pages
-const FieldHealthPage = React.lazy(() => import(/* webpackChunkName: "health" */ '../features/health/pages/FieldHealthPage'));
-const FieldRecommendationsPage = React.lazy(() => import(/* webpackChunkName: "recommendations" */ '../features/recommendations/pages/FieldRecommendationsPage'));
-const FieldWeatherPage = React.lazy(() => import(/* webpackChunkName: "weather-field" */ '../features/weather/pages/FieldWeatherPage'));
-const FieldYieldPage = React.lazy(() => import(/* webpackChunkName: "yield" */ '../features/yield/pages/FieldYieldPage'));
-const WeatherOverviewPage = React.lazy(() => import(/* webpackChunkName: "weather-overview" */ '../features/weather/pages/WeatherOverviewPage'));
+const FieldHealthPage = React.lazy(
+  () =>
+    import(
+      /* webpackChunkName: "health" */ "../features/health/pages/FieldHealthPage"
+    ),
+);
+const FieldRecommendationsPage = React.lazy(
+  () =>
+    import(
+      /* webpackChunkName: "recommendations" */ "../features/recommendations/pages/FieldRecommendationsPage"
+    ),
+);
+const FieldWeatherPage = React.lazy(
+  () =>
+    import(
+      /* webpackChunkName: "weather-field" */ "../features/weather/pages/FieldWeatherPage"
+    ),
+);
+const FieldYieldPage = React.lazy(
+  () =>
+    import(
+      /* webpackChunkName: "yield" */ "../features/yield/pages/FieldYieldPage"
+    ),
+);
+const WeatherOverviewPage = React.lazy(
+  () =>
+    import(
+      /* webpackChunkName: "weather-overview" */ "../features/weather/pages/WeatherOverviewPage"
+    ),
+);
 
 // Lazy load admin pages
-const AdminOverviewPage = React.lazy(() => import(/* webpackChunkName: "admin-overview" */ '../features/admin/pages/AdminOverviewPage'));
-const AdminUsersPage = React.lazy(() => import(/* webpackChunkName: "admin-users" */ '../features/admin/pages/AdminUsersPage'));
-const AdminContentPage = React.lazy(() => import(/* webpackChunkName: "admin-content" */ '../features/admin/pages/AdminContentPage'));
-const AdminSystemHealthPage = React.lazy(() => import(/* webpackChunkName: "admin-system" */ '../features/admin/pages/AdminSystemHealthPage'));
+const AdminOverviewPage = React.lazy(
+  () =>
+    import(
+      /* webpackChunkName: "admin-overview" */ "../features/admin/pages/AdminOverviewPage"
+    ),
+);
+const AdminUsersPage = React.lazy(
+  () =>
+    import(
+      /* webpackChunkName: "admin-users" */ "../features/admin/pages/AdminUsersPage"
+    ),
+);
+const AdminContentPage = React.lazy(
+  () =>
+    import(
+      /* webpackChunkName: "admin-content" */ "../features/admin/pages/AdminContentPage"
+    ),
+);
+const AdminSystemHealthPage = React.lazy(
+  () =>
+    import(
+      /* webpackChunkName: "admin-system" */ "../features/admin/pages/AdminSystemHealthPage"
+    ),
+);
 
 // Lazy load news pages
-const NewsListPage = React.lazy(() => import(/* webpackChunkName: "news-list" */ '../features/news/pages/NewsListPage'));
-const ArticleDetailPage = React.lazy(() => import(/* webpackChunkName: "news-detail" */ '../features/news/pages/ArticleDetailPage'));
+const NewsListPage = React.lazy(
+  () =>
+    import(
+      /* webpackChunkName: "news-list" */ "../features/news/pages/NewsListPage"
+    ),
+);
+const ArticleDetailPage = React.lazy(
+  () =>
+    import(
+      /* webpackChunkName: "news-detail" */ "../features/news/pages/ArticleDetailPage"
+    ),
+);
 
 // Lazy load settings pages
-const NotificationSettingsPage = React.lazy(() => import(/* webpackChunkName: "settings-notifications" */ '../features/settings/pages/NotificationSettingsPage'));
+const NotificationSettingsPage = React.lazy(
+  () =>
+    import(
+      /* webpackChunkName: "settings-notifications" */ "../features/settings/pages/NotificationSettingsPage"
+    ),
+);
 
 export const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <RootLayout />,
     children: [
       {
@@ -53,11 +163,11 @@ export const router = createBrowserRouter([
         element: <Navigate to="/dashboard" replace />,
       },
       {
-        path: 'auth',
+        path: "auth",
         element: <AuthLayout />,
         children: [
           {
-            path: 'login',
+            path: "login",
             element: (
               <Suspense fallback={<PageLoader />}>
                 <LoginPage />
@@ -65,7 +175,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: 'register',
+            path: "register",
             element: (
               <Suspense fallback={<PageLoader />}>
                 <RegisterPage />
@@ -73,7 +183,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: 'reset-password',
+            path: "reset-password",
             element: (
               <Suspense fallback={<PageLoader />}>
                 <ResetPasswordPage />
@@ -81,7 +191,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: 'callback',
+            path: "callback",
             element: (
               <Suspense fallback={<PageLoader />}>
                 <OAuthCallbackPage />
@@ -98,7 +208,7 @@ export const router = createBrowserRouter([
         ),
         children: [
           {
-            path: 'dashboard',
+            path: "dashboard",
             element: (
               <Suspense fallback={<PageLoader />}>
                 <DashboardPage />
@@ -106,7 +216,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: 'fields',
+            path: "fields",
             element: (
               <Suspense fallback={<PageLoader />}>
                 <FieldsListPage />
@@ -114,7 +224,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: 'fields/create',
+            path: "fields/create",
             element: (
               <Suspense fallback={<PageLoader />}>
                 <CreateFieldPage />
@@ -122,7 +232,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: 'fields/create-with-map',
+            path: "fields/create-with-map",
             element: (
               <Suspense fallback={<PageLoader />}>
                 <CreateFieldWithMapPage />
@@ -130,7 +240,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: 'fields/:fieldId',
+            path: "fields/:fieldId",
             element: (
               <Suspense fallback={<PageLoader />}>
                 <FieldDetailPage />
@@ -138,7 +248,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: 'weather',
+            path: "weather",
             element: (
               <Suspense fallback={<PageLoader />}>
                 <WeatherOverviewPage />
@@ -146,7 +256,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: 'news',
+            path: "news",
             element: (
               <Suspense fallback={<PageLoader />}>
                 <NewsListPage />
@@ -154,7 +264,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: 'news/:id',
+            path: "news/:id",
             element: (
               <Suspense fallback={<PageLoader />}>
                 <ArticleDetailPage />
@@ -162,7 +272,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: 'settings/notifications',
+            path: "settings/notifications",
             element: (
               <Suspense fallback={<PageLoader />}>
                 <NotificationSettingsPage />
@@ -179,7 +289,7 @@ export const router = createBrowserRouter([
         ),
         children: [
           {
-            path: 'fields/:fieldId/health',
+            path: "fields/:fieldId/health",
             element: (
               <Suspense fallback={<PageLoader />}>
                 <FieldHealthPage />
@@ -187,7 +297,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: 'fields/:fieldId/recommendations',
+            path: "fields/:fieldId/recommendations",
             element: (
               <Suspense fallback={<PageLoader />}>
                 <FieldRecommendationsPage />
@@ -195,7 +305,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: 'fields/:fieldId/weather',
+            path: "fields/:fieldId/weather",
             element: (
               <Suspense fallback={<PageLoader />}>
                 <FieldWeatherPage />
@@ -203,7 +313,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: 'fields/:fieldId/yield',
+            path: "fields/:fieldId/yield",
             element: (
               <Suspense fallback={<PageLoader />}>
                 <FieldYieldPage />
@@ -211,7 +321,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: 'fields/:fieldId/edit-boundary',
+            path: "fields/:fieldId/edit-boundary",
             element: (
               <Suspense fallback={<PageLoader />}>
                 <EditFieldBoundaryPage />
@@ -230,7 +340,7 @@ export const router = createBrowserRouter([
         ),
         children: [
           {
-            path: 'admin',
+            path: "admin",
             element: (
               <Suspense fallback={<PageLoader />}>
                 <AdminOverviewPage />
@@ -238,7 +348,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: 'admin/users',
+            path: "admin/users",
             element: (
               <Suspense fallback={<PageLoader />}>
                 <AdminUsersPage />
@@ -246,7 +356,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: 'admin/content',
+            path: "admin/content",
             element: (
               <Suspense fallback={<PageLoader />}>
                 <AdminContentPage />
@@ -254,7 +364,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: 'admin/system-health',
+            path: "admin/system-health",
             element: (
               <Suspense fallback={<PageLoader />}>
                 <AdminSystemHealthPage />
@@ -266,7 +376,7 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    path: '*',
+    path: "*",
     element: <Navigate to="/dashboard" replace />,
   },
 ]);

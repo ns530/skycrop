@@ -2,6 +2,5 @@
  * NotificationCenter exports
  */
 
-export { NotificationBell } from './NotificationBell';
-export { NotificationCenter } from './NotificationCenter';
-
+export { NotificationBell } from "./NotificationBell";
+export { NotificationCenter } from "./NotificationCenter";

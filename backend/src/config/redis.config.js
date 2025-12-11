@@ -2,11 +2,7 @@
 
 const { createClient } = require('redis');
 
-const {
-  REDIS_URL,
-  REDIS_ENABLED = 'true',
-  NODE_ENV = 'development',
-} = process.env;
+const { REDISURL, REDISENABLED = 'true', NODE_ENV = 'development' } = process.env;
 
 let client;
 let redisAvailable = false;
@@ -15,7 +11,7 @@ let redisAvailable = false;
  * Check if Redis should be enabled
  */
 function isRedisEnabled() {
-  return REDIS_ENABLED !== 'false' && REDIS_URL && REDIS_URL !== '';
+  return REDISENABLED !== 'false' && REDISURL && REDISURL !== '';
 }
 
 /**
@@ -27,16 +23,16 @@ function getRedisClient() {
   if (!isRedisEnabled()) {
     if (NODE_ENV !== 'test') {
       // eslint-disable-next-line no-console
-      console.log('Redis is disabled or REDIS_URL not set - running without cache');
+      console.log('Redis is disabled or REDISURL not set - running without cache');
     }
     return null;
   }
 
   if (!client) {
     client = createClient({
-      url: REDIS_URL,
+      url: REDISURL,
       socket: {
-        reconnectStrategy: (retries) => {
+        reconnectStrategy: retries => {
           // Stop trying after 5 attempts to avoid log spam
           if (retries > 5) {
             // eslint-disable-next-line no-console
@@ -51,7 +47,7 @@ function getRedisClient() {
       },
     });
 
-    client.on('error', (err) => {
+    client.on('error', err => {
       redisAvailable = false;
       // eslint-disable-next-line no-console
       console.error('Redis Client Error:', err.message);

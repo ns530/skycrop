@@ -1,5 +1,3 @@
-'use strict';
-
 const request = require('supertest');
 
 // Create mock instances that we can control
@@ -8,8 +6,8 @@ const mockRecommendationEngineService = {
 };
 
 const mockRecommendationRepository = {
-  findByFieldId: jest.fn(),
-  findByUserId: jest.fn(),
+  findByfield_id: jest.fn(),
+  findByuser_id: jest.fn(),
   findById: jest.fn(),
   updateStatus: jest.fn(),
   delete: jest.fn(),
@@ -22,18 +20,18 @@ const mockFieldModel = {
 
 // Mock auth middleware - must be before app import
 jest.mock('../../src/api/middleware/auth.middleware', () => ({
-  authMiddleware: (req, _res, next) => {
-    req.user = { userId: 'user-1' };
+  authMiddleware: (req, res, next) => {
+    req.user = { user_id: 'user-1' };
     next();
   },
-  requireRole: () => (_req, _res, next) => next(),
-  requireAnyRole: () => (_req, _res, next) => next(),
+  requireRole: () => (req, res, next) => next(),
+  requireAnyRole: () => (req, res, next) => next(),
 }));
 
 // Mock rate limiter
 jest.mock('../../src/api/middleware/rateLimit.middleware', () => ({
-  apiLimiter: (_req, _res, next) => next(),
-  authLimiter: (_req, _res, next) => next(),
+  apiLimiter: (req, res, next) => next(),
+  authLimiter: (req, res, next) => next(),
 }));
 
 // Mock the service and repository classes
@@ -63,34 +61,34 @@ jest.mock('../../src/repositories/field.repository', () => {
 const app = require('../../src/app');
 
 describe('Recommendation API Integration Tests', () => {
-  const mockUserId = 'user-1';
-  const mockOtherUserId = 'user-2';
-  const mockFieldId = 'test-field-1';
+  const mockuser_id = 'user-1';
+  const mockOtheruser_id = 'user-2';
+  const mockfield_id = 'test-field-1';
 
   beforeAll(() => {
     process.env.NODE_ENV = 'test';
-    process.env.JWT_SECRET = 'test-secret';
+    process.env.JWTSECRET = 'test-secret';
   });
 
   beforeEach(() => {
     jest.clearAllMocks();
 
     // Default field model mock
-    mockFieldModel.findByPk.mockImplementation(async (id) => {
-      if (id === mockFieldId) {
-        return { field_id: mockFieldId, user_id: mockUserId, name: 'Test Field' };
+    mockFieldModel.findByPk.mockImplementation(async id => {
+      if (id === mockfield_id) {
+        return { field_id: mockfield_id, user_id: mockuser_id, name: 'Test Field' };
       }
       if (id === 'other-user-field') {
-        return { field_id: 'other-user-field', user_id: mockOtherUserId, name: 'Other Field' };
+        return { field_id: 'other-user-field', user_id: mockOtheruser_id, name: 'Other Field' };
       }
       return null;
     });
   });
 
-  describe('POST /api/v1/fields/:fieldId/recommendations/generate', () => {
+  describe('POST /api/v1/fields/:field_id/recommendations/generate', () => {
     it('should generate recommendations successfully', async () => {
       mockRecommendationEngineService.generateRecommendations.mockResolvedValue({
-        fieldId: mockFieldId,
+        field_id: mockfield_id,
         fieldName: 'Test Field',
         generatedAt: new Date().toISOString(),
         healthSummary: {
@@ -116,12 +114,12 @@ describe('Recommendation API Integration Tests', () => {
       });
 
       const response = await request(app)
-        .post(`/api/v1/fields/${mockFieldId}/recommendations/generate`)
+        .post(`/api/v1/fields/${mockfield_id}/recommendations/generate`)
         .expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.data).toBeDefined();
-      expect(response.body.data.fieldId).toBe(mockFieldId);
+      expect(response.body.data.field_id).toBe(mockfield_id);
       expect(response.body.data.recommendations).toBeInstanceOf(Array);
     });
 
@@ -150,22 +148,22 @@ describe('Recommendation API Integration Tests', () => {
     });
   });
 
-  describe('GET /api/v1/fields/:fieldId/recommendations', () => {
+  describe('GET /api/v1/fields/:field_id/recommendations', () => {
     it('should retrieve field recommendations successfully', async () => {
-      mockRecommendationRepository.findByFieldId.mockResolvedValue([
+      mockRecommendationRepository.findByfield_id.mockResolvedValue([
         {
-          recommendation_id: 'rec-1',
-          field_id: mockFieldId,
-          user_id: mockUserId,
+          recommendationid: 'rec-1',
+          field_id: mockfield_id,
+          user_id: mockuser_id,
           type: 'fertilizer',
           priority: 'high',
-          urgency_score: 85,
+          urgencyscore: 85,
           title: 'Apply nitrogen fertilizer',
           description: 'NDVI is low and declining',
-          action_steps: JSON.stringify(['Purchase urea fertilizer']),
-          estimated_cost: 2500,
+          actionsteps: JSON.stringify(['Purchase urea fertilizer']),
+          estimatedcost: 2500,
           status: 'pending',
-          generated_at: new Date(),
+          generatedat: new Date(),
         },
       ]);
 
@@ -182,7 +180,7 @@ describe('Recommendation API Integration Tests', () => {
       });
 
       const response = await request(app)
-        .get(`/api/v1/fields/${mockFieldId}/recommendations`)
+        .get(`/api/v1/fields/${mockfield_id}/recommendations`)
         .expect(200);
 
       expect(response.body.success).toBe(true);
@@ -191,7 +189,7 @@ describe('Recommendation API Integration Tests', () => {
     });
 
     it('should filter recommendations by status', async () => {
-      mockRecommendationRepository.findByFieldId.mockResolvedValue([]);
+      mockRecommendationRepository.findByfield_id.mockResolvedValue([]);
       mockRecommendationRepository.getStatistics.mockResolvedValue({
         total: 0,
         pending: 0,
@@ -205,7 +203,7 @@ describe('Recommendation API Integration Tests', () => {
       });
 
       const response = await request(app)
-        .get(`/api/v1/fields/${mockFieldId}/recommendations?status=completed`)
+        .get(`/api/v1/fields/${mockfield_id}/recommendations?status=completed`)
         .expect(200);
 
       expect(response.body.success).toBe(true);
@@ -230,34 +228,34 @@ describe('Recommendation API Integration Tests', () => {
 
   describe('GET /api/v1/recommendations', () => {
     it('should retrieve all user recommendations successfully', async () => {
-      mockRecommendationRepository.findByUserId.mockResolvedValue([
+      mockRecommendationRepository.findByuser_id.mockResolvedValue([
         {
-          recommendation_id: 'rec-1',
-          field_id: mockFieldId,
-          user_id: mockUserId,
+          recommendationid: 'rec-1',
+          field_id: mockfield_id,
+          user_id: mockuser_id,
           type: 'irrigation',
           priority: 'critical',
-          urgency_score: 95,
+          urgencyscore: 95,
           title: 'Immediate irrigation required',
           description: 'NDWI is critically low',
-          action_steps: JSON.stringify(['Irrigate immediately']),
-          estimated_cost: 1500,
+          actionsteps: JSON.stringify(['Irrigate immediately']),
+          estimatedcost: 1500,
           status: 'pending',
-          generated_at: new Date(),
+          generatedat: new Date(),
         },
         {
-          recommendation_id: 'rec-2',
-          field_id: mockFieldId,
-          user_id: mockUserId,
+          recommendationid: 'rec-2',
+          field_id: mockfield_id,
+          user_id: mockuser_id,
           type: 'fertilizer',
           priority: 'high',
-          urgency_score: 85,
+          urgencyscore: 85,
           title: 'Apply nitrogen fertilizer',
           description: 'NDVI is low',
-          action_steps: JSON.stringify(['Purchase urea']),
-          estimated_cost: 2500,
+          actionsteps: JSON.stringify(['Purchase urea']),
+          estimatedcost: 2500,
           status: 'pending',
-          generated_at: new Date(),
+          generatedat: new Date(),
         },
       ]);
 
@@ -269,20 +267,20 @@ describe('Recommendation API Integration Tests', () => {
     });
 
     it('should filter user recommendations by priority', async () => {
-      mockRecommendationRepository.findByUserId.mockResolvedValue([
+      mockRecommendationRepository.findByuser_id.mockResolvedValue([
         {
-          recommendation_id: 'rec-1',
-          field_id: mockFieldId,
-          user_id: mockUserId,
+          recommendationid: 'rec-1',
+          field_id: mockfield_id,
+          user_id: mockuser_id,
           type: 'irrigation',
           priority: 'critical',
-          urgency_score: 95,
+          urgencyscore: 95,
           title: 'Immediate irrigation required',
           description: 'NDWI is critically low',
-          action_steps: JSON.stringify(['Irrigate immediately']),
-          estimated_cost: 1500,
+          actionsteps: JSON.stringify(['Irrigate immediately']),
+          estimatedcost: 1500,
           status: 'pending',
-          generated_at: new Date(),
+          generatedat: new Date(),
         },
       ]);
 
@@ -295,27 +293,25 @@ describe('Recommendation API Integration Tests', () => {
     });
 
     it('should return only valid recommendations when validOnly=true', async () => {
-      mockRecommendationRepository.findByUserId.mockResolvedValue([
+      mockRecommendationRepository.findByuser_id.mockResolvedValue([
         {
-          recommendation_id: 'rec-1',
-          field_id: mockFieldId,
-          user_id: mockUserId,
+          recommendationid: 'rec-1',
+          field_id: mockfield_id,
+          user_id: mockuser_id,
           type: 'irrigation',
           priority: 'critical',
-          urgency_score: 95,
+          urgencyscore: 95,
           title: 'Immediate irrigation required',
           description: 'NDWI is critically low',
-          action_steps: JSON.stringify(['Irrigate immediately']),
-          estimated_cost: 1500,
+          actionsteps: JSON.stringify(['Irrigate immediately']),
+          estimatedcost: 1500,
           status: 'pending',
-          valid_until: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-          generated_at: new Date(),
+          validuntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          generatedat: new Date(),
         },
       ]);
 
-      const response = await request(app)
-        .get('/api/v1/recommendations?validOnly=true')
-        .expect(200);
+      const response = await request(app).get('/api/v1/recommendations?validOnly=true').expect(200);
 
       expect(response.body.success).toBe(true);
     });
@@ -324,34 +320,34 @@ describe('Recommendation API Integration Tests', () => {
   describe('PATCH /api/v1/recommendations/:recommendationId/status', () => {
     it('should update recommendation status successfully', async () => {
       mockRecommendationRepository.findById.mockResolvedValue({
-        recommendation_id: 'rec-1',
-        user_id: mockUserId,
+        recommendationid: 'rec-1',
+        user_id: mockuser_id,
         status: 'pending',
       });
 
       mockRecommendationRepository.updateStatus.mockResolvedValue({
-        recommendation_id: 'rec-1',
-        field_id: mockFieldId,
-        user_id: mockUserId,
+        recommendationid: 'rec-1',
+        field_id: mockfield_id,
+        user_id: mockuser_id,
         type: 'fertilizer',
         priority: 'high',
-        urgency_score: 85,
+        urgencyscore: 85,
         title: 'Apply nitrogen fertilizer',
         description: 'NDVI is low',
-        action_steps: JSON.stringify(['Purchase urea']),
-        estimated_cost: 2500,
-        status: 'in_progress',
-        actioned_at: new Date(),
-        generated_at: new Date(),
+        actionsteps: JSON.stringify(['Purchase urea']),
+        estimatedcost: 2500,
+        status: 'inprogress',
+        actionedat: new Date(),
+        generatedat: new Date(),
       });
 
       const response = await request(app)
         .patch('/api/v1/recommendations/rec-1/status')
-        .send({ status: 'in_progress', notes: 'Started fertilizer application' })
+        .send({ status: 'inprogress', notes: 'Started fertilizer application' })
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data.status).toBe('in_progress');
+      expect(response.body.data.status).toBe('inprogress');
     });
 
     it('should return 400 for missing status', async () => {
@@ -365,13 +361,13 @@ describe('Recommendation API Integration Tests', () => {
 
     it('should return 400 for invalid status', async () => {
       mockRecommendationRepository.findById.mockResolvedValue({
-        recommendation_id: 'rec-1',
-        user_id: mockUserId,
+        recommendationid: 'rec-1',
+        user_id: mockuser_id,
       });
 
       const response = await request(app)
         .patch('/api/v1/recommendations/rec-1/status')
-        .send({ status: 'invalid_status' })
+        .send({ status: 'invalidstatus' })
         .expect(400);
 
       expect(response.body.success).toBe(false);
@@ -390,8 +386,8 @@ describe('Recommendation API Integration Tests', () => {
 
     it('should return 403 for unauthorized recommendation access', async () => {
       mockRecommendationRepository.findById.mockResolvedValue({
-        recommendation_id: 'rec-1',
-        user_id: mockOtherUserId,
+        recommendationid: 'rec-1',
+        user_id: mockOtheruser_id,
       });
 
       const response = await request(app)
@@ -406,15 +402,13 @@ describe('Recommendation API Integration Tests', () => {
   describe('DELETE /api/v1/recommendations/:recommendationId', () => {
     it('should delete recommendation successfully', async () => {
       mockRecommendationRepository.findById.mockResolvedValue({
-        recommendation_id: 'rec-1',
-        user_id: mockUserId,
+        recommendationid: 'rec-1',
+        user_id: mockuser_id,
       });
 
       mockRecommendationRepository.delete.mockResolvedValue(true);
 
-      const response = await request(app)
-        .delete('/api/v1/recommendations/rec-1')
-        .expect(200);
+      const response = await request(app).delete('/api/v1/recommendations/rec-1').expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.message).toContain('deleted successfully');
@@ -432,13 +426,11 @@ describe('Recommendation API Integration Tests', () => {
 
     it('should return 403 for unauthorized recommendation access', async () => {
       mockRecommendationRepository.findById.mockResolvedValue({
-        recommendation_id: 'rec-1',
-        user_id: mockOtherUserId,
+        recommendationid: 'rec-1',
+        user_id: mockOtheruser_id,
       });
 
-      const response = await request(app)
-        .delete('/api/v1/recommendations/rec-1')
-        .expect(403);
+      const response = await request(app).delete('/api/v1/recommendations/rec-1').expect(403);
 
       expect(response.body.success).toBe(false);
     });

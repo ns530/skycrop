@@ -2,10 +2,10 @@
  * Hook for managing map center and user location
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
-import type { MapCenter } from '../types/map.types';
-import { SRI_LANKA_CENTER } from '../utils/tileProviders';
+import type { MapCenter } from "../types/map.types";
+import { SRI_LANKA_CENTER } from "../utils/tileProviders";
 
 interface UseMapCenterReturn {
   center: MapCenter;
@@ -30,7 +30,7 @@ export const useMapCenter = (): UseMapCenterReturn => {
    */
   const getUserLocation = () => {
     if (!navigator.geolocation) {
-      setError('Geolocation is not supported by your browser');
+      setError("Geolocation is not supported by your browser");
       return;
     }
 
@@ -46,31 +46,32 @@ export const useMapCenter = (): UseMapCenterReturn => {
         setLoading(false);
       },
       (err) => {
-        let errorMessage = 'Unable to retrieve your location';
-        
+        let errorMessage = "Unable to retrieve your location";
+
         switch (err.code) {
           case err.PERMISSION_DENIED:
-            errorMessage = 'Location permission denied. Please enable location access.';
+            errorMessage =
+              "Location permission denied. Please enable location access.";
             break;
           case err.POSITION_UNAVAILABLE:
-            errorMessage = 'Location information unavailable.';
+            errorMessage = "Location information unavailable.";
             break;
           case err.TIMEOUT:
-            errorMessage = 'Location request timed out.';
+            errorMessage = "Location request timed out.";
             break;
         }
-        
+
         setError(errorMessage);
         setLoading(false);
-        
+
         // Keep default center on error
-        console.warn('Geolocation error:', errorMessage);
+        console.warn("Geolocation error:", errorMessage);
       },
       {
         enableHighAccuracy: true,
         timeout: 10000,
         maximumAge: 0,
-      }
+      },
     );
   };
 
@@ -82,4 +83,3 @@ export const useMapCenter = (): UseMapCenterReturn => {
     error,
   };
 };
-

@@ -9,11 +9,8 @@ const { ValidationError } = require('../../errors/custom-errors');
  * @param {'body'|'query'|'params'} source - Where to read data from
  */
 function validateRequest(schema, source = 'body') {
-  return (req, _res, next) => {
-    const input =
-      source === 'query' ? req.query :
-      source === 'params' ? req.params :
-      req.body;
+  return (req, res, next) => {
+    const input = source === 'query' ? req.query : source === 'params' ? req.params : req.body;
 
     console.log('validateRequest source:', source, 'input type:', typeof input, 'input:', input);
 
@@ -24,7 +21,7 @@ function validateRequest(schema, source = 'body') {
 
     if (error) {
       console.log('Validation error:', error);
-      const details = error.details.map((d) => ({
+      const details = error.details.map(d => ({
         field: d.path.join('.'),
         message: d.message,
       }));
@@ -89,17 +86,23 @@ const satelliteTileQuery = Joi.object({
     .messages({ 'string.pattern.base': 'date must be YYYY-MM-DD' }),
   bands: Joi.string()
     .custom((value, helpers) => {
-      const parts = String(value || 'RGB').toUpperCase().split(',').map((s) => s.trim()).filter(Boolean);
+      const parts = String(value || 'RGB')
+        .toUpperCase()
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
       if (!parts.length) return helpers.error('any.invalid', { message: 'bands cannot be empty' });
       for (const p of parts) {
         if (!allowedBands.includes(p)) {
-          return helpers.error('any.invalid', { message: `Invalid band '${p}'. Allowed: ${allowedBands.join(', ')}` });
+          return helpers.error('any.invalid', {
+            message: `Invalid band '${p}'. Allowed: ${allowedBands.join(', ')}`,
+          });
         }
       }
       return parts.join(',');
     })
     .default('RGB'),
-  cloud_lt: Joi.number().integer().min(0).max(100).default(20),
+  cloudlt: Joi.number().integer().min(0).max(100).default(20),
 });
 
 // Satellite preprocess POST validation
@@ -111,7 +114,9 @@ const satellitePreprocess = Joi.object({
     .custom((arr, helpers) => {
       const [minLon, minLat, maxLon, maxLat] = arr;
       if (minLon >= maxLon || minLat >= maxLat) {
-        return helpers.error('any.invalid', { message: 'bbox extents invalid; min must be less than max' });
+        return helpers.error('any.invalid', {
+          message: 'bbox extents invalid; min must be less than max',
+        });
       }
       if (minLon < -180 || maxLon > 180 || minLat < -90 || maxLat > 90) {
         return helpers.error('any.invalid', { message: 'bbox coordinates out of SRID 4326 range' });
@@ -125,25 +130,27 @@ const satellitePreprocess = Joi.object({
   bands: Joi.array()
     .items(Joi.string().valid(...allowedBands))
     .default(['RGB']),
-  cloud_mask: Joi.boolean().optional(),
+  cloudmask: Joi.boolean().optional(),
   idempotencyKey: Joi.string().max(200).optional(),
 });
 
 /**
  * ML Segmentation Predict POST validation
- * One of: bbox OR field_id; date required; optional model_version (semver)
- * tiling defaults: { size:512, overlap:64 }, return: "mask_url" | "inline"
+ * One of: bbox OR field_id; date required; optional modelversion (semver)
+ * tiling defaults: { size:512, overlap:64 }, return: "maskurl" | "inline"
  */
 const mlBBox = Joi.array()
   .items(Joi.number().required())
   .length(4)
   .custom((arr, helpers) => {
     const [minLon, minLat, maxLon, maxLat] = arr.map(Number);
-    if (!arr.every((v) => Number.isFinite(v))) {
+    if (!arr.every(v => Number.isFinite(v))) {
       return helpers.error('any.invalid', { message: 'bbox values must be numeric' });
     }
     if (minLon >= maxLon || minLat >= maxLat) {
-      return helpers.error('any.invalid', { message: 'bbox extents invalid; min must be less than max' });
+      return helpers.error('any.invalid', {
+        message: 'bbox extents invalid; min must be less than max',
+      });
     }
     if (minLon < -180 || maxLon > 180 || minLat < -90 || maxLat > 90) {
       return helpers.error('any.invalid', { message: 'bbox coordinates out of SRID 4326 range' });
@@ -160,14 +167,14 @@ const mlPredict = Joi.object({
     .pattern(/^\d{4}-\d{2}-\d{2}$/)
     .required()
     .messages({ 'string.pattern.base': 'date must be YYYY-MM-DD' }),
-  model_version: Joi.string()
+  modelversion: Joi.string()
     .pattern(/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/)
     .optional(),
   tiling: Joi.object({
     size: Joi.number().integer().min(1).max(4096).default(512),
     overlap: Joi.number().integer().min(0).max(1024).default(64),
   }).default({ size: 512, overlap: 64 }),
-  return: Joi.string().valid('mask_url', 'inline').default('mask_url'),
+  return: Joi.string().valid('maskurl', 'inline').default('maskurl'),
 })
   .custom((val, helpers) => {
     const hasBBox = Array.isArray(val.bbox);
@@ -178,7 +185,7 @@ const mlPredict = Joi.object({
     return val;
   })
   .prefs({ abortEarly: false, stripUnknown: true });
- 
+
 // ---------------- Health indices (Sprint 3) ----------------
 const healthCompute = Joi.object({
   date: Joi.string()
@@ -241,58 +248,69 @@ const recommendationList = Joi.object({
 // Yield prediction validation
 const yieldPredict = Joi.object({
   features: Joi.array()
-    .items(Joi.object({
-      field_id: Joi.string()
-        .guid({ version: ['uuidv4', 'uuidv5', 'uuidv1'] })
-        .required(),
-    }).pattern(/^[a-zA-Z_][a-zA-Z0-9_]*$/, Joi.number().required()))
+    .items(
+      Joi.object({
+        field_id: Joi.string()
+          .guid({ version: ['uuidv4', 'uuidv5', 'uuidv1'] })
+          .required(),
+      }).pattern(/^[a-zA-Z_][a-zA-Z0-9_]*$/, Joi.number().required())
+    )
     .optional(),
-  rows: Joi.array()
-    .items(Joi.array().items(Joi.number().required()))
-    .optional(),
-  feature_names: Joi.array()
+  rows: Joi.array().items(Joi.array().items(Joi.number().required())).optional(),
+  featurenames: Joi.array()
     .items(Joi.string().pattern(/^[a-zA-Z_][a-zA-Z0-9_]*$/))
     .optional(),
-  model_version: Joi.string()
+  modelversion: Joi.string()
     .pattern(/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/)
     .optional(),
 })
   .custom((val, helpers) => {
     const hasFeatures = Array.isArray(val.features);
     const hasRows = Array.isArray(val.rows);
-    const hasFeatureNames = Array.isArray(val.feature_names);
+    const hasFeatureNames = Array.isArray(val.featurenames);
 
     if (hasFeatures && (hasRows || hasFeatureNames)) {
-      return helpers.error('any.invalid', { message: 'Provide either features OR rows with feature_names, not both' });
+      return helpers.error('any.invalid', {
+        message: 'Provide either features OR rows with featurenames, not both',
+      });
     }
     if (!hasFeatures && hasRows && !hasFeatureNames) {
-      return helpers.error('any.invalid', { message: 'rows requires feature_names' });
+      return helpers.error('any.invalid', { message: 'rows requires featurenames' });
     }
     if (!hasFeatures && !hasRows) {
-      return helpers.error('any.invalid', { message: 'Provide either features or rows with feature_names' });
+      return helpers.error('any.invalid', {
+        message: 'Provide either features or rows with featurenames',
+      });
     }
-    if (hasRows && hasFeatureNames && val.rows.length > 0 && val.feature_names.length !== val.rows[0].length) {
-      return helpers.error('any.invalid', { message: 'feature_names length must match rows[0] length' });
+    if (
+      hasRows &&
+      hasFeatureNames &&
+      val.rows.length > 0 &&
+      val.featurenames.length !== val.rows[0].length
+    ) {
+      return helpers.error('any.invalid', {
+        message: 'featurenames length must match rows[0] length',
+      });
     }
     return val;
   })
   .prefs({ abortEarly: false, stripUnknown: true });
 
- module.exports = {
- validateRequest,
- schemas: {
-   signup,
-   login,
-   requestPasswordReset,
-   resetPassword,
-   satelliteTileParams,
-   satelliteTileQuery,
-   satellitePreprocess,
-   mlPredict,
-   yieldPredict,
-   healthCompute,
-   healthList,
-   recommendationCompute,
-   recommendationList,
- },
+module.exports = {
+  validateRequest,
+  schemas: {
+    signup,
+    login,
+    requestPasswordReset,
+    resetPassword,
+    satelliteTileParams,
+    satelliteTileQuery,
+    satellitePreprocess,
+    mlPredict,
+    yieldPredict,
+    healthCompute,
+    healthList,
+    recommendationCompute,
+    recommendationList,
+  },
 };

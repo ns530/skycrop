@@ -1,6 +1,6 @@
 /**
  * Jobs Routes - Admin API for Scheduled Jobs Management
- * 
+ *
  * @route /api/v1/admin/jobs
  */
 
@@ -35,4 +35,3 @@ router.post('/:jobName/enable', jobsController.enableJob);
 router.post('/:jobName/disable', jobsController.disableJob);
 
 module.exports = router;
-

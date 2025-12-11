@@ -1,9 +1,9 @@
-import { useMutation } from '@tanstack/react-query';
-import { X, Mail, Send } from 'lucide-react';
-import React, { useState } from 'react';
+import { useMutation } from "@tanstack/react-query";
+import { X, Mail, Send } from "lucide-react";
+import React, { useState } from "react";
 
-import { httpClient } from '../../../shared/api/httpClient';
-import { useToast } from '../../../shared/hooks/useToast';
+import { httpClient } from "../../../shared/api/httpClient";
+import { useToast } from "../../../shared/hooks/useToast";
 
 interface InviteUserModalProps {
   isOpen: boolean;
@@ -20,15 +20,19 @@ export const InviteUserModal: React.FC<InviteUserModalProps> = ({
   onClose,
   onSuccess,
 }) => {
-  const [email, setEmail] = useState('');
-  const [role, setRole] = useState<string>('farmer');
-  const [message, setMessage] = useState('');
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<string>("farmer");
+  const [message, setMessage] = useState("");
 
   const { showToast } = useToast();
 
   // Send invitation mutation
   const inviteMutation = useMutation({
-    mutationFn: async (data: { email: string; role: string; message?: string }) => {
+    mutationFn: async (data: {
+      email: string;
+      role: string;
+      message?: string;
+    }) => {
       // TODO: Implement invitation API endpoint
       // For now, simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -36,8 +40,8 @@ export const InviteUserModal: React.FC<InviteUserModalProps> = ({
     },
     onSuccess: () => {
       showToast({
-        variant: 'success',
-        title: 'Invitation Sent',
+        variant: "success",
+        title: "Invitation Sent",
         description: `Invitation email sent to ${email}`,
       });
       onSuccess();
@@ -45,9 +49,10 @@ export const InviteUserModal: React.FC<InviteUserModalProps> = ({
     },
     onError: (error: any) => {
       showToast({
-        variant: 'error',
-        title: 'Invitation Failed',
-        description: error.response?.data?.error?.message || 'Failed to send invitation',
+        variant: "error",
+        title: "Invitation Failed",
+        description:
+          error.response?.data?.error?.message || "Failed to send invitation",
       });
     },
   });
@@ -57,9 +62,9 @@ export const InviteUserModal: React.FC<InviteUserModalProps> = ({
 
     if (!email) {
       showToast({
-        variant: 'error',
-        title: 'Validation Error',
-        description: 'Email is required',
+        variant: "error",
+        title: "Validation Error",
+        description: "Email is required",
       });
       return;
     }
@@ -68,9 +73,9 @@ export const InviteUserModal: React.FC<InviteUserModalProps> = ({
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       showToast({
-        variant: 'error',
-        title: 'Validation Error',
-        description: 'Please enter a valid email address',
+        variant: "error",
+        title: "Validation Error",
+        description: "Please enter a valid email address",
       });
       return;
     }
@@ -79,9 +84,9 @@ export const InviteUserModal: React.FC<InviteUserModalProps> = ({
   };
 
   const handleClose = () => {
-    setEmail('');
-    setRole('farmer');
-    setMessage('');
+    setEmail("");
+    setRole("farmer");
+    setMessage("");
     onClose();
   };
 
@@ -109,7 +114,10 @@ export const InviteUserModal: React.FC<InviteUserModalProps> = ({
           <div className="space-y-4">
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Email Address *
               </label>
               <input
@@ -125,7 +133,10 @@ export const InviteUserModal: React.FC<InviteUserModalProps> = ({
 
             {/* Role */}
             <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="role"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Role *
               </label>
               <select
@@ -141,13 +152,17 @@ export const InviteUserModal: React.FC<InviteUserModalProps> = ({
                 <option value="viewer">Viewer - Read-only access</option>
               </select>
               <p className="mt-1 text-xs text-gray-500">
-                The user will be assigned this role when they accept the invitation
+                The user will be assigned this role when they accept the
+                invitation
               </p>
             </div>
 
             {/* Message (Optional) */}
             <div>
-              <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="message"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Personal Message (Optional)
               </label>
               <textarea
@@ -195,4 +210,3 @@ export const InviteUserModal: React.FC<InviteUserModalProps> = ({
 };
 
 export default InviteUserModal;
-

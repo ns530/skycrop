@@ -1,20 +1,23 @@
 /**
  * NotificationBell Component
- * 
+ *
  * Bell icon with unread count badge
  * Toggles notification center dropdown
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
-import { notificationService } from '../../services/notificationService';
+import { notificationService } from "../../services/notificationService";
 
 interface NotificationBellProps {
   onClick: () => void;
   isOpen: boolean;
 }
 
-export const NotificationBell: React.FC<NotificationBellProps> = ({ onClick, isOpen }) => {
+export const NotificationBell: React.FC<NotificationBellProps> = ({
+  onClick,
+  isOpen,
+}) => {
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -26,10 +29,13 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ onClick, isO
       setUnreadCount(notificationService.getUnreadCount());
     };
 
-    window.addEventListener('skycrop:notification', handleNotificationUpdate);
+    window.addEventListener("skycrop:notification", handleNotificationUpdate);
 
     return () => {
-      window.removeEventListener('skycrop:notification', handleNotificationUpdate);
+      window.removeEventListener(
+        "skycrop:notification",
+        handleNotificationUpdate,
+      );
     };
   }, []);
 
@@ -42,9 +48,9 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ onClick, isO
         h-9 w-9 rounded-md
         transition-colors
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
-        ${isOpen ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}
+        ${isOpen ? "bg-gray-100 text-gray-900" : "text-gray-700 hover:bg-gray-50"}
       `}
-      aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
+      aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
     >
       {/* Bell Icon */}
       <svg
@@ -65,10 +71,9 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ onClick, isO
       {/* Unread Badge */}
       {unreadCount > 0 && (
         <span className="absolute top-0 right-0 inline-flex items-center justify-center h-5 w-5 text-xs font-bold text-white bg-red-500 rounded-full">
-          {unreadCount > 9 ? '9+' : unreadCount}
+          {unreadCount > 9 ? "9+" : unreadCount}
         </span>
       )}
     </button>
   );
 };
-

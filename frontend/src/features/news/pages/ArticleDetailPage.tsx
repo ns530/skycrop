@@ -3,29 +3,52 @@
  * Full article view with rich content
  */
 
-import React, { useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
-import { Button } from '../../../shared/ui/Button';
-import { Card } from '../../../shared/ui/Card';
-import { ErrorState } from '../../../shared/ui/ErrorState';
-import { LoadingState } from '../../../shared/ui/LoadingState';
-import type { NewsCategory } from '../api/newsApi';
-import { useNewsArticle } from '../hooks/useNews';
+import { Button } from "../../../shared/ui/Button";
+import { Card } from "../../../shared/ui/Card";
+import { ErrorState } from "../../../shared/ui/ErrorState";
+import { LoadingState } from "../../../shared/ui/LoadingState";
+import type { NewsCategory } from "../api/newsApi";
+import { useNewsArticle } from "../hooks/useNews";
 
 /**
  * Get category display info
  */
 const getCategoryInfo = (category?: string) => {
-  const categoryMap: Record<string, { label: string; color: string; icon: string }> = {
-    'farming-tips': { label: 'Farming Tips', color: 'bg-green-100 text-green-800', icon: '🌾' },
-    'weather': { label: 'Weather', color: 'bg-blue-100 text-blue-800', icon: '🌤️' },
-    'market-prices': { label: 'Market Prices', color: 'bg-yellow-100 text-yellow-800', icon: '💰' },
-    'government-schemes': { label: 'Gov Schemes', color: 'bg-purple-100 text-purple-800', icon: '🏛️' },
-    'general': { label: 'General', color: 'bg-gray-100 text-gray-800', icon: '📰' },
+  const categoryMap: Record<
+    string,
+    { label: string; color: string; icon: string }
+  > = {
+    "farming-tips": {
+      label: "Farming Tips",
+      color: "bg-green-100 text-green-800",
+      icon: "🌾",
+    },
+    weather: {
+      label: "Weather",
+      color: "bg-blue-100 text-blue-800",
+      icon: "🌤️",
+    },
+    "market-prices": {
+      label: "Market Prices",
+      color: "bg-yellow-100 text-yellow-800",
+      icon: "💰",
+    },
+    "government-schemes": {
+      label: "Gov Schemes",
+      color: "bg-purple-100 text-purple-800",
+      icon: "🏛️",
+    },
+    general: {
+      label: "General",
+      color: "bg-gray-100 text-gray-800",
+      icon: "📰",
+    },
   };
 
-  return categoryMap[category || 'general'] || categoryMap.general;
+  return categoryMap[category || "general"] || categoryMap.general;
 };
 
 /**
@@ -33,16 +56,16 @@ const getCategoryInfo = (category?: string) => {
  */
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 };
 
 /**
  * ArticleDetailPage
- * 
+ *
  * Full article view with:
  * - Hero image
  * - Rich text content
@@ -50,7 +73,7 @@ const formatDate = (dateString: string): string => {
  * - Author and date
  * - Back navigation
  * - Share options (future)
- * 
+ *
  * @example
  * Route: /news/:id
  */
@@ -64,7 +87,7 @@ export const ArticleDetailPage: React.FC = () => {
     isError,
     error,
     refetch,
-  } = useNewsArticle(id || '');
+  } = useNewsArticle(id || "");
 
   // Scroll to top on mount
   useEffect(() => {
@@ -76,7 +99,7 @@ export const ArticleDetailPage: React.FC = () => {
       <ErrorState
         title="Article not found"
         message="No article ID provided."
-        onRetry={() => navigate('/news')}
+        onRetry={() => navigate("/news")}
       />
     );
   }
@@ -89,7 +112,9 @@ export const ArticleDetailPage: React.FC = () => {
     return (
       <ErrorState
         title="Unable to load article"
-        message={error?.message ?? 'Something went wrong while loading this article.'}
+        message={
+          error?.message ?? "Something went wrong while loading this article."
+        }
         onRetry={refetch}
       />
     );
@@ -101,11 +126,7 @@ export const ArticleDetailPage: React.FC = () => {
     <article className="space-y-6 max-w-4xl mx-auto">
       {/* Back Button */}
       <div>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => navigate('/news')}
-        >
+        <Button variant="secondary" size="sm" onClick={() => navigate("/news")}>
           ← Back to Articles
         </Button>
       </div>
@@ -135,7 +156,7 @@ export const ArticleDetailPage: React.FC = () => {
                 <span className="font-medium">By {article.author}</span>
               </div>
             )}
-            
+
             <div className="flex items-center gap-2">
               <span>📅</span>
               <span>{formatDate(article.publishedAt)}</span>
@@ -206,18 +227,12 @@ export const ArticleDetailPage: React.FC = () => {
 
       {/* Related Articles (Future Enhancement) */}
       <Card title="Related Articles">
-        <p className="text-sm text-gray-600">
-          More articles coming soon...
-        </p>
+        <p className="text-sm text-gray-600">More articles coming soon...</p>
       </Card>
 
       {/* Back Button (Bottom) */}
       <div className="flex justify-center">
-        <Button
-          variant="secondary"
-          size="md"
-          onClick={() => navigate('/news')}
-        >
+        <Button variant="secondary" size="md" onClick={() => navigate("/news")}>
           ← Back to All Articles
         </Button>
       </div>
@@ -237,37 +252,39 @@ const formatArticleBody = (body: string): string => {
 
   // Otherwise, convert plain text to formatted HTML
   return body
-    .split('\n\n') // Split into paragraphs
+    .split("\n\n") // Split into paragraphs
     .map((paragraph) => {
       const trimmed = paragraph.trim();
-      if (!trimmed) return '';
+      if (!trimmed) return "";
 
       // Check if it's a heading (starts with #)
-      if (trimmed.startsWith('# ')) {
+      if (trimmed.startsWith("# ")) {
         return `<h2 class="text-2xl font-bold mt-6 mb-3">${trimmed.substring(2)}</h2>`;
       }
-      if (trimmed.startsWith('## ')) {
+      if (trimmed.startsWith("## ")) {
         return `<h3 class="text-xl font-semibold mt-4 mb-2">${trimmed.substring(3)}</h3>`;
       }
 
       // Check if it's a list item
-      if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+      if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
         const items = paragraph
-          .split('\n')
-          .filter((line) => line.trim().startsWith('-') || line.trim().startsWith('*'))
+          .split("\n")
+          .filter(
+            (line) =>
+              line.trim().startsWith("-") || line.trim().startsWith("*"),
+          )
           .map((line) => {
             const text = line.trim().substring(2);
             return `<li class="ml-4">${text}</li>`;
           })
-          .join('\n');
+          .join("\n");
         return `<ul class="list-disc my-3">${items}</ul>`;
       }
 
       // Regular paragraph
       return `<p class="mb-4 leading-relaxed">${trimmed}</p>`;
     })
-    .join('\n');
+    .join("\n");
 };
 
 export default ArticleDetailPage;
-

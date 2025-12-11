@@ -1,24 +1,24 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, fireEvent } from '@testing-library/react';
-import React from 'react';
-import { MemoryRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, screen, fireEvent } from "@testing-library/react";
+import React from "react";
+import { MemoryRouter } from "react-router-dom";
 
 import type {
   FieldHealthResponse,
   FieldHealthTimeSeries,
   HealthIndexType,
-} from '../api/healthApi';
+} from "../api/healthApi";
 
-import { FieldHealthPage } from './FieldHealthPage';
+import { FieldHealthPage } from "./FieldHealthPage";
 
 // ---- Mocks ----
 
 // Mock useParams to provide a stable fieldId from the route
-jest.mock('react-router-dom', () => {
-  const actual = jest.requireActual('react-router-dom');
+jest.mock("react-router-dom", () => {
+  const actual = jest.requireActual("react-router-dom");
   return {
     ...actual,
-    useParams: () => ({ fieldId: 'field-1' }),
+    useParams: () => ({ fieldId: "field-1" }),
   };
 });
 
@@ -27,13 +27,13 @@ const setHealthIndexMock = jest.fn();
 const setHealthRangeMock = jest.fn();
 
 // Mock UiContext to control default index/range and observe updates
-jest.mock('../../../shared/context/UiContext', () => {
+jest.mock("../../../shared/context/UiContext", () => {
   return {
     useUiState: () => ({
       state: {
-        currentFieldId: 'field-1',
-        defaultHealthIndex: 'NDVI' as const,
-        defaultHealthRange: '30d' as const,
+        currentFieldId: "field-1",
+        defaultHealthIndex: "NDVI" as const,
+        defaultHealthRange: "30d" as const,
       },
       setCurrentField: jest.fn(),
       setHealthIndex: setHealthIndexMock,
@@ -43,8 +43,8 @@ jest.mock('../../../shared/context/UiContext', () => {
 });
 
 // Mock hooks from health feature to avoid real HTTP / React Query behavior
-jest.mock('../hooks', () => {
-  const actual = jest.requireActual('../hooks');
+jest.mock("../hooks", () => {
+  const actual = jest.requireActual("../hooks");
   return {
     ...actual,
     useFieldHealth: jest.fn(),
@@ -60,7 +60,7 @@ jest.mock('../hooks', () => {
 });
 
 // Pull typed mock references after jest.mock
-const { useFieldHealth } = jest.requireMock('../hooks') as {
+const { useFieldHealth } = jest.requireMock("../hooks") as {
   useFieldHealth: jest.Mock;
 };
 
@@ -74,7 +74,9 @@ const createTestQueryClient = () =>
   });
 
 const createWrapper =
-  (initialEntries: string[] = ['/fields/field-1/health']): React.FC<{ children: React.ReactNode }> =>
+  (
+    initialEntries: string[] = ["/fields/field-1/health"],
+  ): React.FC<{ children: React.ReactNode }> =>
   ({ children }) => {
     const queryClient = createTestQueryClient();
 
@@ -85,27 +87,27 @@ const createWrapper =
     );
   };
 
-createWrapper.displayName = 'TestHealthWrapper';
+createWrapper.displayName = "TestHealthWrapper";
 
-describe('FieldHealthPage', () => {
+describe("FieldHealthPage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('renders health status from summary buckets and latest index', () => {
+  it("renders health status from summary buckets and latest index", () => {
     const series: FieldHealthTimeSeries = {
-      fieldId: 'field-1',
-      indexType: 'NDVI',
+      fieldId: "field-1",
+      indexType: "NDVI",
       points: [
-        { date: '2025-01-01', value: 0.7 },
-        { date: '2025-01-02', value: 0.8 },
+        { date: "2025-01-01", value: 0.7 },
+        { date: "2025-01-02", value: 0.8 },
       ],
     };
 
     const response: FieldHealthResponse = {
       summary: [
-        { label: 'Excellent', percentageArea: 60 },
-        { label: 'Fair', percentageArea: 40 },
+        { label: "Excellent", percentageArea: 60 },
+        { label: "Fair", percentageArea: 40 },
       ],
       timeSeries: [series],
       latestIndex: 0.8,
@@ -126,29 +128,29 @@ describe('FieldHealthPage', () => {
 
     // Status card shows "Excellent" based on dominant summary bucket
     expect(
-      screen.getByRole('heading', { name: /field health/i }),
+      screen.getByRole("heading", { name: /field health/i }),
     ).toBeInTheDocument();
-    expect(screen.getByText('Excellent')).toBeInTheDocument();
+    expect(screen.getByText("Excellent")).toBeInTheDocument();
 
     // Latest NDVI value is rendered with two decimals
-    expect(screen.getByText('0.80')).toBeInTheDocument();
+    expect(screen.getByText("0.80")).toBeInTheDocument();
 
     // Summary buckets render expected labels and percentages
-    expect(screen.getByText('Excellent')).toBeInTheDocument();
-    expect(screen.getByText('Fair')).toBeInTheDocument();
-    expect(screen.getByText('60%')).toBeInTheDocument();
-    expect(screen.getByText('40%')).toBeInTheDocument();
+    expect(screen.getByText("Excellent")).toBeInTheDocument();
+    expect(screen.getByText("Fair")).toBeInTheDocument();
+    expect(screen.getByText("60%")).toBeInTheDocument();
+    expect(screen.getByText("40%")).toBeInTheDocument();
   });
 
-  it('calls UiContext setters when range or index controls are changed', () => {
+  it("calls UiContext setters when range or index controls are changed", () => {
     const series: FieldHealthTimeSeries = {
-      fieldId: 'field-1',
-      indexType: 'NDVI',
-      points: [{ date: '2025-01-01', value: 0.7 }],
+      fieldId: "field-1",
+      indexType: "NDVI",
+      points: [{ date: "2025-01-01", value: 0.7 }],
     };
 
     const response: FieldHealthResponse = {
-      summary: [{ label: 'Excellent', percentageArea: 100 }],
+      summary: [{ label: "Excellent", percentageArea: 100 }],
       timeSeries: [series],
       latestIndex: 0.7,
     };
@@ -167,13 +169,13 @@ describe('FieldHealthPage', () => {
     render(<FieldHealthPage />, { wrapper });
 
     // Change date range to 14 days
-    const rangeButton = screen.getByRole('button', { name: /14 days/i });
+    const rangeButton = screen.getByRole("button", { name: /14 days/i });
     fireEvent.click(rangeButton);
-    expect(setHealthRangeMock).toHaveBeenCalledWith('14d');
+    expect(setHealthRangeMock).toHaveBeenCalledWith("14d");
 
     // Change index type to NDWI
-    const indexButton = screen.getByRole('button', { name: /ndwi/i });
+    const indexButton = screen.getByRole("button", { name: /ndwi/i });
     fireEvent.click(indexButton);
-    expect(setHealthIndexMock).toHaveBeenCalledWith('NDWI' as HealthIndexType);
+    expect(setHealthIndexMock).toHaveBeenCalledWith("NDWI" as HealthIndexType);
   });
 });

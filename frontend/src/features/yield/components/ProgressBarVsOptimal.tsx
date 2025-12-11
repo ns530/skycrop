@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 export interface ProgressBarVsOptimalProps {
   currentYield: number;
@@ -6,7 +6,7 @@ export interface ProgressBarVsOptimalProps {
 }
 
 const formatNumber = (num: number): string => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 1,
   }).format(num);
@@ -30,7 +30,7 @@ export const ProgressBarVsOptimal: React.FC<ProgressBarVsOptimalProps> = ({
       <div className="w-full bg-gray-200 rounded-full h-2">
         <div
           className={`h-2 rounded-full transition-all duration-300 ${
-            isAboveOptimal ? 'bg-green-500' : 'bg-blue-500'
+            isAboveOptimal ? "bg-green-500" : "bg-blue-500"
           }`}
           style={{ width: `${percentage}%` }}
         />

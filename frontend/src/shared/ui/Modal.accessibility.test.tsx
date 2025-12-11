@@ -1,11 +1,11 @@
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import React from 'react';
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import React from "react";
 
-import { Modal } from './Modal';
+import { Modal } from "./Modal";
 
-describe('Modal accessibility', () => {
-  it('moves initial focus inside the dialog', async () => {
+describe("Modal accessibility", () => {
+  it("moves initial focus inside the dialog", async () => {
     const onClose = jest.fn();
 
     render(
@@ -17,12 +17,12 @@ describe('Modal accessibility', () => {
       </Modal>,
     );
 
-    const closeButton = screen.getByRole('button', { name: /close dialog/i });
+    const closeButton = screen.getByRole("button", { name: /close dialog/i });
 
     expect(closeButton).toHaveFocus();
   });
 
-  it('traps focus within the dialog when tabbing', async () => {
+  it("traps focus within the dialog when tabbing", async () => {
     const onClose = jest.fn();
     const user = userEvent.setup();
 
@@ -35,9 +35,9 @@ describe('Modal accessibility', () => {
       </Modal>,
     );
 
-    const closeButton = screen.getByRole('button', { name: /close dialog/i });
-    const firstAction = screen.getByRole('button', { name: 'First action' });
-    const secondAction = screen.getByRole('button', { name: 'Second action' });
+    const closeButton = screen.getByRole("button", { name: /close dialog/i });
+    const firstAction = screen.getByRole("button", { name: "First action" });
+    const secondAction = screen.getByRole("button", { name: "Second action" });
 
     // Initial focus is on the close button in the header
     expect(closeButton).toHaveFocus();
@@ -59,7 +59,7 @@ describe('Modal accessibility', () => {
     expect(secondAction).toHaveFocus();
   });
 
-  it('calls onClose when Escape is pressed', async () => {
+  it("calls onClose when Escape is pressed", async () => {
     const onClose = jest.fn();
     const user = userEvent.setup();
 
@@ -69,7 +69,7 @@ describe('Modal accessibility', () => {
       </Modal>,
     );
 
-    await user.keyboard('{Escape}');
+    await user.keyboard("{Escape}");
 
     expect(onClose).toHaveBeenCalledTimes(1);
   });

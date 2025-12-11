@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 'use strict';
 
 /**
@@ -8,14 +9,14 @@
 
 const { Pool } = require('pg');
 
-const { DATABASE_URL, DATABASE_PRIVATE_URL, NODE_ENV = 'development' } = process.env;
+const { DATABASEURL, DATABASEPRIVATEURL, NODEENV = 'development' } = process.env;
 
 // Prefer private URL for internal connections (no SSL needed)
-const DB_CONNECTION_STRING = DATABASE_PRIVATE_URL || DATABASE_URL;
+const DBCONNECTIONSTRING = DATABASEPRIVATEURL || DATABASEURL;
 
 async function checkPostGISHealth() {
-  if (!DB_CONNECTION_STRING) {
-    console.error('❌ DATABASE_URL or DATABASE_PRIVATE_URL not set');
+  if (!DBCONNECTIONSTRING) {
+    console.error('❌ DATABASEURL or DATABASEPRIVATEURL not set');
     process.exit(1);
   }
 
@@ -26,7 +27,7 @@ async function checkPostGISHealth() {
   const sslConfig = false;
 
   const pool = new Pool({
-    connectionString: DB_CONNECTION_STRING,
+    connectionString: DBCONNECTIONSTRING,
     ssl: sslConfig,
     connectionTimeoutMillis: 15000, // Increased timeout
   });
@@ -34,51 +35,53 @@ async function checkPostGISHealth() {
   try {
     // Test basic connection
     console.log('1. Testing basic connection...');
-    const result = await pool.query('SELECT NOW() as current_time, version() as pg_version');
+    const result = await pool.query('SELECT NOW() as currenttime, version() as pgversion');
     console.log('   ✅ Connected successfully');
-    console.log(`   📅 Server time: ${result.rows[0].current_time}`);
-    console.log(`   🗄️  PostgreSQL: ${result.rows[0].pg_version.split(' ')[0]} ${result.rows[0].pg_version.split(' ')[1]}\n`);
+    console.log(`   📅 Server time: ${result.rows[0].currenttime}`);
+    console.log(
+      `   🗄️  PostgreSQL: ${result.rows[0].pgversion.split(' ')[0]} ${result.rows[0].pgversion.split(' ')[1]}\n`
+    );
 
     // Test PostGIS extension
     console.log('2. Checking PostGIS extension...');
     const postgisCheck = await pool.query(`
       SELECT 
-        PostGIS_version() as postgis_version,
-        PostGIS_full_version() as full_version
+        PostGISversion() as postgisversion,
+        PostGISfullversion() as fullversion
     `);
     console.log('   ✅ PostGIS is enabled');
-    console.log(`   📍 PostGIS version: ${postgisCheck.rows[0].postgis_version}\n`);
+    console.log(`   📍 PostGIS version: ${postgisCheck.rows[0].postgisversion}\n`);
 
     // Test database trigger
     console.log('3. Checking database trigger...');
     const triggerCheck = await pool.query(`
       SELECT 
-        tgname as trigger_name,
-        tgrelid::regclass as table_name,
-        proname as function_name
-      FROM pg_trigger t
-      JOIN pg_proc p ON t.tgfoid = p.oid
-      WHERE tgname = 'trg_fields_compute'
+        tgname as triggername,
+        tgrelid::regclass as tablename,
+        proname as functionname
+      FROM pgtrigger t
+      JOIN pgproc p ON t.tgfoid = p.oid
+      WHERE tgname = 'trgfieldscompute'
     `);
-    
+
     if (triggerCheck.rows.length > 0) {
-      console.log('   ✅ compute_field_metrics trigger is active');
-      console.log(`   🔧 Trigger: ${triggerCheck.rows[0].trigger_name}`);
-      console.log(`   📊 Table: ${triggerCheck.rows[0].table_name}`);
-      console.log(`   ⚙️  Function: ${triggerCheck.rows[0].function_name}\n`);
+      console.log('   ✅ computefieldmetrics trigger is active');
+      console.log(`   🔧 Trigger: ${triggerCheck.rows[0].triggername}`);
+      console.log(`   📊 Table: ${triggerCheck.rows[0].tablename}`);
+      console.log(`   ⚙️  Function: ${triggerCheck.rows[0].functionname}\n`);
     } else {
-      console.log('   ⚠️  Warning: compute_field_metrics trigger not found\n');
+      console.log('   ⚠️  Warning: computefieldmetrics trigger not found\n');
     }
 
     // Check database size and connections
     console.log('4. Checking database status...');
     const dbStatus = await pool.query(`
       SELECT 
-        pg_database.datname,
-        pg_size_pretty(pg_database_size(pg_database.datname)) AS size,
-        (SELECT count(*) FROM pg_stat_activity WHERE datname = pg_database.datname) as connections
-      FROM pg_database
-      WHERE datname = current_database()
+        pgdatabase.datname,
+        pgsizepretty(pgdatabasesize(pgdatabase.datname)) AS size,
+        (SELECT count(*) FROM pgstatactivity WHERE datname = pgdatabase.datname) as connections
+      FROM pgdatabase
+      WHERE datname = currentdatabase()
     `);
     console.log(`   💾 Database: ${dbStatus.rows[0].datname}`);
     console.log(`   📦 Size: ${dbStatus.rows[0].size}`);
@@ -90,7 +93,7 @@ async function checkPostGISHealth() {
     console.error('❌ PostGIS health check failed:');
     console.error(`   Error: ${error.message}`);
     console.error(`   Code: ${error.code || 'N/A'}\n`);
-    
+
     if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
       console.error('💡 PostGIS service appears to be down or unreachable.');
       console.error('   Action: Restart PostGIS service via Railway Dashboard\n');
@@ -98,7 +101,7 @@ async function checkPostGISHealth() {
       console.error('💡 Connection was reset. PostGIS may be restarting.');
       console.error('   Action: Wait a few minutes and try again\n');
     }
-    
+
     process.exit(1);
   } finally {
     await pool.end();
@@ -106,12 +109,10 @@ async function checkPostGISHealth() {
 }
 
 if (require.main === module) {
-  checkPostGISHealth()
-    .catch((error) => {
-      console.error('Fatal error:', error);
-      process.exit(1);
-    });
+  checkPostGISHealth().catch(error => {
+    console.error('Fatal error:', error);
+    process.exit(1);
+  });
 }
 
 module.exports = { checkPostGISHealth };
-

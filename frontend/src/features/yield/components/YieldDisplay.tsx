@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 export interface YieldDisplayProps {
   yieldKgHa: number;
@@ -8,16 +8,16 @@ export interface YieldDisplayProps {
 }
 
 const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
 };
 
 const formatNumber = (num: number): string => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 1,
   }).format(num);
@@ -37,7 +37,9 @@ export const YieldDisplay: React.FC<YieldDisplayProps> = ({
           {formatNumber(yieldKgHa)}
           <span className="text-lg font-normal text-gray-500 ml-1">kg/ha</span>
         </div>
-        <p className="text-sm text-gray-600 mt-1">Predicted yield per hectare</p>
+        <p className="text-sm text-gray-600 mt-1">
+          Predicted yield per hectare
+        </p>
       </div>
 
       {/* Total yield and revenue */}

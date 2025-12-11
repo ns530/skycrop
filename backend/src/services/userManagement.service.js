@@ -1,7 +1,7 @@
 'use strict';
 
-const User = require('../models/user.model');
 const Sequelize = require('sequelize');
+const User = require('../models/user.model');
 const { canManageUser } = require('../config/permissions.config');
 
 /**
@@ -21,7 +21,7 @@ class UserManagementService {
       role,
       status,
       search,
-      sortBy = 'created_at',
+      sortBy = 'createdat',
       sortOrder = 'DESC',
     } = options;
 
@@ -52,7 +52,7 @@ class UserManagementService {
       offset,
       order: [[sortBy, sortOrder]],
       attributes: {
-        exclude: ['password_hash'], // Never expose password hash
+        exclude: ['passwordhash'], // Never expose password hash
       },
     });
 
@@ -69,20 +69,20 @@ class UserManagementService {
 
   /**
    * Get user by ID
-   * @param {string} userId - User UUID
+   * @param {string} user_id - User UUID
    * @returns {Promise<Object>} User object
    */
-  async getUserById(userId) {
-    const user = await User.scope('allStatuses').findByPk(userId, {
+  async getUserById(user_id) {
+    const user = await User.scope('allStatuses').findByPk(user_id, {
       attributes: {
-        exclude: ['password_hash'],
+        exclude: ['passwordhash'],
       },
     });
 
     if (!user) {
       const error = new Error('User not found');
       error.statusCode = 404;
-      error.code = 'USER_NOT_FOUND';
+      error.code = 'USERNOTFOUND';
       throw error;
     }
 
@@ -91,30 +91,30 @@ class UserManagementService {
 
   /**
    * Update user role
-   * @param {string} actorUserId - ID of user performing action
+   * @param {string} actoruser_id - ID of user performing action
    * @param {string} actorRole - Role of user performing action
-   * @param {string} targetUserId - ID of user to update
+   * @param {string} targetuser_id - ID of user to update
    * @param {string} newRole - New role
    * @returns {Promise<Object>} Updated user
    */
-  async updateUserRole(actorUserId, actorRole, targetUserId, newRole) {
+  async updateUserRole(actoruser_id, actorRole, targetuser_id, newRole) {
     // Validate role
     const validRoles = ['admin', 'manager', 'farmer', 'viewer'];
     if (!validRoles.includes(newRole)) {
       const error = new Error(`Invalid role. Must be one of: ${validRoles.join(', ')}`);
       error.statusCode = 400;
-      error.code = 'INVALID_ROLE';
+      error.code = 'INVALIDROLE';
       throw error;
     }
 
     // Get target user
-    const targetUser = await this.getUserById(targetUserId);
+    const targetUser = await this.getUserById(targetuser_id);
 
     // Can't change own role
-    if (actorUserId === targetUserId) {
+    if (actoruser_id === targetuser_id) {
       const error = new Error('You cannot change your own role');
       error.statusCode = 403;
-      error.code = 'CANNOT_CHANGE_OWN_ROLE';
+      error.code = 'CANNOTCHANGEOWNROLE';
       throw error;
     }
 
@@ -122,7 +122,7 @@ class UserManagementService {
     if (!canManageUser(actorRole, targetUser.role)) {
       const error = new Error('You do not have permission to manage this user');
       error.statusCode = 403;
-      error.code = 'INSUFFICIENT_PERMISSIONS';
+      error.code = 'INSUFFICIENTPERMISSIONS';
       throw error;
     }
 
@@ -134,39 +134,39 @@ class UserManagementService {
 
   /**
    * Update user status (activate, suspend, delete)
-   * @param {string} actorUserId - ID of user performing action
+   * @param {string} actoruser_id - ID of user performing action
    * @param {string} actorRole - Role of user performing action
-   * @param {string} targetUserId - ID of user to update
+   * @param {string} targetuser_id - ID of user to update
    * @param {string} newStatus - New status
    * @returns {Promise<Object>} Updated user
    */
-  async updateUserStatus(actorUserId, actorRole, targetUserId, newStatus) {
+  async updateUserStatus(actoruser_id, actorRole, targetuser_id, newStatus) {
     // Validate status
     const validStatuses = ['active', 'suspended', 'deleted'];
     if (!validStatuses.includes(newStatus)) {
       const error = new Error(`Invalid status. Must be one of: ${validStatuses.join(', ')}`);
       error.statusCode = 400;
-      error.code = 'INVALID_STATUS';
+      error.code = 'INVALIDSTATUS';
       throw error;
     }
 
     // Get target user
-    const targetUser = await User.scope('allStatuses').findByPk(targetUserId, {
-      attributes: { exclude: ['password_hash'] },
+    const targetUser = await User.scope('allStatuses').findByPk(targetuser_id, {
+      attributes: { exclude: ['passwordhash'] },
     });
 
     if (!targetUser) {
       const error = new Error('User not found');
       error.statusCode = 404;
-      error.code = 'USER_NOT_FOUND';
+      error.code = 'USERNOTFOUND';
       throw error;
     }
 
     // Can't change own status
-    if (actorUserId === targetUserId) {
+    if (actoruser_id === targetuser_id) {
       const error = new Error('You cannot change your own status');
       error.statusCode = 403;
-      error.code = 'CANNOT_CHANGE_OWN_STATUS';
+      error.code = 'CANNOTCHANGEOWNSTATUS';
       throw error;
     }
 
@@ -174,7 +174,7 @@ class UserManagementService {
     if (!canManageUser(actorRole, targetUser.role)) {
       const error = new Error('You do not have permission to manage this user');
       error.statusCode = 403;
-      error.code = 'INSUFFICIENT_PERMISSIONS';
+      error.code = 'INSUFFICIENTPERMISSIONS';
       throw error;
     }
 
@@ -195,17 +195,14 @@ class UserManagementService {
       User.scope('allStatuses').count({ where: { status: 'suspended' } }),
       User.scope('allStatuses').count({ where: { status: 'deleted' } }),
       User.scope('allStatuses').findAll({
-        attributes: [
-          'role',
-          [User.sequelize.fn('COUNT', User.sequelize.col('user_id')), 'count'],
-        ],
+        attributes: ['role', [User.sequelize.fn('COUNT', User.sequelize.col('user_id')), 'count']],
         group: ['role'],
         raw: true,
       }),
     ]);
 
     const roleStats = {};
-    byRole.forEach((item) => {
+    byRole.forEach(item => {
       roleStats[item.role] = parseInt(item.count, 10);
     });
 
@@ -239,7 +236,7 @@ class UserManagementService {
         ],
       },
       limit,
-      attributes: ['user_id', 'email', 'name', 'role', 'profile_photo_url'],
+      attributes: ['user_id', 'email', 'name', 'role', 'profilephotourl'],
       order: [['name', 'ASC']],
     });
 
@@ -250,4 +247,3 @@ class UserManagementService {
 // Export singleton
 const userManagementService = new UserManagementService();
 module.exports = userManagementService;
-

@@ -5,33 +5,33 @@ import React, {
   useMemo,
   useState,
   type PropsWithChildren,
-} from 'react';
+} from "react";
 
 export type UiState = {
   currentFieldId?: string;
-  defaultHealthIndex: 'NDVI' | 'NDWI' | 'TDVI';
-  defaultHealthRange: '7d' | '14d' | '30d' | 'season';
+  defaultHealthIndex: "NDVI" | "NDWI" | "TDVI";
+  defaultHealthRange: "7d" | "14d" | "30d" | "season";
 };
 
 export interface UiContextValue {
   state: UiState;
   setCurrentField: (fieldId?: string) => void;
-  setHealthIndex: (index: UiState['defaultHealthIndex']) => void;
-  setHealthRange: (range: UiState['defaultHealthRange']) => void;
+  setHealthIndex: (index: UiState["defaultHealthIndex"]) => void;
+  setHealthRange: (range: UiState["defaultHealthRange"]) => void;
 }
 
 const UiContext = createContext<UiContextValue | undefined>(undefined);
 
-const UI_STORAGE_KEY = 'skycrop_ui_prefs';
+const UI_STORAGE_KEY = "skycrop_ui_prefs";
 
 const getDefaultState = (): UiState => ({
   currentFieldId: undefined,
-  defaultHealthIndex: 'NDVI',
-  defaultHealthRange: '30d',
+  defaultHealthIndex: "NDVI",
+  defaultHealthRange: "30d",
 });
 
 const loadInitialState = (): UiState => {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return getDefaultState();
   }
 
@@ -44,8 +44,8 @@ const loadInitialState = (): UiState => {
 
     return {
       currentFieldId: parsed.currentFieldId,
-      defaultHealthIndex: parsed.defaultHealthIndex ?? 'NDVI',
-      defaultHealthRange: parsed.defaultHealthRange ?? '30d',
+      defaultHealthIndex: parsed.defaultHealthIndex ?? "NDVI",
+      defaultHealthRange: parsed.defaultHealthRange ?? "30d",
     };
   } catch {
     return getDefaultState();
@@ -53,7 +53,7 @@ const loadInitialState = (): UiState => {
 };
 
 const persistState = (state: UiState) => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(UI_STORAGE_KEY, JSON.stringify(state));
   } catch {
@@ -61,7 +61,9 @@ const persistState = (state: UiState) => {
   }
 };
 
-export const UiProvider: React.FC<PropsWithChildren> = ({ children }: PropsWithChildren) => {
+export const UiProvider: React.FC<PropsWithChildren> = ({
+  children,
+}: PropsWithChildren) => {
   const [state, setState] = useState<UiState>(() => loadInitialState());
 
   const setCurrentField = useCallback((fieldId?: string) => {
@@ -75,7 +77,7 @@ export const UiProvider: React.FC<PropsWithChildren> = ({ children }: PropsWithC
     });
   }, []);
 
-  const setHealthIndex = useCallback((index: UiState['defaultHealthIndex']) => {
+  const setHealthIndex = useCallback((index: UiState["defaultHealthIndex"]) => {
     setState((prev: UiState) => {
       const next: UiState = {
         ...prev,
@@ -86,7 +88,7 @@ export const UiProvider: React.FC<PropsWithChildren> = ({ children }: PropsWithC
     });
   }, []);
 
-  const setHealthRange = useCallback((range: UiState['defaultHealthRange']) => {
+  const setHealthRange = useCallback((range: UiState["defaultHealthRange"]) => {
     setState((prev: UiState) => {
       const next: UiState = {
         ...prev,
@@ -113,7 +115,7 @@ export const UiProvider: React.FC<PropsWithChildren> = ({ children }: PropsWithC
 export const useUiState = (): UiContextValue => {
   const ctx = useContext(UiContext);
   if (!ctx) {
-    throw new Error('useUiState must be used within a UiProvider');
+    throw new Error("useUiState must be used within a UiProvider");
   }
   return ctx;
 };

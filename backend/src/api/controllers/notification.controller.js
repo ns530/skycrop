@@ -22,7 +22,7 @@ module.exports = {
     const correlationId = req.headers['x-request-id'] || null;
 
     try {
-      const userId = req.user.userId;
+      const { user_id } = req.user;
       const { deviceToken, platform } = req.body;
 
       if (!deviceToken || !platform) {
@@ -33,26 +33,26 @@ module.exports = {
         throw new ValidationError('platform must be either "android" or "ios"');
       }
 
-      const result = await pushService.registerDevice(userId, deviceToken, platform);
+      const result = await pushService.registerDevice(user_id, deviceToken, platform);
 
       const latency = Date.now() - started;
       logger.info('notifications.register', {
         route: '/api/v1/notifications/register',
         method: 'POST',
-        user_id: userId,
-        device_id: result.deviceId,
+        user_id: user_id,
+        deviceid: result.deviceId,
         platform,
-        correlation_id: correlationId,
-        latency_ms: latency,
+        correlationid: correlationId,
+        latencyms: latency,
       });
 
-      return res.status(201).json({
+      return res.status(201)on({
         success: true,
         data: {
           deviceId: result.deviceId,
           platform: result.platform,
         },
-        meta: { correlation_id: correlationId, latency_ms: latency },
+        meta: { correlationid: correlationId, latencyms: latency },
       });
     } catch (err) {
       return next(err);
@@ -81,14 +81,14 @@ module.exports = {
         route: '/api/v1/notifications/unregister',
         method: 'DELETE',
         success: result.success,
-        correlation_id: correlationId,
-        latency_ms: latency,
+        correlationid: correlationId,
+        latencyms: latency,
       });
 
-      return res.status(200).json({
+      return res.status(200)on({
         success: true,
         data: result,
-        meta: { correlation_id: correlationId, latency_ms: latency },
+        meta: { correlationid: correlationId, latencyms: latency },
       });
     } catch (err) {
       return next(err);
@@ -104,7 +104,7 @@ module.exports = {
     const correlationId = req.headers['x-request-id'] || null;
 
     try {
-      const userId = req.user.userId;
+      const { user_id } = req.user;
       const { title, message, type } = req.body;
 
       if (!title || !message) {
@@ -112,7 +112,7 @@ module.exports = {
       }
 
       const result = await notificationService.sendNotification(
-        userId,
+        user_id,
         title || 'Test Notification',
         message || 'This is a test notification from SkyCrop',
         type || 'info'
@@ -122,15 +122,15 @@ module.exports = {
       logger.info('notifications.test', {
         route: '/api/v1/notifications/test',
         method: 'POST',
-        user_id: userId,
-        correlation_id: correlationId,
-        latency_ms: latency,
+        user_id: user_id,
+        correlationid: correlationId,
+        latencyms: latency,
       });
 
-      return res.status(200).json({
+      return res.status(200)on({
         success: true,
         data: result,
-        meta: { correlation_id: correlationId, latency_ms: latency },
+        meta: { correlationid: correlationId, latencyms: latency },
       });
     } catch (err) {
       return next(err);
@@ -152,18 +152,17 @@ module.exports = {
       logger.info('notifications.queue.stats', {
         route: '/api/v1/notifications/queue/stats',
         method: 'GET',
-        correlation_id: correlationId,
-        latency_ms: latency,
+        correlationid: correlationId,
+        latencyms: latency,
       });
 
-      return res.status(200).json({
+      return res.status(200)on({
         success: true,
         data: stats,
-        meta: { correlation_id: correlationId, latency_ms: latency },
+        meta: { correlationid: correlationId, latencyms: latency },
       });
     } catch (err) {
       return next(err);
     }
   },
 };
-

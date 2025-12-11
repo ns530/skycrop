@@ -1,14 +1,14 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 
-import type { ApiError } from '../../../shared/api';
-import { healthKeys } from '../../../shared/query/queryKeys';
+import type { ApiError } from "../../../shared/api";
+import { healthKeys } from "../../../shared/query/queryKeys";
 import {
   getFieldHealth,
   getHealthIndicesMetadata,
   type FieldHealthResponse,
   type HealthIndexType,
   type HealthIndicesDictionary,
-} from '../api/healthApi';
+} from "../api/healthApi";
 
 export interface FieldHealthParams {
   startDate: string;
@@ -25,7 +25,8 @@ export const useFieldHealth = (fieldId: string, params: FieldHealthParams) =>
   useQuery<FieldHealthResponse, ApiError>({
     queryKey: healthKeys.field(fieldId, params),
     queryFn: () => getFieldHealth(fieldId, params),
-    enabled: Boolean(fieldId) && Boolean(params.startDate) && Boolean(params.endDate),
+    enabled:
+      Boolean(fieldId) && Boolean(params.startDate) && Boolean(params.endDate),
   });
 
 /**

@@ -1,5 +1,3 @@
-'use strict';
-
 describe('Routes middleware branch coverage lifts (ML and Satellite)', () => {
   beforeEach(() => {
     jest.resetModules();
@@ -9,21 +7,21 @@ describe('Routes middleware branch coverage lifts (ML and Satellite)', () => {
   function makeResCapture() {
     const res = {};
     res.statusCode = null;
-    res.jsonBody = null;
+    resonBody = null;
     res.headers = {};
-    res.status = (code) => {
+    res.status = code => {
       res.statusCode = code;
       return res;
     };
-    res.json = (body) => {
-      res.jsonBody = body;
+    reson = body => {
+      resonBody = body;
       return res;
     };
-    res.set = (h) => {
+    res.set = h => {
       res.headers = { ...res.headers, ...h };
       return res;
     };
-    res.send = (body) => {
+    res.send = body => {
       res.body = body;
       return res;
     };
@@ -31,55 +29,57 @@ describe('Routes middleware branch coverage lifts (ML and Satellite)', () => {
   }
 
   test('ML routes error handler maps entity.too.large and 413 status to standardized 413 error', () => {
-    const router = require('../../src/api/routes/ml.routes.js');
+    const router = require('../../src/api/routes/ml.routes');
 
     // Find error-handling middleware (function with 4 args)
-    const errLayers = router.stack.filter((l) => typeof l.handle === 'function' && l.handle.length === 4);
+    const errLayers = router.stack.filter(
+      l => typeof l.handle === 'function' && l.handle.length === 4
+    );
     expect(errLayers.length).toBeGreaterThan(0);
     const errorMw = errLayers[0].handle;
 
     // Case 1: err.type = 'entity.too.large'
     const err1 = { type: 'entity.too.large' };
     let nextArg = null;
-    errorMw(err1, {}, {}, (e) => {
+    errorMw(err1, {}, {}, e => {
       nextArg = e;
     });
     expect(nextArg).toMatchObject({
       statusCode: 413,
-      code: 'PAYLOAD_TOO_LARGE',
+      code: 'PAYLOADTOOLARGE',
       message: expect.stringMatching(/too large/i),
     });
 
     // Case 2: err.status = 413
     const err2 = { status: 413 };
     nextArg = null;
-    errorMw(err2, {}, {}, (e) => {
+    errorMw(err2, {}, {}, e => {
       nextArg = e;
     });
     expect(nextArg).toMatchObject({
       statusCode: 413,
-      code: 'PAYLOAD_TOO_LARGE',
+      code: 'PAYLOADTOOLARGE',
       message: expect.stringMatching(/too large/i),
     });
 
     // Case 3: passthrough when not too large
     const err3 = { status: 400, message: 'Bad input' };
     nextArg = null;
-    errorMw(err3, {}, {}, (e) => {
+    errorMw(err3, {}, {}, e => {
       nextArg = e;
     });
     expect(nextArg).toBe(err3);
   });
 
   test('Satellite preprocess enforceMaxBodySize: Content-Length header branch returns 413 JSON', () => {
-    const router = require('../../src/api/routes/satellite.routes.js');
+    const router = require('../../src/api/routes/satellite.routes');
 
     // Locate POST /preprocess route middlewares (first one is enforceMaxBodySize)
     const preprocessLayer = router.stack.find(
-      (l) => l.route && l.route.path === '/preprocess' && l.route.methods && l.route.methods.post
+      l => l.route && l.route.path === '/preprocess' && l.route.methods && l.route.methods.post
     );
     expect(preprocessLayer).toBeTruthy();
-    const mwList = preprocessLayer.route.stack.map((s) => s.handle);
+    const mwList = preprocessLayer.route.stack.map(s => s.handle);
     expect(mwList.length).toBeGreaterThan(0);
     const enforceMw = mwList[0]; // enforceMaxBodySize(maxBytes)
 
@@ -96,20 +96,20 @@ describe('Routes middleware branch coverage lifts (ML and Satellite)', () => {
 
     expect(calledNext).toBe(false);
     expect(res.statusCode).toBe(413);
-    expect(res.jsonBody).toEqual(
+    expect(resonBody).toEqual(
       expect.objectContaining({
         success: false,
         error: expect.objectContaining({
-          code: 'PAYLOAD_TOO_LARGE',
+          code: 'PAYLOADTOOLARGE',
         }),
       })
     );
   });
 
   test('Satellite preprocess enforceMaxBodySize: fallback approx branch when no content-length (Buffer.byteLength mocked)', () => {
-    const router = require('../../src/api/routes/satellite.routes.js');
+    const router = require('../../src/api/routes/satellite.routes');
     const preprocessLayer = router.stack.find(
-      (l) => l.route && l.route.path === '/preprocess' && l.route.methods && l.route.methods.post
+      l => l.route && l.route.path === '/preprocess' && l.route.methods && l.route.methods.post
     );
     const enforceMw = preprocessLayer.route.stack[0].handle;
 
@@ -128,10 +128,10 @@ describe('Routes middleware branch coverage lifts (ML and Satellite)', () => {
 
       expect(calledNext).toBe(false);
       expect(res.statusCode).toBe(413);
-      expect(res.jsonBody).toEqual(
+      expect(resonBody).toEqual(
         expect.objectContaining({
           success: false,
-          error: expect.objectContaining({ code: 'PAYLOAD_TOO_LARGE' }),
+          error: expect.objectContaining({ code: 'PAYLOADTOOLARGE' }),
         })
       );
     } finally {
@@ -140,9 +140,9 @@ describe('Routes middleware branch coverage lifts (ML and Satellite)', () => {
   });
 
   test('Satellite preprocess enforceMaxBodySize: pass-through when below threshold', () => {
-    const router = require('../../src/api/routes/satellite.routes.js');
+    const router = require('../../src/api/routes/satellite.routes');
     const preprocessLayer = router.stack.find(
-      (l) => l.route && l.route.path === '/preprocess' && l.route.methods && l.route.methods.post
+      l => l.route && l.route.path === '/preprocess' && l.route.methods && l.route.methods.post
     );
     const enforceMw = preprocessLayer.route.stack[0].handle;
 
@@ -159,13 +159,13 @@ describe('Routes middleware branch coverage lifts (ML and Satellite)', () => {
 
     expect(nextCalled).toBe(true);
     expect(res.statusCode).toBe(null);
-    expect(res.jsonBody).toBe(null);
+    expect(resonBody).toBe(null);
   });
 
   test('Satellite preprocess enforceMaxBodySize: catch branch when JSON.stringify throws', () => {
-    const router = require('../../src/api/routes/satellite.routes.js');
+    const router = require('../../src/api/routes/satellite.routes');
     const preprocessLayer = router.stack.find(
-      (l) => l.route && l.route.path === '/preprocess' && l.route.methods && l.route.methods.post
+      l => l.route && l.route.path === '/preprocess' && l.route.methods && l.route.methods.post
     );
     const enforceMw = preprocessLayer.route.stack[0].handle;
 
@@ -184,6 +184,6 @@ describe('Routes middleware branch coverage lifts (ML and Satellite)', () => {
     // Should swallow and call next() with no 413 since error is caught
     expect(nextCalled).toBe(true);
     expect(res.statusCode).toBe(null);
-    expect(res.jsonBody).toBe(null);
+    expect(resonBody).toBe(null);
   });
 });

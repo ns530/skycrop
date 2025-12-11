@@ -1,5 +1,5 @@
-import clsx from 'clsx';
-import React from 'react';
+import clsx from "clsx";
+import React from "react";
 
 export interface PageContainerProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
@@ -14,10 +14,15 @@ export interface PageContainerProps extends React.HTMLAttributes<HTMLDivElement>
  * Provides a consistent max-width (approximately 1200px) container with
  * horizontal padding and vertical spacing, matching the SkyCrop design system.
  */
-export const PageContainer: React.FC<PageContainerProps> = ({ fullWidth, className, children, ...rest }) => {
-  const baseClasses = 'w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6';
-  const widthClasses = fullWidth ? 'mx-auto' : 'mx-auto max-w-page';
- 
+export const PageContainer: React.FC<PageContainerProps> = ({
+  fullWidth,
+  className,
+  children,
+  ...rest
+}) => {
+  const baseClasses = "w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6";
+  const widthClasses = fullWidth ? "mx-auto" : "mx-auto max-w-page";
+
   return (
     <div className={clsx(baseClasses, widthClasses, className)} {...rest}>
       {children}

@@ -5,7 +5,7 @@ const { logger } = require('../utils/logger');
 /**
  * Notification Queue
  * Handles async email and push notification sending
- * 
+ *
  * For MVP: Uses in-memory queue (simple implementation)
  * For Production: Integrate with Bull/BullMQ + Redis
  */
@@ -13,21 +13,21 @@ class NotificationQueue {
   constructor() {
     this.queue = [];
     this.processing = false;
-    this.useBull = process.env.USE_BULL_QUEUE === 'true';
-    
+    this.useBull = process.env.USEBULLQUEUE === 'true';
+
     if (this.useBull) {
-      this._initBull();
+      this.initBull();
     } else {
       logger.info('NotificationQueue: Using in-memory queue (MVP mode)');
-      this._startProcessor();
+      this.startProcessor();
     }
   }
 
-  _initBull() {
+  initBull() {
     try {
       const Bull = require('bull');
-      const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
-      
+      const redisUrl = process.env.REDISURL || 'redis://localhost:6379';
+
       this.bullQueue = new Bull('notification-queue', redisUrl, {
         defaultJobOptions: {
           attempts: 3,
@@ -40,10 +40,10 @@ class NotificationQueue {
         },
       });
 
-      this.bullQueue.process('send-email', this._processEmailJob.bind(this));
-      this.bullQueue.process('send-push', this._processPushJob.bind(this));
+      this.bullQueue.process('send-email', this.processEmailJob.bind(this));
+      this.bullQueue.process('send-push', this.processPushJob.bind(this));
 
-      this.bullQueue.on('completed', (job) => {
+      this.bullQueue.on('completed', job => {
         logger.info('notification.queue.completed', {
           jobId: job.id,
           type: job.name,
@@ -63,40 +63,40 @@ class NotificationQueue {
     } catch (error) {
       logger.warn('Bull not available, falling back to in-memory queue', { error: error.message });
       this.useBull = false;
-      this._startProcessor();
+      this.startProcessor();
     }
   }
 
-  _startProcessor() {
+  startProcessor() {
     // Process queue every 1 second
     setInterval(async () => {
       if (!this.processing && this.queue.length > 0) {
         this.processing = true;
-        await this._processQueue();
+        await this.processQueue();
         this.processing = false;
       }
     }, 1000);
   }
 
-  async _processQueue() {
+  async processQueue() {
     while (this.queue.length > 0) {
       const job = this.queue.shift();
       try {
         if (job.type === 'email') {
-          await this._processEmailJob({ data: job.data });
+          await this.processEmailJob({ data: job.data });
         } else if (job.type === 'push') {
-          await this._processPushJob({ data: job.data });
+          await this.processPushJob({ data: job.data });
         }
         logger.info('notification.queue.completed', {
           type: job.type,
-          to: job.data.to || job.data.userId,
+          to: job.data.to || job.data.user_id,
         });
       } catch (error) {
         logger.error('notification.queue.failed', {
           type: job.type,
           error: error.message,
         });
-        
+
         // Retry logic (simple)
         if (!job.retries) job.retries = 0;
         if (job.retries < 2) {
@@ -107,20 +107,20 @@ class NotificationQueue {
     }
   }
 
-  async _processEmailJob(job) {
+  async processEmailJob(job) {
     const { getEmailService } = require('../services/email.service');
     const emailService = getEmailService();
-    
+
     const { to, subject, html, text } = job.data;
     await emailService.sendEmail({ to, subject, html, text });
   }
 
-  async _processPushJob(job) {
+  async processPushJob(job) {
     const { getPushNotificationService } = require('../services/pushNotification.service');
     const pushService = getPushNotificationService();
-    
-    const { userId, title, body, data } = job.data;
-    await pushService.sendToUser(userId, title, body, data);
+
+    const { user_id, title, body, data } = job.data;
+    await pushService.sendToUser(user_id, title, body, data);
   }
 
   /**
@@ -132,16 +132,15 @@ class NotificationQueue {
     if (this.useBull && this.bullQueue) {
       const job = await this.bullQueue.add('send-email', emailData);
       return { jobId: job.id, type: 'email' };
-    } else {
-      const jobId = `email-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      this.queue.push({
-        id: jobId,
-        type: 'email',
-        data: emailData,
-        addedAt: new Date(),
-      });
-      return { jobId, type: 'email' };
     }
+    const jobId = `email-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    this.queue.push({
+      id: jobId,
+      type: 'email',
+      data: emailData,
+      addedAt: new Date(),
+    });
+    return { jobId, type: 'email' };
   }
 
   /**
@@ -153,16 +152,15 @@ class NotificationQueue {
     if (this.useBull && this.bullQueue) {
       const job = await this.bullQueue.add('send-push', pushData);
       return { jobId: job.id, type: 'push' };
-    } else {
-      const jobId = `push-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      this.queue.push({
-        id: jobId,
-        type: 'push',
-        data: pushData,
-        addedAt: new Date(),
-      });
-      return { jobId, type: 'push' };
     }
+    const jobId = `push-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    this.queue.push({
+      id: jobId,
+      type: 'push',
+      data: pushData,
+      addedAt: new Date(),
+    });
+    return { jobId, type: 'push' };
   }
 
   /**
@@ -171,19 +169,18 @@ class NotificationQueue {
    */
   getStats() {
     if (this.useBull && this.bullQueue) {
-      return this.bullQueue.getJobCounts().then((counts) => ({
+      return this.bullQueue.getJobCounts().then(counts => ({
         ...counts,
         provider: 'bull',
       }));
-    } else {
-      return Promise.resolve({
-        waiting: this.queue.length,
-        active: this.processing ? 1 : 0,
-        completed: 0,
-        failed: 0,
-        provider: 'memory',
-      });
     }
+    return Promise.resolve({
+      waiting: this.queue.length,
+      active: this.processing ? 1 : 0,
+      completed: 0,
+      failed: 0,
+      provider: 'memory',
+    });
   }
 }
 
@@ -201,4 +198,3 @@ module.exports = {
   NotificationQueue,
   getNotificationQueue,
 };
-

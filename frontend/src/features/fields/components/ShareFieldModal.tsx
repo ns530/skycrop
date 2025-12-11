@@ -1,9 +1,9 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { X, Share2, Send } from 'lucide-react';
-import React, { useState } from 'react';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { X, Share2, Send } from "lucide-react";
+import React, { useState } from "react";
 
-import { httpClient } from '../../../shared/api/httpClient';
-import { useToast } from '../../../shared/hooks/useToast';
+import { httpClient } from "../../../shared/api/httpClient";
+import { useToast } from "../../../shared/hooks/useToast";
 
 interface ShareFieldModalProps {
   isOpen: boolean;
@@ -22,33 +22,43 @@ export const ShareFieldModal: React.FC<ShareFieldModalProps> = ({
   fieldId,
   fieldName,
 }) => {
-  const [email, setEmail] = useState('');
-  const [permissionLevel, setPermissionLevel] = useState<'view' | 'edit'>('view');
-  const [expiresAt, setExpiresAt] = useState('');
+  const [email, setEmail] = useState("");
+  const [permissionLevel, setPermissionLevel] = useState<"view" | "edit">(
+    "view",
+  );
+  const [expiresAt, setExpiresAt] = useState("");
 
   const { showToast } = useToast();
   const queryClient = useQueryClient();
 
   // Share field mutation
   const shareMutation = useMutation({
-    mutationFn: async (data: { email: string; permissionLevel: string; expiresAt?: string }) => {
+    mutationFn: async (data: {
+      email: string;
+      permissionLevel: string;
+      expiresAt?: string;
+    }) => {
       const response = await httpClient.post(`/fields/${fieldId}/share`, data);
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['fields', fieldId, 'shares'] });
+      queryClient.invalidateQueries({
+        queryKey: ["fields", fieldId, "shares"],
+      });
       showToast({
-        variant: 'success',
-        title: 'Field Shared',
+        variant: "success",
+        title: "Field Shared",
         description: `${fieldName} has been shared with ${email}`,
       });
       handleClose();
     },
     onError: (error: unknown) => {
       showToast({
-        variant: 'error',
-        title: 'Share Failed',
-        description: (error as any)?.response?.data?.error?.message || 'Failed to share field',
+        variant: "error",
+        title: "Share Failed",
+        description:
+          (error as any)?.response?.data?.error?.message ||
+          "Failed to share field",
       });
     },
   });
@@ -58,9 +68,9 @@ export const ShareFieldModal: React.FC<ShareFieldModalProps> = ({
 
     if (!email) {
       showToast({
-        variant: 'error',
-        title: 'Validation Error',
-        description: 'Email is required',
+        variant: "error",
+        title: "Validation Error",
+        description: "Email is required",
       });
       return;
     }
@@ -69,14 +79,18 @@ export const ShareFieldModal: React.FC<ShareFieldModalProps> = ({
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       showToast({
-        variant: 'error',
-        title: 'Validation Error',
-        description: 'Please enter a valid email address',
+        variant: "error",
+        title: "Validation Error",
+        description: "Please enter a valid email address",
       });
       return;
     }
 
-    const shareData: { email: string; permissionLevel: string; expiresAt?: string } = { email, permissionLevel };
+    const shareData: {
+      email: string;
+      permissionLevel: string;
+      expiresAt?: string;
+    } = { email, permissionLevel };
     if (expiresAt) {
       shareData.expiresAt = expiresAt;
     }
@@ -85,9 +99,9 @@ export const ShareFieldModal: React.FC<ShareFieldModalProps> = ({
   };
 
   const handleClose = () => {
-    setEmail('');
-    setPermissionLevel('view');
-    setExpiresAt('');
+    setEmail("");
+    setPermissionLevel("view");
+    setExpiresAt("");
     onClose();
   };
 
@@ -121,7 +135,10 @@ export const ShareFieldModal: React.FC<ShareFieldModalProps> = ({
           <div className="space-y-4">
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 User Email *
               </label>
               <input
@@ -137,13 +154,18 @@ export const ShareFieldModal: React.FC<ShareFieldModalProps> = ({
 
             {/* Permission Level */}
             <div>
-              <label htmlFor="permission" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="permission"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Permission Level *
               </label>
               <select
                 id="permission"
                 value={permissionLevel}
-                onChange={(e) => setPermissionLevel(e.target.value as 'view' | 'edit')}
+                onChange={(e) =>
+                  setPermissionLevel(e.target.value as "view" | "edit")
+                }
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent"
                 required
               >
@@ -157,7 +179,10 @@ export const ShareFieldModal: React.FC<ShareFieldModalProps> = ({
 
             {/* Expiration (Optional) */}
             <div>
-              <label htmlFor="expires" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="expires"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Expires At (Optional)
               </label>
               <input

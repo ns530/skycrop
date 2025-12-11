@@ -1,7 +1,7 @@
-import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import React from "react";
+import { Navigate, useLocation } from "react-router-dom";
 
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from "../context/AuthContext";
 
 /**
  * RequireAuth
@@ -17,7 +17,7 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
   const { status } = useAuth();
   const location = useLocation();
 
-  if (status === 'loading') {
+  if (status === "loading") {
     // Simple loading fallback; can be replaced with skeleton UI later.
     return (
       <div className="flex min-h-[200px] items-center justify-center text-sm text-gray-600">
@@ -26,7 +26,7 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
     );
   }
 
-  if (status !== 'authenticated') {
+  if (status !== "authenticated") {
     return (
       <Navigate
         to="/auth/login"

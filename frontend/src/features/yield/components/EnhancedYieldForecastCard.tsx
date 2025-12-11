@@ -1,18 +1,17 @@
-import React from 'react';
+import React from "react";
 
-import { Card } from '../../../shared/ui/Card';
-import { ErrorState } from '../../../shared/ui/ErrorState';
-import { LoadingState } from '../../../shared/ui/LoadingState';
-import type { YieldForecastRequest } from '../api/yieldApi';
-import { useYieldForecast } from '../hooks';
+import { Card } from "../../../shared/ui/Card";
+import { ErrorState } from "../../../shared/ui/ErrorState";
+import { LoadingState } from "../../../shared/ui/LoadingState";
+import type { YieldForecastRequest } from "../api/yieldApi";
+import { useYieldForecast } from "../hooks";
 
-import { ComparisonToPreviousSeason } from './ComparisonToPreviousSeason';
-import { ConfidenceInterval } from './ConfidenceInterval';
-import { HarvestDateEstimate } from './HarvestDateEstimate';
-import { ProgressBarVsOptimal } from './ProgressBarVsOptimal';
-import { WhatsAppShareButton } from './WhatsAppShareButton';
-import { YieldDisplay } from './YieldDisplay';
-
+import { ComparisonToPreviousSeason } from "./ComparisonToPreviousSeason";
+import { ConfidenceInterval } from "./ConfidenceInterval";
+import { HarvestDateEstimate } from "./HarvestDateEstimate";
+import { ProgressBarVsOptimal } from "./ProgressBarVsOptimal";
+import { WhatsAppShareButton } from "./WhatsAppShareButton";
+import { YieldDisplay } from "./YieldDisplay";
 
 export interface EnhancedYieldForecastCardProps {
   request: YieldForecastRequest;
@@ -22,27 +21,24 @@ export interface EnhancedYieldForecastCardProps {
 }
 
 const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
 };
 
 const formatNumber = (num: number): string => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 1,
   }).format(num);
 };
 
-export const EnhancedYieldForecastCard: React.FC<EnhancedYieldForecastCardProps> = ({
-  request,
-  fieldArea = 1,
-  pricePerKg = 0.5,
-  className,
-}) => {
+export const EnhancedYieldForecastCard: React.FC<
+  EnhancedYieldForecastCardProps
+> = ({ request, fieldArea = 1, pricePerKg = 0.5, className }) => {
   const { data, isLoading, error } = useYieldForecast(request);
 
   if (isLoading) {
@@ -86,7 +82,7 @@ export const EnhancedYieldForecastCard: React.FC<EnhancedYieldForecastCardProps>
 
   const optimalYield = prediction.optimal_yield ?? 5500;
   const previousSeasonYield = prediction.previous_season_yield ?? 4800;
-  const harvestDate = prediction.harvest_date ?? '2025-03-15';
+  const harvestDate = prediction.harvest_date ?? "2025-03-15";
 
   return (
     <Card title="Yield Forecast" className={className}>

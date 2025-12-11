@@ -1,20 +1,20 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, fireEvent } from '@testing-library/react';
-import React from 'react';
-import { MemoryRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, screen, fireEvent } from "@testing-library/react";
+import React from "react";
+import { MemoryRouter } from "react-router-dom";
 
-import type { PaginatedResponse, ListParams } from '../../../shared/api';
-import type { FieldSummary } from '../api/fieldsApi';
+import type { PaginatedResponse, ListParams } from "../../../shared/api";
+import type { FieldSummary } from "../api/fieldsApi";
 
-import { FieldsListPage } from './FieldsListPage';
+import { FieldsListPage } from "./FieldsListPage";
 
 // ---- Mocks ----
 
 // Track navigation calls (not asserted here, but keeps parity with other tests)
 const mockedNavigate = jest.fn();
 
-jest.mock('react-router-dom', () => {
-  const actual = jest.requireActual('react-router-dom');
+jest.mock("react-router-dom", () => {
+  const actual = jest.requireActual("react-router-dom");
   return {
     ...actual,
     useNavigate: () => mockedNavigate,
@@ -24,13 +24,13 @@ jest.mock('react-router-dom', () => {
 // Mock UiContext
 const setCurrentFieldMock = jest.fn();
 
-jest.mock('../../../shared/context/UiContext', () => {
+jest.mock("../../../shared/context/UiContext", () => {
   return {
     useUiState: () => ({
       state: {
         currentFieldId: undefined,
-        defaultHealthIndex: 'NDVI' as const,
-        defaultHealthRange: '30d' as const,
+        defaultHealthIndex: "NDVI" as const,
+        defaultHealthRange: "30d" as const,
       },
       setCurrentField: setCurrentFieldMock,
       setHealthIndex: jest.fn(),
@@ -42,22 +42,22 @@ jest.mock('../../../shared/context/UiContext', () => {
 // Mock online status
 const useOnlineStatusMock = jest.fn();
 
-jest.mock('../../../shared/hooks/useOnlineStatus', () => {
+jest.mock("../../../shared/hooks/useOnlineStatus", () => {
   return {
     useOnlineStatus: () => useOnlineStatusMock(),
   };
 });
 
 // Mock useFields
-jest.mock('../hooks/useFields', () => {
-  const actual = jest.requireActual('../hooks/useFields');
+jest.mock("../hooks/useFields", () => {
+  const actual = jest.requireActual("../hooks/useFields");
   return {
     ...actual,
     useFields: jest.fn(),
   };
 });
 
-const { useFields } = jest.requireMock('../hooks/useFields') as {
+const { useFields } = jest.requireMock("../hooks/useFields") as {
   useFields: jest.Mock;
 };
 
@@ -71,7 +71,9 @@ const createTestQueryClient = () =>
   });
 
 const createWrapper =
-  (initialEntries: string[] = ['/fields']): React.FC<{ children: React.ReactNode }> =>
+  (
+    initialEntries: string[] = ["/fields"],
+  ): React.FC<{ children: React.ReactNode }> =>
   ({ children }) => {
     const queryClient = createTestQueryClient();
 
@@ -82,14 +84,14 @@ const createWrapper =
     );
   };
 
-createWrapper.displayName = 'TestLoadingWrapper';
+createWrapper.displayName = "TestLoadingWrapper";
 
-describe('FieldsListPage loading/error/offline states', () => {
+describe("FieldsListPage loading/error/offline states", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('shows LoadingState while fields are loading', () => {
+  it("shows LoadingState while fields are loading", () => {
     useOnlineStatusMock.mockReturnValue({ isOnline: true });
 
     useFields.mockReturnValue({
@@ -108,7 +110,7 @@ describe('FieldsListPage loading/error/offline states', () => {
     expect(screen.getByText(/loading fields/i)).toBeInTheDocument();
   });
 
-  it('renders ErrorState and calls refetch on Retry', () => {
+  it("renders ErrorState and calls refetch on Retry", () => {
     const refetchMock = jest.fn();
     useOnlineStatusMock.mockReturnValue({ isOnline: true });
 
@@ -116,7 +118,7 @@ describe('FieldsListPage loading/error/offline states', () => {
       data: undefined,
       isLoading: false,
       isError: true,
-      error: new Error('Failed'),
+      error: new Error("Failed"),
       refetch: refetchMock,
       isFetching: false,
     });
@@ -125,18 +127,16 @@ describe('FieldsListPage loading/error/offline states', () => {
 
     render(<FieldsListPage />, { wrapper });
 
-    expect(
-      screen.getByText(/unable to load your fields/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/unable to load your fields/i)).toBeInTheDocument();
     expect(screen.getByText(/failed/i)).toBeInTheDocument();
 
-    const retryButton = screen.getByRole('button', { name: /retry/i });
+    const retryButton = screen.getByRole("button", { name: /retry/i });
     fireEvent.click(retryButton);
 
     expect(refetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it('shows offline hint when offline with cached data', () => {
+  it("shows offline hint when offline with cached data", () => {
     useOnlineStatusMock.mockReturnValue({ isOnline: false });
 
     const params: ListParams = {
@@ -147,12 +147,12 @@ describe('FieldsListPage loading/error/offline states', () => {
     const apiResponse: PaginatedResponse<FieldSummary> = {
       data: [
         {
-          id: 'field-1',
-          name: 'Offline Field',
+          id: "field-1",
+          name: "Offline Field",
           areaHa: 1.23,
-          createdAt: '2025-01-01T00:00:00.000Z',
-          updatedAt: '2025-01-02T00:00:00.000Z',
-          status: 'active',
+          createdAt: "2025-01-01T00:00:00.000Z",
+          updatedAt: "2025-01-02T00:00:00.000Z",
+          status: "active",
           centroidLatLon: {
             lat: 7.05,
             lon: 80.05,
@@ -165,7 +165,7 @@ describe('FieldsListPage loading/error/offline states', () => {
         total: 1,
       },
       meta: {
-        source: 'test',
+        source: "test",
       },
     };
 

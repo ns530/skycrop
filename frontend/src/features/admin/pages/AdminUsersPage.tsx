@@ -1,11 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState } from "react";
 
-import { useToast } from '../../../shared/hooks/useToast';
-import { Button } from '../../../shared/ui/Button';
-import { Card } from '../../../shared/ui/Card';
-import { Modal } from '../../../shared/ui/Modal';
-import type { AdminUserStatus, AdminUserSummary } from '../api/adminApi';
-import { useAdminUsers, useUpdateUserStatus } from '../hooks/useAdmin';
+import { useToast } from "../../../shared/hooks/useToast";
+import { Button } from "../../../shared/ui/Button";
+import { Card } from "../../../shared/ui/Card";
+import { Modal } from "../../../shared/ui/Modal";
+import type { AdminUserStatus, AdminUserSummary } from "../api/adminApi";
+import { useAdminUsers, useUpdateUserStatus } from "../hooks/useAdmin";
 
 /**
  * AdminUsersPage
@@ -15,8 +15,8 @@ import { useAdminUsers, useUpdateUserStatus } from '../hooks/useAdmin';
  * - Provides basic role/status filtering (client-side)
  * - Allows enabling/disabling users with confirmation
  */
-type RoleFilter = 'all' | 'farmer' | 'admin';
-type StatusFilter = 'all' | 'active' | 'disabled';
+type RoleFilter = "all" | "farmer" | "admin";
+type StatusFilter = "all" | "active" | "disabled";
 
 interface PendingStatusChange {
   user: AdminUserSummary;
@@ -24,7 +24,7 @@ interface PendingStatusChange {
 }
 
 const formatLastActive = (value?: string): string => {
-  if (!value) return '—';
+  if (!value) return "—";
   const date = new Date(value);
   // Fallback if parsing fails
   if (Number.isNaN(date.getTime())) return value;
@@ -34,29 +34,37 @@ const formatLastActive = (value?: string): string => {
 export const AdminUsersPage: React.FC = () => {
   const { showToast } = useToast();
 
-  const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
-  const { data, isLoading, isError, error, refetch, isFetching } = useAdminUsers({
-    page: 1,
-    pageSize: 50,
-  });
+  const { data, isLoading, isError, error, refetch, isFetching } =
+    useAdminUsers({
+      page: 1,
+      pageSize: 50,
+    });
 
   const users = data?.data ?? [];
 
   const filteredUsers = useMemo(() => {
     return users.filter((user: AdminUserSummary) => {
-      const matchesRole = roleFilter === 'all' ? true : user.role.toLowerCase() === roleFilter;
-      const matchesStatus = statusFilter === 'all' ? true : user.status === statusFilter;
+      const matchesRole =
+        roleFilter === "all" ? true : user.role.toLowerCase() === roleFilter;
+      const matchesStatus =
+        statusFilter === "all" ? true : user.status === statusFilter;
       return matchesRole && matchesStatus;
     });
   }, [users, roleFilter, statusFilter]);
 
-  const { mutateAsync: updateStatus, isPending: isUpdatingStatus } = useUpdateUserStatus();
+  const { mutateAsync: updateStatus, isPending: isUpdatingStatus } =
+    useUpdateUserStatus();
 
-  const [pendingChange, setPendingChange] = useState<PendingStatusChange | null>(null);
+  const [pendingChange, setPendingChange] =
+    useState<PendingStatusChange | null>(null);
 
-  const openConfirmModal = (user: AdminUserSummary, nextStatus: AdminUserStatus) => {
+  const openConfirmModal = (
+    user: AdminUserSummary,
+    nextStatus: AdminUserStatus,
+  ) => {
     setPendingChange({ user, nextStatus });
   };
 
@@ -70,9 +78,10 @@ export const AdminUsersPage: React.FC = () => {
     } catch (err) {
       const apiError = error ?? (err as Error);
       showToast({
-        title: 'Failed to load users',
-        description: apiError?.message ?? 'Something went wrong while fetching users.',
-        variant: 'error',
+        title: "Failed to load users",
+        description:
+          apiError?.message ?? "Something went wrong while fetching users.",
+        variant: "error",
       });
     }
   };
@@ -87,24 +96,26 @@ export const AdminUsersPage: React.FC = () => {
       });
 
       showToast({
-        title: 'User status updated',
+        title: "User status updated",
         description: `${pendingChange.user.email} is now ${pendingChange.nextStatus}.`,
-        variant: 'success',
+        variant: "success",
       });
 
       closeConfirmModal();
     } catch (err) {
       const apiError = err as Error;
       showToast({
-        title: 'Failed to update user',
-        description: apiError?.message ?? 'Something went wrong while updating the user status.',
-        variant: 'error',
+        title: "Failed to update user",
+        description:
+          apiError?.message ??
+          "Something went wrong while updating the user status.",
+        variant: "error",
       });
     }
   };
 
   const renderStatusBadge = (status: AdminUserStatus) => {
-    if (status === 'active') {
+    if (status === "active") {
       return (
         <span className="inline-flex items-center rounded-full bg-status-excellent/10 px-2 py-0.5 text-xs font-medium text-status-excellent">
           Active
@@ -120,23 +131,27 @@ export const AdminUsersPage: React.FC = () => {
   };
 
   const renderRow = (user: AdminUserSummary) => {
-    const isActive = user.status === 'active';
-    const nextStatus: AdminUserStatus = isActive ? 'disabled' : 'active';
+    const isActive = user.status === "active";
+    const nextStatus: AdminUserStatus = isActive ? "disabled" : "active";
 
     return (
       <tr key={user.id} className="hover:bg-gray-50 text-gray-900">
         <td className="px-4 py-3 text-sm font-medium">{user.name}</td>
         <td className="px-4 py-3 text-xs text-gray-700">{user.email}</td>
-        <td className="px-4 py-3 text-xs text-gray-700 capitalize">{user.role}</td>
+        <td className="px-4 py-3 text-xs text-gray-700 capitalize">
+          {user.role}
+        </td>
         <td className="px-4 py-3 text-xs">{renderStatusBadge(user.status)}</td>
-        <td className="px-4 py-3 text-xs text-gray-600">{formatLastActive(user.lastActiveAt)}</td>
+        <td className="px-4 py-3 text-xs text-gray-600">
+          {formatLastActive(user.lastActiveAt)}
+        </td>
         <td className="px-4 py-3 text-right">
           <Button
             size="sm"
-            variant={isActive ? 'secondary' : 'primary'}
+            variant={isActive ? "secondary" : "primary"}
             onClick={() => openConfirmModal(user, nextStatus)}
           >
-            {isActive ? 'Disable' : 'Enable'}
+            {isActive ? "Disable" : "Enable"}
           </Button>
         </td>
       </tr>
@@ -147,10 +162,15 @@ export const AdminUsersPage: React.FC = () => {
     <section aria-labelledby="admin-users-heading" className="space-y-4">
       <header className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 id="admin-users-heading" className="text-lg font-semibold text-gray-900">
+          <h1
+            id="admin-users-heading"
+            className="text-lg font-semibold text-gray-900"
+          >
             User management
           </h1>
-          <p className="text-sm text-gray-600">View and manage farmer and admin accounts.</p>
+          <p className="text-sm text-gray-600">
+            View and manage farmer and admin accounts.
+          </p>
         </div>
       </header>
 
@@ -185,7 +205,9 @@ export const AdminUsersPage: React.FC = () => {
             </select>
           </div>
           <div className="ml-auto text-gray-500">
-            {isFetching ? 'Refreshing users…' : `Total users: ${data?.pagination.total ?? 0}`}
+            {isFetching
+              ? "Refreshing users…"
+              : `Total users: ${data?.pagination.total ?? 0}`}
           </div>
         </div>
 
@@ -193,19 +215,34 @@ export const AdminUsersPage: React.FC = () => {
           <table className="min-w-full divide-y divide-gray-100 text-left text-sm">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                <th
+                  scope="col"
+                  className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500"
+                >
                   Name
                 </th>
-                <th scope="col" className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                <th
+                  scope="col"
+                  className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500"
+                >
                   Email
                 </th>
-                <th scope="col" className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                <th
+                  scope="col"
+                  className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500"
+                >
                   Role
                 </th>
-                <th scope="col" className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                <th
+                  scope="col"
+                  className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500"
+                >
                   Status
                 </th>
-                <th scope="col" className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                <th
+                  scope="col"
+                  className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500"
+                >
                   Last active
                 </th>
                 <th
@@ -219,7 +256,10 @@ export const AdminUsersPage: React.FC = () => {
             <tbody className="divide-y divide-gray-100">
               {isLoading && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center text-sm text-gray-500">
+                  <td
+                    colSpan={6}
+                    className="px-4 py-6 text-center text-sm text-gray-500"
+                  >
                     Loading users…
                   </td>
                 </tr>
@@ -227,10 +267,17 @@ export const AdminUsersPage: React.FC = () => {
 
               {!isLoading && isError && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center text-sm text-red-600">
+                  <td
+                    colSpan={6}
+                    className="px-4 py-6 text-center text-sm text-red-600"
+                  >
                     <div className="flex flex-col items-center gap-3">
                       <p>Unable to load users.</p>
-                      <Button size="sm" variant="secondary" onClick={handleRetry}>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={handleRetry}
+                      >
                         Retry
                       </Button>
                     </div>
@@ -240,7 +287,10 @@ export const AdminUsersPage: React.FC = () => {
 
               {!isLoading && !isError && filteredUsers.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center text-sm text-gray-500">
+                  <td
+                    colSpan={6}
+                    className="px-4 py-6 text-center text-sm text-gray-500"
+                  >
                     No users match the selected filters.
                   </td>
                 </tr>
@@ -252,23 +302,38 @@ export const AdminUsersPage: React.FC = () => {
         </div>
       </Card>
 
-      <Modal isOpen={!!pendingChange} onClose={closeConfirmModal} title="Change user status">
+      <Modal
+        isOpen={!!pendingChange}
+        onClose={closeConfirmModal}
+        title="Change user status"
+      >
         {pendingChange && (
           <div className="space-y-3">
             <p className="text-sm text-gray-700">
-              You are about to change the status for{' '}
-              <span className="font-medium">{pendingChange.user.email}</span> to{' '}
+              You are about to change the status for{" "}
+              <span className="font-medium">{pendingChange.user.email}</span> to{" "}
               <span className="font-medium">{pendingChange.nextStatus}</span>.
             </p>
             <p className="text-xs text-gray-500">
-              Disabled users will not be able to sign in or access the platform until re-enabled.
+              Disabled users will not be able to sign in or access the platform
+              until re-enabled.
             </p>
             <div className="flex justify-end gap-2 pt-2">
-              <Button size="sm" variant="secondary" onClick={closeConfirmModal} disabled={isUpdatingStatus}>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={closeConfirmModal}
+                disabled={isUpdatingStatus}
+              >
                 Cancel
               </Button>
-              <Button size="sm" variant="primary" onClick={handleConfirmChange} disabled={isUpdatingStatus}>
-                {isUpdatingStatus ? 'Updating…' : 'Confirm'}
+              <Button
+                size="sm"
+                variant="primary"
+                onClick={handleConfirmChange}
+                disabled={isUpdatingStatus}
+              >
+                {isUpdatingStatus ? "Updating…" : "Confirm"}
               </Button>
             </div>
           </div>

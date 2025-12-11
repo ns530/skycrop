@@ -3,11 +3,11 @@
  * Card display for news article preview in list
  */
 
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { useNavigate } from "react-router-dom";
 
-import { Card } from '../../../shared/ui/Card';
-import type { NewsArticle } from '../api/newsApi';
+import { Card } from "../../../shared/ui/Card";
+import type { NewsArticle } from "../api/newsApi";
 
 interface NewsCardProps {
   article: NewsArticle;
@@ -18,15 +18,38 @@ interface NewsCardProps {
  * Get category display info
  */
 const getCategoryInfo = (category?: string) => {
-  const categoryMap: Record<string, { label: string; color: string; icon: string }> = {
-    'farming-tips': { label: 'Farming Tips', color: 'bg-green-100 text-green-800', icon: '🌾' },
-    'weather': { label: 'Weather', color: 'bg-blue-100 text-blue-800', icon: '🌤️' },
-    'market-prices': { label: 'Market Prices', color: 'bg-yellow-100 text-yellow-800', icon: '💰' },
-    'government-schemes': { label: 'Gov Schemes', color: 'bg-purple-100 text-purple-800', icon: '🏛️' },
-    'general': { label: 'General', color: 'bg-gray-100 text-gray-800', icon: '📰' },
+  const categoryMap: Record<
+    string,
+    { label: string; color: string; icon: string }
+  > = {
+    "farming-tips": {
+      label: "Farming Tips",
+      color: "bg-green-100 text-green-800",
+      icon: "🌾",
+    },
+    weather: {
+      label: "Weather",
+      color: "bg-blue-100 text-blue-800",
+      icon: "🌤️",
+    },
+    "market-prices": {
+      label: "Market Prices",
+      color: "bg-yellow-100 text-yellow-800",
+      icon: "💰",
+    },
+    "government-schemes": {
+      label: "Gov Schemes",
+      color: "bg-purple-100 text-purple-800",
+      icon: "🏛️",
+    },
+    general: {
+      label: "General",
+      color: "bg-gray-100 text-gray-800",
+      icon: "📰",
+    },
   };
 
-  return categoryMap[category || 'general'] || categoryMap.general;
+  return categoryMap[category || "general"] || categoryMap.general;
 };
 
 /**
@@ -38,17 +61,21 @@ const getRelativeTime = (dateString: string): string => {
   const diffMs = now.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
   if (diffDays < 7) return `${diffDays} days ago`;
   if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
   if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 };
 
 /**
  * NewsCard
- * 
+ *
  * Displays article preview with:
  * - Title and summary
  * - Category badge
@@ -56,7 +83,7 @@ const getRelativeTime = (dateString: string): string => {
  * - Optional image
  * - View count
  * - Click to navigate
- * 
+ *
  * @example
  * ```tsx
  * <NewsCard
@@ -81,7 +108,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({ article, onPrefetch }) => {
   };
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === 'Enter' || event.key === ' ') {
+    if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       handleClick();
     }
@@ -118,7 +145,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({ article, onPrefetch }) => {
               <span>{categoryInfo.icon}</span>
               <span>{categoryInfo.label}</span>
             </span>
-            
+
             <span className="text-xs text-gray-500 shrink-0">
               {getRelativeTime(article.publishedAt)}
             </span>
@@ -138,9 +165,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({ article, onPrefetch }) => {
           <div className="flex items-center justify-between pt-2 border-t">
             {/* Author */}
             {article.author && (
-              <span className="text-xs text-gray-500">
-                By {article.author}
-              </span>
+              <span className="text-xs text-gray-500">By {article.author}</span>
             )}
 
             {/* View count */}
@@ -182,4 +207,3 @@ export const NewsCard: React.FC<NewsCardProps> = ({ article, onPrefetch }) => {
 };
 
 export default NewsCard;
-

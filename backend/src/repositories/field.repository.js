@@ -1,7 +1,7 @@
 'use strict';
 
-const Field = require('../models/field.model');
 const { Op } = require('sequelize');
+const Field = require('../models/field.model');
 
 /**
  * Repository for field data access
@@ -9,23 +9,23 @@ const { Op } = require('sequelize');
 class FieldRepository {
   /**
    * Find field by ID
-   * @param {string} fieldId - Field UUID
+   * @param {string} field_id - Field UUID
    * @returns {Promise<Field|null>}
    */
-  async findById(fieldId) {
-    return await Field.findByPk(fieldId);
+  async findById(field_id) {
+    return await Field.findByPk(field_id);
   }
 
   /**
    * Find fields by user ID
-   * @param {string} userId - User UUID
+   * @param {string} user_id - User UUID
    * @param {Object} options - Query options
    * @returns {Promise<Array<Field>>}
    */
-  async findByUserId(userId, options = {}) {
+  async findByuser_id(user_id, options = {}) {
     const { status = 'active', limit = 100 } = options;
 
-    const where = { user_id: userId };
+    const where = { user_id: user_id };
 
     if (status) {
       where.status = status;
@@ -33,7 +33,7 @@ class FieldRepository {
 
     return await Field.findAll({
       where,
-      order: [['created_at', 'DESC']],
+      order: [['createdat', 'DESC']],
       limit,
     });
   }
@@ -49,13 +49,13 @@ class FieldRepository {
 
   /**
    * Update a field
-   * @param {string} fieldId - Field UUID
+   * @param {string} field_id - Field UUID
    * @param {Object} updates - Field updates
    * @returns {Promise<Field>}
    */
-  async update(fieldId, updates) {
-    const field = await this.findById(fieldId);
-    
+  async update(field_id, updates) {
+    const field = await this.findById(field_id);
+
     if (!field) {
       const error = new Error('Field not found');
       error.statusCode = 404;
@@ -68,12 +68,12 @@ class FieldRepository {
 
   /**
    * Delete a field (soft delete by setting status to 'deleted')
-   * @param {string} fieldId - Field UUID
+   * @param {string} field_id - Field UUID
    * @returns {Promise<boolean>}
    */
-  async delete(fieldId) {
-    const field = await this.findById(fieldId);
-    
+  async delete(field_id) {
+    const field = await this.findById(field_id);
+
     if (!field) {
       return false;
     }
@@ -85,18 +85,18 @@ class FieldRepository {
   /**
    * Find fields within a bounding box
    * @param {Object} bounds - Bounding box { minLat, maxLat, minLon, maxLon }
-   * @param {string} userId - Optional user UUID to filter
+   * @param {string} user_id - Optional user UUID to filter
    * @returns {Promise<Array<Field>>}
    */
-  async findWithinBounds(bounds, userId = null) {
+  async findWithinBounds(bounds, user_id = null) {
     const { minLat, maxLat, minLon, maxLon } = bounds;
-    
+
     const where = {
       status: 'active',
     };
 
-    if (userId) {
-      where.user_id = userId;
+    if (user_id) {
+      where.user_id = user_id;
     }
 
     // Note: This is a simplified bounding box query
@@ -109,13 +109,13 @@ class FieldRepository {
 
   /**
    * Count fields by user
-   * @param {string} userId - User UUID
+   * @param {string} user_id - User UUID
    * @returns {Promise<number>}
    */
-  async countByUser(userId) {
+  async countByUser(user_id) {
     return await Field.count({
       where: {
-        user_id: userId,
+        user_id: user_id,
         status: 'active',
       },
     });
@@ -123,4 +123,3 @@ class FieldRepository {
 }
 
 module.exports = FieldRepository;
-

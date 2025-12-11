@@ -10,15 +10,19 @@ class MLGatewayService {
   constructor() {
     this.redis = null;
 
-    this.ML_BASE_URL = (process.env.ML_BASE_URL || 'http://localhost:80').replace(/\/+$/,'');
-    this.ML_INTERNAL_TOKEN = process.env.ML_INTERNAL_TOKEN || 'change-me';
-    this.CACHE_TTL = parseInt(process.env.ML_PREDICT_CACHE_TTL_SECONDS || '86400', 10);
-    this.TIMEOUT_MS = parseInt(process.env.ML_REQUEST_TIMEOUT_MS || '60000', 10);
+    this.MLBASEURL = (process.env.MLBASEURL || 'http://localhost:80').replace(/\/+$/, '');
+    this.MLINTERNALTOKEN = process.env.MLINTERNALTOKEN || 'change-me';
+    this.CACHETTL = parseInt(process.env.MLPREDICTCACHETTLSECONDS || '86400', 10);
+    this.TIMEOUTMS = parseInt(process.env.MLREQUESTTIMEOUTMS || '60000', 10);
 
     // New: alternate service/env keys used by detectBoundaries()
-    this.ML_SERVICE_URL = (process.env.ML_SERVICE_URL || this.ML_BASE_URL || 'http://localhost:80').replace(/\/+$/,'');
-    this.ML_SERVICE_TOKEN = process.env.ML_SERVICE_TOKEN || this.ML_INTERNAL_TOKEN || 'change-me';
-    this.MODEL_UNET_VERSION = process.env.MODEL_UNET_VERSION || '1.0.0';
+    this.MLSERVICEURL = (
+      process.env.MLSERVICEURL ||
+      this.MLBASEURL ||
+      'http://localhost:80'
+    ).replace(/\/+$/, '');
+    this.MLSERVICETOKEN = process.env.MLSERVICETOKEN || this.MLINTERNALTOKEN || 'change-me';
+    this.MODELUNETVERSION = process.env.MODELUNETVERSION || '1.0.0';
   }
 
   async init() {
@@ -29,8 +33,8 @@ class MLGatewayService {
   }
 
   // stable stringify
-  _stableStringify(obj) {
-    const sorter = (value) => {
+  stableStringify(obj) {
+    const sorter = value => {
       if (value && typeof value === 'object') {
         if (Array.isArray(value)) {
           return value.map(sorter);
@@ -47,7 +51,7 @@ class MLGatewayService {
     return JSON.stringify(sorter(obj));
   }
 
-  _sha1(data) {
+  sha1(data) {
     return crypto.createHash('sha1').update(data).digest('hex');
   }
 
@@ -63,8 +67,8 @@ class MLGatewayService {
     if (input.date) {
       out.date = String(input.date);
     }
-    if (input.model_version) {
-      out.model_version = String(input.model_version);
+    if (input.modelversion) {
+      out.modelversion = String(input.modelversion);
     }
     if (input.tiling && typeof input.tiling === 'object') {
       const size = Number.isInteger(input.tiling.size) ? input.tiling.size : 512;
@@ -73,7 +77,7 @@ class MLGatewayService {
     } else {
       out.tiling = { size: 512, overlap: 64 };
     }
-    out.return = input.return === 'inline' ? 'inline' : 'mask_url';
+    out.return = input.return === 'inline' ? 'inline' : 'maskurl';
     return out;
   }
 
@@ -93,36 +97,36 @@ class MLGatewayService {
     if (Array.isArray(input.rows)) {
       out.rows = input.rows.map(row => row.map(Number));
     }
-    if (Array.isArray(input.feature_names)) {
-      out.feature_names = input.feature_names;
+    if (Array.isArray(input.featurenames)) {
+      out.featurenames = input.featurenames;
     }
-    if (input.model_version) {
-      out.model_version = String(input.model_version);
+    if (input.modelversion) {
+      out.modelversion = String(input.modelversion);
     }
     return out;
   }
 
   computeRequestHash(payload) {
-    const stable = this._stableStringify(payload);
-    return this._sha1(stable);
+    const stable = this.stableStringify(payload);
+    return this.sha1(stable);
   }
 
-  _cacheKey(hash) {
+  cacheKey(hash) {
     return `ml:segmentation:predict:${hash}`;
   }
 
-  _yieldCacheKey(hash) {
+  yieldCacheKey(hash) {
     return `ml:yield:predict:${hash}`;
   }
 
-  _estimateHarvestDate() {
+  estimateHarvestDate() {
     // Estimate harvest date as 4 months from now (typical for paddy rice)
     const now = new Date();
     now.setMonth(now.getMonth() + 4);
     return now.toISOString().split('T')[0];
   }
 
-  _getPreviousSeasonYield(fieldId) {
+  getPreviousSeasonYield(field_id) {
     // Mock previous season yield - in real implementation, query database
     // Return a value slightly lower than current optimal
     return 4800; // kg/ha
@@ -141,47 +145,50 @@ class MLGatewayService {
   async cacheSet(key, value) {
     const str = JSON.stringify(value);
     if (typeof this.redis.setEx === 'function') {
-      await this.redis.setEx(key, this.CACHE_TTL, str);
+      await this.redis.setEx(key, this.CACHETTL, str);
     } else {
-      await this.redis.setex(key, this.CACHE_TTL, str);
+      await this.redis.setex(key, this.CACHETTL, str);
     }
   }
 
-  async _callML(payload, correlationId) {
-    const url = `${this.ML_SERVICE_URL}/v1/segmentation/predict`;
+  async callML(payload, correlationId) {
+    const url = `${this.MLSERVICEURL}/v1/segmentation/predict`;
     const headers = {
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'X-Internal-Token': this.ML_INTERNAL_TOKEN,
+      Accept: 'application/json',
+      'X-Internal-Token': this.MLINTERNALTOKEN,
     };
-    if (this.ML_SERVICE_TOKEN) headers['Authorization'] = `Bearer ${this.ML_SERVICE_TOKEN}`;
+    if (this.MLSERVICETOKEN) headers.Authorization = `Bearer ${this.MLSERVICETOKEN}`;
     if (correlationId) headers['X-Request-Id'] = correlationId;
-    if (payload.model_version) headers['X-Model-Version'] = payload.model_version;
+    if (payload.modelversion) headers['X-Model-Version'] = payload.modelversion;
 
     const started = Date.now();
     let resp;
     try {
-      resp = await axios.post(url, payload, { headers,
-        timeout: this.TIMEOUT_MS,
-        validateStatus: (s) => s >= 200 && s < 600, // treat 5xx as handled errors
+      resp = await axios.post(url, payload, {
+        headers,
+        timeout: this.TIMEOUTMS,
+        validateStatus: s => s >= 200 && s < 600, // treat 5xx as handled errors
       });
     } catch (err) {
       const latency = Date.now() - started;
-      logger.error('ml.gateway.http_error', {
+      logger.error('ml.gateway.httperror', {
         route: '/api/v1/ml/segmentation/predict',
-        latency_ms: latency,
+        latencyms: latency,
         message: err.message,
       });
-      throw new AppError('UPSTREAM_ERROR', 'ML service request failed', 502, { message: err.message });
+      throw new AppError('UPSTREAMERROR', 'ML service request failed', 502, {
+        message: err.message,
+      });
     }
 
     const latency = Date.now() - started;
     logger.info('ml.gateway.downstream', {
       route: '/api/v1/ml/segmentation/predict',
-      latency_ms: latency,
-      downstream_status: resp.status,
-      correlation_id: correlationId,
-      model_version: resp.headers?.['x-model-version'] || payload.model_version || null,
+      latencyms: latency,
+      downstreamstatus: resp.status,
+      correlationid: correlationId,
+      modelversion: resp.headers?.['x-model-version'] || payload.modelversion || null,
     });
 
     if (resp.status >= 200 && resp.status < 300) {
@@ -190,50 +197,53 @@ class MLGatewayService {
         status: resp.status,
         headers: resp.headers || {},
         data: resp.data,
-        latency_ms: latency,
+        latencyms: latency,
       };
     }
 
     // Map error
-    const e = this._mapDownstreamError(resp);
+    const e = this.mapDownstreamError(resp);
     throw e;
   }
 
-  async _callYieldML(payload, correlationId) {
-    const url = `${this.ML_SERVICE_URL}/v1/yield/predict`;
+  async callYieldML(payload, correlationId) {
+    const url = `${this.MLSERVICEURL}/v1/yield/predict`;
     const headers = {
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'X-Internal-Token': this.ML_INTERNAL_TOKEN,
+      Accept: 'application/json',
+      'X-Internal-Token': this.MLINTERNALTOKEN,
     };
-    if (this.ML_SERVICE_TOKEN) headers['Authorization'] = `Bearer ${this.ML_SERVICE_TOKEN}`;
+    if (this.MLSERVICETOKEN) headers.Authorization = `Bearer ${this.MLSERVICETOKEN}`;
     if (correlationId) headers['X-Request-Id'] = correlationId;
-    if (payload.model_version) headers['X-Model-Version'] = payload.model_version;
+    if (payload.modelversion) headers['X-Model-Version'] = payload.modelversion;
 
     const started = Date.now();
     let resp;
     try {
-      resp = await axios.post(url, payload, { headers,
-        timeout: this.TIMEOUT_MS,
-        validateStatus: (s) => s >= 200 && s < 600, // treat 5xx as handled errors
+      resp = await axios.post(url, payload, {
+        headers,
+        timeout: this.TIMEOUTMS,
+        validateStatus: s => s >= 200 && s < 600, // treat 5xx as handled errors
       });
     } catch (err) {
       const latency = Date.now() - started;
-      logger.error('ml.gateway.http_error', {
+      logger.error('ml.gateway.httperror', {
         route: '/api/v1/ml/yield/predict',
-        latency_ms: latency,
+        latencyms: latency,
         message: err.message,
       });
-      throw new AppError('UPSTREAM_ERROR', 'ML service request failed', 502, { message: err.message });
+      throw new AppError('UPSTREAMERROR', 'ML service request failed', 502, {
+        message: err.message,
+      });
     }
 
     const latency = Date.now() - started;
     logger.info('ml.gateway.downstream', {
       route: '/api/v1/ml/yield/predict',
-      latency_ms: latency,
-      downstream_status: resp.status,
-      correlation_id: correlationId,
-      model_version: resp.headers?.['x-model-version'] || payload.model_version || null,
+      latencyms: latency,
+      downstreamstatus: resp.status,
+      correlationid: correlationId,
+      modelversion: resp.headers?.['x-model-version'] || payload.modelversion || null,
     });
 
     if (resp.status >= 200 && resp.status < 300) {
@@ -242,55 +252,76 @@ class MLGatewayService {
         status: resp.status,
         headers: resp.headers || {},
         data: resp.data,
-        latency_ms: latency,
+        latencyms: latency,
       };
     }
 
     // Map error
-    const e = this._mapDownstreamError(resp);
+    const e = this.mapDownstreamError(resp);
     throw e;
   }
 
-  _mapDownstreamError(resp) {
+  mapDownstreamError(resp) {
     const status = resp.status || 500;
     const body = resp.data || {};
     const err = body.error || {};
     const code = String(err.code || '').toUpperCase();
 
     switch (code) {
-      case 'INVALID_INPUT':
-        return new AppError('INVALID_INPUT', err.message || 'Invalid input', 400, err.details || {});
-      case 'MODEL_NOT_FOUND':
-        return new AppError('MODEL_NOT_FOUND', err.message || 'Model not found', 404, err.details || {});
+      case 'INVALIDINPUT':
+        return new AppError(
+          'INVALIDINPUT',
+          err.message || 'Invalid input',
+          400,
+          err.details || {}
+        );
+      case 'MODELNOTFOUND':
+        return new AppError(
+          'MODELNOTFOUND',
+          err.message || 'Model not found',
+          404,
+          err.details || {}
+        );
       case 'TIMEOUT':
         return new AppError('TIMEOUT', err.message || 'Timeout', 504, err.details || {});
-      case 'NOT_IMPLEMENTED':
-        return new AppError('NOT_IMPLEMENTED', err.message || 'Not implemented', 501, err.details || {});
-      case 'UPSTREAM_ERROR':
-        return new AppError('UPSTREAM_ERROR', err.message || 'Upstream error', status >= 500 && status < 600 ? status : 502, err.details || {});
-      case 'AUTH_REQUIRED':
+      case 'NOTIMPLEMENTED':
+        return new AppError(
+          'NOTIMPLEMENTED',
+          err.message || 'Not implemented',
+          501,
+          err.details || {}
+        );
+      case 'UPSTREAMERROR':
+        return new AppError(
+          'UPSTREAMERROR',
+          err.message || 'Upstream error',
+          status >= 500 && status < 600 ? status : 502,
+          err.details || {}
+        );
+      case 'AUTHREQUIRED':
         return new AppError('UNAUTHORIZED', err.message || 'Auth required', 401, err.details || {});
-      case 'UNAUTHORIZED_INTERNAL':
+      case 'UNAUTHORIZEDINTERNAL':
         return new AppError('FORBIDDEN', err.message || 'Forbidden', 403, err.details || {});
       default:
-        if (status === 404) return new AppError('MODEL_NOT_FOUND', 'Model not found', 404, {});
-        if (status === 501) return new AppError('NOT_IMPLEMENTED', 'Not implemented', 501, {});
+        if (status === 404) return new AppError('MODELNOTFOUND', 'Model not found', 404, {});
+        if (status === 501) return new AppError('NOTIMPLEMENTED', 'Not implemented', 501, {});
         if (status === 504 || status === 408) return new AppError('TIMEOUT', 'Timeout', 504, {});
-        if (status >= 400 && status < 500) return new AppError('INVALID_INPUT', 'Invalid input', 400, {});
-        return new AppError('UPSTREAM_ERROR', 'ML service error', 502, { status });
+        if (status >= 400 && status < 500)
+          return new AppError('INVALIDINPUT', 'Invalid input', 400, {});
+        return new AppError('UPSTREAMERROR', 'ML service error', 502, { status });
     }
   }
 
   /**
-   * Predict with caching (mask_url variant cached only)
-   * Returns { result, cacheHit, downstreamStatus, modelVersion, latency_ms }
+   * Predict with caching (maskurl variant cached only)
+   * Returns { result, cacheHit, downstreamStatus, modelVersion, latencyms }
    */
   async predict(input, correlationId) {
     await this.init();
 
     const payload = this.normalizePayload(input);
     const hash = this.computeRequestHash(payload);
-    const key = this._cacheKey(hash);
+    const key = this.cacheKey(hash);
 
     const wantUrl = payload.return !== 'inline';
 
@@ -302,27 +333,27 @@ class MLGatewayService {
           cacheHit: true,
           downstreamStatus: 200,
           modelVersion: cached?.model?.version || null,
-          latency_ms: 0,
+          latencyms: 0,
         };
       }
     }
 
-    const resp = await this._callML(payload, correlationId);
+    const resp = await this.callML(payload, correlationId);
     const modelVersionHdr = resp.headers?.['x-model-version'] || null;
 
     // Normalize downstream success payload into backend shape
     const data = resp.data || {};
     const normalized = {
-      request_id: data.request_id || correlationId || null,
+      requestid: data.requestid || correlationId || null,
       model: data.model || null,
-      mask_url: data.mask_url,
-      mask_base64: data.mask_base64,
-      mask_format: data.mask_format,
+      maskurl: data.maskurl,
+      maskbase64: data.maskbase64,
+      maskformat: data.maskformat,
       metrics: data.metrics,
       warnings: data.warnings || [],
     };
 
-    if (wantUrl && normalized.mask_url) {
+    if (wantUrl && normalized.maskurl) {
       await this.cacheSet(key, normalized);
     }
 
@@ -330,8 +361,9 @@ class MLGatewayService {
       result: { success: true, data: normalized },
       cacheHit: false,
       downstreamStatus: resp.status,
-      modelVersion: modelVersionHdr || (data.model && data.model.version) || payload.model_version || null,
-      latency_ms: resp.latency_ms,
+      modelVersion:
+        modelVersionHdr || (data.model && data.model.version) || payload.modelversion || null,
+      latencyms: resp.latencyms,
     };
   }
 
@@ -345,27 +377,31 @@ class MLGatewayService {
 
     // Basic bbox validation: [minLon, minLat, maxLon, maxLat]
     if (!Array.isArray(bbox) || bbox.length !== 4) {
-      throw new AppError('INVALID_INPUT', 'bbox must be [minLon,minLat,maxLon,maxLat]', 400, { bbox });
+      throw new AppError('INVALIDINPUT', 'bbox must be [minLon,minLat,maxLon,maxLat]', 400, {
+        bbox,
+      });
     }
     const nums = bbox.map(Number);
-    if (nums.some((n) => !Number.isFinite(n))) {
-      throw new AppError('INVALID_INPUT', 'bbox coordinates must be finite numbers', 400, { bbox });
+    if (nums.some(n => !Number.isFinite(n))) {
+      throw new AppError('INVALIDINPUT', 'bbox coordinates must be finite numbers', 400, { bbox });
     }
     const [minLon, minLat, maxLon, maxLat] = nums;
     if (minLon >= maxLon || minLat >= maxLat) {
-      throw new AppError('INVALID_INPUT', 'bbox min must be less than max for lon/lat', 400, { bbox });
+      throw new AppError('INVALIDINPUT', 'bbox min must be less than max for lon/lat', 400, {
+        bbox,
+      });
     }
     if (minLon < -180 || maxLon > 180 || minLat < -90 || maxLat > 90) {
-      throw new AppError('INVALID_INPUT', 'bbox coordinates out of range', 400, { bbox });
+      throw new AppError('INVALIDINPUT', 'bbox coordinates out of range', 400, { bbox });
     }
 
-    const effectiveVersion = String(options.modelVersion || this.MODEL_UNET_VERSION || '1.0.0');
-    const returnPref = options.returnFormat === 'inline' ? 'inline' : 'mask_url';
+    const effectiveVersion = String(options.modelVersion || this.MODELUNETVERSION || '1.0.0');
+    const returnPref = options.returnFormat === 'inline' ? 'inline' : 'maskurl';
 
-    // Reuse predict() to preserve hashing/caching/_callML/error mapping patterns
+    // Reuse predict() to preserve hashing/caching/callML/error mapping patterns
     const input = {
       bbox: [minLon, minLat, maxLon, maxLat],
-      model_version: effectiveVersion,
+      modelversion: effectiveVersion,
       return: returnPref,
       // Provide alternate key some services recognize (harmless if ignored)
       return_: returnPref === 'inline' ? 'inline' : 'url',
@@ -375,10 +411,10 @@ class MLGatewayService {
     const data = (result && result.data) || {};
 
     return {
-      requestId: data.request_id || options.correlationId || null,
+      requestId: data.requestid || options.correlationId || null,
       model: data.model || { name: 'unet', version: effectiveVersion },
-      maskUrl: data.mask_url || null,
-      maskBase64: data.mask_base64 || null,
+      maskUrl: data.maskurl || null,
+      maskBase64: data.maskbase64 || null,
       metadata: data.metrics ? { metrics: data.metrics, warnings: data.warnings || [] } : undefined,
     };
   }
@@ -386,27 +422,27 @@ class MLGatewayService {
   /**
    * Get disaster assessment for a field
    */
-  async getDisasterAssessment(fieldId) {
+  async getDisasterAssessment(field_id) {
     // Mock implementation - in real implementation, call ML service disaster analysis
     // For now, return basic assessment based on recent health data
     return {
-      risk_level: 'low', // low, medium, high
-      disaster_types: ['flood'], // possible disasters
+      risklevel: 'low', // low, medium, high
+      disastertypes: ['flood'], // possible disasters
       confidence: 0.85,
-      assessed_at: new Date().toISOString()
+      assessedat: new Date().toISOString(),
     };
   }
 
   /**
    * Predict yield with caching
-   * Returns { result, cacheHit, downstreamStatus, modelVersion, latency_ms }
+   * Returns { result, cacheHit, downstreamStatus, modelVersion, latencyms }
    */
   async yieldPredict(input, correlationId) {
     await this.init();
 
     const payload = this.normalizeYieldPayload(input);
     const hash = this.computeRequestHash(payload);
-    const key = this._yieldCacheKey(hash);
+    const key = this.yieldCacheKey(hash);
 
     // Check cache
     const cached = await this.cacheGet(key);
@@ -416,23 +452,24 @@ class MLGatewayService {
         cacheHit: true,
         downstreamStatus: 200,
         modelVersion: cached?.model?.version || null,
-        latency_ms: 0,
+        latencyms: 0,
       };
     }
 
-    const resp = await this._callYieldML(payload, correlationId);
+    const resp = await this.callYieldML(payload, correlationId);
     const modelVersionHdr = resp.headers?.['x-model-version'] || null;
 
     // Normalize downstream success payload into backend shape
     const data = resp.data || {};
     const normalized = {
-      request_id: data.request_id || correlationId || null,
+      requestid: data.requestid || correlationId || null,
       model: data.model || null,
       predictions: (data.predictions || []).map(prediction => ({
         ...prediction,
-        harvest_date: prediction.harvest_date || this._estimateHarvestDate(),
-        optimal_yield: prediction.optimal_yield || 5500, // kg/ha, typical optimal for paddy
-        previous_season_yield: prediction.previous_season_yield || this._getPreviousSeasonYield(prediction.field_id),
+        harvestdate: prediction.harvestdate || this.estimateHarvestDate(),
+        optimalyield: prediction.optimalyield || 5500, // kg/ha, typical optimal for paddy
+        previousseasonyield:
+          prediction.previousseasonyield || this.getPreviousSeasonYield(prediction.field_id),
       })),
       warnings: data.warnings || [],
     };
@@ -444,8 +481,9 @@ class MLGatewayService {
       result: { success: true, data: normalized },
       cacheHit: false,
       downstreamStatus: resp.status,
-      modelVersion: modelVersionHdr || (data.model && data.model.version) || payload.model_version || null,
-      latency_ms: resp.latency_ms,
+      modelVersion:
+        modelVersionHdr || (data.model && data.model.version) || payload.modelversion || null,
+      latencyms: resp.latencyms,
     };
   }
 }

@@ -1,20 +1,27 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Users, UserPlus, Shield, Search, MoreVertical, Mail } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  Users,
+  UserPlus,
+  Shield,
+  Search,
+  MoreVertical,
+  Mail,
+} from "lucide-react";
+import React, { useState, useEffect } from "react";
 
-import { httpClient } from '../../../shared/api/httpClient';
-import { useToast } from '../../../shared/hooks/useToast';
-import { InviteUserModal } from '../components/InviteUserModal';
-import { PermissionMatrixModal } from '../components/PermissionMatrixModal';
-import { TeamMembersList } from '../components/TeamMembersList';
-import { UserStatsCard } from '../components/UserStatsCard';
+import { httpClient } from "../../../shared/api/httpClient";
+import { useToast } from "../../../shared/hooks/useToast";
+import { InviteUserModal } from "../components/InviteUserModal";
+import { PermissionMatrixModal } from "../components/PermissionMatrixModal";
+import { TeamMembersList } from "../components/TeamMembersList";
+import { UserStatsCard } from "../components/UserStatsCard";
 
 interface User {
   user_id: string;
   email: string;
   name: string;
-  role: 'admin' | 'manager' | 'farmer' | 'viewer';
-  status: 'active' | 'suspended' | 'deleted';
+  role: "admin" | "manager" | "farmer" | "viewer";
+  status: "active" | "suspended" | "deleted";
   created_at: string;
   last_login: string | null;
   profile_photo_url: string | null;
@@ -40,9 +47,9 @@ interface UserStats {
  * Admin interface for managing users, roles, and permissions
  */
 export const TeamManagementPage: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [roleFilter, setRoleFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<string>('active');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("active");
   const [page, setPage] = useState(1);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [permissionMatrixOpen, setPermissionMatrixOpen] = useState(false);
@@ -52,27 +59,33 @@ export const TeamManagementPage: React.FC = () => {
 
   // Fetch users
   const { data: usersData, isLoading: loadingUsers } = useQuery({
-    queryKey: ['admin', 'users', { page, roleFilter, statusFilter, searchQuery }],
+    queryKey: [
+      "admin",
+      "users",
+      { page, roleFilter, statusFilter, searchQuery },
+    ],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: page.toString(),
-        limit: '20',
+        limit: "20",
       });
 
-      if (roleFilter !== 'all') params.append('role', roleFilter);
-      if (statusFilter !== 'all') params.append('status', statusFilter);
-      if (searchQuery) params.append('search', searchQuery);
+      if (roleFilter !== "all") params.append("role", roleFilter);
+      if (statusFilter !== "all") params.append("status", statusFilter);
+      if (searchQuery) params.append("search", searchQuery);
 
-      const response = await httpClient.get(`/admin/users?${params.toString()}`);
+      const response = await httpClient.get(
+        `/admin/users?${params.toString()}`,
+      );
       return response.data.data;
     },
   });
 
   // Fetch user statistics
   const { data: statsData } = useQuery<{ data: UserStats }>({
-    queryKey: ['admin', 'users', 'stats'],
+    queryKey: ["admin", "users", "stats"],
     queryFn: async () => {
-      const response = await httpClient.get('/admin/users/stats');
+      const response = await httpClient.get("/admin/users/stats");
       return response.data;
     },
   });
@@ -80,45 +93,58 @@ export const TeamManagementPage: React.FC = () => {
   // Update user role mutation
   const updateRoleMutation = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
-      const response = await httpClient.patch(`/admin/users/${userId}/role`, { role });
+      const response = await httpClient.patch(`/admin/users/${userId}/role`, {
+        role,
+      });
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
       showToast({
-        variant: 'success',
-        title: 'Role Updated',
-        description: 'User role has been updated successfully',
+        variant: "success",
+        title: "Role Updated",
+        description: "User role has been updated successfully",
       });
     },
     onError: (error: any) => {
       showToast({
-        variant: 'error',
-        title: 'Update Failed',
-        description: error.response?.data?.error?.message || 'Failed to update user role',
+        variant: "error",
+        title: "Update Failed",
+        description:
+          error.response?.data?.error?.message || "Failed to update user role",
       });
     },
   });
 
   // Update user status mutation
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ userId, status }: { userId: string; status: string }) => {
-      const response = await httpClient.patch(`/admin/users/${userId}/status`, { status });
+    mutationFn: async ({
+      userId,
+      status,
+    }: {
+      userId: string;
+      status: string;
+    }) => {
+      const response = await httpClient.patch(`/admin/users/${userId}/status`, {
+        status,
+      });
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
       showToast({
-        variant: 'success',
-        title: 'Status Updated',
-        description: 'User status has been updated successfully',
+        variant: "success",
+        title: "Status Updated",
+        description: "User status has been updated successfully",
       });
     },
     onError: (error: any) => {
       showToast({
-        variant: 'error',
-        title: 'Update Failed',
-        description: error.response?.data?.error?.message || 'Failed to update user status',
+        variant: "error",
+        title: "Update Failed",
+        description:
+          error.response?.data?.error?.message ||
+          "Failed to update user status",
       });
     },
   });
@@ -255,7 +281,7 @@ export const TeamManagementPage: React.FC = () => {
           onClose={() => setInviteModalOpen(false)}
           onSuccess={() => {
             setInviteModalOpen(false);
-            queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+            queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
           }}
         />
       )}
@@ -271,4 +297,3 @@ export const TeamManagementPage: React.FC = () => {
 };
 
 export default TeamManagementPage;
-

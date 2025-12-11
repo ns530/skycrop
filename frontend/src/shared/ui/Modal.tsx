@@ -1,6 +1,6 @@
-import clsx from 'clsx';
-import React, { useEffect, useRef, useId } from 'react';
-import ReactDOM from 'react-dom';
+import clsx from "clsx";
+import React, { useEffect, useRef, useId } from "react";
+import ReactDOM from "react-dom";
 
 export interface ModalProps {
   isOpen: boolean;
@@ -19,13 +19,18 @@ export interface ModalProps {
  * - Restores focus to the previously focused element on close
  * - Handles Escape to close
  */
-export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
+export const Modal: React.FC<ModalProps> = ({
+  isOpen,
+  onClose,
+  title,
+  children,
+}) => {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const titleId = useId();
 
   useEffect(() => {
-    if (!isOpen || typeof document === 'undefined') {
+    if (!isOpen || typeof document === "undefined") {
       return;
     }
 
@@ -37,17 +42,17 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
       if (!dialogEl) return;
 
       const focusableSelectors = [
-        'a[href]',
-        'button:not([disabled])',
-        'textarea:not([disabled])',
-        'input:not([disabled])',
-        'select:not([disabled])',
+        "a[href]",
+        "button:not([disabled])",
+        "textarea:not([disabled])",
+        "input:not([disabled])",
+        "select:not([disabled])",
         '[tabindex]:not([tabindex="-1"])',
-      ].join(', ');
+      ].join(", ");
 
       const focusable = Array.from(
         dialogEl.querySelectorAll<HTMLElement>(focusableSelectors),
-      ).filter((el) => !el.hasAttribute('data-focus-guard'));
+      ).filter((el) => !el.hasAttribute("data-focus-guard"));
 
       if (focusable.length > 0) {
         focusable[0].focus();
@@ -59,28 +64,28 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
     focusFirstElement();
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         event.stopPropagation();
         onClose();
         return;
       }
 
-      if (event.key !== 'Tab') return;
+      if (event.key !== "Tab") return;
 
       if (!dialogEl) return;
 
       const focusableSelectors = [
-        'a[href]',
-        'button:not([disabled])',
-        'textarea:not([disabled])',
-        'input:not([disabled])',
-        'select:not([disabled])',
+        "a[href]",
+        "button:not([disabled])",
+        "textarea:not([disabled])",
+        "input:not([disabled])",
+        "select:not([disabled])",
         '[tabindex]:not([tabindex="-1"])',
-      ].join(', ');
+      ].join(", ");
 
       const focusable = Array.from(
         dialogEl.querySelectorAll<HTMLElement>(focusableSelectors),
-      ).filter((el) => !el.hasAttribute('data-focus-guard'));
+      ).filter((el) => !el.hasAttribute("data-focus-guard"));
 
       if (focusable.length === 0) {
         return;
@@ -101,10 +106,10 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown);
 
       if (previouslyFocusedRef.current && previouslyFocusedRef.current.focus) {
         previouslyFocusedRef.current.focus();
@@ -114,7 +119,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
 
   if (!isOpen) return null;
 
-  if (typeof document === 'undefined') {
+  if (typeof document === "undefined") {
     return null;
   }
 
@@ -124,7 +129,9 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
       onClick={onClose}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClose(); }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") onClose();
+      }}
     >
       <div
         ref={dialogRef}
@@ -132,11 +139,10 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         className={clsx(
-          'w-full max-w-lg rounded-lg bg-white shadow-xl outline-none',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2',
+          "w-full max-w-lg rounded-lg bg-white shadow-xl outline-none",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2",
         )}
         tabIndex={-1}
-         
         onClick={(e) => e.stopPropagation()}
       >
         {title && (

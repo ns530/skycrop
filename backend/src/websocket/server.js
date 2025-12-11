@@ -12,7 +12,7 @@ const { logger } = require('../utils/logger');
 function initializeWebSocket(server) {
   const io = socketIO(server, {
     cors: {
-      origin: process.env.CORS_ORIGIN || '*',
+      origin: process.env.CORSORIGIN || '*',
       credentials: true,
       methods: ['GET', 'POST'],
     },
@@ -23,10 +23,10 @@ function initializeWebSocket(server) {
   // Authentication middleware
   io.use(async (socket, next) => {
     try {
-      const token = socket.handshake.auth.token;
+      const { token } = socket.handshake.auth;
 
       if (!token) {
-        logger.warn('websocket.auth.no_token', {
+        logger.warn('websocket.auth.notoken', {
           socketId: socket.id,
           ip: socket.handshake.address,
         });
@@ -34,15 +34,15 @@ function initializeWebSocket(server) {
       }
 
       // Verify JWT token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      
+      const decoded = jwt.verify(token, process.env.JWTSECRET);
+
       // Attach user info to socket
-      socket.userId = decoded.user_id; // Fixed: JWT payload uses user_id, not userId
+      socket.user_id = decoded.user_id; // Fixed: JWT payload uses user_id, not user_id
       socket.userEmail = decoded.email;
 
       logger.info('websocket.auth.success', {
         socketId: socket.id,
-        userId: socket.userId,
+        user_id: socket.user_id,
         email: socket.userEmail,
       });
 
@@ -58,38 +58,38 @@ function initializeWebSocket(server) {
   });
 
   // Connection handler
-  io.on('connection', (socket) => {
-    const userId = socket.userId;
-    
+  io.on('connection', socket => {
+    const { user_id } = socket;
+
     logger.info('websocket.client.connected', {
       socketId: socket.id,
-      userId,
+      user_id,
       email: socket.userEmail,
     });
 
     // Join user-specific room for targeted notifications
-    socket.join(`user:${userId}`);
+    socket.join(`user:${user_id}`);
 
     // Subscribe to field updates
-    socket.on('subscribe_field', (fieldId) => {
-      socket.join(`field:${fieldId}`);
+    socket.on('subscribefield', field_id => {
+      socket.join(`field:${field_id}`);
       logger.info('websocket.subscribe.field', {
         socketId: socket.id,
-        userId,
-        fieldId,
+        user_id,
+        field_id,
       });
-      socket.emit('subscribed', { fieldId });
+      socket.emit('subscribed', { field_id });
     });
 
     // Unsubscribe from field updates
-    socket.on('unsubscribe_field', (fieldId) => {
-      socket.leave(`field:${fieldId}`);
+    socket.on('unsubscribefield', field_id => {
+      socket.leave(`field:${field_id}`);
       logger.info('websocket.unsubscribe.field', {
         socketId: socket.id,
-        userId,
-        fieldId,
+        user_id,
+        field_id,
       });
-      socket.emit('unsubscribed', { fieldId });
+      socket.emit('unsubscribed', { field_id });
     });
 
     // Handle custom ping/pong for connection health
@@ -98,19 +98,19 @@ function initializeWebSocket(server) {
     });
 
     // Disconnect handler
-    socket.on('disconnect', (reason) => {
+    socket.on('disconnect', reason => {
       logger.info('websocket.client.disconnected', {
         socketId: socket.id,
-        userId,
+        user_id,
         reason,
       });
     });
 
     // Error handler
-    socket.on('error', (error) => {
+    socket.on('error', error => {
       logger.error('websocket.client.error', {
         socketId: socket.id,
-        userId,
+        user_id,
         error: error.message,
         stack: error.stack,
       });
@@ -121,7 +121,7 @@ function initializeWebSocket(server) {
   global.io = io;
 
   logger.info('websocket.server.initialized', {
-    cors: process.env.CORS_ORIGIN || '*',
+    cors: process.env.CORSORIGIN || '*',
   });
 
   return io;
@@ -129,20 +129,20 @@ function initializeWebSocket(server) {
 
 /**
  * Emit event to a specific user
- * @param {string} userId - User ID
+ * @param {string} user_id - User ID
  * @param {string} event - Event name
  * @param {object} data - Event data
  */
-function emitToUser(userId, event, data) {
+function emitToUser(user_id, event, data) {
   if (!global.io) {
-    logger.warn('websocket.emit.no_io', { userId, event });
+    logger.warn('websocket.emit.noio', { user_id, event });
     return;
   }
 
-  global.io.to(`user:${userId}`).emit(event, data);
-  
+  global.io.to(`user:${user_id}`).emit(event, data);
+
   logger.debug('websocket.emit.user', {
-    userId,
+    user_id,
     event,
     dataKeys: Object.keys(data || {}),
   });
@@ -150,20 +150,20 @@ function emitToUser(userId, event, data) {
 
 /**
  * Emit event to all subscribers of a field
- * @param {string} fieldId - Field ID
+ * @param {string} field_id - Field ID
  * @param {string} event - Event name
  * @param {object} data - Event data
  */
-function emitToField(fieldId, event, data) {
+function emitToField(field_id, event, data) {
   if (!global.io) {
-    logger.warn('websocket.emit.no_io', { fieldId, event });
+    logger.warn('websocket.emit.noio', { field_id, event });
     return;
   }
 
-  global.io.to(`field:${fieldId}`).emit(event, data);
-  
+  global.io.to(`field:${field_id}`).emit(event, data);
+
   logger.debug('websocket.emit.field', {
-    fieldId,
+    field_id,
     event,
     dataKeys: Object.keys(data || {}),
   });
@@ -176,12 +176,12 @@ function emitToField(fieldId, event, data) {
  */
 function broadcastEvent(event, data) {
   if (!global.io) {
-    logger.warn('websocket.emit.no_io', { event });
+    logger.warn('websocket.emit.noio', { event });
     return;
   }
 
   global.io.emit(event, data);
-  
+
   logger.debug('websocket.emit.broadcast', {
     event,
     dataKeys: Object.keys(data || {}),
@@ -215,4 +215,3 @@ module.exports = {
   getConnectedClientsCount,
   getIO,
 };
-

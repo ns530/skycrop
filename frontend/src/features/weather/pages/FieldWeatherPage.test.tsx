@@ -1,21 +1,21 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
-import React from 'react';
-import { MemoryRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, screen } from "@testing-library/react";
+import React from "react";
+import { MemoryRouter } from "react-router-dom";
 
-import type { FieldDetail } from '../../fields/api/fieldsApi';
-import type { WeatherForecastResponse, WeatherAlert } from '../api/weatherApi';
+import type { FieldDetail } from "../../fields/api/fieldsApi";
+import type { WeatherForecastResponse, WeatherAlert } from "../api/weatherApi";
 
-import { FieldWeatherPage } from './FieldWeatherPage';
+import { FieldWeatherPage } from "./FieldWeatherPage";
 
 // ---- Mocks ----
 
 // Mock useParams / useNavigate to provide a stable fieldId from the route
-jest.mock('react-router-dom', () => {
-  const actual = jest.requireActual('react-router-dom');
+jest.mock("react-router-dom", () => {
+  const actual = jest.requireActual("react-router-dom");
   return {
     ...actual,
-    useParams: () => ({ fieldId: 'field-1' }),
+    useParams: () => ({ fieldId: "field-1" }),
     useNavigate: () => jest.fn(),
   };
 });
@@ -24,13 +24,13 @@ jest.mock('react-router-dom', () => {
 const setCurrentFieldMock = jest.fn();
 
 // Mock UiContext to control currentFieldId and observe updates
-jest.mock('../../../shared/context/UiContext', () => {
+jest.mock("../../../shared/context/UiContext", () => {
   return {
     useUiState: () => ({
       state: {
-        currentFieldId: 'field-1',
-        defaultHealthIndex: 'NDVI' as const,
-        defaultHealthRange: '30d' as const,
+        currentFieldId: "field-1",
+        defaultHealthIndex: "NDVI" as const,
+        defaultHealthRange: "30d" as const,
       },
       setCurrentField: setCurrentFieldMock,
       setHealthIndex: jest.fn(),
@@ -40,14 +40,14 @@ jest.mock('../../../shared/context/UiContext', () => {
 });
 
 // Mock field detail hook to avoid real HTTP / React Query behavior
-jest.mock('../../fields/hooks/useFields', () => {
+jest.mock("../../fields/hooks/useFields", () => {
   return {
     useFieldDetail: jest.fn(),
   };
 });
 
 // Mock weather hooks to avoid real HTTP / React Query behavior
-jest.mock('../hooks', () => {
+jest.mock("../hooks", () => {
   return {
     useWeatherForecast: jest.fn(),
     useWeatherAlerts: jest.fn(),
@@ -55,11 +55,13 @@ jest.mock('../hooks', () => {
 });
 
 // Pull typed mock references after jest.mock
-const { useFieldDetail } = jest.requireMock('../../fields/hooks/useFields') as {
+const { useFieldDetail } = jest.requireMock("../../fields/hooks/useFields") as {
   useFieldDetail: jest.Mock;
 };
 
-const { useWeatherForecast, useWeatherAlerts } = jest.requireMock('../hooks') as {
+const { useWeatherForecast, useWeatherAlerts } = jest.requireMock(
+  "../hooks",
+) as {
   useWeatherForecast: jest.Mock;
   useWeatherAlerts: jest.Mock;
 };
@@ -74,7 +76,9 @@ const createTestQueryClient = () =>
   });
 
 const createWrapper =
-  (initialEntries: string[] = ['/fields/field-1/weather']): React.FC<{ children: React.ReactNode }> =>
+  (
+    initialEntries: string[] = ["/fields/field-1/weather"],
+  ): React.FC<{ children: React.ReactNode }> =>
   ({ children }) => {
     const queryClient = createTestQueryClient();
 
@@ -85,25 +89,25 @@ const createWrapper =
     );
   };
 
-createWrapper.displayName = 'TestWeatherWrapper';
+createWrapper.displayName = "TestWeatherWrapper";
 
-describe('FieldWeatherPage', () => {
+describe("FieldWeatherPage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
     const fieldDetail: FieldDetail = {
-      id: 'field-1',
-      name: 'Test field',
+      id: "field-1",
+      name: "Test field",
       areaHa: 1.23,
-      createdAt: '2025-01-01T00:00:00.000Z',
-      updatedAt: '2025-01-01T00:00:00.000Z',
-      status: 'active',
+      createdAt: "2025-01-01T00:00:00.000Z",
+      updatedAt: "2025-01-01T00:00:00.000Z",
+      status: "active",
       centroidLatLon: {
         lat: 7.5,
         lon: 80.7,
       },
       // geometry is required but not used by the component in this test
-      geometry: {} as unknown as FieldDetail['geometry'],
+      geometry: {} as unknown as FieldDetail["geometry"],
       latestHealthStatus: undefined,
       latestHealthIndex: undefined,
       latestRecommendationSummary: undefined,
@@ -120,31 +124,31 @@ describe('FieldWeatherPage', () => {
       lon: 80.7,
       daily: [
         {
-          date: '2025-01-01',
+          date: "2025-01-01",
           minTempC: 22,
           maxTempC: 32,
           precipMm: 25, // >= 20mm triggers "Heavy rain" risk
-          condition: 'Heavy rain showers',
+          condition: "Heavy rain showers",
         },
         {
-          date: '2025-01-02',
+          date: "2025-01-02",
           minTempC: 21,
           maxTempC: 30,
           precipMm: 2,
-          condition: 'Partly cloudy',
+          condition: "Partly cloudy",
         },
       ],
     };
 
     const alerts: WeatherAlert[] = [
       {
-        id: 'alert-1',
-        title: 'Severe rain',
-        description: 'Heavy rainfall expected in the next 24 hours.',
-        severity: 'severe',
-        startTime: '2025-01-01T00:00:00.000Z',
-        endTime: '2025-01-01T23:59:59.000Z',
-        relatedFieldIds: ['field-1'],
+        id: "alert-1",
+        title: "Severe rain",
+        description: "Heavy rainfall expected in the next 24 hours.",
+        severity: "severe",
+        startTime: "2025-01-01T00:00:00.000Z",
+        endTime: "2025-01-01T23:59:59.000Z",
+        relatedFieldIds: ["field-1"],
       },
     ];
 
@@ -167,13 +171,15 @@ describe('FieldWeatherPage', () => {
     });
   });
 
-  it('renders forecast cards, risk indicators, and syncs UiContext current field', () => {
+  it("renders forecast cards, risk indicators, and syncs UiContext current field", () => {
     const wrapper = createWrapper();
 
     render(<FieldWeatherPage />, { wrapper });
 
     // Heading
-    expect(screen.getByRole('heading', { name: /weather/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /weather/i }),
+    ).toBeInTheDocument();
 
     // Field context
     expect(screen.getByText(/test field/i)).toBeInTheDocument();
@@ -186,6 +192,6 @@ describe('FieldWeatherPage', () => {
     expect(screen.getByText(/severe rain/i)).toBeInTheDocument();
 
     // UiContext setCurrentField is called with the route field id
-    expect(setCurrentFieldMock).toHaveBeenCalledWith('field-1');
+    expect(setCurrentFieldMock).toHaveBeenCalledWith("field-1");
   });
 });

@@ -5,38 +5,38 @@ const { sequelize } = require('../config/database.config');
 
 /**
  * ActualYield Model
- * Mirrors PostgreSQL "actual_yields" table for farmer-entered harvest data
- * 
+ * Mirrors PostgreSQL "actualyields" table for farmer-entered harvest data
+ *
  * Columns:
- * - yield_id UUID PK
+ * - yieldid UUID PK
  * - field_id UUID FK
  * - user_id UUID FK
- * - actual_yield_per_ha DECIMAL(10,2) NOT NULL
- * - total_yield_kg DECIMAL(10,2) NOT NULL
- * - harvest_date DATE NOT NULL
- * - prediction_id UUID FK (nullable, links to yield_predictions)
- * - predicted_yield_per_ha DECIMAL(10,2) (nullable)
- * - accuracy_mape DECIMAL(5,2) (nullable, auto-calculated by trigger)
+ * - actualyieldperha DECIMAL(10,2) NOT NULL
+ * - totalyieldkg DECIMAL(10,2) NOT NULL
+ * - harvestdate DATE NOT NULL
+ * - predictionid UUID FK (nullable, links to yieldpredictions)
+ * - predictedyieldperha DECIMAL(10,2) (nullable)
+ * - accuracymape DECIMAL(5,2) (nullable, auto-calculated by trigger)
  * - notes TEXT (nullable)
- * - crop_variety VARCHAR(100) (nullable)
+ * - cropvariety VARCHAR(100) (nullable)
  * - season VARCHAR(20) (nullable: maha, yala, other)
- * - created_at TIMESTAMP DEFAULT NOW()
- * - updated_at TIMESTAMP DEFAULT NOW()
- * 
+ * - createdat TIMESTAMP DEFAULT NOW()
+ * - updatedat TIMESTAMP DEFAULT NOW()
+ *
  * Indexes:
- * - (field_id, harvest_date DESC)
- * - (user_id, harvest_date DESC)
- * - (season, harvest_date DESC)
- * - UNIQUE (field_id, harvest_date)
- * 
+ * - (field_id, harvestdate DESC)
+ * - (user_id, harvestdate DESC)
+ * - (season, harvestdate DESC)
+ * - UNIQUE (field_id, harvestdate)
+ *
  * Triggers:
- * - Auto-calculate accuracy_mape if prediction exists
- * - Auto-update updated_at on modification
+ * - Auto-calculate accuracymape if prediction exists
+ * - Auto-update updatedat on modification
  */
 const ActualYield = sequelize.define(
   'ActualYield',
   {
-    yield_id: {
+    yieldid: {
       type: Sequelize.DataTypes.UUID,
       defaultValue: Sequelize.DataTypes.UUIDV4,
       primaryKey: true,
@@ -57,7 +57,7 @@ const ActualYield = sequelize.define(
         key: 'user_id',
       },
     },
-    actual_yield_per_ha: {
+    actualyieldperha: {
       type: Sequelize.DataTypes.DECIMAL(10, 2),
       allowNull: false,
       validate: {
@@ -65,7 +65,7 @@ const ActualYield = sequelize.define(
         isDecimal: true,
       },
     },
-    total_yield_kg: {
+    totalyieldkg: {
       type: Sequelize.DataTypes.DECIMAL(10, 2),
       allowNull: false,
       validate: {
@@ -73,7 +73,7 @@ const ActualYield = sequelize.define(
         isDecimal: true,
       },
     },
-    harvest_date: {
+    harvestdate: {
       type: Sequelize.DataTypes.DATEONLY,
       allowNull: false,
       validate: {
@@ -85,15 +85,15 @@ const ActualYield = sequelize.define(
         },
       },
     },
-    prediction_id: {
+    predictionid: {
       type: Sequelize.DataTypes.UUID,
       allowNull: true,
       references: {
-        model: 'yield_predictions',
-        key: 'prediction_id',
+        model: 'yieldpredictions',
+        key: 'predictionid',
       },
     },
-    predicted_yield_per_ha: {
+    predictedyieldperha: {
       type: Sequelize.DataTypes.DECIMAL(10, 2),
       allowNull: true,
       validate: {
@@ -101,7 +101,7 @@ const ActualYield = sequelize.define(
         isDecimal: true,
       },
     },
-    accuracy_mape: {
+    accuracymape: {
       type: Sequelize.DataTypes.DECIMAL(5, 2),
       allowNull: true,
       validate: {
@@ -114,7 +114,7 @@ const ActualYield = sequelize.define(
       type: Sequelize.DataTypes.TEXT,
       allowNull: true,
     },
-    crop_variety: {
+    cropvariety: {
       type: Sequelize.DataTypes.STRING(100),
       allowNull: true,
     },
@@ -122,35 +122,39 @@ const ActualYield = sequelize.define(
       type: Sequelize.DataTypes.ENUM('maha', 'yala', 'other'),
       allowNull: true,
     },
-    created_at: {
+    createdat: {
       type: Sequelize.DataTypes.DATE,
       allowNull: false,
       defaultValue: Sequelize.DataTypes.NOW,
     },
-    updated_at: {
+    updatedat: {
       type: Sequelize.DataTypes.DATE,
       allowNull: false,
       defaultValue: Sequelize.DataTypes.NOW,
     },
   },
   {
-    tableName: 'actual_yields',
+    tableName: 'actualyields',
     timestamps: true,
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
+    createdAt: 'createdat',
+    updatedAt: 'updatedat',
     underscored: true,
     freezeTableName: true,
     indexes: [
       // Field + harvest date for history queries
-      { fields: ['field_id', { name: 'harvest_date', order: 'DESC' }] },
+      { fields: ['field_id', { name: 'harvestdate', order: 'DESC' }] },
       // User + harvest date for user's all yields
-      { fields: ['user_id', { name: 'harvest_date', order: 'DESC' }] },
+      { fields: ['user_id', { name: 'harvestdate', order: 'DESC' }] },
       // Season-based queries
-      { fields: ['season', { name: 'harvest_date', order: 'DESC' }] },
+      { fields: ['season', { name: 'harvestdate', order: 'DESC' }] },
       // Unique constraint: one entry per field per harvest date
-      { unique: true, fields: ['field_id', 'harvest_date'], name: 'idx_actual_yields_field_harvest_unique' },
+      {
+        unique: true,
+        fields: ['field_id', 'harvestdate'],
+        name: 'idxactualyieldsfieldharvestunique',
+      },
       // Prediction lookup
-      { fields: ['prediction_id'], where: { prediction_id: { [Sequelize.Op.ne]: null } } },
+      { fields: ['predictionid'], where: { predictionid: { [Sequelize.Op.ne]: null } } },
     ],
   }
 );
@@ -158,7 +162,7 @@ const ActualYield = sequelize.define(
 /**
  * Associations (to be called in model index/initialization)
  */
-ActualYield.associate = (models) => {
+ActualYield.associate = models => {
   // Belongs to Field
   ActualYield.belongsTo(models.Field, {
     foreignKey: 'field_id',
@@ -174,11 +178,10 @@ ActualYield.associate = (models) => {
   // Optional: Belongs to YieldPrediction (for accuracy tracking)
   if (models.YieldPrediction) {
     ActualYield.belongsTo(models.YieldPrediction, {
-      foreignKey: 'prediction_id',
+      foreignKey: 'predictionid',
       as: 'prediction',
     });
   }
 };
 
 module.exports = ActualYield;
-

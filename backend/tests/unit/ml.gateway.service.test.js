@@ -1,5 +1,3 @@
-'use strict';
-
 const axios = require('axios');
 
 // In-memory fake Redis
@@ -37,10 +35,10 @@ describe('MLGatewayService Unit', () => {
     jest.clearAllMocks();
     redisStore.clear();
     lastSetExTTL = null;
-    process.env.ML_PREDICT_CACHE_TTL_SECONDS = '86400';
-    process.env.ML_REQUEST_TIMEOUT_MS = '60000';
-    process.env.ML_BASE_URL = 'http://ml-service.local:80';
-    process.env.ML_INTERNAL_TOKEN = 'test-internal-token';
+    process.env.MLPREDICTCACHETTLSECONDS = '86400';
+    process.env.MLREQUESTTIMEOUTMS = '60000';
+    process.env.MLBASEURL = 'http://ml-service.local:80';
+    process.env.MLINTERNALTOKEN = 'test-internal-token';
   });
 
   afterAll(() => {
@@ -53,17 +51,17 @@ describe('MLGatewayService Unit', () => {
     const a = svc.normalizePayload({
       bbox: [80.1, 7.2, 80.12, 7.22],
       date: '2025-10-15',
-      model_version: '1.0.0',
+      modelversion: '1.0.0',
       tiling: { overlap: 64, size: 512 },
-      return: 'mask_url',
+      return: 'maskurl',
     });
 
     const b = svc.normalizePayload({
       date: '2025-10-15',
       tiling: { size: 512, overlap: 64 },
       bbox: [80.1, 7.2, 80.12, 7.22],
-      return: 'mask_url',
-      model_version: '1.0.0',
+      return: 'maskurl',
+      modelversion: '1.0.0',
     });
 
     const ha = svc.computeRequestHash(a);
@@ -72,17 +70,17 @@ describe('MLGatewayService Unit', () => {
     expect(ha).toBe(hb);
   });
 
-  test('cache key/TTL logic: caches successful mask_url responses with configured TTL', async () => {
+  test('cache key/TTL logic: caches successful maskurl responses with configured TTL', async () => {
     const svc = new MLGatewayService();
     const spy = jest.spyOn(axios, 'post').mockResolvedValue({
       status: 200,
       headers: { 'x-model-version': 'unet-1.0.0' },
       data: {
-        request_id: 'req-1',
+        requestid: 'req-1',
         model: { name: 'unet', version: '1.0.0' },
-        mask_url: 'http://ml.local/masks/req-1.geojson',
-        mask_format: 'geojson',
-        metrics: { latency_ms: 100, tile_count: 1, cloud_coverage: 0.0 },
+        maskurl: 'http://ml.local/masks/req-1.geojson',
+        maskformat: 'geojson',
+        metrics: { latencyms: 100, tilecount: 1, cloudcoverage: 0.0 },
         warnings: [],
       },
     });
@@ -90,8 +88,8 @@ describe('MLGatewayService Unit', () => {
     const input = {
       bbox: [80.1, 7.2, 80.12, 7.22],
       date: '2025-10-15',
-      model_version: '1.0.0',
-      return: 'mask_url',
+      modelversion: '1.0.0',
+      return: 'maskurl',
     };
 
     // First call -> miss, triggers axios + cache set
@@ -106,22 +104,24 @@ describe('MLGatewayService Unit', () => {
     expect(spy).toHaveBeenCalledTimes(1);
   });
 
-  test('error mapping: INVALID_INPUT -> 400', async () => {
+  test('error mapping: INVALIDINPUT -> 400', async () => {
     const svc = new MLGatewayService();
     jest.spyOn(axios, 'post').mockResolvedValue({
       status: 400,
       headers: {},
-      data: { error: { code: 'INVALID_INPUT', message: 'bbox invalid', details: { bbox: 'min>=max' } } },
+      data: {
+        error: { code: 'INVALIDINPUT', message: 'bbox invalid', details: { bbox: 'min>=max' } },
+      },
     });
 
     const input = {
       bbox: [80.2, 7.3, 80.1, 7.1], // invalid extents but route-level validation is not applied in unit
       date: '2025-10-15',
-      return: 'mask_url',
+      return: 'maskurl',
     };
 
     await expect(svc.predict(input, 'corr-3')).rejects.toMatchObject({
-      code: 'INVALID_INPUT',
+      code: 'INVALIDINPUT',
       statusCode: 400,
     });
   });
@@ -133,16 +133,16 @@ describe('MLGatewayService Unit', () => {
     expect(svc.redis).toBe(fakeRedisClient);
   });
 
-  test('_stableStringify sorts object keys for consistent hashing', () => {
+  test('stableStringify sorts object keys for consistent hashing', () => {
     const svc = new MLGatewayService();
     const obj1 = { b: 2, a: 1 };
     const obj2 = { a: 1, b: 2 };
-    expect(svc._stableStringify(obj1)).toBe(svc._stableStringify(obj2));
+    expect(svc.stableStringify(obj1)).toBe(svc.stableStringify(obj2));
   });
 
-  test('_sha1 computes SHA1 hash', () => {
+  test('sha1 computes SHA1 hash', () => {
     const svc = new MLGatewayService();
-    const hash = svc._sha1('test');
+    const hash = svc.sha1('test');
     expect(hash).toMatch(/^[a-f0-9]{40}$/);
   });
 
@@ -152,7 +152,7 @@ describe('MLGatewayService Unit', () => {
       bbox: ['80.1', '7.2', '80.12', '7.22'],
       field_id: 'field-1',
       date: 20251015,
-      model_version: 1.0,
+      modelversion: 1.0,
       tiling: { size: '512', overlap: '64' },
       return: 'inline',
     };
@@ -160,7 +160,7 @@ describe('MLGatewayService Unit', () => {
     expect(result.bbox).toEqual([80.1, 7.2, 80.12, 7.22]);
     expect(result.field_id).toBe('field-1');
     expect(result.date).toBe('20251015');
-    expect(result.model_version).toBe('1');
+    expect(result.modelversion).toBe('1');
     expect(result.tiling).toEqual({ size: 512, overlap: 64 });
     expect(result.return).toBe('inline');
   });
@@ -172,15 +172,21 @@ describe('MLGatewayService Unit', () => {
         { field_id: 'field-1', ndvi: '0.5', ndwi: '0.2' },
         { field_id: 'field-2', ndvi: '0.6', ndwi: '0.3' },
       ],
-      rows: [['1', '2'], ['3', '4']],
-      feature_names: ['ndvi', 'ndwi'],
-      model_version: 2.0,
+      rows: [
+        ['1', '2'],
+        ['3', '4'],
+      ],
+      featurenames: ['ndvi', 'ndwi'],
+      modelversion: 2.0,
     };
     const result = svc.normalizeYieldPayload(input);
     expect(result.features[0]).toEqual({ field_id: 'field-1', ndvi: 0.5, ndwi: 0.2 });
-    expect(result.rows).toEqual([[1, 2], [3, 4]]);
-    expect(result.feature_names).toEqual(['ndvi', 'ndwi']);
-    expect(result.model_version).toBe('2');
+    expect(result.rows).toEqual([
+      [1, 2],
+      [3, 4],
+    ]);
+    expect(result.featurenames).toEqual(['ndvi', 'ndwi']);
+    expect(result.modelversion).toBe('2');
   });
 
   test('computeRequestHash generates consistent hash', () => {
@@ -190,24 +196,24 @@ describe('MLGatewayService Unit', () => {
     expect(svc.computeRequestHash(payload1)).toBe(svc.computeRequestHash(payload2));
   });
 
-  test('_cacheKey and _yieldCacheKey generate correct keys', () => {
+  test('cacheKey and yieldCacheKey generate correct keys', () => {
     const svc = new MLGatewayService();
-    expect(svc._cacheKey('hash')).toBe('ml:segmentation:predict:hash');
-    expect(svc._yieldCacheKey('hash')).toBe('ml:yield:predict:hash');
+    expect(svc.cacheKey('hash')).toBe('ml:segmentation:predict:hash');
+    expect(svc.yieldCacheKey('hash')).toBe('ml:yield:predict:hash');
   });
 
-  test('_estimateHarvestDate returns date 4 months from now', () => {
+  test('estimateHarvestDate returns date 4 months from now', () => {
     const svc = new MLGatewayService();
-    const date = svc._estimateHarvestDate();
+    const date = svc.estimateHarvestDate();
     const now = new Date();
     const expected = new Date(now);
     expected.setMonth(now.getMonth() + 4);
     expect(date).toBe(expected.toISOString().split('T')[0]);
   });
 
-  test('_getPreviousSeasonYield returns fixed value', () => {
+  test('getPreviousSeasonYield returns fixed value', () => {
     const svc = new MLGatewayService();
-    expect(svc._getPreviousSeasonYield('field-1')).toBe(4800);
+    expect(svc.getPreviousSeasonYield('field-1')).toBe(4800);
   });
 
   test('cacheGet and cacheSet work with JSON', async () => {
@@ -220,7 +226,7 @@ describe('MLGatewayService Unit', () => {
     expect(retrieved).toEqual(value);
   });
 
-  test('_callML makes correct axios request and handles success', async () => {
+  test('callML makes correct axios request and handles success', async () => {
     const svc = new MLGatewayService();
     const spy = jest.spyOn(axios, 'post').mockResolvedValue({
       status: 200,
@@ -228,7 +234,7 @@ describe('MLGatewayService Unit', () => {
       data: { result: 'success' },
     });
     const payload = { bbox: [80, 7, 81, 8] };
-    const result = await svc._callML(payload, 'corr-1');
+    const result = await svc.callML(payload, 'corr-1');
     expect(result.ok).toBe(true);
     expect(result.status).toBe(200);
     expect(result.data).toEqual({ result: 'success' });
@@ -245,16 +251,16 @@ describe('MLGatewayService Unit', () => {
     );
   });
 
-  test('_callML handles axios errors', async () => {
+  test('callML handles axios errors', async () => {
     const svc = new MLGatewayService();
     jest.spyOn(axios, 'post').mockRejectedValue(new Error('Network error'));
-    await expect(svc._callML({}, 'corr-1')).rejects.toMatchObject({
-      code: 'UPSTREAM_ERROR',
+    await expect(svc.callML({}, 'corr-1')).rejects.toMatchObject({
+      code: 'UPSTREAMERROR',
       statusCode: 502,
     });
   });
 
-  test('_callYieldML makes correct request for yield prediction', async () => {
+  test('callYieldML makes correct request for yield prediction', async () => {
     const svc = new MLGatewayService();
     const spy = jest.spyOn(axios, 'post').mockResolvedValue({
       status: 200,
@@ -262,7 +268,7 @@ describe('MLGatewayService Unit', () => {
       data: { predictions: [] },
     });
     const payload = { features: [] };
-    const result = await svc._callYieldML(payload, 'corr-1');
+    const result = await svc.callYieldML(payload, 'corr-1');
     expect(result.ok).toBe(true);
     expect(spy).toHaveBeenCalledWith(
       'http://ml-service.local:80/v1/yield/predict',
@@ -271,44 +277,44 @@ describe('MLGatewayService Unit', () => {
     );
   });
 
-  test('_mapDownstreamError maps various error codes', () => {
+  test('mapDownstreamError maps various error codes', () => {
     const svc = new MLGatewayService();
 
-    // INVALID_INPUT
-    let resp = { status: 400, data: { error: { code: 'INVALID_INPUT', message: 'bad input' } } };
-    let error = svc._mapDownstreamError(resp);
-    expect(error.code).toBe('INVALID_INPUT');
+    // INVALIDINPUT
+    let resp = { status: 400, data: { error: { code: 'INVALIDINPUT', message: 'bad input' } } };
+    let error = svc.mapDownstreamError(resp);
+    expect(error.code).toBe('INVALIDINPUT');
     expect(error.statusCode).toBe(400);
 
-    // MODEL_NOT_FOUND
-    resp = { status: 404, data: { error: { code: 'MODEL_NOT_FOUND' } } };
-    error = svc._mapDownstreamError(resp);
-    expect(error.code).toBe('MODEL_NOT_FOUND');
+    // MODELNOTFOUND
+    resp = { status: 404, data: { error: { code: 'MODELNOTFOUND' } } };
+    error = svc.mapDownstreamError(resp);
+    expect(error.code).toBe('MODELNOTFOUND');
     expect(error.statusCode).toBe(404);
 
     // TIMEOUT
     resp = { status: 504, data: { error: { code: 'TIMEOUT' } } };
-    error = svc._mapDownstreamError(resp);
+    error = svc.mapDownstreamError(resp);
     expect(error.code).toBe('TIMEOUT');
     expect(error.statusCode).toBe(504);
 
     // Default 404
     resp = { status: 404, data: {} };
-    error = svc._mapDownstreamError(resp);
-    expect(error.code).toBe('MODEL_NOT_FOUND');
+    error = svc.mapDownstreamError(resp);
+    expect(error.code).toBe('MODELNOTFOUND');
 
     // Default 5xx
     resp = { status: 500, data: {} };
-    error = svc._mapDownstreamError(resp);
-    expect(error.code).toBe('UPSTREAM_ERROR');
+    error = svc.mapDownstreamError(resp);
+    expect(error.code).toBe('UPSTREAMERROR');
   });
 
-  test('predict caches inline responses but not mask_url', async () => {
+  test('predict caches inline responses but not maskurl', async () => {
     const svc = new MLGatewayService();
     const spy = jest.spyOn(axios, 'post').mockResolvedValue({
       status: 200,
       headers: {},
-      data: { mask_url: 'http://example.com/mask', mask_base64: 'base64data' },
+      data: { maskurl: 'http://example.com/mask', maskbase64: 'base64data' },
     });
 
     // Inline should not cache
@@ -316,8 +322,8 @@ describe('MLGatewayService Unit', () => {
     await svc.predict(input, 'corr-1');
     expect(lastSetExTTL).toBeNull();
 
-    // mask_url should cache
-    input.return = 'mask_url';
+    // maskurl should cache
+    input.return = 'maskurl';
     await svc.predict(input, 'corr-2');
     expect(lastSetExTTL).toBe(86400);
   });
@@ -327,9 +333,9 @@ describe('MLGatewayService Unit', () => {
     const predictSpy = jest.spyOn(svc, 'predict').mockResolvedValue({
       result: {
         data: {
-          request_id: 'req-1',
+          requestid: 'req-1',
           model: { name: 'unet', version: '1.0.0' },
-          mask_url: 'http://example.com/mask',
+          maskurl: 'http://example.com/mask',
         },
       },
     });
@@ -339,8 +345,8 @@ describe('MLGatewayService Unit', () => {
     expect(predictSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         bbox: [80, 7, 81, 8],
-        model_version: '1.0.0',
-        return: 'mask_url',
+        modelversion: '1.0.0',
+        return: 'maskurl',
       }),
       'corr-1'
     );
@@ -351,38 +357,38 @@ describe('MLGatewayService Unit', () => {
 
     // Not array
     await expect(svc.detectBoundaries('invalid')).rejects.toMatchObject({
-      code: 'INVALID_INPUT',
+      code: 'INVALIDINPUT',
       statusCode: 400,
     });
 
     // Wrong length
     await expect(svc.detectBoundaries([80, 7, 81])).rejects.toMatchObject({
-      code: 'INVALID_INPUT',
+      code: 'INVALIDINPUT',
     });
 
     // Non-numeric
     await expect(svc.detectBoundaries([80, 'invalid', 81, 8])).rejects.toMatchObject({
-      code: 'INVALID_INPUT',
+      code: 'INVALIDINPUT',
     });
 
     // min >= max
     await expect(svc.detectBoundaries([81, 8, 80, 7])).rejects.toMatchObject({
-      code: 'INVALID_INPUT',
+      code: 'INVALIDINPUT',
     });
 
     // Out of range
     await expect(svc.detectBoundaries([-200, 7, 81, 8])).rejects.toMatchObject({
-      code: 'INVALID_INPUT',
+      code: 'INVALIDINPUT',
     });
   });
 
   test('getDisasterAssessment returns mock assessment', async () => {
     const svc = new MLGatewayService();
     const result = await svc.getDisasterAssessment('field-1');
-    expect(result).toHaveProperty('risk_level', 'low');
-    expect(result).toHaveProperty('disaster_types');
+    expect(result).toHaveProperty('risklevel', 'low');
+    expect(result).toHaveProperty('disastertypes');
     expect(result).toHaveProperty('confidence');
-    expect(result).toHaveProperty('assessed_at');
+    expect(result).toHaveProperty('assessedat');
   });
 
   test('yieldPredict caches and normalizes response', async () => {
@@ -392,7 +398,7 @@ describe('MLGatewayService Unit', () => {
       headers: { 'x-model-version': 'yield-1.0.0' },
       data: {
         predictions: [
-          { field_id: 'field-1', optimal_yield: 5000 },
+          { field_id: 'field-1', optimalyield: 5000 },
           { field_id: 'field-2' }, // missing values should be filled
         ],
       },
@@ -403,9 +409,9 @@ describe('MLGatewayService Unit', () => {
 
     expect(result.cacheHit).toBe(false);
     expect(result.result.success).toBe(true);
-    expect(result.result.data.predictions[0].optimal_yield).toBe(5000);
-    expect(result.result.data.predictions[1].optimal_yield).toBe(5500); // default
-    expect(result.result.data.predictions[1].harvest_date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(result.result.data.predictions[0].optimalyield).toBe(5000);
+    expect(result.result.data.predictions[1].optimalyield).toBe(5500); // default
+    expect(result.result.data.predictions[1].harvestdate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
 
     // Second call should hit cache
     const cached = await svc.yieldPredict(input, 'corr-2');

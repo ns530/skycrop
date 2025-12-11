@@ -1,16 +1,16 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, waitFor } from '@testing-library/react';
-import React from 'react';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
+import React from "react";
 
-import type { PaginatedResponse, ListParams } from '../../../shared/api';
-import { fieldKeys } from '../../../shared/query/queryKeys';
-import type { FieldSummary } from '../api/fieldsApi';
+import type { PaginatedResponse, ListParams } from "../../../shared/api";
+import { fieldKeys } from "../../../shared/query/queryKeys";
+import type { FieldSummary } from "../api/fieldsApi";
 
-import { useFields } from './useFields';
+import { useFields } from "./useFields";
 
 // Mock fieldsApi so we don't hit the real HTTP layer.
-jest.mock('../api/fieldsApi', () => {
-  const actual = jest.requireActual('../api/fieldsApi');
+jest.mock("../api/fieldsApi", () => {
+  const actual = jest.requireActual("../api/fieldsApi");
 
   return {
     ...actual,
@@ -18,7 +18,7 @@ jest.mock('../api/fieldsApi', () => {
   };
 });
 
-const { listFields } = jest.requireMock('../api/fieldsApi') as {
+const { listFields } = jest.requireMock("../api/fieldsApi") as {
   listFields: jest.Mock;
 };
 
@@ -35,30 +35,31 @@ const createTestQueryClient = () =>
 
 const createWrapper =
   (queryClient: QueryClient): React.FC<{ children: React.ReactNode }> =>
-  ({ children }) =>
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  ({ children }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
 
-createWrapper.displayName = 'TestQueryClientWrapper';
+createWrapper.displayName = "TestQueryClientWrapper";
 
-describe('useFields', () => {
-  it('returns data from listFields and uses the expected query key', async () => {
+describe("useFields", () => {
+  it("returns data from listFields and uses the expected query key", async () => {
     const params: ListParams = {
       page: 1,
       pageSize: 20,
-      search: 'paddy',
-      sort: 'created_at',
-      order: 'desc',
+      search: "paddy",
+      sort: "created_at",
+      order: "desc",
     };
 
     const apiResponse: PaginatedResponse<FieldSummary> = {
       data: [
         {
-          id: 'field-1',
-          name: 'Test Field',
+          id: "field-1",
+          name: "Test Field",
           areaHa: 1.23,
-          createdAt: '2025-01-01T00:00:00.000Z',
-          updatedAt: '2025-01-02T00:00:00.000Z',
-          status: 'active',
+          createdAt: "2025-01-01T00:00:00.000Z",
+          updatedAt: "2025-01-02T00:00:00.000Z",
+          status: "active",
           centroidLatLon: {
             lat: 7.05,
             lon: 80.05,
@@ -71,7 +72,7 @@ describe('useFields', () => {
         total: 1,
       },
       meta: {
-        source: 'test',
+        source: "test",
       },
     };
 
@@ -102,7 +103,8 @@ describe('useFields', () => {
 
     // Verify the query key and cached data in the QueryClient
     const key = fieldKeys.list(params);
-    const cached = queryClient.getQueryData<PaginatedResponse<FieldSummary>>(key);
+    const cached =
+      queryClient.getQueryData<PaginatedResponse<FieldSummary>>(key);
 
     expect(cached).toEqual(apiResponse);
   });

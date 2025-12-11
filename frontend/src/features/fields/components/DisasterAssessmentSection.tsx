@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 
-import { DisasterAssessmentCard } from './DisasterAssessmentCard';
+import { DisasterAssessmentCard } from "./DisasterAssessmentCard";
 
 interface DisasterAssessment {
   field_id: string;
@@ -17,10 +17,14 @@ interface DisasterAssessmentSectionProps {
   highRiskCount: number;
 }
 
-export const DisasterAssessmentSection: React.FC<DisasterAssessmentSectionProps> = (props) => {
+export const DisasterAssessmentSection: React.FC<
+  DisasterAssessmentSectionProps
+> = (props) => {
   return (
     <section className="space-y-4">
-      <h2 className="text-md font-semibold text-gray-900">Disaster Assessment</h2>
+      <h2 className="text-md font-semibold text-gray-900">
+        Disaster Assessment
+      </h2>
       <DisasterAssessmentCard {...props} />
     </section>
   );

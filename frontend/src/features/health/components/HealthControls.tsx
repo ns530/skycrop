@@ -1,9 +1,9 @@
-import React from 'react';
+import React from "react";
 
-import { Button } from '../../../shared/ui/Button';
-import type { HealthIndexType } from '../api/healthApi';
+import { Button } from "../../../shared/ui/Button";
+import type { HealthIndexType } from "../api/healthApi";
 
-export type HealthRangePreset = '7d' | '14d' | '30d' | 'season';
+export type HealthRangePreset = "7d" | "14d" | "30d" | "season";
 
 export interface HealthControlsProps {
   indexType: HealthIndexType;
@@ -29,16 +29,16 @@ export const HealthControls: React.FC<HealthControlsProps> = ({
   onRangeChange,
 }) => {
   const indexOptions: { value: HealthIndexType; label: string }[] = [
-    { value: 'NDVI', label: 'NDVI' },
-    { value: 'NDWI', label: 'NDWI' },
-    { value: 'TDVI', label: 'TDVI' },
+    { value: "NDVI", label: "NDVI" },
+    { value: "NDWI", label: "NDWI" },
+    { value: "TDVI", label: "TDVI" },
   ];
 
   const rangeOptions: { value: HealthRangePreset; label: string }[] = [
-    { value: '7d', label: '7 days' },
-    { value: '14d', label: '14 days' },
-    { value: '30d', label: '30 days' },
-    { value: 'season', label: 'Season' },
+    { value: "7d", label: "7 days" },
+    { value: "14d", label: "14 days" },
+    { value: "30d", label: "30 days" },
+    { value: "season", label: "Season" },
   ];
 
   return (
@@ -67,7 +67,7 @@ export const HealthControls: React.FC<HealthControlsProps> = ({
                 key={option.value}
                 type="button"
                 size="sm"
-                variant={isActive ? 'primary' : 'ghost'}
+                variant={isActive ? "primary" : "ghost"}
                 aria-pressed={isActive}
                 onClick={() => onIndexChange(option.value)}
               >
@@ -101,7 +101,7 @@ export const HealthControls: React.FC<HealthControlsProps> = ({
                 key={option.value}
                 type="button"
                 size="sm"
-                variant={isActive ? 'secondary' : 'ghost'}
+                variant={isActive ? "secondary" : "ghost"}
                 aria-pressed={isActive}
                 onClick={() => onRangeChange(option.value)}
               >

@@ -20,10 +20,10 @@ logger.info('WebSocket server initialized');
 // Graceful shutdown
 function shutdown(signal) {
   logger.warn('[%s] received. Shutting down gracefully...', signal);
-  
+
   // Stop scheduled jobs
   stopJobs();
-  
+
   // Close WebSocket connections
   if (io) {
     logger.info('Closing WebSocket connections...');
@@ -31,7 +31,7 @@ function shutdown(signal) {
       logger.info('WebSocket server closed.');
     });
   }
-  
+
   server.close(() => {
     logger.info('HTTP server closed.');
     process.exit(0);
@@ -50,7 +50,7 @@ process.on('SIGINT', () => shutdown('SIGINT'));
 async function start() {
   try {
     // Wait a bit for PostGIS to be ready (especially after restart)
-    const waitTime = process.env.DB_WAIT_TIME ? parseInt(process.env.DB_WAIT_TIME) : 10000;
+    const waitTime = process.env.DBWAITTIME ? parseInt(process.env.DBWAITTIME) : 10000;
     if (process.env.NODE_ENV === 'production') {
       logger.info(`Waiting ${waitTime}ms for database to be ready...`);
       await new Promise(resolve => setTimeout(resolve, waitTime));
@@ -89,7 +89,6 @@ async function start() {
     initializeJobs();
     startJobs();
     logger.info('Scheduled jobs initialized and started');
-
   } catch (err) {
     logger.error('Initialization error: %s', err.message);
     // Exit on critical initialization failure

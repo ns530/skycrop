@@ -9,7 +9,9 @@ const WeatherController = require('../controllers/weather.controller');
 const router = express.Router();
 
 const fieldQuery = Joi.object({
-  field_id: Joi.string().guid({ version: ['uuidv4', 'uuidv5', 'uuidv1'] }).required(),
+  field_id: Joi.string()
+    .guid({ version: ['uuidv4', 'uuidv5', 'uuidv1'] })
+    .required(),
 });
 
 const coordsQuery = Joi.object({
@@ -21,7 +23,9 @@ const forecastQuery = Joi.object({
   field_id: Joi.string().guid({ version: ['uuidv4', 'uuidv5', 'uuidv1'] }),
   lat: Joi.number().min(-90).max(90),
   lon: Joi.number().min(-180).max(180),
-}).or('field_id', 'lat').with('lat', 'lon');
+})
+  .or('field_id', 'lat')
+  .with('lat', 'lon');
 
 // All weather endpoints require authentication
 router.use(authMiddleware);

@@ -6,8 +6,14 @@
 //   and return strongly typed data.
 // - On failure, functions throw ApiError (normalized via normalizeApiError).
 
-export { httpClient, setAuthTokens, configureAuthHandlers, ApiError, normalizeApiError } from './httpClient';
-export type { AuthTokens } from './httpClient';
+export {
+  httpClient,
+  setAuthTokens,
+  configureAuthHandlers,
+  ApiError,
+  normalizeApiError,
+} from "./httpClient";
+export type { AuthTokens } from "./httpClient";
 
 /**
  * Generic pagination envelope used by list endpoints after unwrapping
@@ -38,5 +44,5 @@ export interface ListParams {
   pageSize?: number;
   search?: string;
   sort?: string;
-  order?: 'asc' | 'desc';
+  order?: "asc" | "desc";
 }

@@ -1,16 +1,19 @@
 /**
  * AI Recommendation Engine
- * 
+ *
  * Intelligent recommendation system that analyzes field data
  * and generates actionable advice for farmers.
- * 
+ *
  * This is a sophisticated mock that simulates real AI decision-making
  * based on health, weather, yield, and growth stage data.
  */
 
-import type { HealthIndexPoint } from '../../health/api/healthApi';
+import type { HealthIndexPoint } from "../../health/api/healthApi";
 
-import type { Recommendation, RecommendationPriority } from './recommendationApi';
+import type {
+  Recommendation,
+  RecommendationPriority,
+} from "./recommendationApi";
 
 // --------------------
 // Types
@@ -22,8 +25,8 @@ export interface FieldAnalysisInput {
   areaHa: number;
   healthData?: {
     ndvi: number;
-    healthStatus: 'excellent' | 'good' | 'fair' | 'poor';
-    trend: 'improving' | 'stable' | 'declining';
+    healthStatus: "excellent" | "good" | "fair" | "poor";
+    trend: "improving" | "stable" | "declining";
     timeSeries?: HealthIndexPoint[];
   };
   weatherData?: {
@@ -36,7 +39,7 @@ export interface FieldAnalysisInput {
     predictedYield: number; // kg/ha
     lastActualYield?: number; // kg/ha
   };
-  growthStage?: 'vegetative' | 'reproductive' | 'ripening' | 'harvest';
+  growthStage?: "vegetative" | "reproductive" | "ripening" | "harvest";
   lastIrrigationDays?: number;
   lastFertilizerDays?: number;
 }
@@ -45,7 +48,9 @@ interface RecommendationRule {
   id: string;
   condition: (input: FieldAnalysisInput) => boolean;
   priority: RecommendationPriority;
-  generate: (input: FieldAnalysisInput) => Omit<Recommendation, 'id' | 'fieldId' | 'recommendedAt'>;
+  generate: (
+    input: FieldAnalysisInput,
+  ) => Omit<Recommendation, "id" | "fieldId" | "recommendedAt">;
 }
 
 // --------------------
@@ -56,17 +61,17 @@ interface RecommendationRule {
  * Rule 1: Critical - Low NDVI with declining trend
  */
 const criticalHealthRule: RecommendationRule = {
-  id: 'critical-health',
+  id: "critical-health",
   condition: (input) =>
     input.healthData !== undefined &&
     input.healthData.ndvi < 0.4 &&
-    input.healthData.trend === 'declining',
-  priority: 'high',
+    input.healthData.trend === "declining",
+  priority: "high",
   generate: (input) => ({
-    title: '🚨 Urgent: Severe Stress Detected',
+    title: "🚨 Urgent: Severe Stress Detected",
     description: `Your field shows critical stress with NDVI of ${input.healthData!.ndvi.toFixed(2)}. Immediate action required to prevent crop failure.`,
-    status: 'overdue',
-    priority: 'high',
+    status: "overdue",
+    priority: "high",
     applyBefore: getDateDaysFromNow(2),
     weatherHint: input.weatherData?.forecast,
   }),
@@ -76,23 +81,23 @@ const criticalHealthRule: RecommendationRule = {
  * Rule 2: Water stress detected
  */
 const waterStressRule: RecommendationRule = {
-  id: 'water-stress',
+  id: "water-stress",
   condition: (input) =>
     input.healthData !== undefined &&
     input.healthData.ndvi < 0.6 &&
     input.weatherData !== undefined &&
     input.weatherData.rainfall < 10 &&
     (input.lastIrrigationDays === undefined || input.lastIrrigationDays > 7),
-  priority: 'high',
+  priority: "high",
   generate: (input) => {
-    const lastIrrigation = input.lastIrrigationDays || 'unknown';
+    const lastIrrigation = input.lastIrrigationDays || "unknown";
     return {
-      title: '💧 Apply Irrigation',
+      title: "💧 Apply Irrigation",
       description: `Low rainfall (${input.weatherData!.rainfall}mm) and declining health indicate water stress. Last irrigation: ${lastIrrigation} days ago.`,
-      status: 'planned',
-      priority: 'high',
+      status: "planned",
+      priority: "high",
       applyBefore: getDateDaysFromNow(3),
-      weatherHint: input.weatherData?.forecast || 'Dry conditions expected',
+      weatherHint: input.weatherData?.forecast || "Dry conditions expected",
     };
   },
 };
@@ -101,18 +106,18 @@ const waterStressRule: RecommendationRule = {
  * Rule 3: Fertilizer needed (vegetative stage)
  */
 const vegetativeFertilizerRule: RecommendationRule = {
-  id: 'vegetative-fertilizer',
+  id: "vegetative-fertilizer",
   condition: (input) =>
-    input.growthStage === 'vegetative' &&
+    input.growthStage === "vegetative" &&
     (input.lastFertilizerDays === undefined || input.lastFertilizerDays > 15) &&
     input.healthData !== undefined &&
     input.healthData.ndvi < 0.7,
-  priority: 'medium',
+  priority: "medium",
   generate: (input) => ({
-    title: '🌱 Apply Nitrogen Fertilizer',
+    title: "🌱 Apply Nitrogen Fertilizer",
     description: `Your field is in the vegetative stage and needs nitrogen boost. Current NDVI: ${input.healthData!.ndvi.toFixed(2)}. Recommended: 40kg/ha urea.`,
-    status: 'planned',
-    priority: 'medium',
+    status: "planned",
+    priority: "medium",
     applyBefore: getDateDaysFromNow(7),
     weatherHint: input.weatherData?.forecast,
   }),
@@ -122,18 +127,19 @@ const vegetativeFertilizerRule: RecommendationRule = {
  * Rule 4: Reproductive stage fertilizer
  */
 const reproductiveFertilizerRule: RecommendationRule = {
-  id: 'reproductive-fertilizer',
+  id: "reproductive-fertilizer",
   condition: (input) =>
-    input.growthStage === 'reproductive' &&
+    input.growthStage === "reproductive" &&
     (input.lastFertilizerDays === undefined || input.lastFertilizerDays > 20),
-  priority: 'medium',
+  priority: "medium",
   generate: (input) => ({
-    title: '🌾 Apply Phosphorus & Potassium',
-    description: 'Your paddy is flowering. Apply P&K fertilizer to boost grain formation. Recommended: 30kg/ha NPK (0-20-20).',
-    status: 'planned',
-    priority: 'medium',
+    title: "🌾 Apply Phosphorus & Potassium",
+    description:
+      "Your paddy is flowering. Apply P&K fertilizer to boost grain formation. Recommended: 30kg/ha NPK (0-20-20).",
+    status: "planned",
+    priority: "medium",
     applyBefore: getDateDaysFromNow(5),
-    weatherHint: 'Apply when no rain expected for 2 days',
+    weatherHint: "Apply when no rain expected for 2 days",
   }),
 };
 
@@ -141,21 +147,21 @@ const reproductiveFertilizerRule: RecommendationRule = {
  * Rule 5: Pest risk (high humidity + good health)
  */
 const pestRiskRule: RecommendationRule = {
-  id: 'pest-risk',
+  id: "pest-risk",
   condition: (input) =>
     input.weatherData !== undefined &&
     input.weatherData.humidity > 80 &&
     input.healthData !== undefined &&
-    input.healthData.healthStatus === 'good' &&
-    input.growthStage === 'reproductive',
-  priority: 'medium',
+    input.healthData.healthStatus === "good" &&
+    input.growthStage === "reproductive",
+  priority: "medium",
   generate: (input) => ({
-    title: '🐛 Monitor for Pests',
+    title: "🐛 Monitor for Pests",
     description: `High humidity (${input.weatherData!.humidity}%) during flowering increases pest risk. Inspect for brown plant hopper and leaf folder.`,
-    status: 'planned',
-    priority: 'medium',
+    status: "planned",
+    priority: "medium",
     applyBefore: getDateDaysFromNow(3),
-    weatherHint: 'Monitor daily until humidity drops',
+    weatherHint: "Monitor daily until humidity drops",
   }),
 };
 
@@ -163,17 +169,17 @@ const pestRiskRule: RecommendationRule = {
  * Rule 6: Drain field before heavy rain
  */
 const drainBeforeRainRule: RecommendationRule = {
-  id: 'drain-before-rain',
+  id: "drain-before-rain",
   condition: (input) =>
     input.weatherData !== undefined &&
     input.weatherData.forecast !== undefined &&
-    input.weatherData.forecast.toLowerCase().includes('heavy rain'),
-  priority: 'high',
+    input.weatherData.forecast.toLowerCase().includes("heavy rain"),
+  priority: "high",
   generate: (input) => ({
-    title: '🌧️ Drain Excess Water',
+    title: "🌧️ Drain Excess Water",
     description: `Heavy rain forecast: "${input.weatherData!.forecast}". Drain field to prevent waterlogging and disease.`,
-    status: 'planned',
-    priority: 'high',
+    status: "planned",
+    priority: "high",
     applyBefore: getDateDaysFromNow(1),
     weatherHint: input.weatherData!.forecast,
   }),
@@ -183,19 +189,19 @@ const drainBeforeRainRule: RecommendationRule = {
  * Rule 7: Harvest timing
  */
 const harvestTimingRule: RecommendationRule = {
-  id: 'harvest-timing',
+  id: "harvest-timing",
   condition: (input) =>
-    input.growthStage === 'ripening' &&
+    input.growthStage === "ripening" &&
     input.healthData !== undefined &&
     input.healthData.ndvi < 0.5,
-  priority: 'high',
+  priority: "high",
   generate: (input) => ({
-    title: '🌾 Prepare for Harvest',
+    title: "🌾 Prepare for Harvest",
     description: `NDVI declining to ${input.healthData!.ndvi.toFixed(2)} indicates ripening complete. Plan harvest within 1-2 weeks for optimal yield.`,
-    status: 'planned',
-    priority: 'high',
+    status: "planned",
+    priority: "high",
     applyBefore: getDateDaysFromNow(7),
-    weatherHint: 'Harvest on a sunny day to avoid grain moisture issues',
+    weatherHint: "Harvest on a sunny day to avoid grain moisture issues",
   }),
 };
 
@@ -203,18 +209,18 @@ const harvestTimingRule: RecommendationRule = {
  * Rule 8: Improving health - maintain current practices
  */
 const maintainHealthRule: RecommendationRule = {
-  id: 'maintain-health',
+  id: "maintain-health",
   condition: (input) =>
     input.healthData !== undefined &&
-    input.healthData.trend === 'improving' &&
-    input.healthData.healthStatus === 'excellent',
-  priority: 'low',
+    input.healthData.trend === "improving" &&
+    input.healthData.healthStatus === "excellent",
+  priority: "low",
   generate: (input) => ({
-    title: '✅ Continue Current Practices',
+    title: "✅ Continue Current Practices",
     description: `Your field health is improving (NDVI: ${input.healthData!.ndvi.toFixed(2)}). Maintain current irrigation and fertilization schedule.`,
-    status: 'planned',
-    priority: 'low',
-    weatherHint: 'Monitor for any sudden changes',
+    status: "planned",
+    priority: "low",
+    weatherHint: "Monitor for any sudden changes",
   }),
 };
 
@@ -222,19 +228,19 @@ const maintainHealthRule: RecommendationRule = {
  * Rule 9: Yield prediction low - intensify care
  */
 const yieldBoostRule: RecommendationRule = {
-  id: 'yield-boost',
+  id: "yield-boost",
   condition: (input) =>
     input.yieldData !== undefined &&
     input.yieldData.predictedYield < 3500 &&
-    input.growthStage === 'vegetative',
-  priority: 'medium',
+    input.growthStage === "vegetative",
+  priority: "medium",
   generate: (input) => ({
-    title: '📊 Yield Below Target',
+    title: "📊 Yield Below Target",
     description: `Predicted yield: ${input.yieldData!.predictedYield}kg/ha. Increase fertilizer and ensure consistent water supply to reach 4000kg/ha target.`,
-    status: 'planned',
-    priority: 'medium',
+    status: "planned",
+    priority: "medium",
     applyBefore: getDateDaysFromNow(10),
-    weatherHint: 'Act now while plants are still in growth phase',
+    weatherHint: "Act now while plants are still in growth phase",
   }),
 };
 
@@ -242,20 +248,20 @@ const yieldBoostRule: RecommendationRule = {
  * Rule 10: Disease risk (declining trend + high rainfall)
  */
 const diseaseRiskRule: RecommendationRule = {
-  id: 'disease-risk',
+  id: "disease-risk",
   condition: (input) =>
     input.healthData !== undefined &&
-    input.healthData.trend === 'declining' &&
+    input.healthData.trend === "declining" &&
     input.weatherData !== undefined &&
     input.weatherData.rainfall > 50,
-  priority: 'high',
+  priority: "high",
   generate: (input) => ({
-    title: '🦠 Disease Risk Detected',
+    title: "🦠 Disease Risk Detected",
     description: `Declining health with heavy rainfall (${input.weatherData!.rainfall}mm) suggests possible fungal disease. Inspect for blast or sheath blight.`,
-    status: 'planned',
-    priority: 'high',
+    status: "planned",
+    priority: "high",
     applyBefore: getDateDaysFromNow(2),
-    weatherHint: 'Apply fungicide if disease confirmed',
+    weatherHint: "Apply fungicide if disease confirmed",
   }),
 };
 
@@ -282,11 +288,13 @@ const ALL_RULES: RecommendationRule[] = [
 
 /**
  * Generate AI recommendations for a field
- * 
+ *
  * @param input - Field analysis data
  * @returns Array of generated recommendations
  */
-export const generateAIRecommendations = (input: FieldAnalysisInput): Recommendation[] => {
+export const generateAIRecommendations = (
+  input: FieldAnalysisInput,
+): Recommendation[] => {
   const recommendations: Recommendation[] = [];
 
   // Evaluate each rule
@@ -320,12 +328,15 @@ export const generateAIRecommendations = (input: FieldAnalysisInput): Recommenda
 /**
  * Explain why a recommendation was generated (for transparency)
  */
-export const explainRecommendation = (recommendationId: string, input: FieldAnalysisInput): string => {
-  const ruleId = recommendationId.split('-')[1]; // Extract rule ID
+export const explainRecommendation = (
+  recommendationId: string,
+  input: FieldAnalysisInput,
+): string => {
+  const ruleId = recommendationId.split("-")[1]; // Extract rule ID
   const rule = ALL_RULES.find((r) => r.id === ruleId);
 
   if (!rule) {
-    return 'This recommendation was generated based on field analysis.';
+    return "This recommendation was generated based on field analysis.";
   }
 
   // Build explanation based on input data
@@ -346,7 +357,7 @@ export const explainRecommendation = (recommendationId: string, input: FieldAnal
     factors.push(`Growth stage: ${input.growthStage}`);
   }
 
-  return `AI Analysis: ${factors.join(' | ')}`;
+  return `AI Analysis: ${factors.join(" | ")}`;
 };
 
 // --------------------
@@ -358,4 +369,3 @@ function getDateDaysFromNow(days: number): string {
   date.setDate(date.getDate() + days);
   return date.toISOString();
 }
-

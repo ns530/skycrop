@@ -1,9 +1,9 @@
-import clsx from 'clsx';
-import React from 'react';
+import clsx from "clsx";
+import React from "react";
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive';
-type ButtonSize = 'sm' | 'md' | 'lg';
-type ButtonAs = 'button' | 'a';
+type ButtonVariant = "primary" | "secondary" | "ghost" | "destructive";
+type ButtonSize = "sm" | "md" | "lg";
+type ButtonAs = "button" | "a";
 
 /**
  * Shared button props
@@ -32,10 +32,10 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
  * - Ensures at least 44px hit target for accessibility for md and lg sizes.
  */
 export const Button: React.FC<ButtonProps> = ({
-  variant = 'primary',
-  size = 'md',
+  variant = "primary",
+  size = "md",
   fullWidth = false,
-  as = 'button',
+  as = "button",
   href,
   target,
   rel,
@@ -44,22 +44,22 @@ export const Button: React.FC<ButtonProps> = ({
   ...rest
 }) => {
   const baseClasses =
-    'inline-flex items-center justify-center rounded-md font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors';
+    "inline-flex items-center justify-center rounded-md font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors";
 
   const sizeClasses: Record<ButtonSize, string> = {
-    sm: 'text-xs px-3 h-9',
-    md: 'text-sm px-4 h-11',
-    lg: 'text-base px-5 h-12',
+    sm: "text-xs px-3 h-9",
+    md: "text-sm px-4 h-11",
+    lg: "text-base px-5 h-12",
   };
 
   const variantClasses: Record<ButtonVariant, string> = {
-    primary: 'bg-brand-blue text-white hover:bg-blue-600',
-    secondary: 'bg-white text-gray-900 border border-gray-200 hover:bg-gray-50',
-    ghost: 'bg-transparent text-gray-900 hover:bg-gray-100',
-    destructive: 'bg-status-poor text-white hover:bg-red-600',
+    primary: "bg-brand-blue text-white hover:bg-blue-600",
+    secondary: "bg-white text-gray-900 border border-gray-200 hover:bg-gray-50",
+    ghost: "bg-transparent text-gray-900 hover:bg-gray-100",
+    destructive: "bg-status-poor text-white hover:bg-red-600",
   };
 
-  const widthClasses = fullWidth ? 'w-full' : '';
+  const widthClasses = fullWidth ? "w-full" : "";
 
   const { type: buttonType, ...restProps } = rest;
 
@@ -71,8 +71,9 @@ export const Button: React.FC<ButtonProps> = ({
     className,
   );
 
-  if (as === 'a') {
-    const anchorProps = restProps as React.AnchorHTMLAttributes<HTMLAnchorElement>;
+  if (as === "a") {
+    const anchorProps =
+      restProps as React.AnchorHTMLAttributes<HTMLAnchorElement>;
 
     return (
       <a
@@ -80,7 +81,7 @@ export const Button: React.FC<ButtonProps> = ({
         target={target}
         rel={rel}
         // When rendered as a link-but-behaving-like-a-button, ensure keyboard access
-        role={anchorProps.role ?? 'button'}
+        role={anchorProps.role ?? "button"}
         tabIndex={anchorProps.tabIndex ?? 0}
         className={commonClassName}
         {...anchorProps}
@@ -92,7 +93,7 @@ export const Button: React.FC<ButtonProps> = ({
 
   return (
     <button
-      type={buttonType ?? 'button'}
+      type={buttonType ?? "button"}
       className={commonClassName}
       {...(restProps as React.ButtonHTMLAttributes<HTMLButtonElement>)}
     >

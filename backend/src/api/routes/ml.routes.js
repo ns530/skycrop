@@ -13,15 +13,15 @@ router.use(authMiddleware);
 router.use(apiLimiter);
 
 // Increase JSON body size limit to 10 MB for ML payloads
-router.use(express.json({ limit: '10mb' }));
+router.use(expresson({ limit: '10mb' }));
 
 // Map payload-too-large to API error schema via global handler
 // Express will pass errors from body parser to this error handler
 // eslint-disable-next-line no-unused-vars
-router.use((err, _req, _res, next) => {
+router.use((err, req, res, next) => {
   if (err && (err.type === 'entity.too.large' || err.status === 413)) {
     err.statusCode = 413;
-    err.code = 'PAYLOAD_TOO_LARGE';
+    err.code = 'PAYLOADTOOLARGE';
     err.message = 'Request entity too large';
   }
   return next(err);

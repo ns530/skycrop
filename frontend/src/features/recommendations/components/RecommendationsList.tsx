@@ -1,12 +1,12 @@
-import React from 'react';
+import React from "react";
 
 import type {
   Recommendation,
   RecommendationStatus,
   RecommendationPriority,
-} from '../api/recommendationApi';
+} from "../api/recommendationApi";
 
-import { RecommendationCard } from './RecommendationCard';
+import { RecommendationCard } from "./RecommendationCard";
 
 export interface RecommendationsListProps {
   recommendations: Recommendation[];
@@ -61,10 +61,11 @@ export const RecommendationsList: React.FC<RecommendationsListProps> = ({
   applyingId,
 }) => {
   const active = recommendations.filter(
-    (rec: Recommendation) => rec.status === 'planned' || rec.status === 'overdue',
+    (rec: Recommendation) =>
+      rec.status === "planned" || rec.status === "overdue",
   );
   const history = recommendations.filter(
-    (rec: Recommendation) => rec.status === 'applied',
+    (rec: Recommendation) => rec.status === "applied",
   );
 
   const sortedActive = sortActive(active);
@@ -85,7 +86,10 @@ export const RecommendationsList: React.FC<RecommendationsListProps> = ({
   return (
     <div className="space-y-6">
       {hasActive && (
-        <section aria-labelledby="upcoming-recommendations-heading" className="space-y-3">
+        <section
+          aria-labelledby="upcoming-recommendations-heading"
+          className="space-y-3"
+        >
           <header className="flex items-baseline justify-between gap-2">
             <h2
               id="upcoming-recommendations-heading"
@@ -94,7 +98,8 @@ export const RecommendationsList: React.FC<RecommendationsListProps> = ({
               Upcoming actions
             </h2>
             <p className="text-xs text-gray-500">
-              Overdue items appear first, followed by planned actions by priority.
+              Overdue items appear first, followed by planned actions by
+              priority.
             </p>
           </header>
           <div className="space-y-3">
@@ -111,7 +116,10 @@ export const RecommendationsList: React.FC<RecommendationsListProps> = ({
       )}
 
       {hasHistory && (
-        <section aria-labelledby="history-recommendations-heading" className="space-y-3">
+        <section
+          aria-labelledby="history-recommendations-heading"
+          className="space-y-3"
+        >
           <header className="flex items-baseline justify-between gap-2">
             <h2
               id="history-recommendations-heading"

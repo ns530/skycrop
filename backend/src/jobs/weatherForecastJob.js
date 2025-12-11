@@ -5,9 +5,9 @@
  * Runs every 6 hours
  */
 
-import logger from '../config/logger.config.js';
-import { Field } from '../models/index.js';
-import weatherService from '../services/weather.service.js';
+import logger from '../config/logger.config';
+import { Field } from '../models/index';
+import weatherService from '../services/weather.service';
 
 /**
  * Update weather forecasts for all active fields
@@ -33,7 +33,7 @@ async function runWeatherForecastUpdate() {
 
     // Group fields by location to avoid duplicate API calls
     const locationGroups = new Map();
-    
+
     for (const field of fields) {
       const center = JSON.parse(field.center);
       const latitude = center.coordinates[1].toFixed(2); // Round to 2 decimals
@@ -49,7 +49,7 @@ async function runWeatherForecastUpdate() {
       }
 
       locationGroups.get(locationKey).fields.push({
-        fieldId: field.field_id,
+        field_id: field.field_id,
         name: field.name,
       });
     }
@@ -68,7 +68,9 @@ async function runWeatherForecastUpdate() {
     // Fetch weather for each unique location
     for (const [locationKey, locationData] of locationGroups.entries()) {
       try {
-        logger.debug(`Fetching weather for location: ${locationKey} (${locationData.fields.length} fields)`);
+        logger.debug(
+          `Fetching weather for location: ${locationKey} (${locationData.fields.length} fields)`
+        );
 
         // Fetch weather forecast
         const forecast = await weatherService.getForecast({
@@ -85,19 +87,21 @@ async function runWeatherForecastUpdate() {
         // Cache weather data for all fields at this location
         for (const fieldInfo of locationData.fields) {
           try {
-            await weatherService.cacheWeatherData(fieldInfo.fieldId, {
+            await weatherService.cacheWeatherData(fieldInfo.field_id, {
               forecast,
               alerts,
               cachedAt: new Date(),
             });
             results.fieldsUpdated++;
           } catch (cacheError) {
-            logger.error(`Error caching weather for field ${fieldInfo.fieldId}:`, cacheError);
+            logger.error(`Error caching weather for field ${fieldInfo.field_id}:`, cacheError);
           }
         }
 
         results.success++;
-        logger.info(`Successfully updated weather for ${locationData.fields.length} fields at ${locationKey}`);
+        logger.info(
+          `Successfully updated weather for ${locationData.fields.length} fields at ${locationKey}`
+        );
 
         // Check for severe weather alerts and send notifications
         if (alerts && alerts.length > 0) {
@@ -117,7 +121,6 @@ async function runWeatherForecastUpdate() {
 
         // Rate limiting delay
         await new Promise(resolve => setTimeout(resolve, 1000));
-
       } catch (error) {
         logger.error(`Error fetching weather for location ${locationKey}:`, error);
         results.failed++;
@@ -148,7 +151,6 @@ async function runWeatherForecastUpdate() {
     }
 
     return results;
-
   } catch (error) {
     logger.error('Fatal error in weather forecast update job:', error);
     throw error;
@@ -162,4 +164,3 @@ export default {
   enabled: true,
   critical: false,
 };
-

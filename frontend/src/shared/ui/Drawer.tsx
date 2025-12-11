@@ -1,12 +1,12 @@
-import clsx from 'clsx';
-import React, { useEffect, useRef, useId } from 'react';
-import ReactDOM from 'react-dom';
+import clsx from "clsx";
+import React, { useEffect, useRef, useId } from "react";
+import ReactDOM from "react-dom";
 
 export interface DrawerProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
-  position?: 'left' | 'right';
+  position?: "left" | "right";
   children?: React.ReactNode;
 }
 
@@ -24,7 +24,7 @@ export const Drawer: React.FC<DrawerProps> = ({
   isOpen,
   onClose,
   title,
-  position = 'right',
+  position = "right",
   children,
 }) => {
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -32,7 +32,7 @@ export const Drawer: React.FC<DrawerProps> = ({
   const titleId = useId();
 
   useEffect(() => {
-    if (!isOpen || typeof document === 'undefined') {
+    if (!isOpen || typeof document === "undefined") {
       return;
     }
 
@@ -44,13 +44,13 @@ export const Drawer: React.FC<DrawerProps> = ({
       if (!panelEl) return;
 
       const focusableSelectors = [
-        'a[href]',
-        'button:not([disabled])',
-        'textarea:not([disabled])',
-        'input:not([disabled])',
-        'select:not([disabled])',
+        "a[href]",
+        "button:not([disabled])",
+        "textarea:not([disabled])",
+        "input:not([disabled])",
+        "select:not([disabled])",
         '[tabindex]:not([tabindex="-1"])',
-      ].join(', ');
+      ].join(", ");
 
       const focusable = Array.from(
         panelEl.querySelectorAll<HTMLElement>(focusableSelectors),
@@ -66,23 +66,23 @@ export const Drawer: React.FC<DrawerProps> = ({
     focusFirstElement();
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         event.stopPropagation();
         onClose();
         return;
       }
 
-      if (event.key !== 'Tab') return;
+      if (event.key !== "Tab") return;
       if (!panelEl) return;
 
       const focusableSelectors = [
-        'a[href]',
-        'button:not([disabled])',
-        'textarea:not([disabled])',
-        'input:not([disabled])',
-        'select:not([disabled])',
+        "a[href]",
+        "button:not([disabled])",
+        "textarea:not([disabled])",
+        "input:not([disabled])",
+        "select:not([disabled])",
         '[tabindex]:not([tabindex="-1"])',
-      ].join(', ');
+      ].join(", ");
 
       const focusable = Array.from(
         panelEl.querySelectorAll<HTMLElement>(focusableSelectors),
@@ -107,10 +107,10 @@ export const Drawer: React.FC<DrawerProps> = ({
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown);
 
       if (previouslyFocusedRef.current && previouslyFocusedRef.current.focus) {
         previouslyFocusedRef.current.focus();
@@ -119,14 +119,12 @@ export const Drawer: React.FC<DrawerProps> = ({
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
-  if (typeof document === 'undefined') {
+  if (typeof document === "undefined") {
     return null;
   }
 
   const sideClass =
-    position === 'left'
-      ? 'left-0 rounded-r-lg'
-      : 'right-0 rounded-l-lg';
+    position === "left" ? "left-0 rounded-r-lg" : "right-0 rounded-l-lg";
 
   return ReactDOM.createPortal(
     <div
@@ -134,7 +132,9 @@ export const Drawer: React.FC<DrawerProps> = ({
       onClick={onClose}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClose(); }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") onClose();
+      }}
     >
       <div
         ref={panelRef}
@@ -142,12 +142,11 @@ export const Drawer: React.FC<DrawerProps> = ({
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         className={clsx(
-          'relative h-full w-full max-w-sm bg-white shadow-xl outline-none',
+          "relative h-full w-full max-w-sm bg-white shadow-xl outline-none",
           sideClass,
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2',
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2",
         )}
         tabIndex={-1}
-         
         onClick={(e) => e.stopPropagation()}
       >
         {title && (

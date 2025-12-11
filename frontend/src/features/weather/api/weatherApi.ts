@@ -1,4 +1,4 @@
-import { httpClient, normalizeApiError } from '../../../shared/api';
+import { httpClient, normalizeApiError } from "../../../shared/api";
 
 export type WeatherCondition = string;
 
@@ -16,7 +16,7 @@ export interface WeatherForecastResponse {
   daily: DailyForecast[];
 }
 
-export type WeatherAlertSeverity = 'info' | 'warning' | 'severe';
+export type WeatherAlertSeverity = "info" | "warning" | "severe";
 
 export interface WeatherAlert {
   id: string;
@@ -53,11 +53,17 @@ interface BackendWeatherAlertsEnvelope {
  *
  * GET /api/v1/weather/forecast?lat=&lon=
  */
-export const getWeatherForecast = async (lat: number, lon: number): Promise<WeatherForecastResponse> => {
+export const getWeatherForecast = async (
+  lat: number,
+  lon: number,
+): Promise<WeatherForecastResponse> => {
   try {
-    const res = await httpClient.get<BackendWeatherForecastEnvelope>('/weather/forecast', {
-      params: { lat, lon },
-    });
+    const res = await httpClient.get<BackendWeatherForecastEnvelope>(
+      "/weather/forecast",
+      {
+        params: { lat, lon },
+      },
+    );
     return res.data.data;
   } catch (error) {
     throw normalizeApiError(error);
@@ -71,7 +77,8 @@ export const getWeatherForecast = async (lat: number, lon: number): Promise<Weat
  */
 export const getWeatherAlerts = async (): Promise<WeatherAlert[]> => {
   try {
-    const res = await httpClient.get<BackendWeatherAlertsEnvelope>('/weather/alerts');
+    const res =
+      await httpClient.get<BackendWeatherAlertsEnvelope>("/weather/alerts");
     return res.data.data;
   } catch (error) {
     throw normalizeApiError(error);

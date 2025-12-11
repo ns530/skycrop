@@ -1,14 +1,18 @@
 /**
  * useNotificationIntegration Hook
- * 
+ *
  * Automatically sends notifications based on field data changes
  */
 
-import { useQuery } from '@tanstack/react-query';
-import { useEffect, useRef } from 'react';
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 
-import type { FieldDetail } from '../../features/fields/api/fieldsApi';
-import { sendHealthAlert, sendWeatherWarning, sendRecommendationNotification } from '../services/notificationService';
+import type { FieldDetail } from "../../features/fields/api/fieldsApi";
+import {
+  sendHealthAlert,
+  sendWeatherWarning,
+  sendRecommendationNotification,
+} from "../services/notificationService";
 
 interface NotificationTriggers {
   fieldData?: FieldDetail;
@@ -19,7 +23,7 @@ interface NotificationTriggers {
 
 /**
  * Hook to integrate notifications with field data
- * 
+ *
  * Automatically sends notifications when:
  * - Field health deteriorates
  * - Weather warnings are issued
@@ -40,21 +44,24 @@ export const useNotificationIntegration = ({
     if (!fieldData || !enableHealthAlerts) return;
 
     const currentStatus = fieldData.latestHealthStatus;
-    
+
     // Check if health has deteriorated
     if (previousHealthStatus.current && currentStatus) {
       const healthOrder = { excellent: 0, good: 1, fair: 2, poor: 3 };
-      const prevLevel = healthOrder[previousHealthStatus.current as keyof typeof healthOrder] || 1;
-      const currentLevel = healthOrder[currentStatus as keyof typeof healthOrder] || 1;
+      const prevLevel =
+        healthOrder[previousHealthStatus.current as keyof typeof healthOrder] ||
+        1;
+      const currentLevel =
+        healthOrder[currentStatus as keyof typeof healthOrder] || 1;
 
       if (currentLevel > prevLevel && currentLevel >= 2) {
         // Health has declined to fair or poor
-        const priority = currentStatus === 'poor' ? 'critical' : 'high';
+        const priority = currentStatus === "poor" ? "critical" : "high";
         sendHealthAlert(
           fieldData.name,
           `Field health has declined to ${currentStatus}. Immediate attention recommended.`,
           fieldData.id,
-          priority
+          priority,
         ).catch(console.error);
       }
     }
@@ -94,7 +101,7 @@ export const useNotificationIntegration = ({
 export const useRecommendationNotification = (
   fieldId: string,
   fieldName: string,
-  recommendationTitle?: string
+  recommendationTitle?: string,
 ) => {
   const hasNotified = useRef(false);
 
@@ -104,11 +111,10 @@ export const useRecommendationNotification = (
         fieldName,
         recommendationTitle,
         fieldId,
-        'medium'
+        "medium",
       ).catch(console.error);
-      
+
       hasNotified.current = true;
     }
   }, [recommendationTitle, fieldId, fieldName]);
 };
-

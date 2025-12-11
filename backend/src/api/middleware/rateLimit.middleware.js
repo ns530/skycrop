@@ -9,16 +9,10 @@ const { initRedis, getRedisClient, isRedisAvailable } = require('../../config/re
  * - windowMs: number (milliseconds) - rolling window size
  * - max: number - max requests allowed within the window
  * - keyPrefix: string - prefix for redis keys
- * - keyGenerator: (req) => string - builds the unique identifier (e.g., userId or IP)
+ * - keyGenerator: (req) => string - builds the unique identifier (e.g., user_id or IP)
  * - onLimitExceeded: (req, res) => void - custom handler (optional)
  */
-function createRateLimiter({
-  windowMs,
-  max,
-  keyPrefix,
-  keyGenerator,
-  onLimitExceeded,
-}) {
+function createRateLimiter({ windowMs, max, keyPrefix, keyGenerator, onLimitExceeded }) {
   const windowSec = Math.ceil(windowMs / 1000);
 
   return async function rateLimiter(req, res, next) {
@@ -53,13 +47,13 @@ function createRateLimiter({
           return onLimitExceeded(req, res);
         }
 
-        return res.status(429).json({
+        return res.status(429)on({
           success: false,
           error: {
-            code: 'RATE_LIMIT_EXCEEDED',
+            code: 'RATELIMITEXCEEDED',
             message: 'Too many requests. Please try again later.',
             details: {
-              window_seconds: windowSec,
+              windowseconds: windowSec,
               limit: max,
             },
           },
@@ -81,8 +75,8 @@ function createRateLimiter({
  */
 function userOrIp(req) {
   // Prefer authenticated user id if available, else fall back to IP
-  const userId = req.user?.userId || req.user?.user_id;
-  return userId || req.ip || 'unknown';
+  const user_id = req.user?.user_id || req.user?.user_id;
+  return user_id || req.ip || 'unknown';
 }
 
 function ipOnly(req) {
@@ -109,13 +103,12 @@ const authLimiter = createRateLimiter({
   keyPrefix: 'rate-limit:auth',
   keyGenerator: ipOnly,
   onLimitExceeded: (req, res) => {
-    res.status(429).json({
+    res.status(429)on({
       success: false,
       error: {
-        code: 'AUTH_RATE_LIMIT_EXCEEDED',
-        message:
-          'Too many authentication attempts. Please try again in 15 minutes.',
-        details: { window_seconds: 15 * 60, limit: 5 },
+        code: 'AUTHRATELIMITEXCEEDED',
+        message: 'Too many authentication attempts. Please try again in 15 minutes.',
+        details: { windowseconds: 15 * 60, limit: 5 },
       },
       meta: { timestamp: new Date().toISOString() },
     });

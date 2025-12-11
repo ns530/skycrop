@@ -1,10 +1,10 @@
-import React from 'react';
+import React from "react";
 
-import { Card } from '../../../shared/ui/Card';
-import { ErrorState } from '../../../shared/ui/ErrorState';
-import { LoadingState } from '../../../shared/ui/LoadingState';
-import type { YieldForecastRequest } from '../api/yieldApi';
-import { useYieldForecast } from '../hooks';
+import { Card } from "../../../shared/ui/Card";
+import { ErrorState } from "../../../shared/ui/ErrorState";
+import { LoadingState } from "../../../shared/ui/LoadingState";
+import type { YieldForecastRequest } from "../api/yieldApi";
+import { useYieldForecast } from "../hooks";
 
 export interface YieldForecastCardProps {
   request: YieldForecastRequest;
@@ -14,16 +14,16 @@ export interface YieldForecastCardProps {
 }
 
 const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
 };
 
 const formatNumber = (num: number): string => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 1,
   }).format(num);
@@ -84,9 +84,13 @@ export const YieldForecastCard: React.FC<YieldForecastCardProps> = ({
         <div className="text-center">
           <div className="text-3xl font-bold text-gray-900">
             {formatNumber(yieldKgHa)}
-            <span className="text-lg font-normal text-gray-500 ml-1">kg/ha</span>
+            <span className="text-lg font-normal text-gray-500 ml-1">
+              kg/ha
+            </span>
           </div>
-          <p className="text-sm text-gray-600 mt-1">Predicted yield per hectare</p>
+          <p className="text-sm text-gray-600 mt-1">
+            Predicted yield per hectare
+          </p>
         </div>
 
         {/* Confidence interval */}
@@ -98,7 +102,8 @@ export const YieldForecastCard: React.FC<YieldForecastCardProps> = ({
             </span>
           </div>
           <div className="mt-2 text-xs text-gray-500">
-            {formatNumber(confidenceLower)} - {formatNumber(confidenceUpper)} kg/ha
+            {formatNumber(confidenceLower)} - {formatNumber(confidenceUpper)}{" "}
+            kg/ha
           </div>
         </div>
 

@@ -9,15 +9,7 @@ const { logger } = require('../../utils/logger');
  */
 async function getAllUsers(req, res, next) {
   try {
-    const {
-      page = 1,
-      limit = 20,
-      role,
-      status,
-      search,
-      sortBy,
-      sortOrder,
-    } = req.query;
+    const { page = 1, limit = 20, role, status, search, sortBy, sortOrder } = req.query;
 
     const result = await userManagementService.getAllUsers({
       page: parseInt(page, 10),
@@ -30,19 +22,19 @@ async function getAllUsers(req, res, next) {
     });
 
     logger.info('users.list.success', {
-      userId: req.user.userId,
+      user_id: req.user.user_id,
       count: result.users.length,
       total: result.pagination.total,
     });
 
-    res.json({
+    reson({
       success: true,
       data: result,
       meta: { timestamp: new Date().toISOString() },
     });
   } catch (error) {
     logger.error('users.list.error', {
-      userId: req.user.userId,
+      user_id: req.user.user_id,
       error: error.message,
       stack: error.stack,
     });
@@ -55,24 +47,24 @@ async function getAllUsers(req, res, next) {
  */
 async function getUserById(req, res, next) {
   try {
-    const { userId } = req.params;
+    const { user_id } = req.params;
 
-    const user = await userManagementService.getUserById(userId);
+    const user = await userManagementService.getUserById(user_id);
 
     logger.info('users.get.success', {
-      actorId: req.user.userId,
-      targetId: userId,
+      actorId: req.user.user_id,
+      targetId: user_id,
     });
 
-    res.json({
+    reson({
       success: true,
       data: user,
       meta: { timestamp: new Date().toISOString() },
     });
   } catch (error) {
     logger.error('users.get.error', {
-      actorId: req.user.userId,
-      targetId: req.params.userId,
+      actorId: req.user.user_id,
+      targetId: req.params.user_id,
       error: error.message,
     });
     next(error);
@@ -84,14 +76,14 @@ async function getUserById(req, res, next) {
  */
 async function updateUserRole(req, res, next) {
   try {
-    const { userId } = req.params;
+    const { user_id } = req.params;
     const { role } = req.body;
 
     if (!role) {
-      return res.status(400).json({
+      return res.status(400)on({
         success: false,
         error: {
-          code: 'VALIDATION_ERROR',
+          code: 'VALIDATIONERROR',
           message: 'Role is required',
         },
         meta: { timestamp: new Date().toISOString() },
@@ -99,19 +91,19 @@ async function updateUserRole(req, res, next) {
     }
 
     const updatedUser = await userManagementService.updateUserRole(
-      req.user.userId,
+      req.user.user_id,
       req.user.role,
-      userId,
+      user_id,
       role
     );
 
     logger.info('users.role.updated', {
-      actorId: req.user.userId,
-      targetId: userId,
+      actorId: req.user.user_id,
+      targetId: user_id,
       newRole: role,
     });
 
-    res.json({
+    reson({
       success: true,
       data: updatedUser,
       message: 'User role updated successfully',
@@ -119,8 +111,8 @@ async function updateUserRole(req, res, next) {
     });
   } catch (error) {
     logger.error('users.role.error', {
-      actorId: req.user.userId,
-      targetId: req.params.userId,
+      actorId: req.user.user_id,
+      targetId: req.params.user_id,
       error: error.message,
     });
     next(error);
@@ -132,14 +124,14 @@ async function updateUserRole(req, res, next) {
  */
 async function updateUserStatus(req, res, next) {
   try {
-    const { userId } = req.params;
+    const { user_id } = req.params;
     const { status } = req.body;
 
     if (!status) {
-      return res.status(400).json({
+      return res.status(400)on({
         success: false,
         error: {
-          code: 'VALIDATION_ERROR',
+          code: 'VALIDATIONERROR',
           message: 'Status is required',
         },
         meta: { timestamp: new Date().toISOString() },
@@ -147,19 +139,19 @@ async function updateUserStatus(req, res, next) {
     }
 
     const updatedUser = await userManagementService.updateUserStatus(
-      req.user.userId,
+      req.user.user_id,
       req.user.role,
-      userId,
+      user_id,
       status
     );
 
     logger.info('users.status.updated', {
-      actorId: req.user.userId,
-      targetId: userId,
+      actorId: req.user.user_id,
+      targetId: user_id,
       newStatus: status,
     });
 
-    res.json({
+    reson({
       success: true,
       data: updatedUser,
       message: 'User status updated successfully',
@@ -167,8 +159,8 @@ async function updateUserStatus(req, res, next) {
     });
   } catch (error) {
     logger.error('users.status.error', {
-      actorId: req.user.userId,
-      targetId: req.params.userId,
+      actorId: req.user.user_id,
+      targetId: req.params.user_id,
       error: error.message,
     });
     next(error);
@@ -183,17 +175,17 @@ async function getUserStatistics(req, res, next) {
     const stats = await userManagementService.getUserStatistics();
 
     logger.info('users.stats.success', {
-      userId: req.user.userId,
+      user_id: req.user.user_id,
     });
 
-    res.json({
+    reson({
       success: true,
       data: stats,
       meta: { timestamp: new Date().toISOString() },
     });
   } catch (error) {
     logger.error('users.stats.error', {
-      userId: req.user.userId,
+      user_id: req.user.user_id,
       error: error.message,
     });
     next(error);
@@ -208,7 +200,7 @@ async function searchUsers(req, res, next) {
     const { q, limit = 10 } = req.query;
 
     if (!q) {
-      return res.json({
+      return reson({
         success: true,
         data: [],
         meta: { timestamp: new Date().toISOString() },
@@ -218,19 +210,19 @@ async function searchUsers(req, res, next) {
     const users = await userManagementService.searchUsers(q, parseInt(limit, 10));
 
     logger.info('users.search.success', {
-      userId: req.user.userId,
+      user_id: req.user.user_id,
       query: q,
       results: users.length,
     });
 
-    res.json({
+    reson({
       success: true,
       data: users,
       meta: { timestamp: new Date().toISOString() },
     });
   } catch (error) {
     logger.error('users.search.error', {
-      userId: req.user.userId,
+      user_id: req.user.user_id,
       error: error.message,
     });
     next(error);
@@ -244,10 +236,10 @@ function getRoles(req, res) {
   const roles = getRoleHierarchy();
 
   logger.info('users.roles.success', {
-    userId: req.user.userId,
+    user_id: req.user.user_id,
   });
 
-  res.json({
+  reson({
     success: true,
     data: roles,
     meta: { timestamp: new Date().toISOString() },
@@ -263,4 +255,3 @@ module.exports = {
   searchUsers,
   getRoles,
 };
-

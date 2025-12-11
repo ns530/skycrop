@@ -9,7 +9,7 @@
  */
 
 import cron from 'node-cron';
-import logger from '../config/logger.config.js';
+import logger from '../config/logger.config';
 
 class JobScheduler {
   constructor() {
@@ -19,7 +19,7 @@ class JobScheduler {
 
   /**
    * Register a new scheduled job
-   * 
+   *
    * @param {string} name - Job name
    * @param {string} schedule - Cron schedule expression
    * @param {Function} handler - Job handler function
@@ -53,7 +53,7 @@ class JobScheduler {
     // Wrap handler with error handling and logging
     const wrappedHandler = async () => {
       const stats = this.jobStats.get(name);
-      
+
       if (!stats.enabled) {
         logger.debug(`Job "${name}" is disabled. Skipping execution.`);
         return;
@@ -72,10 +72,10 @@ class JobScheduler {
 
       try {
         await handler();
-        
+
         stats.successCount++;
         stats.lastError = null;
-        
+
         const duration = Date.now() - startTime;
         logger.info(`Job "${name}" completed successfully in ${duration}ms`);
       } catch (error) {
@@ -85,12 +85,12 @@ class JobScheduler {
           stack: error.stack,
           timestamp: new Date(),
         };
-        
+
         logger.error(`Job "${name}" failed:`, error);
-        
+
         // Optionally send alert for critical jobs
         if (options.critical) {
-          this._sendJobFailureAlert(name, error);
+          this.sendJobFailureAlert(name, error);
         }
       } finally {
         stats.isRunning = false;
@@ -119,7 +119,7 @@ class JobScheduler {
 
   /**
    * Start a specific job
-   * 
+   *
    * @param {string} name - Job name
    */
   startJob(name) {
@@ -133,14 +133,14 @@ class JobScheduler {
     const stats = this.jobStats.get(name);
     stats.enabled = true;
     this.jobStats.set(name, stats);
-    
+
     logger.info(`Job "${name}" started`);
     return true;
   }
 
   /**
    * Stop a specific job
-   * 
+   *
    * @param {string} name - Job name
    */
   stopJob(name) {
@@ -154,7 +154,7 @@ class JobScheduler {
     const stats = this.jobStats.get(name);
     stats.enabled = false;
     this.jobStats.set(name, stats);
-    
+
     logger.info(`Job "${name}" stopped`);
     return true;
   }
@@ -164,14 +164,14 @@ class JobScheduler {
    */
   startAll() {
     logger.info(`Starting ${this.jobs.size} scheduled jobs...`);
-    
+
     this.jobs.forEach((job, name) => {
       job.start();
       const stats = this.jobStats.get(name);
       stats.enabled = true;
       this.jobStats.set(name, stats);
     });
-    
+
     logger.info('All jobs started');
   }
 
@@ -180,20 +180,20 @@ class JobScheduler {
    */
   stopAll() {
     logger.info('Stopping all scheduled jobs...');
-    
+
     this.jobs.forEach((job, name) => {
       job.stop();
       const stats = this.jobStats.get(name);
       stats.enabled = false;
       this.jobStats.set(name, stats);
     });
-    
+
     logger.info('All jobs stopped');
   }
 
   /**
    * Get statistics for a specific job
-   * 
+   *
    * @param {string} name - Job name
    * @returns {Object|null} Job statistics
    */
@@ -203,7 +203,7 @@ class JobScheduler {
 
   /**
    * Get statistics for all jobs
-   * 
+   *
    * @returns {Array} Array of job statistics
    */
   getAllJobStats() {
@@ -212,12 +212,12 @@ class JobScheduler {
 
   /**
    * Send alert for critical job failures
-   * 
+   *
    * @private
    * @param {string} jobName - Job name
    * @param {Error} error - Error object
    */
-  _sendJobFailureAlert(jobName, error) {
+  sendJobFailureAlert(jobName, error) {
     // TODO: Implement alerting mechanism (email, Slack, etc.)
     logger.error(`CRITICAL JOB FAILURE: ${jobName}`, {
       error: error.message,
@@ -227,7 +227,7 @@ class JobScheduler {
 
   /**
    * Manually trigger a job (for testing or manual execution)
-   * 
+   *
    * @param {string} name - Job name
    */
   async triggerJob(name) {
@@ -248,4 +248,3 @@ class JobScheduler {
 const jobScheduler = new JobScheduler();
 
 export default jobScheduler;
-

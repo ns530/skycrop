@@ -1,6 +1,11 @@
-import { httpClient, ApiError, normalizeApiError, AuthTokens as HttpAuthTokens } from '../../../shared/api/httpClient';
+import {
+  httpClient,
+  ApiError,
+  normalizeApiError,
+  AuthTokens as HttpAuthTokens,
+} from "../../../shared/api/httpClient";
 
-export type UserRole = 'farmer' | 'admin';
+export type UserRole = "farmer" | "admin";
 
 export interface BackendUserPublic {
   user_id: string;
@@ -60,7 +65,10 @@ export const signupWithEmail = async (params: {
   password: string;
 }): Promise<AuthPayload> => {
   try {
-    const res = await httpClient.post<AuthResponseEnvelope>('/auth/signup', params);
+    const res = await httpClient.post<AuthResponseEnvelope>(
+      "/auth/signup",
+      params,
+    );
     return res.data.data;
   } catch (error) {
     throw normalizeApiError(error);
@@ -77,7 +85,10 @@ export const loginWithEmail = async (params: {
   password: string;
 }): Promise<AuthPayload> => {
   try {
-    const res = await httpClient.post<AuthResponseEnvelope>('/auth/login', params);
+    const res = await httpClient.post<AuthResponseEnvelope>(
+      "/auth/login",
+      params,
+    );
     return res.data.data;
   } catch (error) {
     throw normalizeApiError(error);
@@ -91,13 +102,12 @@ export const loginWithEmail = async (params: {
  */
 export const logoutSession = async (): Promise<void> => {
   try {
-    await httpClient.post<SuccessEnvelope>('/auth/logout');
+    await httpClient.post<SuccessEnvelope>("/auth/logout");
   } catch (error) {
     // Logout is best-effort; swallow network/API errors after normalization.
     const apiErr = normalizeApiError(error);
     if (apiErr instanceof ApiError) {
-       
-      console.warn('Logout failed (best-effort only):', apiErr.message);
+      console.warn("Logout failed (best-effort only):", apiErr.message);
     }
   }
 };
@@ -109,7 +119,9 @@ export const logoutSession = async (): Promise<void> => {
  */
 export const requestPasswordReset = async (email: string): Promise<void> => {
   try {
-    await httpClient.post<SuccessEnvelope>('/auth/request-password-reset', { email });
+    await httpClient.post<SuccessEnvelope>("/auth/request-password-reset", {
+      email,
+    });
   } catch (error) {
     throw normalizeApiError(error);
   }
@@ -125,7 +137,7 @@ export const resetPasswordWithToken = async (params: {
   newPassword: string;
 }): Promise<void> => {
   try {
-    await httpClient.post<SuccessEnvelope>('/auth/reset-password', params);
+    await httpClient.post<SuccessEnvelope>("/auth/reset-password", params);
   } catch (error) {
     throw normalizeApiError(error);
   }
@@ -143,7 +155,9 @@ export const resetPasswordWithToken = async (params: {
  * For now this returns null, meaning "no refresh available"; the HTTP client
  * will then invoke the configured auth error handler (logout).
  */
-export const refreshAuthTokens = async (_current: AuthTokens): Promise<AuthTokens | null> => {
+export const refreshAuthTokens = async (
+  _current: AuthTokens,
+): Promise<AuthTokens | null> => {
   // Placeholder implementation: no-op refresh. The HTTP client will call the
   // configured auth error handler (logout) when this returns null.
   return null;

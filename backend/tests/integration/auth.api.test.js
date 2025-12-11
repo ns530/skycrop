@@ -1,6 +1,4 @@
-'use strict';
-
-process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret';
+process.env.JWTSECRET = process.env.JWTSECRET || 'test-secret';
 process.env.NODE_ENV = 'test';
 
 // Mock Redis client to avoid real connection
@@ -10,7 +8,7 @@ const fakeRedis = {
   async get(key) {
     return fakeRedisStore.get(key) || null;
   },
-  async setEx(key, _ttl, value) {
+  async setEx(key, ttl, value) {
     fakeRedisStore.set(key, value);
     return 'OK';
   },
@@ -27,7 +25,7 @@ const fakeRedis = {
     fakeRedisStore.set(key, String(next));
     return next;
   },
-  async expire(_key, _ttl) {
+  async expire(key, ttl) {
     return 1;
   },
 };
@@ -66,7 +64,7 @@ describe('Auth API Integration', () => {
         email: 'user@example.com',
         name: 'Name',
         role: 'farmer',
-        email_verified: false,
+        emailverified: false,
       });
 
       const res = await request(app)
@@ -88,7 +86,7 @@ describe('Auth API Integration', () => {
         .expect(400);
 
       expect(res.body.success).toBe(false);
-      expect(res.body.error.code).toBe('VALIDATION_ERROR');
+      expect(res.body.error.code).toBe('VALIDATIONERROR');
     });
 
     test('returns 409 when email already exists', async () => {
@@ -120,15 +118,15 @@ describe('Auth API Integration', () => {
     test('returns 200 and token on successful login', async () => {
       // Use a bcrypt hash that will match 'Password1'
       const bcrypt = require('bcrypt');
-      const password_hash = await bcrypt.hash('Password1', 10);
+      const passwordhash = await bcrypt.hash('Password1', 10);
 
       const userObj = {
         user_id: 'uuid-abc',
         email: 'user@example.com',
         name: 'User',
         role: 'farmer',
-        email_verified: true,
-        password_hash,
+        emailverified: true,
+        passwordhash,
         update: jest.fn(),
       };
 
@@ -141,7 +139,7 @@ describe('Auth API Integration', () => {
 
       expect(res.body.success).toBe(true);
       expect(res.body.data).toHaveProperty('token');
-      expect(userObj.update).toHaveBeenCalled(); // last_login updated
+      expect(userObj.update).toHaveBeenCalled(); // lastlogin updated
     });
   });
 
@@ -154,7 +152,7 @@ describe('Auth API Integration', () => {
         email: 'logout@example.com',
         name: 'User',
         role: 'farmer',
-        email_verified: false,
+        emailverified: false,
       });
 
       const signup = await request(app)
@@ -162,7 +160,7 @@ describe('Auth API Integration', () => {
         .send({ email: 'logout@example.com', password: 'Password1', name: 'User' })
         .expect(201);
 
-      const token = signup.body.data.token;
+      const { token } = signup.body.data;
 
       const res = await request(app)
         .post('/api/v1/auth/logout')

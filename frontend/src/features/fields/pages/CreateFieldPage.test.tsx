@@ -1,24 +1,24 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import React from 'react';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import React from "react";
+import { MemoryRouter, Routes, Route } from "react-router-dom";
 
-import { CreateFieldPage } from './CreateFieldPage';
+import { CreateFieldPage } from "./CreateFieldPage";
 
 const mockedNavigate = jest.fn();
 const createFieldMock = jest.fn();
 const setCurrentFieldMock = jest.fn();
 const showToastMock = jest.fn();
 
-jest.mock('react-router-dom', () => {
-  const actual = jest.requireActual('react-router-dom');
+jest.mock("react-router-dom", () => {
+  const actual = jest.requireActual("react-router-dom");
   return {
     ...actual,
     useNavigate: () => mockedNavigate,
   };
 });
 
-jest.mock('../../../shared/context/UiContext', () => {
+jest.mock("../../../shared/context/UiContext", () => {
   return {
     useUiState: () => ({
       setCurrentField: setCurrentFieldMock,
@@ -26,7 +26,7 @@ jest.mock('../../../shared/context/UiContext', () => {
   };
 });
 
-jest.mock('../../../shared/hooks/useToast', () => {
+jest.mock("../../../shared/hooks/useToast", () => {
   return {
     useToast: () => ({
       showToast: showToastMock,
@@ -34,15 +34,15 @@ jest.mock('../../../shared/hooks/useToast', () => {
   };
 });
 
-jest.mock('../hooks/useFields', () => {
-  const actual = jest.requireActual('../hooks/useFields');
+jest.mock("../hooks/useFields", () => {
+  const actual = jest.requireActual("../hooks/useFields");
   return {
     ...actual,
     useCreateField: jest.fn(),
   };
 });
 
-const { useCreateField } = jest.requireMock('../hooks/useFields') as {
+const { useCreateField } = jest.requireMock("../hooks/useFields") as {
   useCreateField: jest.Mock;
 };
 
@@ -56,7 +56,9 @@ const createTestQueryClient = () =>
   });
 
 const createWrapper =
-  (initialEntries: string[] = ['/fields/create']): React.FC<{ children: React.ReactNode }> =>
+  (
+    initialEntries: string[] = ["/fields/create"],
+  ): React.FC<{ children: React.ReactNode }> =>
   ({ children }) => {
     const queryClient = createTestQueryClient();
 
@@ -71,15 +73,15 @@ const createWrapper =
     );
   };
 
-createWrapper.displayName = 'TestRouterWrapper';
+createWrapper.displayName = "TestRouterWrapper";
 
-describe('CreateFieldPage', () => {
+describe("CreateFieldPage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
     createFieldMock.mockResolvedValue({
-      id: 'new-field-id',
-      name: 'New field',
+      id: "new-field-id",
+      name: "New field",
     });
 
     useCreateField.mockReturnValue({
@@ -88,15 +90,15 @@ describe('CreateFieldPage', () => {
     });
   });
 
-  it('submits field form, creates field with placeholder geometry, updates UiContext, and navigates to detail', async () => {
+  it("submits field form, creates field with placeholder geometry, updates UiContext, and navigates to detail", async () => {
     const wrapper = createWrapper();
 
     render(<CreateFieldPage />, { wrapper });
 
     const nameInput = screen.getByLabelText(/field name/i);
-    fireEvent.change(nameInput, { target: { value: 'New field' } });
+    fireEvent.change(nameInput, { target: { value: "New field" } });
 
-    const saveButton = screen.getByRole('button', { name: /save field/i });
+    const saveButton = screen.getByRole("button", { name: /save field/i });
     fireEvent.click(saveButton);
 
     await waitFor(() => {
@@ -106,13 +108,13 @@ describe('CreateFieldPage', () => {
     const payload = createFieldMock.mock.calls[0][0];
 
     expect(payload).toMatchObject({
-      name: 'New field',
+      name: "New field",
       cropType: undefined,
       notes: undefined,
     });
 
     expect(payload.geometry).toEqual({
-      type: 'Polygon',
+      type: "Polygon",
       coordinates: [
         [
           [0, 0],
@@ -124,13 +126,13 @@ describe('CreateFieldPage', () => {
       ],
     });
 
-    expect(setCurrentFieldMock).toHaveBeenCalledWith('new-field-id');
+    expect(setCurrentFieldMock).toHaveBeenCalledWith("new-field-id");
 
-    expect(mockedNavigate).toHaveBeenCalledWith('/fields/new-field-id');
+    expect(mockedNavigate).toHaveBeenCalledWith("/fields/new-field-id");
 
     expect(showToastMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        title: 'Field created',
+        title: "Field created",
       }),
     );
   });

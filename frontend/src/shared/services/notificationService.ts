@@ -1,9 +1,9 @@
 /**
  * Notification Service
- * 
+ *
  * Manages browser push notifications with intelligent
  * prioritization and user preference handling.
- * 
+ *
  * Features:
  * - Browser Notification API integration
  * - Permission management
@@ -17,15 +17,15 @@
 // Types
 // --------------------
 
-export type NotificationType = 
-  | 'health-alert'      // Critical field health issues
-  | 'weather-warning'   // Severe weather alerts
-  | 'recommendation'    // AI recommendations
-  | 'yield-update'      // Yield predictions
-  | 'system'           // System messages
-  | 'general';         // General updates
+export type NotificationType =
+  | "health-alert" // Critical field health issues
+  | "weather-warning" // Severe weather alerts
+  | "recommendation" // AI recommendations
+  | "yield-update" // Yield predictions
+  | "system" // System messages
+  | "general"; // General updates
 
-export type NotificationPriority = 'critical' | 'high' | 'medium' | 'low';
+export type NotificationPriority = "critical" | "high" | "medium" | "low";
 
 export interface NotificationPayload {
   id?: string;
@@ -72,35 +72,35 @@ export interface StoredNotification extends NotificationPayload {
 // Constants
 // --------------------
 
-const NOTIFICATION_STORAGE_KEY = 'skycrop_notifications';
-const PREFERENCES_STORAGE_KEY = 'skycrop_notification_preferences';
+const NOTIFICATION_STORAGE_KEY = "skycrop_notifications";
+const PREFERENCES_STORAGE_KEY = "skycrop_notification_preferences";
 const MAX_STORED_NOTIFICATIONS = 50;
 
 const DEFAULT_PREFERENCES: NotificationPreferences = {
   enabled: false, // Requires explicit permission
   types: {
-    'health-alert': true,
-    'weather-warning': true,
-    'recommendation': true,
-    'yield-update': true,
-    'system': true,
-    'general': false,
+    "health-alert": true,
+    "weather-warning": true,
+    recommendation: true,
+    "yield-update": true,
+    system: true,
+    general: false,
   },
   doNotDisturb: false,
-  quietHoursStart: '22:00',
-  quietHoursEnd: '07:00',
+  quietHoursStart: "22:00",
+  quietHoursEnd: "07:00",
   soundEnabled: true,
   vibrationEnabled: true,
 };
 
 // Icon map for notification types
 const TYPE_ICONS: Record<NotificationType, string> = {
-  'health-alert': '🚨',
-  'weather-warning': '🌧️',
-  'recommendation': '🤖',
-  'yield-update': '📊',
-  'system': '⚙️',
-  'general': '📰',
+  "health-alert": "🚨",
+  "weather-warning": "🌧️",
+  recommendation: "🤖",
+  "yield-update": "📊",
+  system: "⚙️",
+  general: "📰",
 };
 
 // --------------------
@@ -119,7 +119,7 @@ class NotificationService {
    * Check if notifications are supported by the browser
    */
   isSupported(): boolean {
-    return 'Notification' in window;
+    return "Notification" in window;
   }
 
   /**
@@ -127,7 +127,7 @@ class NotificationService {
    */
   getPermission(): NotificationPermission {
     if (!this.isSupported()) {
-      return 'denied';
+      return "denied";
     }
     return Notification.permission;
   }
@@ -137,52 +137,52 @@ class NotificationService {
    */
   async requestPermission(): Promise<NotificationPermission> {
     if (!this.isSupported()) {
-      throw new Error('Notifications not supported in this browser');
+      throw new Error("Notifications not supported in this browser");
     }
 
-    if (this.getPermission() === 'granted') {
-      return 'granted';
+    if (this.getPermission() === "granted") {
+      return "granted";
     }
 
     try {
       const permission = await Notification.requestPermission();
-      
-      if (permission === 'granted') {
+
+      if (permission === "granted") {
         this.preferences.enabled = true;
         this.savePreferences();
-        
+
         // Show welcome notification
         this.send({
-          type: 'system',
-          priority: 'low',
-          title: '🎉 Notifications Enabled!',
-          body: 'You\'ll now receive important alerts about your fields.',
+          type: "system",
+          priority: "low",
+          title: "🎉 Notifications Enabled!",
+          body: "You'll now receive important alerts about your fields.",
         });
       }
 
       return permission;
     } catch (error) {
-      console.error('Error requesting notification permission:', error);
-      return 'denied';
+      console.error("Error requesting notification permission:", error);
+      return "denied";
     }
   }
 
   /**
    * Send a notification
-   * 
+   *
    * @param payload - Notification data
    * @returns Notification instance or null
    */
   async send(payload: NotificationPayload): Promise<Notification | null> {
     // Check if notifications are enabled
     if (!this.canSendNotification(payload)) {
-      console.log('Notification blocked by preferences:', payload.type);
+      console.log("Notification blocked by preferences:", payload.type);
       return null;
     }
 
     // Check quiet hours
-    if (this.isQuietHours() && payload.priority !== 'critical') {
-      console.log('Notification queued (quiet hours):', payload.title);
+    if (this.isQuietHours() && payload.priority !== "critical") {
+      console.log("Notification queued (quiet hours):", payload.title);
       this.queueNotification(payload);
       return null;
     }
@@ -193,13 +193,13 @@ class NotificationService {
     // Send browser notification
     try {
       const notification = await this.createBrowserNotification(payload);
-      
+
       // Emit custom event for UI updates
       this.emitNotificationEvent(storedNotif);
-      
+
       return notification;
     } catch (error) {
-      console.error('Error sending notification:', error);
+      console.error("Error sending notification:", error);
       return null;
     }
   }
@@ -218,14 +218,20 @@ class NotificationService {
   /**
    * Create browser notification
    */
-  private async createBrowserNotification(payload: NotificationPayload): Promise<Notification> {
-    const options: NotificationOptions & { image?: string; vibrate?: number[] } = {
+  private async createBrowserNotification(
+    payload: NotificationPayload,
+  ): Promise<Notification> {
+    const options: NotificationOptions & {
+      image?: string;
+      vibrate?: number[];
+    } = {
       body: payload.body,
       icon: payload.icon || this.getDefaultIcon(payload.type),
       badge: payload.badge,
       data: payload.data,
       tag: payload.tag || `${payload.type}-${Date.now()}`,
-      requireInteraction: payload.requireInteraction || payload.priority === 'critical',
+      requireInteraction:
+        payload.requireInteraction || payload.priority === "critical",
       vibrate: this.preferences.vibrationEnabled ? [200, 100, 200] : undefined,
       silent: !this.preferences.soundEnabled,
       ...(payload.image && { image: payload.image }), // Add image only if provided (not all browsers support it)
@@ -237,7 +243,7 @@ class NotificationService {
     notification.onclick = () => {
       window.focus();
       notification.close();
-      
+
       // Navigate to URL if provided
       if (payload.url) {
         window.location.href = payload.url;
@@ -254,7 +260,7 @@ class NotificationService {
    */
   private canSendNotification(payload: NotificationPayload): boolean {
     // Check browser permission
-    if (this.getPermission() !== 'granted') {
+    if (this.getPermission() !== "granted") {
       return false;
     }
 
@@ -264,7 +270,7 @@ class NotificationService {
     }
 
     // Check do not disturb mode (except critical)
-    if (this.preferences.doNotDisturb && payload.priority !== 'critical') {
+    if (this.preferences.doNotDisturb && payload.priority !== "critical") {
       return false;
     }
 
@@ -285,8 +291,8 @@ class NotificationService {
     }
 
     const now = new Date();
-    const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-    
+    const currentTime = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
+
     const start = this.preferences.quietHoursStart;
     const end = this.preferences.quietHoursEnd;
 
@@ -303,7 +309,7 @@ class NotificationService {
    */
   private queueNotification(payload: NotificationPayload): void {
     this.notificationQueue.push(payload);
-    
+
     // Limit queue size
     if (this.notificationQueue.length > 10) {
       this.notificationQueue.shift();
@@ -318,8 +324,10 @@ class NotificationService {
       return;
     }
 
-    console.log(`Processing ${this.notificationQueue.length} queued notifications`);
-    
+    console.log(
+      `Processing ${this.notificationQueue.length} queued notifications`,
+    );
+
     const queue = [...this.notificationQueue];
     this.notificationQueue = [];
 
@@ -334,7 +342,9 @@ class NotificationService {
   private storeNotification(payload: NotificationPayload): StoredNotification {
     const stored: StoredNotification = {
       ...payload,
-      id: payload.id || `notif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id:
+        payload.id ||
+        `notif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       timestamp: payload.timestamp || Date.now(),
       read: false,
       dismissed: false,
@@ -345,7 +355,7 @@ class NotificationService {
 
     // Keep only recent notifications
     const trimmed = notifications.slice(0, MAX_STORED_NOTIFICATIONS);
-    
+
     localStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(trimmed));
 
     return stored;
@@ -359,7 +369,7 @@ class NotificationService {
       const stored = localStorage.getItem(NOTIFICATION_STORAGE_KEY);
       return stored ? JSON.parse(stored) : [];
     } catch (error) {
-      console.error('Error reading stored notifications:', error);
+      console.error("Error reading stored notifications:", error);
       return [];
     }
   }
@@ -370,10 +380,13 @@ class NotificationService {
   markAsRead(id: string): void {
     const notifications = this.getStoredNotifications();
     const notification = notifications.find((n) => n.id === id);
-    
+
     if (notification) {
       notification.read = true;
-      localStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(notifications));
+      localStorage.setItem(
+        NOTIFICATION_STORAGE_KEY,
+        JSON.stringify(notifications),
+      );
       this.emitNotificationEvent(notification);
     }
   }
@@ -384,7 +397,10 @@ class NotificationService {
   markAllAsRead(): void {
     const notifications = this.getStoredNotifications();
     notifications.forEach((n) => (n.read = true));
-    localStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(notifications));
+    localStorage.setItem(
+      NOTIFICATION_STORAGE_KEY,
+      JSON.stringify(notifications),
+    );
     this.emitNotificationEvent(null);
   }
 
@@ -394,10 +410,13 @@ class NotificationService {
   dismissNotification(id: string): void {
     const notifications = this.getStoredNotifications();
     const notification = notifications.find((n) => n.id === id);
-    
+
     if (notification) {
       notification.dismissed = true;
-      localStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(notifications));
+      localStorage.setItem(
+        NOTIFICATION_STORAGE_KEY,
+        JSON.stringify(notifications),
+      );
       this.emitNotificationEvent(notification);
     }
   }
@@ -414,7 +433,8 @@ class NotificationService {
    * Get unread notification count
    */
   getUnreadCount(): number {
-    return this.getStoredNotifications().filter((n) => !n.read && !n.dismissed).length;
+    return this.getStoredNotifications().filter((n) => !n.read && !n.dismissed)
+      .length;
   }
 
   /**
@@ -427,7 +447,7 @@ class NotificationService {
         return { ...DEFAULT_PREFERENCES, ...JSON.parse(stored) };
       }
     } catch (error) {
-      console.error('Error loading notification preferences:', error);
+      console.error("Error loading notification preferences:", error);
     }
     return DEFAULT_PREFERENCES;
   }
@@ -439,7 +459,10 @@ class NotificationService {
     if (preferences) {
       this.preferences = { ...this.preferences, ...preferences };
     }
-    localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(this.preferences));
+    localStorage.setItem(
+      PREFERENCES_STORAGE_KEY,
+      JSON.stringify(this.preferences),
+    );
     this.emitNotificationEvent(null);
   }
 
@@ -463,9 +486,9 @@ class NotificationService {
    */
   private emitNotificationEvent(notification: StoredNotification | null): void {
     window.dispatchEvent(
-      new CustomEvent('skycrop:notification', {
+      new CustomEvent("skycrop:notification", {
         detail: { notification, count: this.getUnreadCount() },
-      })
+      }),
     );
   }
 
@@ -474,7 +497,7 @@ class NotificationService {
    */
   async initialize(): Promise<void> {
     // Check if permission was previously granted
-    if (this.getPermission() === 'granted' && !this.preferences.enabled) {
+    if (this.getPermission() === "granted" && !this.preferences.enabled) {
       this.preferences.enabled = true;
       this.savePreferences();
     }
@@ -500,11 +523,11 @@ export const notificationService = new NotificationService();
 export const sendNotification = (
   title: string,
   body: string,
-  options?: Partial<NotificationPayload>
+  options?: Partial<NotificationPayload>,
 ): Promise<Notification | null> => {
   return notificationService.send({
-    type: options?.type || 'general',
-    priority: options?.priority || 'medium',
+    type: options?.type || "general",
+    priority: options?.priority || "medium",
     title,
     body,
     ...options,
@@ -518,16 +541,16 @@ export const sendHealthAlert = (
   fieldName: string,
   message: string,
   fieldId: string,
-  priority: NotificationPriority = 'high'
+  priority: NotificationPriority = "high",
 ): Promise<Notification | null> => {
   return notificationService.send({
-    type: 'health-alert',
+    type: "health-alert",
     priority,
     title: `🚨 ${fieldName} Health Alert`,
     body: message,
     fieldId,
     url: `/fields/${fieldId}/health`,
-    requireInteraction: priority === 'critical',
+    requireInteraction: priority === "critical",
   });
 };
 
@@ -537,15 +560,15 @@ export const sendHealthAlert = (
 export const sendWeatherWarning = (
   title: string,
   message: string,
-  priority: NotificationPriority = 'high'
+  priority: NotificationPriority = "high",
 ): Promise<Notification | null> => {
   return notificationService.send({
-    type: 'weather-warning',
+    type: "weather-warning",
     priority,
     title: `🌧️ ${title}`,
     body: message,
-    url: '/weather',
-    requireInteraction: priority === 'critical',
+    url: "/weather",
+    requireInteraction: priority === "critical",
   });
 };
 
@@ -556,10 +579,10 @@ export const sendRecommendationNotification = (
   fieldName: string,
   recommendation: string,
   fieldId: string,
-  priority: NotificationPriority = 'medium'
+  priority: NotificationPriority = "medium",
 ): Promise<Notification | null> => {
   return notificationService.send({
-    type: 'recommendation',
+    type: "recommendation",
     priority,
     title: `🤖 ${fieldName} - New Recommendation`,
     body: recommendation,
@@ -570,4 +593,3 @@ export const sendRecommendationNotification = (
 
 // Initialize on module load
 notificationService.initialize().catch(console.error);
-

@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
-import { useUiState } from '../../../shared/context/UiContext';
-import { useToast } from '../../../shared/hooks/useToast';
-import type { FieldGeometry } from '../../../shared/types/geojson';
-import { Button } from '../../../shared/ui/Button';
-import { Card } from '../../../shared/ui/Card';
+import { useUiState } from "../../../shared/context/UiContext";
+import { useToast } from "../../../shared/hooks/useToast";
+import type { FieldGeometry } from "../../../shared/types/geojson";
+import { Button } from "../../../shared/ui/Button";
+import { Card } from "../../../shared/ui/Card";
 import {
   useFieldDetail,
   useFieldBoundaryDetection,
   useUpdateField,
-} from '../hooks/useFields';
+} from "../hooks/useFields";
 
 /**
  * EditFieldBoundaryPage
@@ -31,7 +31,7 @@ export const EditFieldBoundaryPage: React.FC = () => {
   const { showToast } = useToast();
   const { setCurrentField } = useUiState();
 
-  const effectiveFieldId = fieldId ?? '';
+  const effectiveFieldId = fieldId ?? "";
 
   useEffect(() => {
     if (fieldId) {
@@ -48,17 +48,15 @@ export const EditFieldBoundaryPage: React.FC = () => {
     isFetching,
   } = useFieldDetail(effectiveFieldId);
 
-  const {
-    mutateAsync: detectBoundary,
-    isPending: isDetecting,
-  } = useFieldBoundaryDetection();
+  const { mutateAsync: detectBoundary, isPending: isDetecting } =
+    useFieldBoundaryDetection();
 
-  const {
-    mutateAsync: updateField,
-    isPending: isSaving,
-  } = useUpdateField(effectiveFieldId);
+  const { mutateAsync: updateField, isPending: isSaving } =
+    useUpdateField(effectiveFieldId);
 
-  const [workingGeometry, setWorkingGeometry] = useState<FieldGeometry | undefined>();
+  const [workingGeometry, setWorkingGeometry] = useState<
+    FieldGeometry | undefined
+  >();
 
   useEffect(() => {
     if (field?.geometry) {
@@ -77,19 +75,19 @@ export const EditFieldBoundaryPage: React.FC = () => {
 
       setWorkingGeometry(geometry);
       showToast({
-        title: 'AI boundary detected',
+        title: "AI boundary detected",
         description:
-          'An AI-generated boundary has been applied in this panel. The visual polygon will appear once the map is integrated.',
-        variant: 'success',
+          "An AI-generated boundary has been applied in this panel. The visual polygon will appear once the map is integrated.",
+        variant: "success",
       });
     } catch (err) {
       const message =
         (err as Error)?.message ??
-        'Failed to detect boundary using AI. Your existing boundary has been preserved.';
+        "Failed to detect boundary using AI. Your existing boundary has been preserved.";
       showToast({
-        title: 'Boundary detection failed',
+        title: "Boundary detection failed",
         description: message,
-        variant: 'error',
+        variant: "error",
       });
     }
   };
@@ -98,9 +96,9 @@ export const EditFieldBoundaryPage: React.FC = () => {
     if (!field?.geometry) return;
     setWorkingGeometry(field.geometry);
     showToast({
-      title: 'Boundary reset',
-      description: 'Reverted to the last saved boundary for this field.',
-      variant: 'default',
+      title: "Boundary reset",
+      description: "Reverted to the last saved boundary for this field.",
+      variant: "default",
     });
   };
 
@@ -113,19 +111,20 @@ export const EditFieldBoundaryPage: React.FC = () => {
       });
 
       showToast({
-        title: 'Boundary saved',
-        description: 'The field boundary was saved successfully.',
-        variant: 'success',
+        title: "Boundary saved",
+        description: "The field boundary was saved successfully.",
+        variant: "success",
       });
 
       navigate(`/fields/${field.id}`);
     } catch (err) {
       const message =
-        (err as Error)?.message ?? 'Failed to save the boundary. Please try again.';
+        (err as Error)?.message ??
+        "Failed to save the boundary. Please try again.";
       showToast({
-        title: 'Could not save boundary',
+        title: "Could not save boundary",
         description: message,
-        variant: 'error',
+        variant: "error",
       });
     }
   };
@@ -134,15 +133,22 @@ export const EditFieldBoundaryPage: React.FC = () => {
     return (
       <section aria-labelledby="edit-boundary-heading" className="space-y-4">
         <header className="space-y-1">
-          <h1 id="edit-boundary-heading" className="text-lg font-semibold text-gray-900">
+          <h1
+            id="edit-boundary-heading"
+            className="text-lg font-semibold text-gray-900"
+          >
             Field not found
           </h1>
           <p className="text-sm text-gray-600">
-            The requested field could not be identified from the URL. Please return to your
-            fields list and try again.
+            The requested field could not be identified from the URL. Please
+            return to your fields list and try again.
           </p>
         </header>
-        <Button size="sm" variant="secondary" onClick={() => navigate('/fields')}>
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={() => navigate("/fields")}
+        >
           Back to fields
         </Button>
       </section>
@@ -153,7 +159,10 @@ export const EditFieldBoundaryPage: React.FC = () => {
     return (
       <section aria-labelledby="edit-boundary-heading" className="space-y-4">
         <header className="space-y-1">
-          <h1 id="edit-boundary-heading" className="text-lg font-semibold text-gray-900">
+          <h1
+            id="edit-boundary-heading"
+            className="text-lg font-semibold text-gray-900"
+          >
             Loading boundary…
           </h1>
           <p className="text-sm text-gray-600">
@@ -171,19 +180,26 @@ export const EditFieldBoundaryPage: React.FC = () => {
     return (
       <section aria-labelledby="edit-boundary-heading" className="space-y-4">
         <header className="space-y-1">
-          <h1 id="edit-boundary-heading" className="text-lg font-semibold text-gray-900">
+          <h1
+            id="edit-boundary-heading"
+            className="text-lg font-semibold text-gray-900"
+          >
             Unable to load field boundary
           </h1>
           <p className="text-sm text-gray-600">
             {error?.message ??
-              'Something went wrong while loading this field. Please try again.'}
+              "Something went wrong while loading this field. Please try again."}
           </p>
         </header>
         <div className="flex flex-wrap gap-2">
           <Button size="sm" variant="secondary" onClick={() => refetch()}>
             Retry
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => navigate(`/fields/${fieldId}`)}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => navigate(`/fields/${fieldId}`)}
+          >
             Back to field details
           </Button>
         </div>
@@ -195,32 +211,36 @@ export const EditFieldBoundaryPage: React.FC = () => {
     return null;
   }
 
-  const boundarySourceLabel = 'Current boundary source';
+  const boundarySourceLabel = "Current boundary source";
   const boundarySourceValue =
-    'Manual or previously saved geometry (AI-generated boundaries will be noted here in future iterations).';
+    "Manual or previously saved geometry (AI-generated boundaries will be noted here in future iterations).";
 
   return (
     <section aria-labelledby="edit-boundary-heading" className="space-y-4">
       <header className="space-y-1">
-        <h1 id="edit-boundary-heading" className="text-lg font-semibold text-gray-900">
+        <h1
+          id="edit-boundary-heading"
+          className="text-lg font-semibold text-gray-900"
+        >
           Edit field boundary
         </h1>
         <p className="text-sm text-gray-600">
-          Use the controls in this side panel to manage your field boundary. The map on the
-          left will host the interactive drawing tools and overlays in a future iteration.
+          Use the controls in this side panel to manage your field boundary. The
+          map on the left will host the interactive drawing tools and overlays
+          in a future iteration.
         </p>
         <p className="text-xs text-gray-500">
-          Field: <span className="font-medium text-gray-900">{field.name}</span> · Area:{' '}
-          {field.areaHa.toFixed(2)} ha {isFetching && '· Refreshing…'}
+          Field: <span className="font-medium text-gray-900">{field.name}</span>{" "}
+          · Area: {field.areaHa.toFixed(2)} ha {isFetching && "· Refreshing…"}
         </p>
       </header>
 
       <Card title="Boundary summary">
         <div className="space-y-3 text-sm text-gray-700">
           <p>
-            This boundary defines the area used for health indices, recommendations, and
-            weather aggregation. Adjustments here will affect downstream analytics once
-            saved.
+            This boundary defines the area used for health indices,
+            recommendations, and weather aggregation. Adjustments here will
+            affect downstream analytics once saved.
           </p>
           <dl className="grid grid-cols-1 gap-3 text-xs text-gray-600 sm:grid-cols-2">
             <div>
@@ -228,7 +248,9 @@ export const EditFieldBoundaryPage: React.FC = () => {
               <dd>{field.areaHa.toFixed(2)} hectares</dd>
             </div>
             <div>
-              <dt className="font-medium text-gray-900">{boundarySourceLabel}</dt>
+              <dt className="font-medium text-gray-900">
+                {boundarySourceLabel}
+              </dt>
               <dd>{boundarySourceValue}</dd>
             </div>
           </dl>
@@ -237,9 +259,10 @@ export const EditFieldBoundaryPage: React.FC = () => {
 
       <Card title="AI boundary detection" className="space-y-3">
         <p className="text-sm text-gray-700">
-          SkyCrop can use satellite imagery and ML models to suggest a field boundary. The
-          detected polygon will be applied as the working boundary in this panel. A future
-          update will render the detected shape directly on the map.
+          SkyCrop can use satellite imagery and ML models to suggest a field
+          boundary. The detected polygon will be applied as the working boundary
+          in this panel. A future update will render the detected shape directly
+          on the map.
         </p>
         <div className="flex flex-wrap gap-2">
           <Button
@@ -248,7 +271,7 @@ export const EditFieldBoundaryPage: React.FC = () => {
             onClick={handleDetectBoundary}
             disabled={isDetecting}
           >
-            {isDetecting ? 'Analyzing…' : 'Detect boundary with AI'}
+            {isDetecting ? "Analyzing…" : "Detect boundary with AI"}
           </Button>
           <p className="text-xs text-gray-500">
             This may take a few seconds while satellite imagery is analyzed.
@@ -258,14 +281,23 @@ export const EditFieldBoundaryPage: React.FC = () => {
 
       <Card title="Manual boundary controls" className="space-y-3">
         <p className="text-sm text-gray-700">
-          Manual drawing and editing tools will appear on the map to the left. For now, these
-          controls let you reset to the last saved boundary and persist any AI-detected
-          boundary to the backend.
+          Manual drawing and editing tools will appear on the map to the left.
+          For now, these controls let you reset to the last saved boundary and
+          persist any AI-detected boundary to the backend.
         </p>
         <ol className="list-decimal pl-5 text-xs text-gray-600 space-y-1">
-          <li>Use the map tools (coming soon) to draw or adjust the field boundary.</li>
-          <li>Use Detect boundary with AI above to propose a boundary from imagery.</li>
-          <li>Review the suggested boundary on the map, then click Save boundary to persist.</li>
+          <li>
+            Use the map tools (coming soon) to draw or adjust the field
+            boundary.
+          </li>
+          <li>
+            Use Detect boundary with AI above to propose a boundary from
+            imagery.
+          </li>
+          <li>
+            Review the suggested boundary on the map, then click Save boundary
+            to persist.
+          </li>
         </ol>
         <div className="mt-3 flex flex-wrap gap-2">
           <Button
@@ -282,7 +314,7 @@ export const EditFieldBoundaryPage: React.FC = () => {
             onClick={handleSaveBoundary}
             disabled={isSaving || !workingGeometry}
           >
-            {isSaving ? 'Saving…' : 'Save boundary'}
+            {isSaving ? "Saving…" : "Save boundary"}
           </Button>
           <Button
             size="sm"

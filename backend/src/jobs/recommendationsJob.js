@@ -5,11 +5,11 @@
  * Runs every 7 days (adjustable)
  */
 
-import logger from '../config/logger.config.js';
-import { Field } from '../models/index.js';
-import recommendationService from '../services/recommendation.service.js';
-import healthService from '../services/fieldHealth.service.js';
-import weatherService from '../services/weather.service.js';
+import logger from '../config/logger.config';
+import { Field } from '../models/index';
+import recommendationService from '../services/recommendation.service';
+import healthService from '../services/fieldHealth.service';
+import weatherService from '../services/weather.service';
 
 /**
  * Generate recommendations for all active fields
@@ -42,15 +42,17 @@ async function runRecommendationsGeneration() {
     };
 
     // Process fields in parallel with rate limiting
-    const BATCH_SIZE = 3; // Process 3 fields concurrently (lighter than health monitoring)
-    const DELAY_BETWEEN_BATCHES = 2000; // 2 seconds between batches
+    const BATCHSIZE = 3; // Process 3 fields concurrently (lighter than health monitoring)
+    const DELAYBETWEENBATCHES = 2000; // 2 seconds between batches
 
-    for (let i = 0; i < fields.length; i += BATCH_SIZE) {
-      const batch = fields.slice(i, i + BATCH_SIZE);
-      logger.debug(`Processing batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(fields.length / BATCH_SIZE)} (${batch.length} fields)`);
+    for (let i = 0; i < fields.length; i += BATCHSIZE) {
+      const batch = fields.slice(i, i + BATCHSIZE);
+      logger.debug(
+        `Processing batch ${Math.floor(i / BATCHSIZE) + 1}/${Math.ceil(fields.length / BATCHSIZE)} (${batch.length} fields)`
+      );
 
       // Process batch in parallel
-      const batchPromises = batch.map(async (field) => {
+      const batchPromises = batch.map(async field => {
         try {
           logger.debug(`Generating recommendations for field: ${field.name} (${field.field_id})`);
 
@@ -84,8 +86,8 @@ async function runRecommendationsGeneration() {
 
           // Generate recommendations based on health and weather data
           const recommendations = await recommendationService.generateRecommendations({
-            fieldId: field.field_id,
-            userId: field.user_id,
+            field_id: field.field_id,
+            user_id: field.user_id,
             healthData: latestHealth,
             weatherData: weatherForecast,
           });
@@ -93,19 +95,20 @@ async function runRecommendationsGeneration() {
           // Save recommendations
           if (recommendations && recommendations.length > 0) {
             await recommendationService.saveRecommendations(field.field_id, recommendations);
-            logger.info(`Generated ${recommendations.length} recommendations for field: ${field.name}`);
+            logger.info(
+              `Generated ${recommendations.length} recommendations for field: ${field.name}`
+            );
             return { status: 'success', field, count: recommendations.length };
           } else {
             logger.warn(`No recommendations generated for field: ${field.name}`);
             return { status: 'skipped', field };
           }
-
         } catch (error) {
           logger.error(`Error generating recommendations for field ${field.field_id}:`, error);
           return {
             status: 'failed',
             field,
-            error: error.message
+            error: error.message,
           };
         }
       });
@@ -122,7 +125,7 @@ async function runRecommendationsGeneration() {
         } else if (result.status === 'failed') {
           results.failed++;
           results.errors.push({
-            fieldId: result.field.field_id,
+            field_id: result.field.field_id,
             fieldName: result.field.name,
             error: result.error,
           });
@@ -130,8 +133,8 @@ async function runRecommendationsGeneration() {
       }
 
       // Rate limiting delay between batches (except for the last batch)
-      if (i + BATCH_SIZE < fields.length) {
-        await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_BATCHES));
+      if (i + BATCHSIZE < fields.length) {
+        await new Promise(resolve => setTimeout(resolve, DELAYBETWEENBATCHES));
       }
     }
 
@@ -152,7 +155,6 @@ async function runRecommendationsGeneration() {
     }
 
     return results;
-
   } catch (error) {
     logger.error('Fatal error in recommendations generation job:', error);
     throw error;
@@ -166,4 +168,3 @@ export default {
   enabled: true,
   critical: false,
 };
-

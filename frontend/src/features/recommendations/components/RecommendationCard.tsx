@@ -1,13 +1,13 @@
-import clsx from 'clsx';
-import React from 'react';
+import clsx from "clsx";
+import React from "react";
 
-import { Button } from '../../../shared/ui/Button';
-import { Card } from '../../../shared/ui/Card';
+import { Button } from "../../../shared/ui/Button";
+import { Card } from "../../../shared/ui/Card";
 import type {
   Recommendation,
   RecommendationStatus,
   RecommendationPriority,
-} from '../api/recommendationApi';
+} from "../api/recommendationApi";
 
 export interface RecommendationCardProps {
   recommendation: Recommendation;
@@ -20,16 +20,16 @@ const statusStyles: Record<
   { label: string; className: string }
 > = {
   planned: {
-    label: 'Planned',
-    className: 'bg-blue-50 text-blue-800 border border-blue-100',
+    label: "Planned",
+    className: "bg-blue-50 text-blue-800 border border-blue-100",
   },
   applied: {
-    label: 'Applied',
-    className: 'bg-green-50 text-green-800 border border-green-100',
+    label: "Applied",
+    className: "bg-green-50 text-green-800 border border-green-100",
   },
   overdue: {
-    label: 'Overdue',
-    className: 'bg-red-50 text-red-800 border border-red-100',
+    label: "Overdue",
+    className: "bg-red-50 text-red-800 border border-red-100",
   },
 };
 
@@ -38,16 +38,16 @@ const priorityStyles: Record<
   { label: string; className: string }
 > = {
   high: {
-    label: 'High',
-    className: 'bg-red-50 text-red-800 border border-red-100',
+    label: "High",
+    className: "bg-red-50 text-red-800 border border-red-100",
   },
   medium: {
-    label: 'Medium',
-    className: 'bg-amber-50 text-amber-800 border border-amber-100',
+    label: "Medium",
+    className: "bg-amber-50 text-amber-800 border border-amber-100",
   },
   low: {
-    label: 'Low',
-    className: 'bg-slate-50 text-slate-700 border border-slate-200',
+    label: "Low",
+    className: "bg-slate-50 text-slate-700 border border-slate-200",
   },
 };
 
@@ -85,7 +85,7 @@ export const RecommendationCard: React.FC<RecommendationCardProps> = ({
   const appliedAtLabel = formatDate(appliedAt);
 
   const canApply =
-    (status === 'planned' || status === 'overdue') && Boolean(onApply);
+    (status === "planned" || status === "overdue") && Boolean(onApply);
 
   const handleApplyClick = () => {
     if (!onApply) return;
@@ -105,7 +105,7 @@ export const RecommendationCard: React.FC<RecommendationCardProps> = ({
           <div className="flex flex-wrap gap-2 mt-2 sm:mt-0">
             <span
               className={clsx(
-                'inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium',
+                "inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium",
                 statusConfig.className,
               )}
             >
@@ -113,7 +113,7 @@ export const RecommendationCard: React.FC<RecommendationCardProps> = ({
             </span>
             <span
               className={clsx(
-                'inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium',
+                "inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium",
                 priorityConfig.className,
               )}
             >
@@ -125,19 +125,19 @@ export const RecommendationCard: React.FC<RecommendationCardProps> = ({
         <div className="mt-3 space-y-2 text-xs text-gray-600">
           {recommendedOnLabel && (
             <p>
-              <span className="font-medium text-gray-700">Recommended on:</span>{' '}
+              <span className="font-medium text-gray-700">Recommended on:</span>{" "}
               {recommendedOnLabel}
             </p>
           )}
           {applyBeforeLabel && (
             <p>
-              <span className="font-medium text-gray-700">Apply before:</span>{' '}
+              <span className="font-medium text-gray-700">Apply before:</span>{" "}
               {applyBeforeLabel}
             </p>
           )}
           {appliedAtLabel && (
             <p>
-              <span className="font-medium text-gray-700">Applied on:</span>{' '}
+              <span className="font-medium text-gray-700">Applied on:</span>{" "}
               {appliedAtLabel}
             </p>
           )}
@@ -156,14 +156,14 @@ export const RecommendationCard: React.FC<RecommendationCardProps> = ({
 
         <div className="mt-4 flex items-center justify-between gap-2">
           <p className="text-[11px] text-gray-500">
-            {status === 'applied'
-              ? 'This recommendation has been marked as applied.'
-              : 'Review and apply this recommendation when appropriate.'}
+            {status === "applied"
+              ? "This recommendation has been marked as applied."
+              : "Review and apply this recommendation when appropriate."}
           </p>
           {canApply && (
             <Button
               size="sm"
-              variant={status === 'overdue' ? 'primary' : 'secondary'}
+              variant={status === "overdue" ? "primary" : "secondary"}
               onClick={handleApplyClick}
               disabled={isApplying}
               aria-label={
@@ -172,7 +172,7 @@ export const RecommendationCard: React.FC<RecommendationCardProps> = ({
                   : `Mark recommendation "${title}" as applied`
               }
             >
-              {isApplying ? 'Saving…' : 'Mark as applied'}
+              {isApplying ? "Saving…" : "Mark as applied"}
             </Button>
           )}
         </div>

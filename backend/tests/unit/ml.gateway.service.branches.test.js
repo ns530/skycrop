@@ -1,17 +1,18 @@
 /* eslint-disable no-underscore-dangle */
+
 'use strict';
 
 describe('MLGatewayService branch coverage lifts', () => {
-  const ORIGINAL_ENV = { ...process.env };
+  const ORIGINALENV = { ...process.env };
 
   beforeEach(() => {
     jest.resetModules();
     jest.clearAllMocks();
-    process.env = { ...ORIGINAL_ENV };
+    process.env = { ...ORIGINALENV };
   });
 
   afterAll(() => {
-    process.env = ORIGINAL_ENV;
+    process.env = ORIGINALENV;
   });
 
   function mockMakeRedisSetexOnly() {
@@ -28,7 +29,7 @@ describe('MLGatewayService branch coverage lifts', () => {
   // Shared instance to avoid out-of-scope mock factory problems and to assert call counts
   const mockRedisInstance = mockMakeRedisSetexOnly();
 
-  jest.mock('../../src/config/redis.config.js', () => {
+  jest.mock('../../src/config/redis.config', () => {
     return {
       initRedis: jest.fn(async () => mockRedisInstance),
     };
@@ -38,9 +39,9 @@ describe('MLGatewayService branch coverage lifts', () => {
     post: jest.fn(),
   }));
 
-  const { AppError } = require('../../src/errors/custom-errors.js');
+  const { AppError } = require('../../src/errors/custom-errors');
 
-  test('predict caches via setex fallback when return=mask_url and mask_url present; covers validateStatus in _callML', async () => {
+  test('predict caches via setex fallback when return=maskurl and maskurl present; covers validateStatus in callML', async () => {
     const axios = require('axios');
     axios.post.mockReset();
 
@@ -56,24 +57,24 @@ describe('MLGatewayService branch coverage lifts', () => {
         status: 200,
         headers: { 'x-model-version': 'unet-2.0.0' },
         data: {
-          request_id: 'req-123',
+          requestid: 'req-123',
           model: { name: 'unet', version: 'unet-2.0.0' },
-          mask_url: 'https://example.com/mask.tif',
-          mask_format: 'tiff',
+          maskurl: 'https://example.com/mask.tif',
+          maskformat: 'tiff',
           metrics: { iou: 0.8 },
           warnings: [],
         },
       });
     });
 
-    const { MLGatewayService } = require('../../src/services/mlGateway.service.js');
+    const { MLGatewayService } = require('../../src/services/mlGateway.service');
     const svc = new MLGatewayService();
 
     const input = {
       bbox: [80.0, 7.0, 80.1, 7.1],
       date: '2025-10-10',
-      model_version: 'unet-2.0.0',
-      return: 'mask_url',
+      modelversion: 'unet-2.0.0',
+      return: 'maskurl',
     };
 
     const res = await svc.predict(input, 'corr-abc');
@@ -86,51 +87,51 @@ describe('MLGatewayService branch coverage lifts', () => {
     expect(mockRedisInstance.setex).toHaveBeenCalledTimes(1);
   });
 
-  test('_mapDownstreamError handles explicit UPSTREAM_ERROR code (covers code-specific branch)', () => {
-    const { MLGatewayService } = require('../../src/services/mlGateway.service.js');
+  test('mapDownstreamError handles explicit UPSTREAMERROR code (covers code-specific branch)', () => {
+    const { MLGatewayService } = require('../../src/services/mlGateway.service');
     const svc = new MLGatewayService();
 
-    const e = svc._mapDownstreamError({
+    const e = svc.mapDownstreamError({
       status: 502,
-      data: { error: { code: 'UPSTREAM_ERROR', message: 'proxy failed', details: { foo: 'bar' } } },
+      data: { error: { code: 'UPSTREAMERROR', message: 'proxy failed', details: { foo: 'bar' } } },
     });
 
     expect(e && e.name).toBe('AppError');
-    expect(e.code).toBe('UPSTREAM_ERROR');
+    expect(e.code).toBe('UPSTREAMERROR');
     expect(e.statusCode).toBe(502);
   });
 
-  test('_mapDownstreamError default mapping branches: 404/501/504(408)/4xx generic', () => {
-    const { MLGatewayService } = require('../../src/services/mlGateway.service.js');
+  test('mapDownstreamError default mapping branches: 404/501/504(408)/4xx generic', () => {
+    const { MLGatewayService } = require('../../src/services/mlGateway.service');
     const svc = new MLGatewayService();
 
     // 404 default (no code)
-    let e = svc._mapDownstreamError({ status: 404, data: {} });
+    let e = svc.mapDownstreamError({ status: 404, data: {} });
     expect(e && e.name).toBe('AppError');
-    expect(e.code).toBe('MODEL_NOT_FOUND');
+    expect(e.code).toBe('MODELNOTFOUND');
     expect(e.statusCode).toBe(404);
 
     // 501 default
-    e = svc._mapDownstreamError({ status: 501, data: {} });
-    expect(e.code).toBe('NOT_IMPLEMENTED');
+    e = svc.mapDownstreamError({ status: 501, data: {} });
+    expect(e.code).toBe('NOTIMPLEMENTED');
     expect(e.statusCode).toBe(501);
 
     // 504/408 timeout default
-    e = svc._mapDownstreamError({ status: 504, data: {} });
+    e = svc.mapDownstreamError({ status: 504, data: {} });
     expect(e.code).toBe('TIMEOUT');
     expect(e.statusCode).toBe(504);
 
-    e = svc._mapDownstreamError({ status: 408, data: {} });
+    e = svc.mapDownstreamError({ status: 408, data: {} });
     expect(e.code).toBe('TIMEOUT');
     expect(e.statusCode).toBe(504);
 
-    // 4xx generic -> INVALID_INPUT
-    e = svc._mapDownstreamError({ status: 422, data: {} });
-    expect(e.code).toBe('INVALID_INPUT');
+    // 4xx generic -> INVALIDINPUT
+    e = svc.mapDownstreamError({ status: 422, data: {} });
+    expect(e.code).toBe('INVALIDINPUT');
     expect(e.statusCode).toBe(400);
   });
 
-  test('_callML network error path -> AppError UPSTREAM_ERROR 502; validateStatus branch executed', async () => {
+  test('callML network error path -> AppError UPSTREAMERROR 502; validateStatus branch executed', async () => {
     const axios = require('axios');
     axios.post.mockReset();
 
@@ -142,31 +143,32 @@ describe('MLGatewayService branch coverage lifts', () => {
       return Promise.reject(new Error('network down'));
     });
 
-    const { MLGatewayService } = require('../../src/services/mlGateway.service.js');
+    const { MLGatewayService } = require('../../src/services/mlGateway.service');
     const svc = new MLGatewayService();
 
-    await expect(svc.predict({ bbox: [0, 0, 1, 1], return: 'mask_url' }, 'corr-net'))
-      .rejects.toEqual(
-        expect.objectContaining({
-          code: 'UPSTREAM_ERROR',
-          statusCode: 502,
-        }),
-      );
+    await expect(
+      svc.predict({ bbox: [0, 0, 1, 1], return: 'maskurl' }, 'corr-net')
+    ).rejects.toEqual(
+      expect.objectContaining({
+        code: 'UPSTREAMERROR',
+        statusCode: 502,
+      })
+    );
   });
 
   test('normalizePayload defaults branches (tiling defaults and return normalization)', () => {
-    const { MLGatewayService } = require('../../src/services/mlGateway.service.js');
+    const { MLGatewayService } = require('../../src/services/mlGateway.service');
     const svc = new MLGatewayService();
 
     const out = svc.normalizePayload({
       bbox: ['80', '7', '81', '8'], // strings to Number()
       // no tiling provided -> default 512/64
-      // no return -> default mask_url
+      // no return -> default maskurl
     });
 
     expect(out.bbox).toEqual([80, 7, 81, 8]);
     expect(out.tiling).toEqual({ size: 512, overlap: 64 });
-    expect(out.return).toBe('mask_url');
+    expect(out.return).toBe('maskurl');
 
     const out2 = svc.normalizePayload({
       tiling: { size: 256 }, // partial -> overlap defaults

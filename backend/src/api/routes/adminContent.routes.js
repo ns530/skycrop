@@ -1,11 +1,12 @@
 'use strict';
 
 const express = require('express');
+
 const router = express.Router();
+const Joi = require('joi');
 const adminContentController = require('../controllers/adminContent.controller');
 const { authMiddleware } = require('../middleware/auth.middleware');
 const { requireRole } = require('../middleware/permissions.middleware');
-const Joi = require('joi');
 const { validateRequest } = require('../middleware/validation.middleware');
 
 /**
@@ -26,7 +27,7 @@ const contentBody = Joi.object({
   summary: Joi.string().min(1).max(500).required(),
   body: Joi.string().min(1).required(),
   status: Joi.string().valid('draft', 'published').default('draft'),
-  published_at: Joi.date().optional(),
+  publishedat: Joi.date().optional(),
 });
 
 /**

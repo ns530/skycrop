@@ -1,15 +1,19 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { ApiError, ListParams, PaginatedResponse } from '../../../shared/api';
-import { fieldKeys } from '../../../shared/query/queryKeys';
-import type { FieldGeometry } from '../../../shared/types/geojson';
+import type {
+  ApiError,
+  ListParams,
+  PaginatedResponse,
+} from "../../../shared/api";
+import { fieldKeys } from "../../../shared/query/queryKeys";
+import type { FieldGeometry } from "../../../shared/types/geojson";
 import type {
   FieldDetail,
   FieldSummary,
   CreateFieldPayload,
   UpdateFieldPayload,
   DetectBoundaryPayload,
-} from '../api/fieldsApi';
+} from "../api/fieldsApi";
 import {
   listFields,
   getFieldById,
@@ -17,7 +21,7 @@ import {
   updateField,
   deleteField,
   detectFieldBoundary,
-} from '../api/fieldsApi';
+} from "../api/fieldsApi";
 
 /**
  * useFields
@@ -100,26 +104,47 @@ export const useDeleteField = () => {
     onMutate: async ({ fieldId }: DeleteFieldVariables) => {
       await queryClient.cancelQueries({ queryKey: fieldKeys.all });
 
-      const previousLists = queryClient.getQueriesData<PaginatedResponse<FieldSummary>>({
+      const previousLists = queryClient.getQueriesData<
+        PaginatedResponse<FieldSummary>
+      >({
         queryKey: fieldKeys.all,
       });
 
-      previousLists.forEach(([queryKey, value]: [unknown, PaginatedResponse<FieldSummary> | undefined]) => {
-        if (!value) return;
-        queryClient.setQueryData<PaginatedResponse<FieldSummary>>(queryKey as readonly unknown[], {
-          ...value,
-          data: value.data.filter((field: FieldSummary) => field.id !== fieldId),
-        });
-      });
+      previousLists.forEach(
+        ([queryKey, value]: [
+          unknown,
+          PaginatedResponse<FieldSummary> | undefined,
+        ]) => {
+          if (!value) return;
+          queryClient.setQueryData<PaginatedResponse<FieldSummary>>(
+            queryKey as readonly unknown[],
+            {
+              ...value,
+              data: value.data.filter(
+                (field: FieldSummary) => field.id !== fieldId,
+              ),
+            },
+          );
+        },
+      );
 
       return { previousLists };
     },
-    onError: (_error: ApiError, _variables: DeleteFieldVariables, context?: DeleteFieldContext) => {
+    onError: (
+      _error: ApiError,
+      _variables: DeleteFieldVariables,
+      context?: DeleteFieldContext,
+    ) => {
       // Roll back optimistic update
       if (!context) return;
-      context.previousLists.forEach(([queryKey, value]: [unknown, PaginatedResponse<FieldSummary> | undefined]) => {
-        queryClient.setQueryData(queryKey as readonly unknown[], value);
-      });
+      context.previousLists.forEach(
+        ([queryKey, value]: [
+          unknown,
+          PaginatedResponse<FieldSummary> | undefined,
+        ]) => {
+          queryClient.setQueryData(queryKey as readonly unknown[], value);
+        },
+      );
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: fieldKeys.all });
@@ -142,15 +167,21 @@ export const useFieldBoundaryDetection = () => {
   const queryClient = useQueryClient();
 
   return useMutation<FieldGeometry, ApiError, BoundaryDetectionVariables>({
-    mutationFn: ({ fieldId, payload }: BoundaryDetectionVariables) => detectFieldBoundary(fieldId, payload),
-    onSuccess: (geometry: FieldGeometry, { fieldId }: BoundaryDetectionVariables) => {
-      queryClient.setQueryData<FieldDetail | undefined>(fieldKeys.detail(fieldId), (prev: FieldDetail | undefined) =>
-        prev
-          ? {
-              ...prev,
-              geometry,
-            }
-          : prev,
+    mutationFn: ({ fieldId, payload }: BoundaryDetectionVariables) =>
+      detectFieldBoundary(fieldId, payload),
+    onSuccess: (
+      geometry: FieldGeometry,
+      { fieldId }: BoundaryDetectionVariables,
+    ) => {
+      queryClient.setQueryData<FieldDetail | undefined>(
+        fieldKeys.detail(fieldId),
+        (prev: FieldDetail | undefined) =>
+          prev
+            ? {
+                ...prev,
+                geometry,
+              }
+            : prev,
       );
     },
   });

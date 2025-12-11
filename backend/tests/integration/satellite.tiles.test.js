@@ -1,22 +1,20 @@
-'use strict';
-
 const request = require('supertest');
 const axios = require('axios');
 
 // Mock rate limiter to no-op for tests
 jest.mock('../../src/api/middleware/rateLimit.middleware', () => ({
-  apiLimiter: (_req, _res, next) => next(),
-  authLimiter: (_req, _res, next) => next(),
+  apiLimiter: (req, res, next) => next(),
+  authLimiter: (req, res, next) => next(),
 }));
 
 // Mock auth middleware to inject a test user
 jest.mock('../../src/api/middleware/auth.middleware', () => ({
-  authMiddleware: (req, _res, next) => {
-    req.user = { userId: 'user-1' };
+  authMiddleware: (req, res, next) => {
+    req.user = { user_id: 'user-1' };
     next();
   },
-  requireRole: () => (_req, _res, next) => next(),
-  requireAnyRole: () => (_req, _res, next) => next(),
+  requireRole: () => (req, res, next) => next(),
+  requireAnyRole: () => (req, res, next) => next(),
 }));
 
 // In-memory fake Redis
@@ -26,7 +24,7 @@ const fakeRedisClient = {
   async get(key) {
     return redisStore.has(key) ? redisStore.get(key) : null;
   },
-  async setEx(key, _ttl, value) {
+  async setEx(key, ttl, value) {
     redisStore.set(key, value);
     return 'OK';
   },
@@ -49,12 +47,14 @@ const fakeRedisClient = {
     redisStore.set(key, String(next));
     return next;
   },
-  async expire(_key, _ttl) {
+  async expire(key, ttl) {
     return 1;
   },
-  async scan(_cursor, opts = {}) {
+  async scan(cursor, opts = {}) {
     const { MATCH } = opts || {};
-    const keys = Array.from(redisStore.keys()).filter((k) => (!MATCH ? true : new RegExp(String(MATCH)).test(k)));
+    const keys = Array.from(redisStore.keys()).filter(k =>
+      !MATCH ? true : new RegExp(String(MATCH)).test(k)
+    );
     return ['0', keys];
   },
 };
@@ -69,7 +69,7 @@ jest.spyOn(axios, 'post').mockImplementation(async (url, data, config) => {
   if (url.includes('/oauth/token')) {
     return {
       status: 200,
-      data: { access_token: 'test-access-token', expires_in: 3600 },
+      data: { accesstoken: 'test-access-token', expiresin: 3600 },
     };
   }
   if (url.includes('/api/v1/process')) {
@@ -85,12 +85,12 @@ jest.spyOn(axios, 'post').mockImplementation(async (url, data, config) => {
 });
 
 process.env.NODE_ENV = 'test';
-process.env.JWT_SECRET = 'test-secret';
-process.env.SENTINELHUB_BASE_URL = 'https://services.sentinel-hub.com';
-process.env.SENTINELHUB_TOKEN_URL = 'https://services.sentinel-hub.com/oauth/token';
-process.env.SENTINELHUB_CLIENT_ID = 'client-id';
-process.env.SENTINELHUB_CLIENT_SECRET = 'client-secret';
-process.env.SATELLITE_TILE_TTL_SECONDS = '21600';
+process.env.JWTSECRET = 'test-secret';
+process.env.SENTINELHUBBASEURL = 'https://services.sentinel-hub.com';
+process.env.SENTINELHUBTOKENURL = 'https://services.sentinel-hub.com/oauth/token';
+process.env.SENTINELHUBCLIENTID = 'client-id';
+process.env.SENTINELHUBCLIENTSECRET = 'client-secret';
+process.env.SATELLITETILETTLSECONDS = '21600';
 
 const app = require('../../src/app');
 
@@ -109,10 +109,7 @@ describe('GET /api/v1/satellite/tiles/{z}/{x}/{y}', () => {
     const url = `${basePath}/${z}/${x}/${y}?date=${date}&bands=RGB`;
 
     // First call -> 200 with headers
-    const res1 = await request(app)
-      .get(url)
-      .set('Authorization', 'Bearer token')
-      .expect(200);
+    const res1 = await request(app).get(url).set('Authorization', 'Bearer token').expect(200);
 
     expect(res1.headers).toHaveProperty('etag');
     expect(res1.headers).toHaveProperty('cache-control');
@@ -120,7 +117,7 @@ describe('GET /api/v1/satellite/tiles/{z}/{x}/{y}', () => {
     expect(res1.headers).toHaveProperty('content-type');
     expect(res1.headers['content-type']).toMatch(/image\/png|image\/jpeg/);
 
-    const etag = res1.headers.etag;
+    const { etag } = res1.headers;
     expect(typeof etag).toBe('string');
 
     // Second call with If-None-Match -> 304
@@ -140,7 +137,7 @@ describe('GET /api/v1/satellite/tiles/{z}/{x}/{y}', () => {
       .expect(400);
 
     expect(res.body).toHaveProperty('success', false);
-    expect(res.body).toHaveProperty('error.code', 'VALIDATION_ERROR');
+    expect(res.body).toHaveProperty('error.code', 'VALIDATIONERROR');
   });
 
   it('validates bad date format -> 400', async () => {
@@ -150,7 +147,7 @@ describe('GET /api/v1/satellite/tiles/{z}/{x}/{y}', () => {
       .expect(400);
 
     expect(res.body.success).toBe(false);
-    expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    expect(res.body.error.code).toBe('VALIDATIONERROR');
   });
 
   it('validates bad bands -> 400', async () => {
@@ -160,6 +157,6 @@ describe('GET /api/v1/satellite/tiles/{z}/{x}/{y}', () => {
       .expect(400);
 
     expect(res.body.success).toBe(false);
-    expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    expect(res.body.error.code).toBe('VALIDATIONERROR');
   });
 });

@@ -3,15 +3,20 @@
  * Interactive map for selecting field center location
  */
 
-import L from 'leaflet';
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-import React, { useState } from 'react';
-import { Marker, useMapEvents } from 'react-leaflet';
+import L from "leaflet";
+import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
+import React, { useState } from "react";
+import { Marker, useMapEvents } from "react-leaflet";
 
-import { BaseMap, MapControls, useMapCenter, type MapCenter } from '../../../shared/components/Map';
-import { Button } from '../../../shared/ui/Button';
+import {
+  BaseMap,
+  MapControls,
+  useMapCenter,
+  type MapCenter,
+} from "../../../shared/components/Map";
+import { Button } from "../../../shared/ui/Button";
 
 // Fix for default marker icons in Leaflet
 
@@ -49,10 +54,10 @@ function LocationPicker({
 
 /**
  * FieldLocationSelector
- * 
+ *
  * Interactive map for farmers to select their field center
  * Step 1 of the field creation workflow
- * 
+ *
  * Flow:
  * 1. Farmer taps on map to select field center
  * 2. Marker appears at selected location
@@ -65,7 +70,9 @@ export const FieldLocationSelector: React.FC<FieldLocationSelectorProps> = ({
   onCancel,
 }) => {
   const { center: defaultCenter, getUserLocation } = useMapCenter();
-  const [selectedLocation, setSelectedLocation] = useState<MapCenter | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<MapCenter | null>(
+    null,
+  );
 
   const handleConfirm = () => {
     if (selectedLocation) {
@@ -129,16 +136,13 @@ export const FieldLocationSelector: React.FC<FieldLocationSelectorProps> = ({
                 ✓ Location Selected
               </p>
               <p className="text-xs text-gray-600 font-mono">
-                {selectedLocation.lat.toFixed(6)}, {selectedLocation.lng.toFixed(6)}
+                {selectedLocation.lat.toFixed(6)},{" "}
+                {selectedLocation.lng.toFixed(6)}
               </p>
             </div>
 
             <div className="flex gap-2">
-              <Button
-                onClick={handleConfirm}
-                className="flex-1"
-                size="lg"
-              >
+              <Button onClick={handleConfirm} className="flex-1" size="lg">
                 Confirm & Detect Boundary
               </Button>
               <Button
@@ -161,4 +165,3 @@ export const FieldLocationSelector: React.FC<FieldLocationSelectorProps> = ({
 };
 
 export default FieldLocationSelector;
-

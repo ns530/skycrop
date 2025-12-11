@@ -15,16 +15,19 @@ class RecommendationController {
 
   /**
    * Generate recommendations for a field
-   * POST /api/v1/fields/:fieldId/recommendations/generate
+   * POST /api/v1/fields/:field_id/recommendations/generate
    */
   async generateRecommendations(req, res, next) {
     try {
-      const { fieldId } = req.params;
-      const userId = req.user.userId;
+      const { field_id } = req.params;
+      const { user_id } = req.user;
 
-      const result = await this.recommendationEngineService.generateRecommendations(fieldId, userId);
+      const result = await this.recommendationEngineService.generateRecommendations(
+        field_id,
+        user_id
+      );
 
-      res.status(200).json({
+      res.status(200)on({
         success: true,
         data: result,
         meta: {
@@ -39,36 +42,36 @@ class RecommendationController {
 
   /**
    * Get recommendations for a field
-   * GET /api/v1/fields/:fieldId/recommendations
+   * GET /api/v1/fields/:field_id/recommendations
    */
   async getFieldRecommendations(req, res, next) {
     try {
-      const { fieldId } = req.params;
-      const userId = req.user.userId;
+      const { field_id } = req.params;
+      const { user_id } = req.user;
       const { status, priority, validOnly } = req.query;
 
       // Verify field ownership
-      const field = await this.Field.findByPk(fieldId);
+      const field = await this.Field.findByPk(field_id);
       if (!field) {
-        throw new AppError('FIELD_NOT_FOUND', `Field with ID ${fieldId} not found`, 404);
+        throw new AppError('FIELDNOTFOUND', `Field with ID ${field_id} not found`, 404);
       }
-      if (field.user_id !== userId) {
+      if (field.user_id !== user_id) {
         throw new AppError('FORBIDDEN', 'You do not have access to this field', 403);
       }
 
-      const recommendations = await this.recommendationRepository.findByFieldId(fieldId, {
+      const recommendations = await this.recommendationRepository.findByfield_id(field_id, {
         status,
         priority,
         validOnly: validOnly === 'true',
       });
 
-      const stats = await this.recommendationRepository.getStatistics(fieldId);
+      const stats = await this.recommendationRepository.getStatistics(field_id);
 
-      res.status(200).json({
+      res.status(200)on({
         success: true,
         data: {
-          fieldId,
-          recommendations: recommendations.map((r) => this._formatRecommendation(r)),
+          field_id,
+          recommendations: recommendations.map(r => this.formatRecommendation(r)),
           statistics: stats,
         },
         meta: {
@@ -87,19 +90,19 @@ class RecommendationController {
    */
   async getUserRecommendations(req, res, next) {
     try {
-      const userId = req.user.userId;
+      const { user_id } = req.user;
       const { status, priority, validOnly } = req.query;
 
-      const recommendations = await this.recommendationRepository.findByUserId(userId, {
+      const recommendations = await this.recommendationRepository.findByuser_id(user_id, {
         status,
         priority,
         validOnly: validOnly === 'true',
       });
 
-      res.status(200).json({
+      res.status(200)on({
         success: true,
         data: {
-          recommendations: recommendations.map((r) => this._formatRecommendation(r)),
+          recommendations: recommendations.map(r => this.formatRecommendation(r)),
         },
         meta: {
           correlationId: req.id,
@@ -119,16 +122,16 @@ class RecommendationController {
     try {
       const { recommendationId } = req.params;
       const { status, notes } = req.body;
-      const userId = req.user.userId;
+      const { user_id } = req.user;
 
       if (!status) {
-        throw new AppError('VALIDATION_ERROR', 'Status is required', 400);
+        throw new AppError('VALIDATIONERROR', 'Status is required', 400);
       }
 
-      const validStatuses = ['pending', 'in_progress', 'completed', 'dismissed'];
+      const validStatuses = ['pending', 'inprogress', 'completed', 'dismissed'];
       if (!validStatuses.includes(status)) {
         throw new AppError(
-          'VALIDATION_ERROR',
+          'VALIDATIONERROR',
           `Status must be one of: ${validStatuses.join(', ')}`,
           400
         );
@@ -137,10 +140,10 @@ class RecommendationController {
       // Verify recommendation exists and user owns the associated field
       const recommendation = await this.recommendationRepository.findById(recommendationId);
       if (!recommendation) {
-        throw new AppError('NOT_FOUND', 'Recommendation not found', 404);
+        throw new AppError('NOTFOUND', 'Recommendation not found', 404);
       }
 
-      if (recommendation.user_id !== userId) {
+      if (recommendation.user_id !== user_id) {
         throw new AppError('FORBIDDEN', 'You do not have access to this recommendation', 403);
       }
 
@@ -150,9 +153,9 @@ class RecommendationController {
         notes
       );
 
-      res.status(200).json({
+      res.status(200)on({
         success: true,
-        data: this._formatRecommendation(updated),
+        data: this.formatRecommendation(updated),
         meta: {
           correlationId: req.id,
         },
@@ -169,21 +172,21 @@ class RecommendationController {
   async deleteRecommendation(req, res, next) {
     try {
       const { recommendationId } = req.params;
-      const userId = req.user.userId;
+      const { user_id } = req.user;
 
       // Verify recommendation exists and user owns the associated field
       const recommendation = await this.recommendationRepository.findById(recommendationId);
       if (!recommendation) {
-        throw new AppError('NOT_FOUND', 'Recommendation not found', 404);
+        throw new AppError('NOTFOUND', 'Recommendation not found', 404);
       }
 
-      if (recommendation.user_id !== userId) {
+      if (recommendation.user_id !== user_id) {
         throw new AppError('FORBIDDEN', 'You do not have access to this recommendation', 403);
       }
 
       await this.recommendationRepository.delete(recommendationId);
 
-      res.status(200).json({
+      res.status(200)on({
         success: true,
         message: 'Recommendation deleted successfully',
         meta: {
@@ -199,24 +202,24 @@ class RecommendationController {
    * Format recommendation for API response
    * @private
    */
-  _formatRecommendation(rec) {
+  formatRecommendation(rec) {
     return {
-      recommendationId: rec.recommendation_id,
-      fieldId: rec.field_id,
+      recommendationId: rec.recommendationid,
+      field_id: rec.field_id,
       type: rec.type,
       priority: rec.priority,
-      urgency: rec.urgency_score,
+      urgency: rec.urgencyscore,
       title: rec.title,
       description: rec.description,
       reason: rec.reason,
-      actionSteps: rec.action_steps ? JSON.parse(rec.action_steps) : [],
-      estimatedCost: rec.estimated_cost ? parseFloat(rec.estimated_cost) : null,
-      expectedBenefit: rec.expected_benefit,
+      actionSteps: rec.actionsteps ? JSON.parse(rec.actionsteps) : [],
+      estimatedCost: rec.estimatedcost ? parseFloat(rec.estimatedcost) : null,
+      expectedBenefit: rec.expectedbenefit,
       timing: rec.timing,
-      validUntil: rec.valid_until,
+      validUntil: rec.validuntil,
       status: rec.status,
-      generatedAt: rec.generated_at,
-      actionedAt: rec.actioned_at,
+      generatedAt: rec.generatedat,
+      actionedAt: rec.actionedat,
       notes: rec.notes,
     };
   }

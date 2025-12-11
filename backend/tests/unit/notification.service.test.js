@@ -1,5 +1,3 @@
-'use strict';
-
 // Mock dependencies
 const mockEmailService = {
   sendHealthAlert: jest.fn().mockResolvedValue({ success: true }),
@@ -41,8 +39,8 @@ jest.mock('../../src/jobs/notificationQueue', () => ({
 const mockUserModel = {
   findByPk: jest.fn().mockResolvedValue({
     email: 'test@example.com',
-    first_name: 'John',
-    last_name: 'Doe',
+    firstname: 'John',
+    lastname: 'Doe',
   }),
 };
 
@@ -55,12 +53,16 @@ describe('NotificationService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Reset mock implementations
     mockEmailService.sendHealthAlert.mockResolvedValue({ success: true });
     mockEmailService.sendRecommendationEmail.mockResolvedValue({ success: true });
     mockEmailService.sendYieldPredictionEmail.mockResolvedValue({ success: true });
-    mockPushService.sendToUser.mockResolvedValue({ success: true, totalDevices: 2, successCount: 2 });
+    mockPushService.sendToUser.mockResolvedValue({
+      success: true,
+      totalDevices: 2,
+      successCount: 2,
+    });
     mockQueue.addEmail.mockResolvedValue({ jobId: 'email-job-1' });
     mockQueue.addPush.mockResolvedValue({ jobId: 'push-job-1' });
     mockQueue.getStats.mockResolvedValue({
@@ -72,13 +74,13 @@ describe('NotificationService', () => {
     });
 
     // Disable queue for direct service calls
-    process.env.USE_NOTIFICATION_QUEUE = 'false';
-    
+    process.env.USENOTIFICATIONQUEUE = 'false';
+
     notificationService = new NotificationService();
   });
 
   afterEach(() => {
-    delete process.env.USE_NOTIFICATION_QUEUE;
+    delete process.env.USENOTIFICATIONQUEUE;
   });
 
   describe('sendHealthAlert', () => {
@@ -103,7 +105,7 @@ describe('NotificationService', () => {
         '🚨 Test Field Alert',
         'NDVI drop detected - critical severity',
         expect.objectContaining({
-          type: 'health_alert',
+          type: 'healthalert',
           fieldName: 'Test Field',
           alertType: 'NDVI drop detected',
           severity: 'critical',
@@ -112,15 +114,10 @@ describe('NotificationService', () => {
     });
 
     it('should use queue when enabled', async () => {
-      process.env.USE_NOTIFICATION_QUEUE = 'true';
+      process.env.USENOTIFICATIONQUEUE = 'true';
       const queueService = new NotificationService();
 
-      await queueService.sendHealthAlert(
-        'user-1',
-        'Test Field',
-        'Low health score',
-        'high'
-      );
+      await queueService.sendHealthAlert('user-1', 'Test Field', 'Low health score', 'high');
 
       expect(mockQueue.addEmail).toHaveBeenCalled();
       expect(mockQueue.addPush).toHaveBeenCalled();
@@ -139,14 +136,14 @@ describe('NotificationService', () => {
 
   describe('sendRecommendation', () => {
     const mockRecommendation = {
-      recommendation_id: 'rec-1',
+      recommendationid: 'rec-1',
       field_id: 'field-1',
       title: 'Apply fertilizer',
       description: 'NDVI is low',
       priority: 'high',
       type: 'fertilizer',
-      action_steps: ['Step 1', 'Step 2'],
-      estimated_cost: 2500,
+      actionsteps: ['Step 1', 'Step 2'],
+      estimatedcost: 2500,
     };
 
     it('should send recommendation via email and push', async () => {
@@ -162,7 +159,7 @@ describe('NotificationService', () => {
         'test@example.com',
         'Test Field',
         expect.objectContaining({
-          recommendation_id: 'rec-1',
+          recommendationid: 'rec-1',
           title: 'Apply fertilizer',
           priority: 'high',
           actionSteps: ['Step 1', 'Step 2'],
@@ -184,7 +181,7 @@ describe('NotificationService', () => {
     it('should handle recommendations without action steps', async () => {
       const simpleRec = {
         ...mockRecommendation,
-        action_steps: null,
+        actionsteps: null,
       };
 
       const result = await notificationService.sendRecommendation(
@@ -206,16 +203,16 @@ describe('NotificationService', () => {
 
   describe('sendYieldPrediction', () => {
     const mockPrediction = {
-      prediction_id: 'pred-1',
+      predictionid: 'pred-1',
       field_id: 'field-1',
-      predicted_yield_per_ha: 4800,
-      predicted_total_yield: 12000,
-      confidence_interval: {
+      predictedyieldperha: 4800,
+      predictedtotalyield: 12000,
+      confidenceinterval: {
         lower: 4200,
         upper: 5400,
       },
-      expected_revenue: 960000,
-      harvest_date_estimate: '2024-05-15',
+      expectedrevenue: 960000,
+      harvestdateestimate: '2024-05-15',
     };
 
     it('should send yield prediction via email and push', async () => {
@@ -237,7 +234,7 @@ describe('NotificationService', () => {
         '🌾 Yield Prediction: Test Field',
         '4,800 kg/ha predicted',
         expect.objectContaining({
-          type: 'yield_prediction',
+          type: 'yieldprediction',
           predictionId: 'pred-1',
           predictedYield: '4800',
         })
@@ -281,4 +278,3 @@ describe('NotificationService', () => {
     });
   });
 });
-

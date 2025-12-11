@@ -1,9 +1,16 @@
-import { formatDistanceToNow } from 'date-fns';
-import { X, CheckCheck, Trash2, AlertCircle, Activity, TrendingUp, Bell as BellIcon } from 'lucide-react';
-import React, { useEffect, useRef } from 'react';
+import { formatDistanceToNow } from "date-fns";
+import {
+  X,
+  CheckCheck,
+  Trash2,
+  AlertCircle,
+  Activity,
+  TrendingUp,
+  Bell as BellIcon,
+} from "lucide-react";
+import React, { useEffect, useRef } from "react";
 
-import { Notification } from './NotificationBell';
-
+import { Notification } from "./NotificationBell";
 
 interface NotificationDropdownProps {
   notifications: Notification[];
@@ -33,23 +40,26 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         onClose();
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose]);
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case 'health':
-      case 'alert':
+      case "health":
+      case "alert":
         return <Activity className="h-5 w-5 text-red-500" />;
-      case 'recommendation':
+      case "recommendation":
         return <BellIcon className="h-5 w-5 text-blue-500" />;
-      case 'yield':
+      case "yield":
         return <TrendingUp className="h-5 w-5 text-green-500" />;
       default:
         return <AlertCircle className="h-5 w-5 text-gray-500" />;
@@ -58,12 +68,12 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 
   const getPriorityColor = (priority?: string) => {
     switch (priority) {
-      case 'high':
-        return 'border-l-4 border-red-500';
-      case 'medium':
-        return 'border-l-4 border-yellow-500';
+      case "high":
+        return "border-l-4 border-red-500";
+      case "medium":
+        return "border-l-4 border-yellow-500";
       default:
-        return 'border-l-4 border-gray-300';
+        return "border-l-4 border-gray-300";
     }
   };
 
@@ -126,8 +136,10 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
         ) : (
           <div className="divide-y divide-gray-100">
             {notifications.map((notification) => {
-              const handleNotificationKeyDown = (event: React.KeyboardEvent) => {
-                if (event.key === 'Enter' || event.key === ' ') {
+              const handleNotificationKeyDown = (
+                event: React.KeyboardEvent,
+              ) => {
+                if (event.key === "Enter" || event.key === " ") {
                   event.preventDefault();
                   onNotificationClick?.(notification);
                 }
@@ -142,37 +154,41 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                   onKeyDown={handleNotificationKeyDown}
                   className={`
                     px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors
-                    ${!notification.read ? 'bg-blue-50' : ''}
+                    ${!notification.read ? "bg-blue-50" : ""}
                     ${getPriorityColor(notification.priority)}
                   `}
                 >
-                <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0 mt-1">
-                    {getNotificationIcon(notification.type)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between">
-                      <p className={`text-sm font-medium ${!notification.read ? 'text-gray-900' : 'text-gray-700'}`}>
-                        {notification.title}
-                      </p>
-                      {!notification.read && (
-                        <span className="ml-2 flex-shrink-0 inline-block h-2 w-2 rounded-full bg-brand-blue"></span>
-                      )}
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0 mt-1">
+                      {getNotificationIcon(notification.type)}
                     </div>
-                    <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                      {notification.message}
-                    </p>
-                    {notification.fieldName && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        Field: {notification.fieldName}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between">
+                        <p
+                          className={`text-sm font-medium ${!notification.read ? "text-gray-900" : "text-gray-700"}`}
+                        >
+                          {notification.title}
+                        </p>
+                        {!notification.read && (
+                          <span className="ml-2 flex-shrink-0 inline-block h-2 w-2 rounded-full bg-brand-blue"></span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                        {notification.message}
                       </p>
-                    )}
-                    <p className="text-xs text-gray-400 mt-1">
-                      {formatDistanceToNow(new Date(notification.timestamp), { addSuffix: true })}
-                    </p>
+                      {notification.fieldName && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Field: {notification.fieldName}
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-400 mt-1">
+                        {formatDistanceToNow(new Date(notification.timestamp), {
+                          addSuffix: true,
+                        })}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
               );
             })}
           </div>
@@ -195,4 +211,3 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 };
 
 export default NotificationDropdown;
-

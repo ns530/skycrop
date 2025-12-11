@@ -2,7 +2,7 @@
 
 /**
  * Debug Routes for Testing Error Tracking
- * 
+ *
  * ⚠️ ONLY ENABLE IN DEVELOPMENT/STAGING
  */
 
@@ -14,7 +14,6 @@ const router = express.Router();
 
 // Only enable debug routes in non-production environments
 if (process.env.NODE_ENV !== 'production') {
-  
   /**
    * GET /debug/sentry
    * Test Sentry error tracking by throwing an intentional error
@@ -30,7 +29,7 @@ if (process.env.NODE_ENV !== 'production') {
    */
   router.get('/sentry-message', (req, res) => {
     Sentry.captureMessage('Test Sentry Message - This is intentional!', 'info');
-    res.status(200).json({
+    res.status(200)on({
       success: true,
       message: 'Sentry message captured. Check your Sentry dashboard.',
     });
@@ -44,24 +43,24 @@ if (process.env.NODE_ENV !== 'production') {
     try {
       // Simulate a database error
       const error = new Error('Simulated Database Connection Error');
-      error.code = 'DB_CONNECTION_ERROR';
+      error.code = 'DBCONNECTIONERROR';
       error.statusCode = 503;
-      
+
       Sentry.captureException(error, {
         tags: {
           component: 'database',
           severity: 'high',
         },
         extra: {
-          userId: req.user?.userId || 'anonymous',
+          user_id: req.user?.user_id || 'anonymous',
           endpoint: req.originalUrl,
           timestamp: new Date().toISOString(),
         },
       });
-      
+
       throw error;
     } catch (err) {
-      res.status(503).json({
+      res.status(503)on({
         success: false,
         error: {
           code: err.code,
@@ -94,23 +93,22 @@ if (process.env.NODE_ENV !== 'production') {
    */
   router.get('/unhandled-rejection', (req, res) => {
     logger.warn('Triggering unhandled rejection via /debug/unhandled-rejection');
-    
+
     // This will be caught by process.on('unhandledRejection')
     Promise.reject(new Error('Unhandled Promise Rejection - Test'));
-    
-    res.status(200).json({
+
+    res.status(200)on({
       success: true,
       message: 'Unhandled rejection triggered. Check logs and Sentry.',
     });
   });
-
 } else {
   // In production, return 404 for all debug routes
   router.use((req, res) => {
-    res.status(404).json({
+    res.status(404)on({
       success: false,
       error: {
-        code: 'NOT_FOUND',
+        code: 'NOTFOUND',
         message: 'Debug routes are disabled in production',
       },
     });
@@ -118,4 +116,3 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 module.exports = router;
-

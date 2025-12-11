@@ -1,10 +1,10 @@
-import React from 'react';
-import { Outlet } from 'react-router-dom';
- 
-import { FieldMapView } from '../../shared/components/Map/FieldMapView';
-import { Card } from '../../shared/ui/Card';
-import { PageContainer } from '../../shared/ui/layout/PageContainer';
- 
+import React from "react";
+import { Outlet } from "react-router-dom";
+
+import { FieldMapView } from "../../shared/components/Map/FieldMapView";
+import { Card } from "../../shared/ui/Card";
+import { PageContainer } from "../../shared/ui/layout/PageContainer";
+
 /**
  * MapFirstLayout
  *
@@ -14,10 +14,7 @@ import { PageContainer } from '../../shared/ui/layout/PageContainer';
 export const MapFirstLayout: React.FC = () => {
   return (
     <div className="min-h-[70vh] bg-gray-100 text-gray-900">
-      <PageContainer
-        fullWidth
-        className="py-4"
-      >
+      <PageContainer fullWidth className="py-4">
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-4 lg:gap-6 lg:min-h-[calc(100vh-4rem)]">
           {/* Map area */}
           <section
@@ -25,7 +22,7 @@ export const MapFirstLayout: React.FC = () => {
             className="relative min-h-[320px] lg:min-h-[600px] rounded-lg overflow-hidden lg:sticky lg:top-0"
           >
             <FieldMapView showHealthOverlay />
-            
+
             {/* Mobile-only helper to jump to details */}
             <a
               href="#field-details-panel"
@@ -34,7 +31,7 @@ export const MapFirstLayout: React.FC = () => {
               📋 Show field details
             </a>
           </section>
- 
+
           {/* Side panel */}
           <aside
             id="field-details-panel"
@@ -48,5 +45,5 @@ export const MapFirstLayout: React.FC = () => {
     </div>
   );
 };
- 
+
 export default MapFirstLayout;

@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 
-import type { DailyForecast, WeatherAlert } from '../api/weatherApi';
+import type { DailyForecast, WeatherAlert } from "../api/weatherApi";
 
 export interface DailyForecastCardProps {
   forecast: DailyForecast;
@@ -14,59 +14,67 @@ export interface DailyForecastCardProps {
 
 const formatDayLabel = (dateStr: string, isToday?: boolean): string => {
   if (isToday) {
-    return 'Today';
+    return "Today";
   }
 
   const date = new Date(dateStr);
   if (Number.isNaN(date.getTime())) {
-    return 'Unknown';
+    return "Unknown";
   }
 
   return date.toLocaleDateString(undefined, {
-    weekday: 'short',
-    day: 'numeric',
+    weekday: "short",
+    day: "numeric",
   });
 };
 
 const getConditionEmoji = (condition: string): string => {
   const normalized = condition.toLowerCase();
 
-  if (normalized.includes('thunder') || normalized.includes('storm')) return '⛈️';
-  if (normalized.includes('rain') || normalized.includes('shower')) return '🌧️';
-  if (normalized.includes('snow')) return '❄️';
-  if (normalized.includes('cloud')) return '☁️';
-  if (normalized.includes('fog') || normalized.includes('mist')) return '🌫️';
-  if (normalized.includes('sun') || normalized.includes('clear')) return '☀️';
+  if (normalized.includes("thunder") || normalized.includes("storm"))
+    return "⛈️";
+  if (normalized.includes("rain") || normalized.includes("shower")) return "🌧️";
+  if (normalized.includes("snow")) return "❄️";
+  if (normalized.includes("cloud")) return "☁️";
+  if (normalized.includes("fog") || normalized.includes("mist")) return "🌫️";
+  if (normalized.includes("sun") || normalized.includes("clear")) return "☀️";
 
-  return '🌤️';
+  return "🌤️";
 };
 
-const getRiskLabel = (forecast: DailyForecast, isRisky?: boolean): string | null => {
+const getRiskLabel = (
+  forecast: DailyForecast,
+  isRisky?: boolean,
+): string | null => {
   if (!isRisky) return null;
 
   if (forecast.precipMm >= 20) {
-    return 'Heavy rain';
+    return "Heavy rain";
   }
   if (forecast.maxTempC >= 35) {
-    return 'Heat';
+    return "Heat";
   }
 
-  return 'Risky conditions';
+  return "Risky conditions";
 };
 
-const getAlertSeverityClasses = (severity: WeatherAlert['severity']): string => {
+const getAlertSeverityClasses = (
+  severity: WeatherAlert["severity"],
+): string => {
   switch (severity) {
-    case 'severe':
-      return 'bg-red-100 text-red-800 border-red-200';
-    case 'warning':
-      return 'bg-amber-100 text-amber-800 border-amber-200';
-    case 'info':
+    case "severe":
+      return "bg-red-100 text-red-800 border-red-200";
+    case "warning":
+      return "bg-amber-100 text-amber-800 border-amber-200";
+    case "info":
     default:
-      return 'bg-sky-100 text-sky-800 border-sky-200';
+      return "bg-sky-100 text-sky-800 border-sky-200";
   }
 };
 
-export const DailyForecastCard: React.FC<DailyForecastCardProps> = (props: DailyForecastCardProps) => {
+export const DailyForecastCard: React.FC<DailyForecastCardProps> = (
+  props: DailyForecastCardProps,
+) => {
   const { forecast, isToday = false, isRisky = false, alerts } = props;
   const alertsList: WeatherAlert[] = alerts ?? [];
 
@@ -84,7 +92,9 @@ export const DailyForecastCard: React.FC<DailyForecastCardProps> = (props: Daily
     >
       <header className="mb-2 flex items-center justify-between gap-2">
         <div className="flex items-baseline gap-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-700">{dayLabel}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-700">
+            {dayLabel}
+          </p>
           {isToday && (
             <span className="rounded-full bg-brand-blue/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-brand-blue">
               Today
@@ -101,14 +111,20 @@ export const DailyForecastCard: React.FC<DailyForecastCardProps> = (props: Daily
 
       <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
         <div className="space-y-0.5">
-          <p className="text-[11px] uppercase tracking-wide text-gray-500">Temperature</p>
+          <p className="text-[11px] uppercase tracking-wide text-gray-500">
+            Temperature
+          </p>
           <p className="text-sm font-semibold text-gray-900">
             {Math.round(forecast.maxTempC)}° / {Math.round(forecast.minTempC)}°
           </p>
         </div>
         <div className="space-y-0.5 text-right">
-          <p className="text-[11px] uppercase tracking-wide text-gray-500">Rain</p>
-          <p className="text-sm font-semibold text-gray-900">{forecast.precipMm.toFixed(1)} mm</p>
+          <p className="text-[11px] uppercase tracking-wide text-gray-500">
+            Rain
+          </p>
+          <p className="text-sm font-semibold text-gray-900">
+            {forecast.precipMm.toFixed(1)} mm
+          </p>
         </div>
       </div>
 
@@ -127,7 +143,7 @@ export const DailyForecastCard: React.FC<DailyForecastCardProps> = (props: Daily
             )}`}
           >
             <span aria-hidden="true">⚠</span>
-            <span>{primaryAlert.title || 'Weather alert'}</span>
+            <span>{primaryAlert.title || "Weather alert"}</span>
           </span>
         )}
 

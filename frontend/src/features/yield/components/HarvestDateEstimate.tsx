@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 export interface HarvestDateEstimateProps {
   harvestDate: string;
@@ -9,10 +9,10 @@ export const HarvestDateEstimate: React.FC<HarvestDateEstimateProps> = ({
 }) => {
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     }).format(date);
   };
 
@@ -30,7 +30,7 @@ export const HarvestDateEstimate: React.FC<HarvestDateEstimateProps> = ({
       <div className="flex items-center justify-between text-sm">
         <span className="text-gray-600">Estimated Harvest Date</span>
         <span className="font-medium text-gray-900">
-          {days > 0 ? `${days} days` : 'Ready'}
+          {days > 0 ? `${days} days` : "Ready"}
         </span>
       </div>
       <div className="mt-2 text-xs text-gray-500">

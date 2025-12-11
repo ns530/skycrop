@@ -1,37 +1,37 @@
-import React, { useEffect, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect, useMemo } from "react";
+import { useParams } from "react-router-dom";
 
-import { useUiState } from '../../../shared/context/UiContext';
-import { useOnlineStatus } from '../../../shared/hooks/useOnlineStatus';
-import { useToast } from '../../../shared/hooks/useToast';
-import { Button } from '../../../shared/ui/Button';
-import { Card } from '../../../shared/ui/Card';
-import { ErrorState } from '../../../shared/ui/ErrorState';
-import { LoadingState } from '../../../shared/ui/LoadingState';
-import { useFieldDetail } from '../../fields/hooks/useFields';
+import { useUiState } from "../../../shared/context/UiContext";
+import { useOnlineStatus } from "../../../shared/hooks/useOnlineStatus";
+import { useToast } from "../../../shared/hooks/useToast";
+import { Button } from "../../../shared/ui/Button";
+import { Card } from "../../../shared/ui/Card";
+import { ErrorState } from "../../../shared/ui/ErrorState";
+import { LoadingState } from "../../../shared/ui/LoadingState";
+import { useFieldDetail } from "../../fields/hooks/useFields";
 import type {
   FieldHealthResponse,
   FieldHealthTimeSeries,
   HealthIndexType,
   HealthSummaryBucket,
-} from '../api/healthApi';
+} from "../api/healthApi";
 import {
   HealthControls,
   type HealthRangePreset,
-} from '../components/HealthControls';
-import { HealthIndexLegend } from '../components/HealthIndexLegend';
-import { HealthStatusCard } from '../components/HealthStatusCard';
-import { HealthSummaryBuckets } from '../components/HealthSummaryBuckets';
-import { HealthTrendCard } from '../components/HealthTrendCard';
-import { HealthTrendChart } from '../components/HealthTrendChart';
-import { useFieldHealth, useHealthIndicesMetadata } from '../hooks';
+} from "../components/HealthControls";
+import { HealthIndexLegend } from "../components/HealthIndexLegend";
+import { HealthStatusCard } from "../components/HealthStatusCard";
+import { HealthSummaryBuckets } from "../components/HealthSummaryBuckets";
+import { HealthTrendCard } from "../components/HealthTrendCard";
+import { HealthTrendChart } from "../components/HealthTrendChart";
+import { useFieldHealth, useHealthIndicesMetadata } from "../hooks";
 
 /**
  * Pick the bucket with the largest percentage area as the primary status label.
  */
 const getDominantStatusLabel = (
   summary?: HealthSummaryBucket[],
-): HealthSummaryBucket['label'] | null => {
+): HealthSummaryBucket["label"] | null => {
   if (!summary || summary.length === 0) return null;
   let maxBucket = summary[0];
   for (const bucket of summary) {
@@ -49,7 +49,7 @@ const subtractDays = (date: Date, days: number): Date => {
 };
 
 const formatAsIsoDate = (date: Date): string =>
-  date.toISOString().split('T')[0];
+  date.toISOString().split("T")[0];
 
 const getDateRangeForPreset = (
   preset: HealthRangePreset,
@@ -58,16 +58,16 @@ const getDateRangeForPreset = (
   let days: number;
 
   switch (preset) {
-    case '7d':
+    case "7d":
       days = 7;
       break;
-    case '14d':
+    case "14d":
       days = 14;
       break;
-    case '30d':
+    case "30d":
       days = 30;
       break;
-    case 'season':
+    case "season":
       // Simple proxy for a season-length window for now
       days = 90;
       break;
@@ -114,7 +114,7 @@ export const FieldHealthPage: React.FC = () => {
   } = useUiState();
   const { isOnline } = useOnlineStatus();
 
-  const effectiveFieldId = fieldId ?? currentFieldId ?? '';
+  const effectiveFieldId = fieldId ?? currentFieldId ?? "";
 
   // Sync current field into global UI context
   useEffect(() => {
@@ -168,7 +168,7 @@ export const FieldHealthPage: React.FC = () => {
   );
 
   const latestIndex = useMemo(() => {
-    if (typeof health?.latestIndex === 'number') {
+    if (typeof health?.latestIndex === "number") {
       return health.latestIndex;
     }
     if (!selectedSeries || !selectedSeries.points.length) return undefined;
@@ -177,8 +177,7 @@ export const FieldHealthPage: React.FC = () => {
 
   const lastUpdated = useMemo(() => {
     if (!selectedSeries || !selectedSeries.points.length) return undefined;
-    const lastPoint =
-      selectedSeries.points[selectedSeries.points.length - 1];
+    const lastPoint = selectedSeries.points[selectedSeries.points.length - 1];
     return lastPoint.date;
   }, [selectedSeries]);
 
@@ -189,18 +188,15 @@ export const FieldHealthPage: React.FC = () => {
   const handleRetryHealth = () => {
     void refetchHealth();
     showToast({
-      title: 'Retrying health data',
-      description: 'Attempting to reload field health metrics.',
-      variant: 'default',
+      title: "Retrying health data",
+      description: "Attempting to reload field health metrics.",
+      variant: "default",
     });
   };
 
   if (!fieldId) {
     return (
-      <section
-        aria-labelledby="field-health-heading"
-        className="space-y-4"
-      >
+      <section aria-labelledby="field-health-heading" className="space-y-4">
         <header className="space-y-1">
           <h1
             id="field-health-heading"
@@ -218,10 +214,7 @@ export const FieldHealthPage: React.FC = () => {
   }
 
   return (
-    <section
-      aria-labelledby="field-health-heading"
-      className="space-y-4"
-    >
+    <section aria-labelledby="field-health-heading" className="space-y-4">
       <header className="space-y-1">
         <h1
           id="field-health-heading"
@@ -236,9 +229,7 @@ export const FieldHealthPage: React.FC = () => {
         <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-500">
           {field && !isFieldLoading && !isFieldError && (
             <>
-              <span className="font-medium text-gray-700">
-                {field.name}
-              </span>
+              <span className="font-medium text-gray-700">{field.name}</span>
               <span>Area: {field.areaHa.toFixed(2)} ha</span>
             </>
           )}
@@ -256,8 +247,8 @@ export const FieldHealthPage: React.FC = () => {
             aria-hidden="true"
           />
           {health
-            ? 'You are offline. Showing the last loaded health data.'
-            : 'You are offline and have no cached health data yet.'}
+            ? "You are offline. Showing the last loaded health data."
+            : "You are offline and have no cached health data yet."}
         </p>
       )}
 
@@ -279,7 +270,7 @@ export const FieldHealthPage: React.FC = () => {
           title="Unable to load health data"
           message={
             healthError?.message ??
-            'Something went wrong while loading health metrics for this field.'
+            "Something went wrong while loading health metrics for this field."
           }
           onRetry={handleRetryHealth}
         />
@@ -288,9 +279,9 @@ export const FieldHealthPage: React.FC = () => {
       {!isHealthLoading && !isHealthError && !hasAnyHealthData && (
         <Card title="No health data available">
           <p className="text-sm text-gray-700">
-            There is no health data available for this field and date range
-            yet. Try expanding the date range or check back after the next
-            satellite pass.
+            There is no health data available for this field and date range yet.
+            Try expanding the date range or check back after the next satellite
+            pass.
           </p>
         </Card>
       )}

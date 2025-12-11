@@ -1,12 +1,12 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { useNavigate } from "react-router-dom";
 
-import { useUiState } from '../../../shared/context/UiContext';
-import { useToast } from '../../../shared/hooks/useToast';
-import type { FieldGeometry } from '../../../shared/types/geojson';
-import { Card } from '../../../shared/ui/Card';
-import { FieldForm, type FieldFormValues } from '../components/FieldForm';
-import { useCreateField } from '../hooks/useFields';
+import { useUiState } from "../../../shared/context/UiContext";
+import { useToast } from "../../../shared/hooks/useToast";
+import type { FieldGeometry } from "../../../shared/types/geojson";
+import { Card } from "../../../shared/ui/Card";
+import { FieldForm, type FieldFormValues } from "../components/FieldForm";
+import { useCreateField } from "../hooks/useFields";
 
 /**
  * Default placeholder geometry used for field creation until
@@ -17,7 +17,7 @@ import { useCreateField } from '../hooks/useFields';
  * or detected from satellite imagery.
  */
 const DEFAULT_PLACEHOLDER_GEOMETRY: FieldGeometry = {
-  type: 'Polygon',
+  type: "Polygon",
   coordinates: [
     [
       [0, 0],
@@ -54,39 +54,51 @@ export const CreateFieldPage: React.FC = () => {
 
       setCurrentField(created.id);
       showToast({
-        title: 'Field created',
-        description: 'Your field was created successfully. You can now edit its boundary on the map.',
-        variant: 'success',
+        title: "Field created",
+        description:
+          "Your field was created successfully. You can now edit its boundary on the map.",
+        variant: "success",
       });
 
       navigate(`/fields/${created.id}`);
     } catch (error) {
-      const message = (error as Error)?.message ?? 'Failed to create field. Please try again.';
+      const message =
+        (error as Error)?.message ??
+        "Failed to create field. Please try again.";
       showToast({
-        title: 'Could not create field',
+        title: "Could not create field",
         description: message,
-        variant: 'error',
+        variant: "error",
       });
     }
   };
 
   const handleCancel = () => {
-    navigate('/fields');
+    navigate("/fields");
   };
 
   return (
     <section aria-labelledby="create-field-heading" className="space-y-4">
       <header className="space-y-1">
-        <h1 id="create-field-heading" className="text-lg font-semibold text-gray-900">
+        <h1
+          id="create-field-heading"
+          className="text-lg font-semibold text-gray-900"
+        >
           Add new field
         </h1>
         <p className="text-sm text-gray-600">
-          Provide basic details for your field. You will be able to refine its boundary on the map afterwards.
+          Provide basic details for your field. You will be able to refine its
+          boundary on the map afterwards.
         </p>
       </header>
 
       <Card>
-        <FieldForm mode="create" onSubmit={handleSubmit} isSubmitting={isPending} onCancel={handleCancel} />
+        <FieldForm
+          mode="create"
+          onSubmit={handleSubmit}
+          isSubmitting={isPending}
+          onCancel={handleCancel}
+        />
       </Card>
     </section>
   );

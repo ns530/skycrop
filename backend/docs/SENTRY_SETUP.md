@@ -1,6 +1,7 @@
 # Sentry Error Tracking Setup Guide
 
 ## Overview
+
 Sentry is integrated into the SkyCrop backend for real-time error tracking, performance monitoring, and alerting. This guide explains the setup, configuration, and usage.
 
 ---
@@ -8,12 +9,14 @@ Sentry is integrated into the SkyCrop backend for real-time error tracking, perf
 ## Installation
 
 ### 1. Install Sentry Packages
+
 ```bash
 cd backend
 npm install @sentry/node @sentry/profiling-node --save
 ```
 
 **Packages:**
+
 - `@sentry/node` - Core Sentry SDK for Node.js
 - `@sentry/profiling-node` - Performance profiling integration
 
@@ -34,6 +37,7 @@ npm install @sentry/node @sentry/profiling-node --save
    - Copy the DSN (Data Source Name)
 
 3. **Add DSN to Environment:**
+
 ```bash
 # .env (development)
 SENTRY_DSN=https://abc123@o123456.ingest.sentry.io/7890123
@@ -57,10 +61,7 @@ Sentry.init({
   environment: process.env.NODE_ENV || 'development',
   tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
   profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-  integrations: [
-    new Sentry.Integrations.Http({ tracing: true }),
-    new ProfilingIntegration(),
-  ],
+  integrations: [new Sentry.Integrations.Http({ tracing: true }), new ProfilingIntegration()],
   beforeSend(event, hint) {
     // Filter out 404 errors
     if (event.exception && hint.originalException) {
@@ -80,12 +81,14 @@ app.use(Sentry.Handlers.tracingHandler());
 // ... your routes ...
 
 // Add error handler (must be before custom error handler)
-app.use(Sentry.Handlers.errorHandler({
-  shouldHandleError(error) {
-    if (error.statusCode === 404) return false;
-    return true;
-  },
-}));
+app.use(
+  Sentry.Handlers.errorHandler({
+    shouldHandleError(error) {
+      if (error.statusCode === 404) return false;
+      return true;
+    },
+  })
+);
 ```
 
 ---
@@ -97,41 +100,56 @@ app.use(Sentry.Handlers.errorHandler({
 We've added debug routes for testing Sentry:
 
 #### 1. Test Basic Error Tracking
+
 ```bash
 curl http://localhost:3000/debug/sentry
 ```
-**Expected:** 
+
+**Expected:**
+
 - Error thrown and caught by Sentry
 - Visible in Sentry dashboard within 1-2 minutes
 
 #### 2. Test Message Capture
+
 ```bash
 curl http://localhost:3000/debug/sentry-message
 ```
+
 **Expected:**
+
 - Message logged to Sentry
 - Returns 200 OK
 
 #### 3. Test Exception with Context
+
 ```bash
 curl http://localhost:3000/debug/sentry-exception
 ```
+
 **Expected:**
+
 - Exception captured with tags and extra data
 - Returns 503 Service Unavailable
 
 #### 4. Test Async Error Handling
+
 ```bash
 curl http://localhost:3000/debug/async-error
 ```
+
 **Expected:**
+
 - Async error caught and sent to Sentry
 
 #### 5. Test Unhandled Rejection
+
 ```bash
 curl http://localhost:3000/debug/unhandled-rejection
 ```
+
 **Expected:**
+
 - Unhandled promise rejection captured
 
 ---
@@ -139,6 +157,7 @@ curl http://localhost:3000/debug/unhandled-rejection
 ## Sentry Dashboard
 
 ### Accessing Your Project
+
 1. Go to [sentry.io](https://sentry.io)
 2. Navigate to your "SkyCrop-Backend" project
 3. Check "Issues" tab for errors
@@ -146,10 +165,11 @@ curl http://localhost:3000/debug/unhandled-rejection
 ### What You'll See
 
 #### Issue Details:
+
 - **Error Message:** Clear description of what went wrong
 - **Stack Trace:** Full call stack for debugging
 - **Breadcrumbs:** User actions leading to error
-- **Context:** 
+- **Context:**
   - User ID
   - Request URL
   - Request method
@@ -157,6 +177,7 @@ curl http://localhost:3000/debug/unhandled-rejection
   - Release version
 
 #### Performance Monitoring:
+
 - **Transaction Traces:** API endpoint response times
 - **Database Queries:** Slow query detection
 - **External API Calls:** Third-party service latency
@@ -186,7 +207,7 @@ try {
       timestamp: new Date().toISOString(),
     },
   });
-  
+
   throw error; // Re-throw for normal error handling
 }
 ```
@@ -230,9 +251,10 @@ Sentry.setTag('feature', 'yield-prediction');
 **Create Alert Rules:**
 
 #### Critical Error Alert
+
 ```yaml
 Name: Critical Errors in Production
-Condition: 
+Condition:
   - Environment is production
   - Error level is error or fatal
 Action:
@@ -242,6 +264,7 @@ Frequency: Immediately
 ```
 
 #### High Error Rate Alert
+
 ```yaml
 Name: High Error Rate
 Condition:
@@ -254,6 +277,7 @@ Frequency: Every 5 minutes (max)
 ```
 
 #### Performance Degradation Alert
+
 ```yaml
 Name: API Performance Degradation
 Condition:
@@ -290,12 +314,14 @@ Frequency: Every 10 minutes
 ### 1. Filter Noise
 
 **Don't Send to Sentry:**
+
 - 404 Not Found errors (already filtered)
 - Validation errors (400 Bad Request)
 - Authentication failures (401/403)
 - Rate limit errors (429)
 
 **Implementation:**
+
 ```javascript
 beforeSend(event, hint) {
   const error = hint.originalException;
@@ -309,6 +335,7 @@ beforeSend(event, hint) {
 ### 2. Add Context
 
 Always add relevant context:
+
 ```javascript
 Sentry.captureException(error, {
   tags: {
@@ -326,6 +353,7 @@ Sentry.captureException(error, {
 ### 3. Group Similar Errors
 
 Use `fingerprint` to group related errors:
+
 ```javascript
 Sentry.captureException(error, {
   fingerprint: ['database-connection-error', 'postgresql'],
@@ -335,6 +363,7 @@ Sentry.captureException(error, {
 ### 4. Monitor Performance
 
 Track custom transactions:
+
 ```javascript
 const transaction = Sentry.startTransaction({
   op: 'yield-prediction',
@@ -414,6 +443,7 @@ sentry-cli releases deploys "skycrop-backend@1.0.0" new -e production
 ### Sentry Not Receiving Errors
 
 **Check:**
+
 1. ✅ `SENTRY_DSN` is set correctly
 2. ✅ `NODE_ENV` is not `test`
 3. ✅ Error is not filtered by `beforeSend`
@@ -421,6 +451,7 @@ sentry-cli releases deploys "skycrop-backend@1.0.0" new -e production
 5. ✅ Error handler is registered after routes
 
 **Test:**
+
 ```bash
 curl http://localhost:3000/debug/sentry
 ```
@@ -428,6 +459,7 @@ curl http://localhost:3000/debug/sentry
 ### Errors Not Appearing in Dashboard
 
 **Possible Causes:**
+
 - Sentry dashboard may take 1-2 minutes to update
 - Error was filtered out (check `beforeSend` logic)
 - DSN is incorrect
@@ -436,6 +468,7 @@ curl http://localhost:3000/debug/sentry
 ### Too Many Alerts
 
 **Solution:**
+
 1. Increase alert thresholds
 2. Add more aggressive filtering
 3. Use alert frequency limits (e.g., max once per 10 minutes)
@@ -451,8 +484,8 @@ For production, reduce sampling to save on Sentry quota:
 ```javascript
 Sentry.init({
   // ... other config
-  tracesSampleRate: 0.1,      // 10% of transactions
-  profilesSampleRate: 0.1,    // 10% of transactions profiled
+  tracesSampleRate: 0.1, // 10% of transactions
+  profilesSampleRate: 0.1, // 10% of transactions profiled
 });
 ```
 
@@ -463,14 +496,14 @@ Filter out common, non-critical errors:
 ```javascript
 beforeSend(event, hint) {
   const error = hint.originalException;
-  
+
   // Don't send client errors
   if (error.statusCode < 500) return null;
-  
+
   // Don't send specific error codes
   if (error.code === 'VALIDATION_ERROR') return null;
   if (error.code === 'RATE_LIMIT_EXCEEDED') return null;
-  
+
   return event;
 }
 ```
@@ -499,6 +532,7 @@ Before deploying to production:
 **Sentry Integration Status:** ✅ Complete
 
 **What's Configured:**
+
 - ✅ Error tracking for all APIs
 - ✅ Performance monitoring
 - ✅ Request/response context
@@ -508,6 +542,7 @@ Before deploying to production:
 - ✅ Environment-specific sampling
 
 **Next Steps:**
+
 1. Set up Sentry account
 2. Add DSN to environment variables
 3. Test using debug endpoints
@@ -516,4 +551,3 @@ Before deploying to production:
 6. Set up Slack/email notifications
 
 **Sentry Dashboard:** https://sentry.io/organizations/[your-org]/projects/skycrop-backend/
-

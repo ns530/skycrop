@@ -39,8 +39,8 @@ const Field = sequelize.define(
         min: 0.01,
       },
     },
-    area_sqm: {
-      // square meters computed via ST_Area(geography) in DB trigger/service
+    areasqm: {
+      // square meters computed via STArea(geography) in DB trigger/service
       type: DataTypes.DECIMAL, // NUMERIC
       allowNull: false,
       // Default value for Sequelize validation - trigger will override
@@ -51,19 +51,19 @@ const Field = sequelize.define(
       type: DataTypes.GEOMETRY('POINT', 4326),
       allowNull: false,
       // Default point for Sequelize validation - trigger will override
-      defaultValue: literal("ST_GeomFromText('POINT(0 0)', 4326)"),
+      defaultValue: literal("STGeomFromText('POINT(0 0)', 4326)"),
     },
     status: {
       type: DataTypes.ENUM('active', 'archived', 'deleted'),
       allowNull: false,
       defaultValue: 'active',
     },
-    created_at: {
+    createdat: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: literal('NOW()'),
     },
-    updated_at: {
+    updatedat: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: literal('NOW()'),
@@ -72,8 +72,8 @@ const Field = sequelize.define(
   {
     tableName: 'fields',
     timestamps: true,
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
+    createdAt: 'createdat',
+    updatedAt: 'updatedat',
     underscored: true,
     freezeTableName: true,
     indexes: [
@@ -94,8 +94,8 @@ const Field = sequelize.define(
   }
 );
 
-// Note: Placeholder values for center and area_sqm are set in field.service.js
-// The database trigger compute_field_metrics will override these with actual computed values
+// Note: Placeholder values for center and areasqm are set in field.service
+// The database trigger computefieldmetrics will override these with actual computed values
 
 // Optional association helper (to be called where models are wired together)
 // Field.associate = (models) => {

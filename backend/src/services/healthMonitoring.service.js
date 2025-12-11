@@ -16,17 +16,17 @@ class HealthMonitoringService {
 
   /**
    * Analyze field health over time period
-   * @param {string} fieldId - Field UUID
+   * @param {string} field_id - Field UUID
    * @param {string} startDate - ISO date string (YYYY-MM-DD)
    * @param {string} endDate - ISO date string (YYYY-MM-DD)
    * @returns {Object} Health analysis with trends, scores, anomalies
    */
-  async analyzeFieldHealth(fieldId, startDate, endDate) {
+  async analyzeFieldHealth(field_id, startDate, endDate) {
     // 1. Validate dates
-    this._validateDates(startDate, endDate);
+    this.validateDates(startDate, endDate);
 
     // 2. Verify field exists
-    const field = await this.Field.findByPk(fieldId);
+    const field = await this.Field.findByPk(field_id);
     if (!field) {
       const error = new Error('Field not found');
       error.statusCode = 404;
@@ -36,63 +36,63 @@ class HealthMonitoringService {
     // 3. Fetch health records from database (sorted by date ascending)
     const records = await this.HealthRecord.findAll({
       where: {
-        field_id: fieldId,
-        measurement_date: {
+        field_id: field_id,
+        measurementdate: {
           [Sequelize.Op.gte]: startDate,
           [Sequelize.Op.lte]: endDate,
         },
       },
-      order: [['measurement_date', 'ASC']],
+      order: [['measurementdate', 'ASC']],
       raw: true,
     });
 
     // 4. If no records, return empty analysis
     if (!records || records.length === 0) {
       return {
-        fieldId,
+        field_id,
         fieldName: field.name,
         period: { start: startDate, end: endDate },
         recordCount: 0,
         currentHealth: null,
         movingAverages: null,
-        trend: { direction: 'no_data', slope: 0, r2: 0 },
+        trend: { direction: 'nodata', slope: 0, r2: 0 },
         anomalies: [],
         healthScore: null,
-        status: 'no_data',
+        status: 'nodata',
       };
     }
 
     // 5. Calculate moving averages (7-day, 14-day, 30-day)
-    const ma7 = this._calculateMovingAverage(records, 7, 'ndvi_mean');
-    const ma14 = this._calculateMovingAverage(records, 14, 'ndvi_mean');
-    const ma30 = this._calculateMovingAverage(records, 30, 'ndvi_mean');
+    const ma7 = this.calculateMovingAverage(records, 7, 'ndvimean');
+    const ma14 = this.calculateMovingAverage(records, 14, 'ndvimean');
+    const ma30 = this.calculateMovingAverage(records, 30, 'ndvimean');
 
     // 6. Detect trend (linear regression on NDVI)
-    const timeSeries = records.map((r) => ({
-      date: r.measurement_date,
-      value: r.ndvi_mean,
+    const timeSeries = records.map(r => ({
+      date: r.measurementdate,
+      value: r.ndvimean,
     }));
-    const trend = this._detectTrend(timeSeries);
+    const trend = this.detectTrend(timeSeries);
 
     // 7. Get latest record for current health
     const latestRecord = records[records.length - 1];
 
     // 8. Calculate overall health score
-    const healthScore = this._calculateHealthScore(
-      latestRecord.ndvi_mean,
-      latestRecord.ndwi_mean,
-      latestRecord.tdvi_mean
+    const healthScore = this.calculateHealthScore(
+      latestRecord.ndvimean,
+      latestRecord.ndwimean,
+      latestRecord.tdvimean
     );
 
     // 9. Detect anomalies (significant drops)
-    const anomalies = this._detectAnomalies(records);
+    const anomalies = this.detectAnomalies(records);
 
     // 10. Determine health status
-    const status = this._getHealthStatus(healthScore);
+    const status = this.getHealthStatus(healthScore);
 
     // 11. Build comprehensive analysis
     const analysis = {
-      fieldId,
+      field_id,
       fieldName: field.name,
       period: {
         start: startDate,
@@ -100,13 +100,13 @@ class HealthMonitoringService {
       },
       recordCount: records.length,
       currentHealth: {
-        date: latestRecord.measurement_date,
+        date: latestRecord.measurementdate,
         score: healthScore,
         status,
-        ndvi: latestRecord.ndvi_mean,
-        ndwi: latestRecord.ndwi_mean,
-        tdvi: latestRecord.tdvi_mean,
-        cloudCover: latestRecord.cloud_cover,
+        ndvi: latestRecord.ndvimean,
+        ndwi: latestRecord.ndwimean,
+        tdvi: latestRecord.tdvimean,
+        cloudCover: latestRecord.cloudcover,
       },
       movingAverages: {
         ndvi_7day: ma7,
@@ -117,37 +117,29 @@ class HealthMonitoringService {
         direction: trend.direction,
         slope: trend.slope,
         confidence: trend.r2,
-        description: this._getTrendDescription(trend),
+        description: this.getTrendDescription(trend),
       },
-      timeSeries: records.map((r) => ({
-        date: r.measurement_date,
-        ndvi: r.ndvi_mean,
-        ndwi: r.ndwi_mean,
-        tdvi: r.tdvi_mean,
-        healthScore: this._calculateHealthScore(
-          r.ndvi_mean,
-          r.ndwi_mean,
-          r.tdvi_mean
-        ),
-        cloudCover: r.cloud_cover,
+      timeSeries: records.map(r => ({
+        date: r.measurementdate,
+        ndvi: r.ndvimean,
+        ndwi: r.ndwimean,
+        tdvi: r.tdvimean,
+        healthScore: this.calculateHealthScore(r.ndvimean, r.ndwimean, r.tdvimean),
+        cloudCover: r.cloudcover,
       })),
       anomalies,
-      recommendations: this._generateQuickRecommendations(
-        latestRecord,
-        trend,
-        anomalies
-      ),
+      recommendations: this.generateQuickRecommendations(latestRecord, trend, anomalies),
     };
 
     // 12. Emit real-time update to WebSocket subscribers
     try {
-      emitToField(fieldId, 'health_updated', {
-        fieldId,
+      emitToField(field_id, 'healthupdated', {
+        field_id,
         fieldName: field.name,
         health: {
           score: healthScore,
           status,
-          date: latestRecord.measurement_date,
+          date: latestRecord.measurementdate,
         },
         trend: trend.direction,
         anomalyCount: anomalies.length,
@@ -156,13 +148,14 @@ class HealthMonitoringService {
 
       // If critical status or anomalies, emit to field owner
       if (status === 'critical' || anomalies.length > 0) {
-        emitToUser(field.user_id, 'health_alert', {
-          fieldId,
+        emitToUser(field.user_id, 'healthalert', {
+          field_id,
           fieldName: field.name,
           severity: status === 'critical' ? 'critical' : 'warning',
-          message: status === 'critical' 
-            ? 'Field health is critical and requires immediate attention' 
-            : `${anomalies.length} health anomalies detected`,
+          message:
+            status === 'critical'
+              ? 'Field health is critical and requires immediate attention'
+              : `${anomalies.length} health anomalies detected`,
           anomalies: anomalies.map(a => ({ date: a.date, severity: a.severity })),
           timestamp: Date.now(),
         });
@@ -180,10 +173,10 @@ class HealthMonitoringService {
    * Calculate moving average for a specific field
    * @private
    */
-  _calculateMovingAverage(records, window, field) {
+  calculateMovingAverage(records, window, field) {
     if (records.length < window) return null;
 
-    const values = records.slice(-window).map((r) => r[field]);
+    const values = records.slice(-window).map(r => r[field]);
     const sum = values.reduce((acc, val) => acc + val, 0);
     return parseFloat((sum / window).toFixed(4));
   }
@@ -192,9 +185,9 @@ class HealthMonitoringService {
    * Detect trend using simple linear regression
    * @private
    */
-  _detectTrend(timeSeries) {
+  detectTrend(timeSeries) {
     const n = timeSeries.length;
-    if (n < 5) return { direction: 'insufficient_data', slope: 0, r2: 0 };
+    if (n < 5) return { direction: 'insufficientdata', slope: 0, r2: 0 };
 
     // Convert to numeric data (index as x, value as y)
     const data = timeSeries.map((point, idx) => ({ x: idx, y: point.value }));
@@ -210,10 +203,10 @@ class HealthMonitoringService {
 
     // Calculate R² (coefficient of determination)
     const yMean = sumY / n;
-    const ssTotal = data.reduce((sum, p) => sum + Math.pow(p.y - yMean, 2), 0);
+    const ssTotal = data.reduce((sum, p) => sum + (p.y - yMean) ** 2, 0);
     const ssResidual = data.reduce((sum, p) => {
       const predicted = slope * p.x + intercept;
-      return sum + Math.pow(p.y - predicted, 2);
+      return sum + (p.y - predicted) ** 2;
     }, 0);
     const r2 = 1 - ssResidual / ssTotal;
 
@@ -233,23 +226,21 @@ class HealthMonitoringService {
    * Detect anomalies (significant drops in NDVI)
    * @private
    */
-  _detectAnomalies(records) {
+  detectAnomalies(records) {
     const anomalies = [];
 
     // Check for week-over-week drops
     for (let i = 7; i < records.length; i++) {
-      const current = records[i].ndvi_mean;
-      const previous = records[i - 7].ndvi_mean;
+      const current = records[i].ndvimean;
+      const previous = records[i - 7].ndvimean;
       const percentChange = ((current - previous) / previous) * 100;
 
       if (percentChange < -15) {
         anomalies.push({
-          date: records[i].measurement_date,
-          type: 'ndvi_drop',
+          date: records[i].measurementdate,
+          type: 'ndvidrop',
           severity: percentChange < -25 ? 'critical' : 'high',
-          description: `NDVI dropped ${Math.abs(percentChange).toFixed(
-            1
-          )}% in 7 days`,
+          description: `NDVI dropped ${Math.abs(percentChange).toFixed(1)}% in 7 days`,
           value: current,
           previousValue: previous,
           percentChange: parseFloat(percentChange.toFixed(2)),
@@ -264,7 +255,7 @@ class HealthMonitoringService {
    * Calculate overall health score (0-100)
    * @private
    */
-  _calculateHealthScore(ndvi, ndwi, tdvi) {
+  calculateHealthScore(ndvi, ndwi, tdvi) {
     // Weighted average: NDVI (60%), NDWI (30%), TDVI (10%)
     // Normalize indices to 0-1 range (they're typically -1 to 1)
     const ndviNorm = (ndvi + 1) / 2;
@@ -279,7 +270,7 @@ class HealthMonitoringService {
    * Get health status from score
    * @private
    */
-  _getHealthStatus(score) {
+  getHealthStatus(score) {
     if (score >= 80) return 'excellent';
     if (score >= 60) return 'good';
     if (score >= 40) return 'fair';
@@ -290,19 +281,15 @@ class HealthMonitoringService {
    * Get human-readable trend description
    * @private
    */
-  _getTrendDescription(trend) {
-    if (trend.direction === 'insufficient_data') {
+  getTrendDescription(trend) {
+    if (trend.direction === 'insufficientdata') {
       return 'Not enough data to determine trend';
     }
     if (trend.direction === 'improving') {
-      return `Vegetation health is improving (slope: ${(
-        trend.slope * 100
-      ).toFixed(2)}% per day)`;
+      return `Vegetation health is improving (slope: ${(trend.slope * 100).toFixed(2)}% per day)`;
     }
     if (trend.direction === 'declining') {
-      return `Vegetation health is declining (slope: ${(
-        trend.slope * 100
-      ).toFixed(2)}% per day)`;
+      return `Vegetation health is declining (slope: ${(trend.slope * 100).toFixed(2)}% per day)`;
     }
     return 'Vegetation health is stable';
   }
@@ -311,11 +298,11 @@ class HealthMonitoringService {
    * Generate quick recommendations based on health data
    * @private
    */
-  _generateQuickRecommendations(latestRecord, trend, anomalies) {
+  generateQuickRecommendations(latestRecord, trend, anomalies) {
     const recommendations = [];
 
     // Critical NDVI drop
-    if (latestRecord.ndvi_mean < 0.3) {
+    if (latestRecord.ndvimean < 0.3) {
       recommendations.push({
         priority: 'critical',
         message: 'Very low vegetation vigor detected. Immediate attention required.',
@@ -333,7 +320,7 @@ class HealthMonitoringService {
     }
 
     // Low water content
-    if (latestRecord.ndwi_mean < 0.1) {
+    if (latestRecord.ndwimean < 0.1) {
       recommendations.push({
         priority: 'high',
         message: 'Low water content detected.',
@@ -343,9 +330,7 @@ class HealthMonitoringService {
 
     // Anomalies detected
     if (anomalies.length > 0) {
-      const criticalAnomalies = anomalies.filter(
-        (a) => a.severity === 'critical'
-      );
+      const criticalAnomalies = anomalies.filter(a => a.severity === 'critical');
       if (criticalAnomalies.length > 0) {
         recommendations.push({
           priority: 'critical',
@@ -362,7 +347,7 @@ class HealthMonitoringService {
    * Validate date inputs
    * @private
    */
-  _validateDates(startDate, endDate) {
+  validateDates(startDate, endDate) {
     const start = new Date(startDate);
     const end = new Date(endDate);
     const now = new Date();
@@ -402,4 +387,3 @@ class HealthMonitoringService {
 }
 
 module.exports = HealthMonitoringService;
-

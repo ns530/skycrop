@@ -1,8 +1,8 @@
-import React from 'react';
+import React from "react";
 
-import type { YieldForecastRequest } from '../api/yieldApi';
+import type { YieldForecastRequest } from "../api/yieldApi";
 
-import { EnhancedYieldForecastCard } from './EnhancedYieldForecastCard';
+import { EnhancedYieldForecastCard } from "./EnhancedYieldForecastCard";
 
 export interface YieldForecastSectionProps {
   request: YieldForecastRequest;
@@ -18,7 +18,7 @@ export const YieldForecastSection: React.FC<YieldForecastSectionProps> = ({
   className,
 }) => {
   return (
-    <div className={`space-y-4 ${className || ''}`}>
+    <div className={`space-y-4 ${className || ""}`}>
       <h2 className="text-md font-semibold text-gray-900">Yield Forecast</h2>
       <EnhancedYieldForecastCard
         request={request}

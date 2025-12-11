@@ -1,16 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
-import { useToast } from '../../../shared/hooks/useToast';
-import { Button } from '../../../shared/ui/Button';
-import { Card } from '../../../shared/ui/Card';
-import { exportRecommendationsToExcel, exportRecommendationsSummaryToExcel } from '../../../shared/utils/excelReports';
-import { generateFieldHealthReportPDF, generateYieldForecastReportPDF, generateCombinedFieldReportPDF } from '../../../shared/utils/pdfReports';
-import { useFields } from '../../fields/hooks/useFields';
-import { useFieldHealth } from '../../health/hooks/useFieldHealth';
-import { useRecommendations } from '../../recommendations/hooks/useRecommendations';
+import { useToast } from "../../../shared/hooks/useToast";
+import { Button } from "../../../shared/ui/Button";
+import { Card } from "../../../shared/ui/Card";
+import {
+  exportRecommendationsToExcel,
+  exportRecommendationsSummaryToExcel,
+} from "../../../shared/utils/excelReports";
+import {
+  generateFieldHealthReportPDF,
+  generateYieldForecastReportPDF,
+  generateCombinedFieldReportPDF,
+} from "../../../shared/utils/pdfReports";
+import { useFields } from "../../fields/hooks/useFields";
+import { useFieldHealth } from "../../health/hooks/useFieldHealth";
+import { useRecommendations } from "../../recommendations/hooks/useRecommendations";
 
-type ReportType = 'health' | 'yield' | 'recommendations' | 'combined';
-type ReportFormat = 'pdf' | 'excel';
+type ReportType = "health" | "yield" | "recommendations" | "combined";
+type ReportFormat = "pdf" | "excel";
 
 /**
  * Report Builder Page
@@ -19,12 +26,14 @@ type ReportFormat = 'pdf' | 'excel';
 export const ReportBuilderPage: React.FC = () => {
   const { showToast } = useToast();
   const { data: fieldsData, isLoading: fieldsLoading } = useFields();
-  
-  const [reportType, setReportType] = useState<ReportType>('health');
+
+  const [reportType, setReportType] = useState<ReportType>("health");
   const [selectedFieldIds, setSelectedFieldIds] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState({
-    start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    end: new Date().toISOString().split('T')[0],
+    start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0],
+    end: new Date().toISOString().split("T")[0],
   });
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -32,7 +41,9 @@ export const ReportBuilderPage: React.FC = () => {
 
   const handleFieldSelection = (fieldId: string) => {
     setSelectedFieldIds((prev) =>
-      prev.includes(fieldId) ? prev.filter((id) => id !== fieldId) : [...prev, fieldId]
+      prev.includes(fieldId)
+        ? prev.filter((id) => id !== fieldId)
+        : [...prev, fieldId],
     );
   };
 
@@ -47,9 +58,9 @@ export const ReportBuilderPage: React.FC = () => {
   const handleGenerateReport = async () => {
     if (selectedFieldIds.length === 0) {
       showToast({
-        variant: 'error',
-        title: 'No fields selected',
-        description: 'Please select at least one field to generate a report.',
+        variant: "error",
+        title: "No fields selected",
+        description: "Please select at least one field to generate a report.",
       });
       return;
     }
@@ -57,27 +68,28 @@ export const ReportBuilderPage: React.FC = () => {
     setIsGenerating(true);
 
     try {
-      if (reportType === 'health') {
+      if (reportType === "health") {
         await generateHealthReports();
-      } else if (reportType === 'yield') {
+      } else if (reportType === "yield") {
         await generateYieldReports();
-      } else if (reportType === 'recommendations') {
+      } else if (reportType === "recommendations") {
         await generateRecommendationsReport();
-      } else if (reportType === 'combined') {
+      } else if (reportType === "combined") {
         await generateCombinedReports();
       }
 
       showToast({
-        variant: 'success',
-        title: 'Report generated',
-        description: 'Your report has been downloaded successfully.',
+        variant: "success",
+        title: "Report generated",
+        description: "Your report has been downloaded successfully.",
       });
     } catch (error) {
-      console.error('Error generating report:', error);
+      console.error("Error generating report:", error);
       showToast({
-        variant: 'error',
-        title: 'Report generation failed',
-        description: 'An error occurred while generating the report. Please try again.',
+        variant: "error",
+        title: "Report generation failed",
+        description:
+          "An error occurred while generating the report. Please try again.",
       });
     } finally {
       setIsGenerating(false);
@@ -93,15 +105,27 @@ export const ReportBuilderPage: React.FC = () => {
       const healthData = {
         field: {
           name: field.name,
-          crop_type: 'Unknown', // Crop type not available in FieldSummary
+          crop_type: "Unknown", // Crop type not available in FieldSummary
           area: field.areaHa,
         },
         healthHistory: [
           // Mock data - in real app, fetch from API
-          { measurement_date: '2024-03-01', ndvi_mean: 0.8, ndwi_mean: 0.7, tdvi_mean: 0.75, health_score: 85 },
-          { measurement_date: '2024-03-15', ndvi_mean: 0.75, ndwi_mean: 0.68, tdvi_mean: 0.72, health_score: 80 },
+          {
+            measurement_date: "2024-03-01",
+            ndvi_mean: 0.8,
+            ndwi_mean: 0.7,
+            tdvi_mean: 0.75,
+            health_score: 85,
+          },
+          {
+            measurement_date: "2024-03-15",
+            ndvi_mean: 0.75,
+            ndwi_mean: 0.68,
+            tdvi_mean: 0.72,
+            health_score: 80,
+          },
         ],
-        trend: 'stable',
+        trend: "stable",
         anomalies: [],
         generatedAt: new Date().toISOString(),
       };
@@ -119,18 +143,18 @@ export const ReportBuilderPage: React.FC = () => {
       const yieldData = {
         field: {
           name: field.name,
-          crop_type: 'Unknown', // Crop type not available in FieldSummary
+          crop_type: "Unknown", // Crop type not available in FieldSummary
           area: field.areaHa,
         },
         predictions: [
           {
-            prediction_date: '2024-03-01',
+            prediction_date: "2024-03-01",
             predicted_yield_per_ha: 5000,
             predicted_total_yield: 12500,
             confidence_lower: 4500,
             confidence_upper: 5500,
             expected_revenue: 450000,
-            harvest_date_estimate: '2024-06-30',
+            harvest_date_estimate: "2024-06-30",
           },
         ],
         actualYield: [],
@@ -148,19 +172,25 @@ export const ReportBuilderPage: React.FC = () => {
       return [
         {
           recommendation_id: `rec-${fieldId}-1`,
-          field_name: field?.name || 'Unknown',
-          type: 'fertilizer',
-          priority: 'high',
+          field_name: field?.name || "Unknown",
+          type: "fertilizer",
+          priority: "high",
           urgency_score: 8,
-          title: 'Apply NPK Fertilizer',
-          description: 'Field shows signs of nutrient deficiency',
-          action_steps: ['Test soil', 'Apply 50kg NPK per hectare', 'Monitor growth'],
+          title: "Apply NPK Fertilizer",
+          description: "Field shows signs of nutrient deficiency",
+          action_steps: [
+            "Test soil",
+            "Apply 50kg NPK per hectare",
+            "Monitor growth",
+          ],
           estimated_cost: 5000,
-          expected_benefit: 'Improved yield by 15%',
-          timing: 'Within 1 week',
-          status: 'pending',
+          expected_benefit: "Improved yield by 15%",
+          timing: "Within 1 week",
+          status: "pending",
           created_at: new Date().toISOString(),
-          valid_until: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          valid_until: new Date(
+            Date.now() + 7 * 24 * 60 * 60 * 1000,
+          ).toISOString(),
         },
       ];
     });
@@ -177,13 +207,19 @@ export const ReportBuilderPage: React.FC = () => {
       const healthData = {
         field: {
           name: field.name,
-          crop_type: 'Unknown', // Crop type not available in FieldSummary
+          crop_type: "Unknown", // Crop type not available in FieldSummary
           area: field.areaHa,
         },
         healthHistory: [
-          { measurement_date: '2024-03-01', ndvi_mean: 0.8, ndwi_mean: 0.7, tdvi_mean: 0.75, health_score: 85 },
+          {
+            measurement_date: "2024-03-01",
+            ndvi_mean: 0.8,
+            ndwi_mean: 0.7,
+            tdvi_mean: 0.75,
+            health_score: 85,
+          },
         ],
-        trend: 'stable',
+        trend: "stable",
         anomalies: [],
         generatedAt: new Date().toISOString(),
       };
@@ -191,18 +227,18 @@ export const ReportBuilderPage: React.FC = () => {
       const yieldData = {
         field: {
           name: field.name,
-          crop_type: 'Unknown', // Crop type not available in FieldSummary
+          crop_type: "Unknown", // Crop type not available in FieldSummary
           area: field.areaHa,
         },
         predictions: [
           {
-            prediction_date: '2024-03-01',
+            prediction_date: "2024-03-01",
             predicted_yield_per_ha: 5000,
             predicted_total_yield: 12500,
             confidence_lower: 4500,
             confidence_upper: 5500,
             expected_revenue: 450000,
-            harvest_date_estimate: '2024-06-30',
+            harvest_date_estimate: "2024-06-30",
           },
         ],
         actualYield: [],
@@ -227,17 +263,21 @@ export const ReportBuilderPage: React.FC = () => {
         <div className="lg:col-span-2 space-y-6">
           {/* Report Type Selection */}
           <Card>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Report Type</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              Report Type
+            </h2>
             <div className="grid grid-cols-2 gap-4">
               <button
-                onClick={() => setReportType('health')}
+                onClick={() => setReportType("health")}
                 className={`p-4 border-2 rounded-lg text-left transition-colors ${
-                  reportType === 'health'
-                    ? 'border-brand-blue bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                  reportType === "health"
+                    ? "border-brand-blue bg-blue-50"
+                    : "border-gray-200 hover:border-gray-300"
                 }`}
               >
-                <div className="font-semibold text-gray-900">Field Health Report</div>
+                <div className="font-semibold text-gray-900">
+                  Field Health Report
+                </div>
                 <div className="text-sm text-gray-600 mt-1">
                   NDVI/NDWI/TDVI trends, anomalies, health scores
                 </div>
@@ -245,14 +285,16 @@ export const ReportBuilderPage: React.FC = () => {
               </button>
 
               <button
-                onClick={() => setReportType('yield')}
+                onClick={() => setReportType("yield")}
                 className={`p-4 border-2 rounded-lg text-left transition-colors ${
-                  reportType === 'yield'
-                    ? 'border-brand-blue bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                  reportType === "yield"
+                    ? "border-brand-blue bg-blue-50"
+                    : "border-gray-200 hover:border-gray-300"
                 }`}
               >
-                <div className="font-semibold text-gray-900">Yield Forecast Report</div>
+                <div className="font-semibold text-gray-900">
+                  Yield Forecast Report
+                </div>
                 <div className="text-sm text-gray-600 mt-1">
                   Predicted yields, confidence intervals, revenue estimates
                 </div>
@@ -260,14 +302,16 @@ export const ReportBuilderPage: React.FC = () => {
               </button>
 
               <button
-                onClick={() => setReportType('recommendations')}
+                onClick={() => setReportType("recommendations")}
                 className={`p-4 border-2 rounded-lg text-left transition-colors ${
-                  reportType === 'recommendations'
-                    ? 'border-brand-blue bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                  reportType === "recommendations"
+                    ? "border-brand-blue bg-blue-50"
+                    : "border-gray-200 hover:border-gray-300"
                 }`}
               >
-                <div className="font-semibold text-gray-900">Recommendations Summary</div>
+                <div className="font-semibold text-gray-900">
+                  Recommendations Summary
+                </div>
                 <div className="text-sm text-gray-600 mt-1">
                   All recommendations with action steps and costs
                 </div>
@@ -275,14 +319,16 @@ export const ReportBuilderPage: React.FC = () => {
               </button>
 
               <button
-                onClick={() => setReportType('combined')}
+                onClick={() => setReportType("combined")}
                 className={`p-4 border-2 rounded-lg text-left transition-colors ${
-                  reportType === 'combined'
-                    ? 'border-brand-blue bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                  reportType === "combined"
+                    ? "border-brand-blue bg-blue-50"
+                    : "border-gray-200 hover:border-gray-300"
                 }`}
               >
-                <div className="font-semibold text-gray-900">Combined Analysis Report</div>
+                <div className="font-semibold text-gray-900">
+                  Combined Analysis Report
+                </div>
                 <div className="text-sm text-gray-600 mt-1">
                   Health + Yield + Overview in one comprehensive report
                 </div>
@@ -294,19 +340,27 @@ export const ReportBuilderPage: React.FC = () => {
           {/* Field Selection */}
           <Card>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Select Fields</h2>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Select Fields
+              </h2>
               <button
                 onClick={handleSelectAll}
                 className="text-sm text-brand-blue hover:text-blue-700 font-medium"
               >
-                {selectedFieldIds.length === fields.length ? 'Deselect All' : 'Select All'}
+                {selectedFieldIds.length === fields.length
+                  ? "Deselect All"
+                  : "Select All"}
               </button>
             </div>
 
             {fieldsLoading ? (
-              <div className="text-center py-8 text-gray-600">Loading fields...</div>
+              <div className="text-center py-8 text-gray-600">
+                Loading fields...
+              </div>
             ) : fields.length === 0 ? (
-              <div className="text-center py-8 text-gray-600">No fields available</div>
+              <div className="text-center py-8 text-gray-600">
+                No fields available
+              </div>
             ) : (
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {fields.map((field) => (
@@ -321,7 +375,9 @@ export const ReportBuilderPage: React.FC = () => {
                       className="h-4 w-4 text-brand-blue focus:ring-brand-blue border-gray-300 rounded"
                     />
                     <span className="ml-3 flex-1">
-                      <div className="font-medium text-gray-900">{field.name}</div>
+                      <div className="font-medium text-gray-900">
+                        {field.name}
+                      </div>
                       <div className="text-sm text-gray-600">
                         {field.areaHa} ha
                       </div>
@@ -333,9 +389,11 @@ export const ReportBuilderPage: React.FC = () => {
           </Card>
 
           {/* Date Range */}
-          {reportType !== 'recommendations' && (
+          {reportType !== "recommendations" && (
             <Card>
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Date Range</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Date Range
+              </h2>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -344,7 +402,9 @@ export const ReportBuilderPage: React.FC = () => {
                   <input
                     type="date"
                     value={dateRange.start}
-                    onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                    onChange={(e) =>
+                      setDateRange({ ...dateRange, start: e.target.value })
+                    }
                     className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue"
                   />
                 </div>
@@ -355,7 +415,9 @@ export const ReportBuilderPage: React.FC = () => {
                   <input
                     type="date"
                     value={dateRange.end}
-                    onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                    onChange={(e) =>
+                      setDateRange({ ...dateRange, end: e.target.value })
+                    }
                     className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue"
                   />
                 </div>
@@ -367,23 +429,27 @@ export const ReportBuilderPage: React.FC = () => {
         {/* Report Preview & Generation */}
         <div className="space-y-6">
           <Card>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Summary</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              Summary
+            </h2>
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Report Type:</span>
                 <span className="font-medium text-gray-900 capitalize">
-                  {reportType.replace('_', ' ')}
+                  {reportType.replace("_", " ")}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Selected Fields:</span>
-                <span className="font-medium text-gray-900">{selectedFieldIds.length}</span>
+                <span className="font-medium text-gray-900">
+                  {selectedFieldIds.length}
+                </span>
               </div>
-              {reportType !== 'recommendations' && (
+              {reportType !== "recommendations" && (
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Date Range:</span>
                   <span className="font-medium text-gray-900 text-right">
-                    {new Date(dateRange.start).toLocaleDateString()} -{' '}
+                    {new Date(dateRange.start).toLocaleDateString()} -{" "}
                     {new Date(dateRange.end).toLocaleDateString()}
                   </span>
                 </div>
@@ -391,7 +457,7 @@ export const ReportBuilderPage: React.FC = () => {
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Format:</span>
                 <span className="font-medium text-gray-900 uppercase">
-                  {reportType === 'recommendations' ? 'Excel' : 'PDF'}
+                  {reportType === "recommendations" ? "Excel" : "PDF"}
                 </span>
               </div>
             </div>
@@ -404,15 +470,17 @@ export const ReportBuilderPage: React.FC = () => {
                 onClick={handleGenerateReport}
                 disabled={isGenerating || selectedFieldIds.length === 0}
               >
-                {isGenerating ? 'Generating...' : 'Generate Report'}
+                {isGenerating ? "Generating..." : "Generate Report"}
               </Button>
             </div>
           </Card>
 
           <Card>
-            <h3 className="text-sm font-semibold text-gray-900 mb-2">What's Included</h3>
+            <h3 className="text-sm font-semibold text-gray-900 mb-2">
+              What's Included
+            </h3>
             <ul className="text-sm text-gray-600 space-y-2">
-              {reportType === 'health' && (
+              {reportType === "health" && (
                 <>
                   <li className="flex items-start">
                     <span className="mr-2">•</span>
@@ -432,7 +500,7 @@ export const ReportBuilderPage: React.FC = () => {
                   </li>
                 </>
               )}
-              {reportType === 'yield' && (
+              {reportType === "yield" && (
                 <>
                   <li className="flex items-start">
                     <span className="mr-2">•</span>
@@ -456,7 +524,7 @@ export const ReportBuilderPage: React.FC = () => {
                   </li>
                 </>
               )}
-              {reportType === 'recommendations' && (
+              {reportType === "recommendations" && (
                 <>
                   <li className="flex items-start">
                     <span className="mr-2">•</span>
@@ -476,7 +544,7 @@ export const ReportBuilderPage: React.FC = () => {
                   </li>
                 </>
               )}
-              {reportType === 'combined' && (
+              {reportType === "combined" && (
                 <>
                   <li className="flex items-start">
                     <span className="mr-2">•</span>
@@ -505,4 +573,3 @@ export const ReportBuilderPage: React.FC = () => {
 };
 
 export default ReportBuilderPage;
-

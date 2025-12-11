@@ -46,27 +46,24 @@ const recommendationController = new RecommendationController(
 // Routes
 
 /**
- * @route POST /api/v1/fields/:fieldId/recommendations/generate
+ * @route POST /api/v1/fields/:field_id/recommendations/generate
  * @desc Generate new recommendations for a field
  * @access Private
  */
 router.post(
-  '/fields/:fieldId/recommendations/generate',
+  '/fields/:field_id/recommendations/generate',
   authMiddleware,
   apiLimiter,
   (req, res, next) => recommendationController.generateRecommendations(req, res, next)
 );
 
 /**
- * @route GET /api/v1/fields/:fieldId/recommendations
+ * @route GET /api/v1/fields/:field_id/recommendations
  * @desc Get all recommendations for a specific field
  * @access Private
  */
-router.get(
-  '/fields/:fieldId/recommendations',
-  authMiddleware,
-  apiLimiter,
-  (req, res, next) => recommendationController.getFieldRecommendations(req, res, next)
+router.get('/fields/:field_id/recommendations', authMiddleware, apiLimiter, (req, res, next) =>
+  recommendationController.getFieldRecommendations(req, res, next)
 );
 
 /**
@@ -74,11 +71,8 @@ router.get(
  * @desc Get all recommendations for the authenticated user
  * @access Private
  */
-router.get(
-  '/recommendations',
-  authMiddleware,
-  apiLimiter,
-  (req, res, next) => recommendationController.getUserRecommendations(req, res, next)
+router.get('/recommendations', authMiddleware, apiLimiter, (req, res, next) =>
+  recommendationController.getUserRecommendations(req, res, next)
 );
 
 /**
@@ -98,11 +92,8 @@ router.patch(
  * @desc Delete a recommendation
  * @access Private
  */
-router.delete(
-  '/recommendations/:recommendationId',
-  authMiddleware,
-  apiLimiter,
-  (req, res, next) => recommendationController.deleteRecommendation(req, res, next)
+router.delete('/recommendations/:recommendationId', authMiddleware, apiLimiter, (req, res, next) =>
+  recommendationController.deleteRecommendation(req, res, next)
 );
 
 module.exports = router;

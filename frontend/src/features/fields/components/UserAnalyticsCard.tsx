@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 
-import { Card } from '../../../shared/ui/Card';
+import { Card } from "../../../shared/ui/Card";
 
 interface UserAnalyticsCardProps {
   totalFields: number;
@@ -17,13 +17,13 @@ export const UserAnalyticsCard: React.FC<UserAnalyticsCardProps> = ({
   avgHealthScore,
   lastActivity,
   activeUsersToday,
-  sessionDurationAvg
+  sessionDurationAvg,
 }) => {
-  const getStatus = (score: number | null): 'excellent' | 'fair' | 'poor' => {
-    if (score === null) return 'poor';
-    if (score >= 70) return 'excellent';
-    if (score >= 50) return 'fair';
-    return 'poor';
+  const getStatus = (score: number | null): "excellent" | "fair" | "poor" => {
+    if (score === null) return "poor";
+    if (score >= 70) return "excellent";
+    if (score >= 50) return "fair";
+    return "poor";
   };
 
   const status = getStatus(avgHealthScore);
@@ -42,7 +42,7 @@ export const UserAnalyticsCard: React.FC<UserAnalyticsCardProps> = ({
         <div className="flex justify-between text-sm">
           <span>Avg health score:</span>
           <span className="font-semibold">
-            {avgHealthScore !== null ? `${avgHealthScore.toFixed(1)}%` : 'N/A'}
+            {avgHealthScore !== null ? `${avgHealthScore.toFixed(1)}%` : "N/A"}
           </span>
         </div>
         <div className="flex justify-between text-sm">

@@ -8,14 +8,14 @@ const { logger } = require('../../utils/logger');
  */
 async function shareField(req, res, next) {
   try {
-    const { fieldId } = req.params;
+    const { field_id } = req.params;
     const { email, permissionLevel = 'view', expiresAt } = req.body;
 
     if (!email) {
-      return res.status(400).json({
+      return res.status(400)on({
         success: false,
         error: {
-          code: 'VALIDATION_ERROR',
+          code: 'VALIDATIONERROR',
           message: 'Email is required',
         },
         meta: { timestamp: new Date().toISOString() },
@@ -23,21 +23,21 @@ async function shareField(req, res, next) {
     }
 
     const share = await fieldSharingService.shareField(
-      fieldId,
-      req.user.userId,
+      field_id,
+      req.user.user_id,
       email,
       permissionLevel,
       expiresAt ? new Date(expiresAt) : null
     );
 
     logger.info('field.share.created', {
-      userId: req.user.userId,
-      fieldId,
+      user_id: req.user.user_id,
+      field_id,
       sharedWith: email,
       permissionLevel,
     });
 
-    res.status(201).json({
+    res.status(201)on({
       success: true,
       data: share,
       message: 'Field shared successfully',
@@ -45,8 +45,8 @@ async function shareField(req, res, next) {
     });
   } catch (error) {
     logger.error('field.share.error', {
-      userId: req.user.userId,
-      fieldId: req.params.fieldId,
+      user_id: req.user.user_id,
+      field_id: req.params.field_id,
       error: error.message,
     });
     next(error);
@@ -58,25 +58,25 @@ async function shareField(req, res, next) {
  */
 async function revokeShare(req, res, next) {
   try {
-    const { fieldId, userId } = req.params;
+    const { field_id, user_id } = req.params;
 
-    await fieldSharingService.revokeShare(fieldId, req.user.userId, userId);
+    await fieldSharingService.revokeShare(field_id, req.user.user_id, user_id);
 
     logger.info('field.share.revoked', {
-      ownerId: req.user.userId,
-      fieldId,
-      revokedUserId: userId,
+      ownerId: req.user.user_id,
+      field_id,
+      revokeduser_id: user_id,
     });
 
-    res.json({
+    reson({
       success: true,
       message: 'Field share revoked successfully',
       meta: { timestamp: new Date().toISOString() },
     });
   } catch (error) {
     logger.error('field.share.revoke.error', {
-      ownerId: req.user.userId,
-      fieldId: req.params.fieldId,
+      ownerId: req.user.user_id,
+      field_id: req.params.field_id,
       error: error.message,
     });
     next(error);
@@ -88,25 +88,25 @@ async function revokeShare(req, res, next) {
  */
 async function getFieldShares(req, res, next) {
   try {
-    const { fieldId } = req.params;
+    const { field_id } = req.params;
 
-    const shares = await fieldSharingService.getFieldShares(fieldId, req.user.userId);
+    const shares = await fieldSharingService.getFieldShares(field_id, req.user.user_id);
 
     logger.info('field.shares.list', {
-      userId: req.user.userId,
-      fieldId,
+      user_id: req.user.user_id,
+      field_id,
       count: shares.length,
     });
 
-    res.json({
+    reson({
       success: true,
       data: shares,
       meta: { timestamp: new Date().toISOString() },
     });
   } catch (error) {
     logger.error('field.shares.list.error', {
-      userId: req.user.userId,
-      fieldId: req.params.fieldId,
+      user_id: req.user.user_id,
+      field_id: req.params.field_id,
       error: error.message,
     });
     next(error);
@@ -118,21 +118,21 @@ async function getFieldShares(req, res, next) {
  */
 async function getSharedWithMe(req, res, next) {
   try {
-    const shares = await fieldSharingService.getSharedWithMe(req.user.userId);
+    const shares = await fieldSharingService.getSharedWithMe(req.user.user_id);
 
     logger.info('field.shared.list', {
-      userId: req.user.userId,
+      user_id: req.user.user_id,
       count: shares.length,
     });
 
-    res.json({
+    reson({
       success: true,
       data: shares,
       meta: { timestamp: new Date().toISOString() },
     });
   } catch (error) {
     logger.error('field.shared.list.error', {
-      userId: req.user.userId,
+      user_id: req.user.user_id,
       error: error.message,
     });
     next(error);
@@ -144,19 +144,19 @@ async function getSharedWithMe(req, res, next) {
  */
 async function checkFieldAccess(req, res, next) {
   try {
-    const { fieldId } = req.params;
+    const { field_id } = req.params;
 
-    const access = await fieldSharingService.checkFieldAccess(fieldId, req.user.userId);
+    const access = await fieldSharingService.checkFieldAccess(field_id, req.user.user_id);
 
-    res.json({
+    reson({
       success: true,
       data: access,
       meta: { timestamp: new Date().toISOString() },
     });
   } catch (error) {
     logger.error('field.access.check.error', {
-      userId: req.user.userId,
-      fieldId: req.params.fieldId,
+      user_id: req.user.user_id,
+      field_id: req.params.field_id,
       error: error.message,
     });
     next(error);
@@ -170,4 +170,3 @@ module.exports = {
   getSharedWithMe,
   checkFieldAccess,
 };
-

@@ -1,6 +1,6 @@
 /**
  * Logger Configuration - Winston Logger Setup
- * 
+ *
  * Centralized logging configuration for the application
  */
 
@@ -12,7 +12,7 @@ const logFormat = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
   winston.format.errors({ stack: true }),
   winston.format.splat(),
-  winston.format.json()
+  winston.formaton()
 );
 
 // Console format for development
@@ -30,7 +30,7 @@ const consoleFormat = winston.format.combine(
 
 // Create logger instance
 const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || 'info',
+  level: process.env.LOGLEVEL || 'info',
   format: logFormat,
   defaultMeta: { service: 'skycrop-backend' },
   transports: [
@@ -64,4 +64,3 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 module.exports = logger;
-

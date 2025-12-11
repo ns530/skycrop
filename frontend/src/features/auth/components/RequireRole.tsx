@@ -1,7 +1,7 @@
-import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import React from "react";
+import { Navigate, useLocation } from "react-router-dom";
 
-import { useAuth, UserRole } from '../context/AuthContext';
+import { useAuth, UserRole } from "../context/AuthContext";
 
 /**
  * RequireRole
@@ -13,11 +13,14 @@ export interface RequireRoleProps {
   children: React.ReactNode;
 }
 
-export const RequireRole: React.FC<RequireRoleProps> = ({ requiredRole, children }) => {
+export const RequireRole: React.FC<RequireRoleProps> = ({
+  requiredRole,
+  children,
+}) => {
   const { user, status, hasRole } = useAuth();
   const location = useLocation();
 
-  if (status === 'loading') {
+  if (status === "loading") {
     return (
       <div className="flex min-h-[200px] items-center justify-center text-sm text-gray-600">
         Checking your permissions…

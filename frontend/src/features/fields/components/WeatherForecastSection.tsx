@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 
-import { WeatherForecastCard } from './WeatherForecastCard';
+import { WeatherForecastCard } from "./WeatherForecastCard";
 
 interface WeatherForecastSectionProps {
   forecast: Array<{
@@ -18,7 +18,7 @@ interface WeatherForecastSectionProps {
 
 export const WeatherForecastSection: React.FC<WeatherForecastSectionProps> = ({
   forecast,
-  totals
+  totals,
 }) => {
   return (
     <section className="space-y-4">

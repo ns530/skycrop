@@ -1,5 +1,3 @@
-'use strict';
-
 process.env.NODE_ENV = 'test';
 process.env.OPENWEATHER_API_KEY = 'test-api-key';
 
@@ -27,6 +25,7 @@ jest.mock('../../src/config/redis.config', () => ({
 
 // Mock axios
 const axios = require('axios');
+
 jest.mock('axios', () => ({
   get: jest.fn(),
 }));
@@ -54,79 +53,79 @@ describe('WeatherService unit', () => {
     expect(svc.redis).toBe(fakeRedis);
   });
 
-  test('_requireApiKey throws when no API key', () => {
+  test('requireApiKey throws when no API key', () => {
     delete process.env.OPENWEATHER_API_KEY;
     delete process.env.WEATHER_API_KEY;
-    expect(() => svc._requireApiKey()).toThrow('OPENWEATHER_API_KEY is not configured');
+    expect(() => svc.requireApiKey()).toThrow('OPENWEATHER_API_KEY is not configured');
   });
 
-  test('_requireApiKey returns API key', () => {
+  test('requireApiKey returns API key', () => {
     process.env.OPENWEATHER_API_KEY = 'test-key';
-    expect(svc._requireApiKey()).toBe('test-key');
+    expect(svc.requireApiKey()).toBe('test-key');
   });
 
-  test('_fieldCenterToLatLon extracts coordinates', () => {
+  test('fieldCenterToLatLon extracts coordinates', () => {
     const field = { center: { coordinates: [80.5, 7.2] } };
-    const result = svc._fieldCenterToLatLon(field);
+    const result = svc.fieldCenterToLatLon(field);
     expect(result).toEqual({ lat: 7.2, lon: 80.5 });
   });
 
-  test('_fieldCenterToLatLon throws for invalid field', () => {
-    expect(() => svc._fieldCenterToLatLon({})).toThrow('Field center point is missing');
-    expect(() => svc._fieldCenterToLatLon({ center: {} })).toThrow('Field center point is missing');
+  test('fieldCenterToLatLon throws for invalid field', () => {
+    expect(() => svc.fieldCenterToLatLon({})).toThrow('Field center point is missing');
+    expect(() => svc.fieldCenterToLatLon({ center: {} })).toThrow('Field center point is missing');
   });
 
-  test('_cacheKey generates correct key', () => {
-    expect(svc._cacheKey('current', 'field-1')).toBe('weather:current:field-1');
-    expect(svc._cacheKey('forecast', 'field-2')).toBe('weather:forecast:field-2');
+  test('cacheKey generates correct key', () => {
+    expect(svc.cacheKey('current', 'field-1')).toBe('weather:current:field-1');
+    expect(svc.cacheKey('forecast', 'field-2')).toBe('weather:forecast:field-2');
   });
 
-  test('_getFieldOrThrow validates parameters', async () => {
-    await expect(svc._getFieldOrThrow(null, 'field-1')).rejects.toThrow('userId is required');
-    await expect(svc._getFieldOrThrow('user-1', null)).rejects.toThrow('fieldId is required');
+  test('getFieldOrThrow validates parameters', async () => {
+    await expect(svc.getFieldOrThrow(null, 'field-1')).rejects.toThrow('user_id is required');
+    await expect(svc.getFieldOrThrow('user-1', null)).rejects.toThrow('field_id is required');
   });
 
-  test('_getFieldOrThrow throws NotFoundError for missing field', async () => {
+  test('getFieldOrThrow throws NotFoundError for missing field', async () => {
     Field.findOne.mockResolvedValue(null);
-    await expect(svc._getFieldOrThrow('user-1', 'field-1')).rejects.toThrow('Field not found');
+    await expect(svc.getFieldOrThrow('user-1', 'field-1')).rejects.toThrow('Field not found');
   });
 
-  test('_getFieldOrThrow returns field', async () => {
+  test('getFieldOrThrow returns field', async () => {
     const field = { field_id: 'field-1', user_id: 'user-1' };
     Field.findOne.mockResolvedValue(field);
-    const result = await svc._getFieldOrThrow('user-1', 'field-1');
+    const result = await svc.getFieldOrThrow('user-1', 'field-1');
     expect(result).toBe(field);
   });
 
-  test('_requestWithRetry succeeds on first attempt', async () => {
+  test('requestWithRetry succeeds on first attempt', async () => {
     const mockResponse = { status: 200, data: { current: { temp: 25 } } };
     axios.get.mockResolvedValue(mockResponse);
-    const result = await svc._requestWithRetry('http://test.com', 'test.label');
-    expect(result.json).toEqual({ current: { temp: 25 } });
+    const result = await svc.requestWithRetry('http://test.com', 'test.label');
+    expect(resulton).toEqual({ current: { temp: 25 } });
     expect(result.duration).toBeGreaterThanOrEqual(0);
   });
 
-  test('_requestWithRetry retries on 5xx errors', async () => {
+  test('requestWithRetry retries on 5xx errors', async () => {
     axios.get
       .mockResolvedValueOnce({ status: 500, data: {} })
       .mockResolvedValueOnce({ status: 200, data: { success: true } });
-    const result = await svc._requestWithRetry('http://test.com', 'test.label');
+    const result = await svc.requestWithRetry('http://test.com', 'test.label');
     expect(axios.get).toHaveBeenCalledTimes(2);
-    expect(result.json).toEqual({ success: true });
+    expect(resulton).toEqual({ success: true });
   });
 
-  test('_requestWithRetry throws on 4xx errors without retry', async () => {
+  test('requestWithRetry throws on 4xx errors without retry', async () => {
     axios.get.mockResolvedValue({ status: 401, data: {}, statusText: 'Unauthorized' });
-    await expect(svc._requestWithRetry('http://test.com', 'test.label')).rejects.toMatchObject({
+    await expect(svc.requestWithRetry('http://test.com', 'test.label')).rejects.toMatchObject({
       name: 'ValidationError',
       message: 'Weather API error (401): Unauthorized',
       statusCode: 401,
     });
   });
 
-  test('_requestWithRetry throws after max retries', async () => {
+  test('requestWithRetry throws after max retries', async () => {
     axios.get.mockRejectedValue(new Error('Network error'));
-    await expect(svc._requestWithRetry('http://test.com', 'test.label')).rejects.toMatchObject({
+    await expect(svc.requestWithRetry('http://test.com', 'test.label')).rejects.toMatchObject({
       code: 'SERVICE_UNAVAILABLE',
       statusCode: 503,
     });
@@ -195,7 +194,7 @@ describe('WeatherService unit', () => {
     expect(result.meta.cache).toBe('miss');
   });
 
-  test('_normalizeDaily processes daily array', () => {
+  test('normalizeDaily processes daily array', () => {
     const daily = [
       {
         dt: Date.now() / 1000,
@@ -210,7 +209,7 @@ describe('WeatherService unit', () => {
         wind_speed: 3.0,
       },
     ];
-    const result = svc._normalizeDaily(daily);
+    const result = svc.normalizeDaily(daily);
     expect(result.days).toHaveLength(2);
     expect(result.days[0].rain_mm).toBe(5);
     expect(result.days[0].tmin).toBe(20);
@@ -220,13 +219,17 @@ describe('WeatherService unit', () => {
     expect(result.totals.rain_7d_mm).toBe(5);
   });
 
-  test('_forecastCacheKeyByCoords generates key', () => {
-    expect(svc._forecastCacheKeyByCoords(7.1234, 80.5678)).toBe('weather:forecast:7.1234:80.5678');
+  test('forecastCacheKeyByCoords generates key', () => {
+    expect(svc.forecastCacheKeyByCoords(7.1234, 80.5678)).toBe('weather:forecast:7.1234:80.5678');
   });
 
   test('getForecast returns normalized cached data', async () => {
     await svc.init();
-    const cachedData = { coord: { lat: 7, lon: 80 }, days: [], totals: { rain_3d_mm: 0, rain_7d_mm: 0 } };
+    const cachedData = {
+      coord: { lat: 7, lon: 80 },
+      days: [],
+      totals: { rain_3d_mm: 0, rain_7d_mm: 0 },
+    };
     store.set('weather:forecast:7.0000:80.0000', JSON.stringify(cachedData));
 
     Field.findOne.mockResolvedValue({ center: { coordinates: [80, 7] } });

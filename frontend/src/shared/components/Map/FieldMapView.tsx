@@ -3,20 +3,19 @@
  * Complete map view for field visualization with health overlays
  */
 
-import React, { useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useMemo } from "react";
+import { useParams } from "react-router-dom";
 
-import { useFieldDetail } from '../../../features/fields/hooks/useFields';
-import { ErrorState } from '../../ui/ErrorState';
-import { LoadingState } from '../../ui/LoadingState';
+import { useFieldDetail } from "../../../features/fields/hooks/useFields";
+import { ErrorState } from "../../ui/ErrorState";
+import { LoadingState } from "../../ui/LoadingState";
 
-import { BaseMap } from './BaseMap';
-import { FieldBoundaryLayer } from './FieldBoundaryLayer';
-import { useMapCenter } from './hooks/useMapCenter';
-import { MapControls } from './MapControls';
-import type { FieldWithBoundary } from './types/map.types';
-import { calculatePolygonCenter } from './utils/geoJsonUtils';
-
+import { BaseMap } from "./BaseMap";
+import { FieldBoundaryLayer } from "./FieldBoundaryLayer";
+import { useMapCenter } from "./hooks/useMapCenter";
+import { MapControls } from "./MapControls";
+import type { FieldWithBoundary } from "./types/map.types";
+import { calculatePolygonCenter } from "./utils/geoJsonUtils";
 
 interface FieldMapViewProps {
   /** Optional: Override field ID from route params */
@@ -31,10 +30,10 @@ interface FieldMapViewProps {
 
 /**
  * FieldMapView
- * 
+ *
  * Map view component for displaying field boundaries and health data
  * Automatically centers on the current field and displays boundaries
- * 
+ *
  * @example
  * ```tsx
  * <FieldMapView fieldId="field-123" showHealthOverlay />
@@ -58,7 +57,7 @@ export const FieldMapView: React.FC<FieldMapViewProps> = ({
     isError,
     error,
     refetch,
-  } = useFieldDetail(fieldId ?? '');
+  } = useFieldDetail(fieldId ?? "");
 
   // Calculate map center from field geometry
   const mapCenter = useMemo(() => {
@@ -72,7 +71,7 @@ export const FieldMapView: React.FC<FieldMapViewProps> = ({
   // Convert field to FieldWithBoundary format
   const fieldsToDisplay = useMemo(() => {
     const fields: FieldWithBoundary[] = [];
-    
+
     if (field?.geometry) {
       fields.push({
         id: field.id,
@@ -104,7 +103,9 @@ export const FieldMapView: React.FC<FieldMapViewProps> = ({
       <div className="h-full w-full flex items-center justify-center bg-gray-900 p-6">
         <ErrorState
           title="Unable to load map"
-          message={error?.message ?? 'Failed to load field data for map display'}
+          message={
+            error?.message ?? "Failed to load field data for map display"
+          }
           onRetry={refetch}
         />
       </div>
@@ -149,7 +150,8 @@ export const FieldMapView: React.FC<FieldMapViewProps> = ({
         </p>
         {field.centroidLatLon && (
           <p className="text-[10px] text-gray-500 mt-1 font-mono">
-            {field.centroidLatLon.lat.toFixed(5)}, {field.centroidLatLon.lon.toFixed(5)}
+            {field.centroidLatLon.lat.toFixed(5)},{" "}
+            {field.centroidLatLon.lon.toFixed(5)}
           </p>
         )}
       </div>
@@ -158,4 +160,3 @@ export const FieldMapView: React.FC<FieldMapViewProps> = ({
 };
 
 export default FieldMapView;
-

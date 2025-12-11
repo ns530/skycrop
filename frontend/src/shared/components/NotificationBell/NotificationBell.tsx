@@ -1,18 +1,18 @@
-import { Bell } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import { Bell } from "lucide-react";
+import React, { useState, useEffect } from "react";
 
-import { NotificationDropdown } from './NotificationDropdown';
+import { NotificationDropdown } from "./NotificationDropdown";
 
 export interface Notification {
   id: string;
-  type: 'health' | 'recommendation' | 'yield' | 'alert' | 'system' | 'info';
+  type: "health" | "recommendation" | "yield" | "alert" | "system" | "info";
   title: string;
   message: string;
   timestamp: string;
   read: boolean;
   fieldId?: string;
   fieldName?: string;
-  priority?: 'low' | 'medium' | 'high';
+  priority?: "low" | "medium" | "high";
 }
 
 interface NotificationBellProps {
@@ -69,7 +69,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
         <Bell className="h-6 w-6" />
         {unreadCount > 0 && (
           <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
-            {unreadCount > 99 ? '99+' : unreadCount}
+            {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
       </button>
@@ -90,4 +90,3 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
 };
 
 export default NotificationBell;
-

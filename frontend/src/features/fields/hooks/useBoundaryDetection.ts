@@ -3,12 +3,12 @@
  * Manages boundary detection with progress simulation
  */
 
-import { useMutation } from '@tanstack/react-query';
-import { useState, useEffect, useCallback } from 'react';
+import { useMutation } from "@tanstack/react-query";
+import { useState, useEffect, useCallback } from "react";
 
-import type { FieldGeometry } from '../../../shared/types/geojson';
-import { detectFieldBoundary } from '../api/fieldsApi';
-import type { DetectBoundaryPayload } from '../api/fieldsApi';
+import type { FieldGeometry } from "../../../shared/types/geojson";
+import { detectFieldBoundary } from "../api/fieldsApi";
+import type { DetectBoundaryPayload } from "../api/fieldsApi";
 
 interface BoundaryDetectionState {
   progress: number;
@@ -26,17 +26,17 @@ interface UseBoundaryDetectionParams {
 
 /**
  * useBoundaryDetection
- * 
+ *
  * Hook for detecting field boundaries with AI
  * Provides progress tracking and step-by-step updates
- * 
+ *
  * @example
  * ```tsx
  * const { detect, isDetecting, progress, currentStep } = useBoundaryDetection({
  *   fieldId: 'field-123',
  *   location: { lat: 7.94, lng: 81.02 }
  * });
- * 
+ *
  * await detect();
  * ```
  */
@@ -46,7 +46,7 @@ export const useBoundaryDetection = ({
 }: UseBoundaryDetectionParams) => {
   const [state, setState] = useState<BoundaryDetectionState>({
     progress: 0,
-    currentStep: 'Initializing...',
+    currentStep: "Initializing...",
     estimatedTime: 60,
   });
 
@@ -77,15 +77,15 @@ export const useBoundaryDetection = ({
     let intervalId: NodeJS.Timeout;
 
     const steps = [
-      { at: 0, step: 'Retrieving satellite image...', time: 60 },
-      { at: 15, step: 'Loading Sentinel-2 data...', time: 50 },
-      { at: 25, step: 'Analyzing field boundaries...', time: 45 },
-      { at: 40, step: 'Detecting crop patterns...', time: 35 },
-      { at: 50, step: 'Identifying field edges...', time: 30 },
-      { at: 65, step: 'Refining boundary...', time: 20 },
-      { at: 75, step: 'Calculating area...', time: 15 },
-      { at: 85, step: 'Validating results...', time: 10 },
-      { at: 95, step: 'Finalizing...', time: 5 },
+      { at: 0, step: "Retrieving satellite image...", time: 60 },
+      { at: 15, step: "Loading Sentinel-2 data...", time: 50 },
+      { at: 25, step: "Analyzing field boundaries...", time: 45 },
+      { at: 40, step: "Detecting crop patterns...", time: 35 },
+      { at: 50, step: "Identifying field edges...", time: 30 },
+      { at: 65, step: "Refining boundary...", time: 20 },
+      { at: 75, step: "Calculating area...", time: 15 },
+      { at: 85, step: "Validating results...", time: 10 },
+      { at: 95, step: "Finalizing...", time: 5 },
     ];
 
     const updateProgress = () => {
@@ -100,7 +100,10 @@ export const useBoundaryDetection = ({
       setState({
         progress: Math.min(progress, 98), // Never reach 100 until actual completion
         currentStep: currentStepData.step,
-        estimatedTime: Math.max(0, Math.ceil(currentStepData.time * (1 - progress / 100))),
+        estimatedTime: Math.max(
+          0,
+          Math.ceil(currentStepData.time * (1 - progress / 100)),
+        ),
       });
 
       if (progress >= 98) {
@@ -120,7 +123,7 @@ export const useBoundaryDetection = ({
     // Reset state
     setState({
       progress: 0,
-      currentStep: 'Initializing...',
+      currentStep: "Initializing...",
       estimatedTime: 60,
     });
 
@@ -133,7 +136,7 @@ export const useBoundaryDetection = ({
       // Complete progress
       setState({
         progress: 100,
-        currentStep: 'Complete!',
+        currentStep: "Complete!",
         estimatedTime: 0,
       });
 
@@ -159,4 +162,3 @@ export const useBoundaryDetection = ({
 };
 
 export default useBoundaryDetection;
-

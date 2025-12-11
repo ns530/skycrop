@@ -1,13 +1,13 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 
-import type { ApiError } from '../../../shared/api';
-import { weatherKeys } from '../../../shared/query/queryKeys';
+import type { ApiError } from "../../../shared/api";
+import { weatherKeys } from "../../../shared/query/queryKeys";
 import {
   getWeatherForecast,
   getWeatherAlerts,
   type WeatherForecastResponse,
   type WeatherAlert,
-} from '../api/weatherApi';
+} from "../api/weatherApi";
 
 /**
  * useWeatherForecast

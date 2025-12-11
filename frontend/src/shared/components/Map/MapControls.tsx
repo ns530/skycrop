@@ -3,10 +3,10 @@
  * Provides zoom and location controls for the map
  */
 
-import React from 'react';
-import { useMap } from 'react-leaflet';
+import React from "react";
+import { useMap } from "react-leaflet";
 
-import { Button } from '../../ui/Button';
+import { Button } from "../../ui/Button";
 
 interface MapControlsProps {
   onCenterOnUser?: () => void;
@@ -15,11 +15,11 @@ interface MapControlsProps {
 
 /**
  * MapControls
- * 
+ *
  * Custom map control buttons for zoom and location
  * Positioned in the top-right corner by default
  * Mobile-friendly with large touch targets
- * 
+ *
  * @example
  * ```tsx
  * <BaseMap center={[7.94, 81.02]}>
@@ -85,4 +85,3 @@ export const MapControls: React.FC<MapControlsProps> = ({
 };
 
 export default MapControls;
-

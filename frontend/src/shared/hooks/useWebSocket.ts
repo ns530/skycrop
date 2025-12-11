@@ -1,8 +1,8 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef } from "react";
 
-import { websocketService } from '../services/websocket';
+import { websocketService } from "../services/websocket";
 
-import { useToast } from './useToast';
+import { useToast } from "./useToast";
 
 interface HealthUpdatedEvent {
   fieldId: string;
@@ -56,7 +56,7 @@ interface UseWebSocketOptions {
 /**
  * React Hook for WebSocket Real-Time Updates
  * Manages connection lifecycle and event subscriptions
- * 
+ *
  * @example
  * ```tsx
  * const { subscribeToField, unsubscribeFromField, isConnected } = useWebSocket({
@@ -69,7 +69,7 @@ interface UseWebSocketOptions {
  *   },
  *   showToasts: true,
  * });
- * 
+ *
  * // Subscribe to field when viewing field details
  * useEffect(() => {
  *   if (fieldId) {
@@ -108,13 +108,13 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
         onHealthUpdated(data);
         if (showToasts) {
           showToast({
-            variant: 'success',
-            title: 'Field Health Updated',
+            variant: "success",
+            title: "Field Health Updated",
             description: `${data.fieldName}: Health score ${data.health.score}`,
           });
         }
       };
-      websocketService.on('health_updated', handler);
+      websocketService.on("health_updated", handler);
     }
 
     if (onHealthAlert) {
@@ -122,13 +122,13 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
         onHealthAlert(data);
         if (showToasts) {
           showToast({
-            variant: data.severity === 'critical' ? 'error' : 'warning',
-            title: 'Field Health Alert',
+            variant: data.severity === "critical" ? "error" : "warning",
+            title: "Field Health Alert",
             description: `${data.fieldName}: ${data.message}`,
           });
         }
       };
-      websocketService.on('health_alert', handler);
+      websocketService.on("health_alert", handler);
     }
 
     // Recommendation events
@@ -136,7 +136,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
       const handler = (data: RecommendationsUpdatedEvent) => {
         onRecommendationsUpdated(data);
       };
-      websocketService.on('recommendations_updated', handler);
+      websocketService.on("recommendations_updated", handler);
     }
 
     if (onRecommendationCreated) {
@@ -144,13 +144,13 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
         onRecommendationCreated(data);
         if (showToasts) {
           showToast({
-            variant: 'success',
-            title: 'New Recommendations',
+            variant: "success",
+            title: "New Recommendations",
             description: `${data.fieldName}: ${data.message}`,
           });
         }
       };
-      websocketService.on('recommendation_created', handler);
+      websocketService.on("recommendation_created", handler);
     }
 
     // Yield prediction events
@@ -159,13 +159,13 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
         onYieldPredictionReady(data);
         if (showToasts) {
           showToast({
-            variant: 'success',
-            title: 'Yield Prediction Ready',
+            variant: "success",
+            title: "Yield Prediction Ready",
             description: `${data.fieldName}: ${data.message}`,
           });
         }
       };
-      websocketService.on('yield_prediction_ready', handler);
+      websocketService.on("yield_prediction_ready", handler);
     }
 
     // Connection events
@@ -174,46 +174,53 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
         onConnect();
         if (showToasts) {
           showToast({
-            variant: 'success',
-            title: 'Connected',
-            description: 'Real-time updates enabled',
+            variant: "success",
+            title: "Connected",
+            description: "Real-time updates enabled",
           });
         }
       };
-      websocketService.on('connect', handler);
+      websocketService.on("connect", handler);
     }
 
     if (onDisconnect) {
       const handler = (data: { reason: string }) => {
         onDisconnect(data.reason);
-        if (showToasts && data.reason !== 'io client disconnect') {
+        if (showToasts && data.reason !== "io client disconnect") {
           showToast({
-            variant: 'warning',
-            title: 'Connection Lost',
-            description: 'Real-time updates temporarily unavailable',
+            variant: "warning",
+            title: "Connection Lost",
+            description: "Real-time updates temporarily unavailable",
           });
         }
       };
-      websocketService.on('disconnect', handler);
+      websocketService.on("disconnect", handler);
     }
 
     if (onError) {
       const handler = (data: { error: Error }) => {
         onError(data.error);
       };
-      websocketService.on('connect_error', handler);
+      websocketService.on("connect_error", handler);
     }
 
     // Cleanup: Remove event listeners on unmount
     return () => {
-      if (onHealthUpdated) websocketService.off('health_updated', onHealthUpdated);
-      if (onHealthAlert) websocketService.off('health_alert', onHealthAlert);
-      if (onRecommendationsUpdated) websocketService.off('recommendations_updated', onRecommendationsUpdated);
-      if (onRecommendationCreated) websocketService.off('recommendation_created', onRecommendationCreated);
-      if (onYieldPredictionReady) websocketService.off('yield_prediction_ready', onYieldPredictionReady);
-      if (onConnect) websocketService.off('connect', onConnect);
-      if (onDisconnect) websocketService.off('disconnect', onDisconnect);
-      if (onError) websocketService.off('connect_error', onError);
+      if (onHealthUpdated)
+        websocketService.off("health_updated", onHealthUpdated);
+      if (onHealthAlert) websocketService.off("health_alert", onHealthAlert);
+      if (onRecommendationsUpdated)
+        websocketService.off(
+          "recommendations_updated",
+          onRecommendationsUpdated,
+        );
+      if (onRecommendationCreated)
+        websocketService.off("recommendation_created", onRecommendationCreated);
+      if (onYieldPredictionReady)
+        websocketService.off("yield_prediction_ready", onYieldPredictionReady);
+      if (onConnect) websocketService.off("connect", onConnect);
+      if (onDisconnect) websocketService.off("disconnect", onDisconnect);
+      if (onError) websocketService.off("connect_error", onError);
     };
   }, []); // Only run once on mount
 
@@ -237,4 +244,3 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 };
 
 export default useWebSocket;
-

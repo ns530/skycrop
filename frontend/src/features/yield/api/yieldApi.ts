@@ -1,4 +1,4 @@
-import { httpClient, normalizeApiError } from '../../../shared/api';
+import { httpClient, normalizeApiError } from "../../../shared/api";
 
 export interface YieldPrediction {
   field_id?: string;
@@ -52,9 +52,14 @@ interface BackendYieldForecastEnvelope {
  *
  * POST /api/v1/ml/yield/predict
  */
-export const getYieldForecast = async (request: YieldForecastRequest): Promise<YieldForecastResponse> => {
+export const getYieldForecast = async (
+  request: YieldForecastRequest,
+): Promise<YieldForecastResponse> => {
   try {
-    const res = await httpClient.post<BackendYieldForecastEnvelope>('/ml/yield/predict', request);
+    const res = await httpClient.post<BackendYieldForecastEnvelope>(
+      "/ml/yield/predict",
+      request,
+    );
     return res.data.data;
   } catch (error) {
     throw normalizeApiError(error);
@@ -74,7 +79,7 @@ export interface ActualYieldRecord {
   accuracy?: number; // MAPE percentage
   notes?: string;
   cropVariety?: string;
-  season?: 'maha' | 'yala' | 'other';
+  season?: "maha" | "yala" | "other";
   createdAt: string; // ISO timestamp
   updatedAt?: string;
 }
@@ -86,7 +91,7 @@ export interface SubmitYieldPayload {
   totalYieldKg?: number;
   notes?: string;
   cropVariety?: string;
-  season?: 'maha' | 'yala' | 'other';
+  season?: "maha" | "yala" | "other";
   predictionId?: string;
   predictedYieldKgPerHa?: number;
 }
@@ -102,7 +107,7 @@ interface BackendYieldRecord {
   accuracy_mape?: number;
   notes?: string;
   crop_variety?: string;
-  season?: 'maha' | 'yala' | 'other';
+  season?: "maha" | "yala" | "other";
   created_at: string;
   updated_at: string;
 }
@@ -126,7 +131,9 @@ interface BackendYieldEnvelope {
 }
 
 // Transform backend yield record to frontend format
-const transformYieldRecord = (record: BackendYieldRecord): ActualYieldRecord => ({
+const transformYieldRecord = (
+  record: BackendYieldRecord,
+): ActualYieldRecord => ({
   id: record.yield_id,
   fieldId: record.field_id,
   harvestDate: record.harvest_date,
@@ -144,18 +151,45 @@ const transformYieldRecord = (record: BackendYieldRecord): ActualYieldRecord => 
 /**
  * Get yield history for a field (mocked for now - would need backend endpoint)
  */
-export const getYieldHistory = async (fieldId: string): Promise<YieldPrediction[]> => {
+export const getYieldHistory = async (
+  fieldId: string,
+): Promise<YieldPrediction[]> => {
   // Mock data - in real implementation, this would call a backend endpoint
   const mockHistory: YieldPrediction[] = [
-    { field_id: fieldId, yield_kg_per_ha: 4500, confidence_lower: 4200, confidence_upper: 4800 },
-    { field_id: fieldId, yield_kg_per_ha: 4800, confidence_lower: 4500, confidence_upper: 5100 },
-    { field_id: fieldId, yield_kg_per_ha: 4600, confidence_lower: 4300, confidence_upper: 4900 },
-    { field_id: fieldId, yield_kg_per_ha: 4900, confidence_lower: 4600, confidence_upper: 5200 },
-    { field_id: fieldId, yield_kg_per_ha: 4700, confidence_lower: 4400, confidence_upper: 5000 },
+    {
+      field_id: fieldId,
+      yield_kg_per_ha: 4500,
+      confidence_lower: 4200,
+      confidence_upper: 4800,
+    },
+    {
+      field_id: fieldId,
+      yield_kg_per_ha: 4800,
+      confidence_lower: 4500,
+      confidence_upper: 5100,
+    },
+    {
+      field_id: fieldId,
+      yield_kg_per_ha: 4600,
+      confidence_lower: 4300,
+      confidence_upper: 4900,
+    },
+    {
+      field_id: fieldId,
+      yield_kg_per_ha: 4900,
+      confidence_lower: 4600,
+      confidence_upper: 5200,
+    },
+    {
+      field_id: fieldId,
+      yield_kg_per_ha: 4700,
+      confidence_lower: 4400,
+      confidence_upper: 5000,
+    },
   ];
 
   // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500));
+  await new Promise((resolve) => setTimeout(resolve, 500));
 
   return mockHistory;
 };
@@ -164,16 +198,21 @@ export const getYieldHistory = async (fieldId: string): Promise<YieldPrediction[
  * Get actual yield records for a field
  * GET /api/v1/fields/:fieldId/yield
  */
-export const getActualYieldRecords = async (fieldId: string): Promise<ActualYieldRecord[]> => {
+export const getActualYieldRecords = async (
+  fieldId: string,
+): Promise<ActualYieldRecord[]> => {
   try {
-    const res = await httpClient.get<BackendYieldListEnvelope>(`/fields/${fieldId}/yield`, {
-      params: {
-        page: 1,
-        page_size: 100, // Get all records (up to 100)
-        sort: 'harvest_date',
-        order: 'desc',
+    const res = await httpClient.get<BackendYieldListEnvelope>(
+      `/fields/${fieldId}/yield`,
+      {
+        params: {
+          page: 1,
+          page_size: 100, // Get all records (up to 100)
+          sort: "harvest_date",
+          order: "desc",
+        },
       },
-    });
+    );
 
     return res.data.data.map(transformYieldRecord);
   } catch (error) {
@@ -184,11 +223,13 @@ export const getActualYieldRecords = async (fieldId: string): Promise<ActualYiel
 /**
  * Submit actual yield data
  * POST /api/v1/fields/:fieldId/yield
- * 
+ *
  * @param payload - Yield data to submit
  * @returns Created yield record
  */
-export const submitActualYield = async (payload: SubmitYieldPayload): Promise<ActualYieldRecord> => {
+export const submitActualYield = async (
+  payload: SubmitYieldPayload,
+): Promise<ActualYieldRecord> => {
   try {
     const requestBody = {
       actual_yield_per_ha: payload.actualYieldKgPerHa,
@@ -203,7 +244,7 @@ export const submitActualYield = async (payload: SubmitYieldPayload): Promise<Ac
 
     const res = await httpClient.post<BackendYieldEnvelope>(
       `/fields/${payload.fieldId}/yield`,
-      requestBody
+      requestBody,
     );
 
     return transformYieldRecord(res.data.data);
@@ -230,7 +271,7 @@ export const deleteYieldRecord = async (recordId: string): Promise<void> => {
  */
 export const updateYieldRecord = async (
   recordId: string,
-  updates: Partial<SubmitYieldPayload>
+  updates: Partial<SubmitYieldPayload>,
 ): Promise<ActualYieldRecord> => {
   try {
     const requestBody: Record<string, unknown> = {};
@@ -257,7 +298,10 @@ export const updateYieldRecord = async (
       requestBody.predicted_yield_per_ha = updates.predictedYieldKgPerHa;
     }
 
-    const res = await httpClient.patch<BackendYieldEnvelope>(`/yield/${recordId}`, requestBody);
+    const res = await httpClient.patch<BackendYieldEnvelope>(
+      `/yield/${recordId}`,
+      requestBody,
+    );
 
     return transformYieldRecord(res.data.data);
   } catch (error) {
@@ -295,10 +339,12 @@ interface BackendYieldStatisticsEnvelope {
   meta?: Record<string, unknown>;
 }
 
-export const getYieldStatistics = async (fieldId: string): Promise<YieldStatistics> => {
+export const getYieldStatistics = async (
+  fieldId: string,
+): Promise<YieldStatistics> => {
   try {
     const res = await httpClient.get<BackendYieldStatisticsEnvelope>(
-      `/fields/${fieldId}/yield/statistics`
+      `/fields/${fieldId}/yield/statistics`,
     );
 
     const data = res.data.data;

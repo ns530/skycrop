@@ -1,7 +1,7 @@
 'use strict';
 
-const Recommendation = require('../models/recommendation.model');
 const Sequelize = require('sequelize');
+const Recommendation = require('../models/recommendation.model');
 
 /**
  * Repository for recommendation data access
@@ -18,14 +18,14 @@ class RecommendationRepository {
 
   /**
    * Find recommendations by field ID
-   * @param {string} fieldId - Field UUID
+   * @param {string} field_id - Field UUID
    * @param {Object} options - Query options
    * @returns {Promise<Array<Recommendation>>}
    */
-  async findByFieldId(fieldId, options = {}) {
+  async findByfield_id(field_id, options = {}) {
     const { status, priority, validOnly = false, limit = 50 } = options;
 
-    const where = { field_id: fieldId };
+    const where = { field_id: field_id };
 
     if (status) {
       where.status = status;
@@ -36,7 +36,7 @@ class RecommendationRepository {
     }
 
     if (validOnly) {
-      where.valid_until = {
+      where.validuntil = {
         [Sequelize.Op.gte]: new Date(),
       };
     }
@@ -44,8 +44,8 @@ class RecommendationRepository {
     return await Recommendation.findAll({
       where,
       order: [
-        ['urgency_score', 'DESC'],
-        ['generated_at', 'DESC'],
+        ['urgencyscore', 'DESC'],
+        ['generatedat', 'DESC'],
       ],
       limit,
     });
@@ -53,14 +53,14 @@ class RecommendationRepository {
 
   /**
    * Find recommendations by user ID
-   * @param {string} userId - User UUID
+   * @param {string} user_id - User UUID
    * @param {Object} options - Query options
    * @returns {Promise<Array<Recommendation>>}
    */
-  async findByUserId(userId, options = {}) {
+  async findByuser_id(user_id, options = {}) {
     const { status, priority, validOnly = false, limit = 100 } = options;
 
-    const where = { user_id: userId };
+    const where = { user_id: user_id };
 
     if (status) {
       where.status = status;
@@ -71,7 +71,7 @@ class RecommendationRepository {
     }
 
     if (validOnly) {
-      where.valid_until = {
+      where.validuntil = {
         [Sequelize.Op.gte]: new Date(),
       };
     }
@@ -79,8 +79,8 @@ class RecommendationRepository {
     return await Recommendation.findAll({
       where,
       order: [
-        ['urgency_score', 'DESC'],
-        ['generated_at', 'DESC'],
+        ['urgencyscore', 'DESC'],
+        ['generatedat', 'DESC'],
       ],
       limit,
     });
@@ -104,7 +104,7 @@ class RecommendationRepository {
    */
   async updateStatus(recommendationId, status, notes = null) {
     const recommendation = await this.findById(recommendationId);
-    
+
     if (!recommendation) {
       const error = new Error('Recommendation not found');
       error.statusCode = 404;
@@ -112,9 +112,9 @@ class RecommendationRepository {
     }
 
     const updates = { status };
-    
-    if (status === 'in_progress' || status === 'completed') {
-      updates.actioned_at = new Date();
+
+    if (status === 'inprogress' || status === 'completed') {
+      updates.actionedat = new Date();
     }
 
     if (notes) {
@@ -132,32 +132,31 @@ class RecommendationRepository {
    */
   async delete(recommendationId) {
     const result = await Recommendation.destroy({
-      where: { recommendation_id: recommendationId },
+      where: { recommendationid: recommendationId },
     });
     return result > 0;
   }
 
   /**
    * Get statistics for a field
-   * @param {string} fieldId - Field UUID
+   * @param {string} field_id - Field UUID
    * @returns {Promise<Object>}
    */
-  async getStatistics(fieldId) {
-    const all = await this.findByFieldId(fieldId, { limit: 1000 });
-    
+  async getStatistics(field_id) {
+    const all = await this.findByfield_id(field_id, { limit: 1000 });
+
     return {
       total: all.length,
-      pending: all.filter((r) => r.status === 'pending').length,
-      inProgress: all.filter((r) => r.status === 'in_progress').length,
-      completed: all.filter((r) => r.status === 'completed').length,
-      dismissed: all.filter((r) => r.status === 'dismissed').length,
-      critical: all.filter((r) => r.priority === 'critical').length,
-      high: all.filter((r) => r.priority === 'high').length,
-      medium: all.filter((r) => r.priority === 'medium').length,
-      low: all.filter((r) => r.priority === 'low').length,
+      pending: all.filter(r => r.status === 'pending').length,
+      inProgress: all.filter(r => r.status === 'inprogress').length,
+      completed: all.filter(r => r.status === 'completed').length,
+      dismissed: all.filter(r => r.status === 'dismissed').length,
+      critical: all.filter(r => r.priority === 'critical').length,
+      high: all.filter(r => r.priority === 'high').length,
+      medium: all.filter(r => r.priority === 'medium').length,
+      low: all.filter(r => r.priority === 'low').length,
     };
   }
 }
 
 module.exports = RecommendationRepository;
-

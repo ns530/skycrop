@@ -1,16 +1,20 @@
-import React from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import React from "react";
+import { NavLink, Outlet } from "react-router-dom";
 
-import { useAuth } from '../../features/auth/context/AuthContext';
-import { NotificationBell, NotificationCenter } from '../../shared/components/NotificationCenter';
-import { useOnlineStatus } from '../../shared/hooks/useOnlineStatus';
-import { useToast } from '../../shared/hooks/useToast';
-import { PageContainer } from '../../shared/ui/layout/PageContainer';
- 
+import { useAuth } from "../../features/auth/context/AuthContext";
+import {
+  NotificationBell,
+  NotificationCenter,
+} from "../../shared/components/NotificationCenter";
+import { useOnlineStatus } from "../../shared/hooks/useOnlineStatus";
+import { useToast } from "../../shared/hooks/useToast";
+import { PageContainer } from "../../shared/ui/layout/PageContainer";
+
 export const RootLayout: React.FC = () => {
   const { user, logout, hasRole } = useAuth();
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
-  const [notificationCenterOpen, setNotificationCenterOpen] = React.useState(false);
+  const [notificationCenterOpen, setNotificationCenterOpen] =
+    React.useState(false);
   const { isOnline } = useOnlineStatus();
   const { showToast } = useToast();
   const [wasOffline, setWasOffline] = React.useState(false);
@@ -20,13 +24,13 @@ export const RootLayout: React.FC = () => {
     if (!mobileNavOpen) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         setMobileNavOpen(false);
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [mobileNavOpen]);
 
   React.useEffect(() => {
@@ -37,43 +41,60 @@ export const RootLayout: React.FC = () => {
 
     if (wasOffline) {
       showToast({
-        variant: 'success',
-        title: 'Back online',
-        description: 'Your connection has been restored.',
+        variant: "success",
+        title: "Back online",
+        description: "Your connection has been restored.",
       });
       setWasOffline(false);
     }
   }, [isOnline, wasOffline, showToast]);
 
-  const displayRole = user?.role === 'admin' ? 'Admin' : user?.role === 'farmer' ? 'Farmer' : 'Guest';
- 
+  const displayRole =
+    user?.role === "admin"
+      ? "Admin"
+      : user?.role === "farmer"
+        ? "Farmer"
+        : "Guest";
+
   const linkBaseClasses =
-    'inline-flex items-center px-3 py-2 text-sm rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white';
- 
+    "inline-flex items-center px-3 py-2 text-sm rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white";
+
   const makeNavLinkClass = ({ isActive }: { isActive: boolean }) =>
     [
       linkBaseClasses,
-      isActive ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-700 hover:bg-gray-50',
-    ].join(' ');
- 
+      isActive
+        ? "bg-gray-100 text-gray-900 font-semibold"
+        : "text-gray-700 hover:bg-gray-50",
+    ].join(" ");
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-100 text-gray-900">
-      <header role="banner" className="border-b border-gray-100 bg-white shadow-sm">
+      <header
+        role="banner"
+        className="border-b border-gray-100 bg-white shadow-sm"
+      >
         <PageContainer className="py-3 sm:py-4">
           <div className="flex items-center justify-between gap-3">
             {/* Brand */}
             <div className="flex items-center gap-2 sm:gap-3">
-              <NavLink to="/dashboard" className="flex items-center gap-2 focus-visible:outline-none">
+              <NavLink
+                to="/dashboard"
+                className="flex items-center gap-2 focus-visible:outline-none"
+              >
                 <div className="h-8 w-8 rounded-full bg-primary text-white flex items-center justify-center text-xs font-semibold">
                   SC
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-sm font-semibold tracking-tight">SkyCrop</span>
-                  <span className="text-[11px] text-gray-500">Paddy intelligence for Sri Lanka</span>
+                  <span className="text-sm font-semibold tracking-tight">
+                    SkyCrop
+                  </span>
+                  <span className="text-[11px] text-gray-500">
+                    Paddy intelligence for Sri Lanka
+                  </span>
                 </div>
               </NavLink>
             </div>
- 
+
             {/* Desktop nav */}
             <nav
               aria-label="Primary"
@@ -91,20 +112,22 @@ export const RootLayout: React.FC = () => {
               <NavLink to="/news" className={makeNavLinkClass}>
                 News
               </NavLink>
-              {hasRole('admin') && (
+              {hasRole("admin") && (
                 <NavLink to="/admin" className={makeNavLinkClass}>
                   Admin
                 </NavLink>
               )}
             </nav>
- 
+
             {/* User / mobile controls */}
             <div className="flex items-center gap-2 sm:gap-3">
               {/* Notification Bell */}
               {user && (
                 <div className="relative">
                   <NotificationBell
-                    onClick={() => setNotificationCenterOpen(!notificationCenterOpen)}
+                    onClick={() =>
+                      setNotificationCenterOpen(!notificationCenterOpen)
+                    }
                     isOpen={notificationCenterOpen}
                   />
                   <NotificationCenter
@@ -132,7 +155,7 @@ export const RootLayout: React.FC = () => {
                   Sign out
                 </button>
               )}
- 
+
               {/* Mobile menu toggle */}
               <button
                 type="button"
@@ -152,35 +175,65 @@ export const RootLayout: React.FC = () => {
                   aria-hidden="true"
                 >
                   {mobileNavOpen ? (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   ) : (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
                   )}
                 </svg>
               </button>
             </div>
           </div>
- 
+
           {/* Mobile navigation panel */}
           <nav
             id="primary-navigation-mobile"
             aria-label="Primary"
-            className={`md:hidden mt-2 space-y-1 ${mobileNavOpen ? 'block' : 'hidden'}`}
+            className={`md:hidden mt-2 space-y-1 ${mobileNavOpen ? "block" : "hidden"}`}
           >
-            <NavLink to="/dashboard" className={makeNavLinkClass} onClick={() => setMobileNavOpen(false)}>
+            <NavLink
+              to="/dashboard"
+              className={makeNavLinkClass}
+              onClick={() => setMobileNavOpen(false)}
+            >
               Dashboard
             </NavLink>
-            <NavLink to="/fields" className={makeNavLinkClass} onClick={() => setMobileNavOpen(false)}>
+            <NavLink
+              to="/fields"
+              className={makeNavLinkClass}
+              onClick={() => setMobileNavOpen(false)}
+            >
               Fields
             </NavLink>
-            <NavLink to="/weather" className={makeNavLinkClass} onClick={() => setMobileNavOpen(false)}>
+            <NavLink
+              to="/weather"
+              className={makeNavLinkClass}
+              onClick={() => setMobileNavOpen(false)}
+            >
               Weather
             </NavLink>
-            <NavLink to="/news" className={makeNavLinkClass} onClick={() => setMobileNavOpen(false)}>
+            <NavLink
+              to="/news"
+              className={makeNavLinkClass}
+              onClick={() => setMobileNavOpen(false)}
+            >
               News
             </NavLink>
-            {hasRole('admin') && (
-              <NavLink to="/admin" className={makeNavLinkClass} onClick={() => setMobileNavOpen(false)}>
+            {hasRole("admin") && (
+              <NavLink
+                to="/admin"
+                className={makeNavLinkClass}
+                onClick={() => setMobileNavOpen(false)}
+              >
                 Admin
               </NavLink>
             )}
@@ -212,12 +265,13 @@ export const RootLayout: React.FC = () => {
                 className="h-2 w-2 rounded-full bg-amber-500 animate-pulse"
                 aria-hidden="true"
               />
-              you're offline. Data may be outdated. Changes will sync when you're back online.
+              you're offline. Data may be outdated. Changes will sync when
+              you're back online.
             </p>
           </PageContainer>
         </div>
       )}
- 
+
       <main id="main-content" role="main" className="flex-1 bg-gray-100">
         <PageContainer fullWidth className="h-full">
           <Outlet />
@@ -226,5 +280,5 @@ export const RootLayout: React.FC = () => {
     </div>
   );
 };
- 
+
 export default RootLayout;

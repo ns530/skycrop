@@ -6,7 +6,7 @@ const { getFieldHealthService } = require('../../services/fieldHealth.service');
 const { getSatelliteService } = require('../../services/satellite.service');
 const { logger } = require('../../utils/logger');
 
-const DASHBOARD_CACHE_TTL_SEC = parseInt(process.env.DASHBOARD_CACHE_TTL_SEC || '300', 10); // 5 minutes
+const DASHBOARDCACHETTLSEC = parseInt(process.env.DASHBOARDCACHETTLSEC || '300', 10); // 5 minutes
 
 /**
  * Dashboard Controller
@@ -18,50 +18,50 @@ module.exports = {
     const started = Date.now();
     const correlationId = req.headers['x-request-id'] || null;
     try {
-      const userId = req.user.userId;
-      const cacheKey = `dashboard:metrics:${userId}`;
+      const { user_id } = req.user;
+      const cacheKey = `dashboard:metrics:${user_id}`;
 
       // Try cache first
       const redis = await initRedis();
       const cached = await redis.get(cacheKey);
       if (cached) {
         const parsed = JSON.parse(cached);
-        logger.info('dashboard.metrics.cache_hit', {
-          user_id: userId,
-          correlation_id: correlationId,
+        logger.info('dashboard.metrics.cachehit', {
+          user_id: user_id,
+          correlationid: correlationId,
         });
-        return res.status(200).json({
+        return res.status(200)on({
           success: true,
           data: parsed,
           meta: {
-            correlation_id: correlationId,
-            cache_hit: true,
-            latency_ms: Date.now() - started
+            correlationid: correlationId,
+            cachehit: true,
+            latencyms: Date.now() - started,
           },
         });
       }
 
       // Aggregate metrics
-      const metrics = await aggregateDashboardMetrics(userId);
+      const metrics = await aggregateDashboardMetrics(user_id);
 
       // Cache the result
-      await redis.setEx(cacheKey, DASHBOARD_CACHE_TTL_SEC, JSON.stringify(metrics));
+      await redis.setEx(cacheKey, DASHBOARDCACHETTLSEC, JSON.stringify(metrics));
 
       const latency = Date.now() - started;
       logger.info('dashboard.metrics', {
-        user_id: userId,
-        correlation_id: correlationId,
-        latency_ms: latency,
-        cache_hit: false,
+        user_id: user_id,
+        correlationid: correlationId,
+        latencyms: latency,
+        cachehit: false,
       });
 
-      return res.status(200).json({
+      return res.status(200)on({
         success: true,
         data: metrics,
         meta: {
-          correlation_id: correlationId,
-          cache_hit: false,
-          latency_ms: latency
+          correlationid: correlationId,
+          cachehit: false,
+          latencyms: latency,
         },
       });
     } catch (err) {
@@ -73,7 +73,7 @@ module.exports = {
 /**
  * Aggregate dashboard metrics from multiple sources
  */
-async function aggregateDashboardMetrics(userId) {
+async function aggregateDashboardMetrics(user_id) {
   const [
     fieldMetrics,
     healthMetrics,
@@ -84,174 +84,181 @@ async function aggregateDashboardMetrics(userId) {
     systemMetrics,
     weatherForecast,
     userAnalytics,
-    disasterAssessment
+    disasterAssessment,
   ] = await Promise.all([
-    getFieldMetrics(userId),
-    getHealthMetrics(userId),
-    getAlertMetrics(userId),
-    getRecentActivity(userId),
-    getFieldThumbnails(userId),
-    getVegetationIndices(userId),
+    getFieldMetrics(user_id),
+    getHealthMetrics(user_id),
+    getAlertMetrics(user_id),
+    getRecentActivity(user_id),
+    getFieldThumbnails(user_id),
+    getVegetationIndices(user_id),
     getSystemMetrics(),
-    getWeatherForecast(userId),
-    getUserAnalytics(userId),
-    getDisasterAssessment(userId)
+    getWeatherForecast(user_id),
+    getUserAnalytics(user_id),
+    getDisasterAssessment(user_id),
   ]);
 
   return {
     fields: fieldMetrics,
     health: healthMetrics,
     alerts: alertMetrics,
-    recent_activity: recentActivity,
-    field_thumbnails: fieldThumbnails,
-    vegetation_indices: vegetationIndices,
+    recentactivity: recentActivity,
+    fieldthumbnails: fieldThumbnails,
+    vegetationindices: vegetationIndices,
     system: systemMetrics,
-    weather_forecast: weatherForecast,
-    user_analytics: userAnalytics,
-    disaster_assessment: disasterAssessment,
-    generated_at: new Date().toISOString()
+    weatherforecast: weatherForecast,
+    useranalytics: userAnalytics,
+    disasterassessment: disasterAssessment,
+    generatedat: new Date().toISOString(),
   };
 }
 
 /**
  * Get field count and basic info
  */
-async function getFieldMetrics(userId) {
+async function getFieldMetrics(user_id) {
   const result = await sequelize.query(
     `
     SELECT
-      COUNT(*) as total_fields,
-      COUNT(CASE WHEN status = 'active' THEN 1 END) as active_fields,
-      SUM(area_sqm) as total_area_sqm,
-      AVG(area_sqm) as avg_field_size_sqm
+      COUNT(*) as totalfields,
+      COUNT(CASE WHEN status = 'active' THEN 1 END) as activefields,
+      SUM(areasqm) as totalareasqm,
+      AVG(areasqm) as avgfieldsizesqm
     FROM fields
-    WHERE user_id = :userId AND status != 'deleted'
+    WHERE user_id = :user_id AND status != 'deleted'
     `,
     {
       type: sequelize.QueryTypes.SELECT,
-      replacements: { userId },
+      replacements: { user_id },
     }
   );
 
   const metrics = result[0];
   return {
-    total: parseInt(metrics.total_fields, 10),
-    active: parseInt(metrics.active_fields, 10),
-    total_area_hectares: metrics.total_area_sqm ? Math.round(metrics.total_area_sqm / 10000 * 100) / 100 : 0,
-    average_size_hectares: metrics.avg_field_size_sqm ? Math.round(metrics.avg_field_size_sqm / 10000 * 100) / 100 : 0
+    total: parseInt(metrics.totalfields, 10),
+    active: parseInt(metrics.activefields, 10),
+    totalareahectares: metrics.totalareasqm
+      ? Math.round((metrics.totalareasqm / 10000) * 100) / 100
+      : 0,
+    averagesizehectares: metrics.avgfieldsizesqm
+      ? Math.round((metrics.avgfieldsizesqm / 10000) * 100) / 100
+      : 0,
   };
 }
 
 /**
  * Get health status summaries
  */
-async function getHealthMetrics(userId) {
+async function getHealthMetrics(user_id) {
   // Get latest health records for all user's fields
   const healthRecords = await sequelize.query(
     `
     SELECT
-      hr.health_score,
-      hr.health_status,
-      hr.ndvi_mean,
-      hr.ndwi_mean,
-      hr.measurement_date,
+      hr.healthscore,
+      hr.healthstatus,
+      hr.ndvimean,
+      hr.ndwimean,
+      hr.measurementdate,
       f.field_id,
-      f.name as field_name
-    FROM health_records hr
+      f.name as fieldname
+    FROM healthrecords hr
     INNER JOIN fields f ON hr.field_id = f.field_id
-    WHERE f.user_id = :userId AND f.status = 'active'
-    AND hr.measurement_date = (
-      SELECT MAX(hr2.measurement_date)
-      FROM health_records hr2
+    WHERE f.user_id = :user_id AND f.status = 'active'
+    AND hr.measurementdate = (
+      SELECT MAX(hr2.measurementdate)
+      FROM healthrecords hr2
       WHERE hr2.field_id = hr.field_id
     )
     `,
     {
       type: sequelize.QueryTypes.SELECT,
-      replacements: { userId },
+      replacements: { user_id },
     }
   );
 
   if (healthRecords.length === 0) {
     return {
-      average_score: 50,
-      status_distribution: { good: 0, moderate: 0, poor: 0 },
-      total_assessed: 0
+      averagescore: 50,
+      statusdistribution: { good: 0, moderate: 0, poor: 0 },
+      totalassessed: 0,
     };
   }
 
-  const scores = healthRecords.map(r => r.health_score);
+  const scores = healthRecords.map(r => r.healthscore);
   const averageScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
 
   // Count by status
-  const statusCount = healthRecords.reduce((acc, record) => {
-    const status = record.health_status;
-    if (status === 'excellent' || status === 'good') {
-      acc.good += 1;
-    } else if (status === 'fair') {
-      acc.moderate += 1;
-    } else {
-      acc.poor += 1;
-    }
-    return acc;
-  }, { good: 0, moderate: 0, poor: 0 });
+  const statusCount = healthRecords.reduce(
+    (acc, record) => {
+      const status = record.healthstatus;
+      if (status === 'excellent' || status === 'good') {
+        acc.good += 1;
+      } else if (status === 'fair') {
+        acc.moderate += 1;
+      } else {
+        acc.poor += 1;
+      }
+      return acc;
+    },
+    { good: 0, moderate: 0, poor: 0 }
+  );
 
   return {
-    average_score: averageScore,
-    status_distribution: statusCount,
-    total_assessed: healthRecords.length
+    averagescore: averageScore,
+    statusdistribution: statusCount,
+    totalassessed: healthRecords.length,
   };
 }
 
 /**
  * Get active alerts count (recommendations)
  */
-async function getAlertMetrics(userId) {
+async function getAlertMetrics(user_id) {
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
   const alerts = await sequelize.query(
     `
     SELECT
-      COUNT(*) as total_alerts,
-      COUNT(CASE WHEN severity = 'high' THEN 1 END) as high_severity,
-      COUNT(CASE WHEN severity = 'medium' THEN 1 END) as medium_severity,
-      COUNT(CASE WHEN severity = 'low' THEN 1 END) as low_severity,
-      COUNT(CASE WHEN type = 'water' THEN 1 END) as water_alerts,
-      COUNT(CASE WHEN type = 'fertilizer' THEN 1 END) as fertilizer_alerts
+      COUNT(*) as totalalerts,
+      COUNT(CASE WHEN severity = 'high' THEN 1 END) as highseverity,
+      COUNT(CASE WHEN severity = 'medium' THEN 1 END) as mediumseverity,
+      COUNT(CASE WHEN severity = 'low' THEN 1 END) as lowseverity,
+      COUNT(CASE WHEN type = 'water' THEN 1 END) as wateralerts,
+      COUNT(CASE WHEN type = 'fertilizer' THEN 1 END) as fertilizeralerts
     FROM recommendations r
     INNER JOIN fields f ON r.field_id = f.field_id
-    WHERE f.user_id = :userId AND f.status = 'active'
+    WHERE f.user_id = :user_id AND f.status = 'active'
     AND r.timestamp >= :sevenDaysAgo
     `,
     {
       type: sequelize.QueryTypes.SELECT,
       replacements: {
-        userId,
-        sevenDaysAgo: sevenDaysAgo.toISOString()
+        user_id,
+        sevenDaysAgo: sevenDaysAgo.toISOString(),
       },
     }
   );
 
   const metrics = alerts[0];
   return {
-    total: parseInt(metrics.total_alerts, 10),
-    by_severity: {
-      high: parseInt(metrics.high_severity, 10),
-      medium: parseInt(metrics.medium_severity, 10),
-      low: parseInt(metrics.low_severity, 10)
+    total: parseInt(metrics.totalalerts, 10),
+    byseverity: {
+      high: parseInt(metrics.highseverity, 10),
+      medium: parseInt(metrics.mediumseverity, 10),
+      low: parseInt(metrics.lowseverity, 10),
     },
-    by_type: {
-      water: parseInt(metrics.water_alerts, 10),
-      fertilizer: parseInt(metrics.fertilizer_alerts, 10)
-    }
+    bytype: {
+      water: parseInt(metrics.wateralerts, 10),
+      fertilizer: parseInt(metrics.fertilizeralerts, 10),
+    },
   };
 }
 
 /**
  * Get recent activity (last 7 days)
  */
-async function getRecentActivity(userId) {
+async function getRecentActivity(user_id) {
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
@@ -259,21 +266,21 @@ async function getRecentActivity(userId) {
   const healthActivity = await sequelize.query(
     `
     SELECT
-      'health_assessment' as activity_type,
-      hr.measurement_date as activity_date,
-      f.name as field_name,
-      hr.health_status,
-      hr.health_score
-    FROM health_records hr
+      'healthassessment' as activitytype,
+      hr.measurementdate as activitydate,
+      f.name as fieldname,
+      hr.healthstatus,
+      hr.healthscore
+    FROM healthrecords hr
     INNER JOIN fields f ON hr.field_id = f.field_id
-    WHERE f.user_id = :userId AND f.status = 'active'
-    AND hr.created_at >= :sevenDaysAgo
-    ORDER BY hr.created_at DESC
+    WHERE f.user_id = :user_id AND f.status = 'active'
+    AND hr.createdat >= :sevenDaysAgo
+    ORDER BY hr.createdat DESC
     LIMIT 10
     `,
     {
       type: sequelize.QueryTypes.SELECT,
-      replacements: { userId, sevenDaysAgo: sevenDaysAgo.toISOString() },
+      replacements: { user_id, sevenDaysAgo: sevenDaysAgo.toISOString() },
     }
   );
 
@@ -281,43 +288,44 @@ async function getRecentActivity(userId) {
   const recommendationActivity = await sequelize.query(
     `
     SELECT
-      'recommendation' as activity_type,
-      r.timestamp as activity_date,
-      f.name as field_name,
+      'recommendation' as activitytype,
+      r.timestamp as activitydate,
+      f.name as fieldname,
       r.type,
       r.severity
     FROM recommendations r
     INNER JOIN fields f ON r.field_id = f.field_id
-    WHERE f.user_id = :userId AND f.status = 'active'
-    AND r.created_at >= :sevenDaysAgo
-    ORDER BY r.created_at DESC
+    WHERE f.user_id = :user_id AND f.status = 'active'
+    AND r.createdat >= :sevenDaysAgo
+    ORDER BY r.createdat DESC
     LIMIT 10
     `,
     {
       type: sequelize.QueryTypes.SELECT,
-      replacements: { userId, sevenDaysAgo: sevenDaysAgo.toISOString() },
+      replacements: { user_id, sevenDaysAgo: sevenDaysAgo.toISOString() },
     }
   );
 
   // Combine and sort by date
   const allActivity = [...healthActivity, ...recommendationActivity]
-    .sort((a, b) => new Date(b.activity_date) - new Date(a.activity_date))
+    .sort((a, b) => new Date(b.activitydate) - new Date(a.activitydate))
     .slice(0, 15);
 
   return allActivity.map(activity => ({
-    type: activity.activity_type,
-    date: activity.activity_date,
-    field_name: activity.field_name,
-    details: activity.activity_type === 'health_assessment'
-      ? { status: activity.health_status, score: activity.health_score }
-      : { type: activity.type, severity: activity.severity }
+    type: activity.activitytype,
+    date: activity.activitydate,
+    fieldname: activity.fieldname,
+    details:
+      activity.activitytype === 'healthassessment'
+        ? { status: activity.healthstatus, score: activity.healthscore }
+        : { type: activity.type, severity: activity.severity },
   }));
 }
 
 /**
  * Get field thumbnails (satellite image URLs)
  */
-async function getFieldThumbnails(userId) {
+async function getFieldThumbnails(user_id) {
   const satelliteService = getSatelliteService();
 
   // Get fields with their centers for thumbnail generation
@@ -326,29 +334,29 @@ async function getFieldThumbnails(userId) {
     SELECT
       f.field_id,
       f.name,
-      ST_AsGeoJSON(f.center)::json as center,
-      f.area_sqm
+      STAsGeoJSON(f.center)::json as center,
+      f.areasqm
     FROM fields f
-    WHERE f.user_id = :userId AND f.status = 'active'
-    ORDER BY f.created_at DESC
+    WHERE f.user_id = :user_id AND f.status = 'active'
+    ORDER BY f.createdat DESC
     LIMIT 12
     `,
     {
       type: sequelize.QueryTypes.SELECT,
-      replacements: { userId },
+      replacements: { user_id },
     }
   );
 
   const thumbnails = await Promise.all(
-    fields.map(async (field) => {
+    fields.map(async field => {
       try {
-        const center = field.center;
+        const { center } = field;
         if (!center || !center.coordinates) {
           return {
             field_id: field.field_id,
-            field_name: field.name,
-            thumbnail_url: null,
-            area_hectares: Math.round(field.area_sqm / 10000 * 100) / 100
+            fieldname: field.name,
+            thumbnailurl: null,
+            areahectares: Math.round((field.areasqm / 10000) * 100) / 100,
           };
         }
 
@@ -358,32 +366,38 @@ async function getFieldThumbnails(userId) {
         const zoom = 14;
 
         // Convert lat/lon to tile coordinates
-        const n = Math.pow(2, zoom);
+        const n = 2 ** zoom;
         const x = Math.floor(((lon + 180) / 360) * n);
-        const y = Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * n);
+        const y = Math.floor(
+          ((1 -
+            Math.log(Math.tan((lat * Math.PI) / 180) + 1 / Math.cos((lat * Math.PI) / 180)) /
+              Math.PI) /
+            2) *
+            n
+        );
 
         // Get today's date for recent imagery
         const today = new Date().toISOString().split('T')[0];
 
         // Generate tile URL (this would be the API endpoint for tiles)
-        const thumbnail_url = `/api/v1/satellite/tiles/${zoom}/${x}/${y}?date=${today}&bands=RGB`;
+        const thumbnailurl = `/api/v1/satellite/tiles/${zoom}/${x}/${y}?date=${today}&bands=RGB`;
 
         return {
           field_id: field.field_id,
-          field_name: field.name,
-          thumbnail_url,
-          area_hectares: Math.round(field.area_sqm / 10000 * 100) / 100
+          fieldname: field.name,
+          thumbnailurl,
+          areahectares: Math.round((field.areasqm / 10000) * 100) / 100,
         };
       } catch (error) {
         logger.warn('dashboard.thumbnail.error', {
           field_id: field.field_id,
-          error: error.message
+          error: error.message,
         });
         return {
           field_id: field.field_id,
-          field_name: field.name,
-          thumbnail_url: null,
-          area_hectares: Math.round(field.area_sqm / 10000 * 100) / 100
+          fieldname: field.name,
+          thumbnailurl: null,
+          areahectares: Math.round((field.areasqm / 10000) * 100) / 100,
         };
       }
     })
@@ -395,31 +409,31 @@ async function getFieldThumbnails(userId) {
 /**
  * Get vegetation indices (NDVI, NDWI, TDVI) averages
  */
-async function getVegetationIndices(userId) {
+async function getVegetationIndices(user_id) {
   const result = await sequelize.query(
     `
     SELECT
-      AVG(hr.ndvi_mean) as avg_ndvi,
-      AVG(hr.ndwi_mean) as avg_ndwi,
-      AVG(hr.tdvi_mean) as avg_tdvi,
-      COUNT(*) as total_records
-    FROM health_records hr
+      AVG(hr.ndvimean) as avgndvi,
+      AVG(hr.ndwimean) as avgndwi,
+      AVG(hr.tdvimean) as avgtdvi,
+      COUNT(*) as totalrecords
+    FROM healthrecords hr
     INNER JOIN fields f ON hr.field_id = f.field_id
-    WHERE f.user_id = :userId AND f.status = 'active'
-    AND hr.measurement_date >= DATE('now', '-30 days')
+    WHERE f.user_id = :user_id AND f.status = 'active'
+    AND hr.measurementdate >= DATE('now', '-30 days')
     `,
     {
       type: sequelize.QueryTypes.SELECT,
-      replacements: { userId },
+      replacements: { user_id },
     }
   );
 
   const metrics = result[0];
   return {
-    ndvi: metrics.avg_ndvi ? Number(metrics.avg_ndvi.toFixed(3)) : null,
-    ndwi: metrics.avg_ndwi ? Number(metrics.avg_ndwi.toFixed(3)) : null,
-    tdvi: metrics.avg_tdvi ? Number(metrics.avg_tdvi.toFixed(3)) : null,
-    total_records: parseInt(metrics.total_records, 10)
+    ndvi: metrics.avgndvi ? Number(metrics.avgndvi.toFixed(3)) : null,
+    ndwi: metrics.avgndwi ? Number(metrics.avgndwi.toFixed(3)) : null,
+    tdvi: metrics.avgtdvi ? Number(metrics.avgtdvi.toFixed(3)) : null,
+    totalrecords: parseInt(metrics.totalrecords, 10),
   };
 }
 
@@ -433,30 +447,30 @@ async function getSystemMetrics() {
   const uptimeHours = Math.floor(process.uptime() / 3600);
 
   // API performance from Redis (average response time over last hour)
-  const perfKey = 'api:performance:last_hour';
+  const perfKey = 'api:performance:lasthour';
   const perfData = await redis.get(perfKey);
   let avgResponseTime = null;
   if (perfData) {
     try {
       const parsed = JSON.parse(perfData);
-      avgResponseTime = parsed.avg_response_time_ms || null;
+      avgResponseTime = parsed.avgresponsetimems || null;
     } catch (e) {
       // ignore
     }
   }
 
   return {
-    uptime_hours: uptimeHours,
-    api_performance: {
-      avg_response_time_ms: avgResponseTime
-    }
+    uptimehours: uptimeHours,
+    apiperformance: {
+      avgresponsetimems: avgResponseTime,
+    },
   };
 }
 
 /**
  * Get weather forecast for user's first field
  */
-async function getWeatherForecast(userId) {
+async function getWeatherForecast(user_id) {
   try {
     const { getWeatherService } = require('../../services/weather.service');
     const weatherService = getWeatherService();
@@ -466,13 +480,13 @@ async function getWeatherForecast(userId) {
       `
       SELECT field_id
       FROM fields
-      WHERE user_id = :userId AND status = 'active'
-      ORDER BY created_at ASC
+      WHERE user_id = :user_id AND status = 'active'
+      ORDER BY createdat ASC
       LIMIT 1
       `,
       {
         type: sequelize.QueryTypes.SELECT,
-        replacements: { userId },
+        replacements: { user_id },
       }
     );
 
@@ -480,16 +494,16 @@ async function getWeatherForecast(userId) {
       return { forecast: [], available: false };
     }
 
-    const fieldId = fieldResult[0].field_id;
-    const forecast = await weatherService.getForecast(userId, fieldId);
+    const field_id = fieldResult[0].field_id;
+    const forecast = await weatherService.getForecast(user_id, field_id);
 
     return {
       forecast: forecast.data.days.slice(0, 7),
       totals: forecast.data.totals,
-      available: true
+      available: true,
     };
   } catch (error) {
-    logger.warn('dashboard.weather_forecast.error', { error: error.message });
+    logger.warn('dashboard.weatherforecast.error', { error: error.message });
     return { forecast: [], available: false };
   }
 }
@@ -497,40 +511,40 @@ async function getWeatherForecast(userId) {
 /**
  * Get user analytics (mock for now, would integrate with Firebase)
  */
-async function getUserAnalytics(userId) {
+async function getUserAnalytics(user_id) {
   // Mock analytics - in real implementation, fetch from Firebase Analytics
   const result = await sequelize.query(
     `
     SELECT
-      COUNT(DISTINCT f.field_id) as total_fields,
-      COUNT(hr.health_record_id) as total_assessments,
-      AVG(hr.health_score) as avg_health_score,
-      MAX(hr.created_at) as last_activity
+      COUNT(DISTINCT f.field_id) as totalfields,
+      COUNT(hr.healthrecordid) as totalassessments,
+      AVG(hr.healthscore) as avghealthscore,
+      MAX(hr.createdat) as lastactivity
     FROM fields f
-    LEFT JOIN health_records hr ON f.field_id = hr.field_id
-    WHERE f.user_id = :userId AND f.status = 'active'
+    LEFT JOIN healthrecords hr ON f.field_id = hr.field_id
+    WHERE f.user_id = :user_id AND f.status = 'active'
     `,
     {
       type: sequelize.QueryTypes.SELECT,
-      replacements: { userId },
+      replacements: { user_id },
     }
   );
 
   const metrics = result[0];
   return {
-    total_fields: parseInt(metrics.total_fields, 10),
-    total_assessments: parseInt(metrics.total_assessments, 10),
-    avg_health_score: metrics.avg_health_score ? Number(metrics.avg_health_score.toFixed(1)) : null,
-    last_activity: metrics.last_activity,
-    active_users_today: 1, // mock
-    session_duration_avg: 15.5 // mock in minutes
+    totalfields: parseInt(metrics.totalfields, 10),
+    totalassessments: parseInt(metrics.totalassessments, 10),
+    avghealthscore: metrics.avghealthscore ? Number(metrics.avghealthscore.toFixed(1)) : null,
+    lastactivity: metrics.lastactivity,
+    activeuserstoday: 1, // mock
+    sessiondurationavg: 15.5, // mock in minutes
   };
 }
 
 /**
  * Get disaster assessment (integrate with ML service)
  */
-async function getDisasterAssessment(userId) {
+async function getDisasterAssessment(user_id) {
   try {
     const { getMlGatewayService } = require('../../services/mlGateway.service');
     const mlService = getMlGatewayService();
@@ -540,11 +554,11 @@ async function getDisasterAssessment(userId) {
       `
       SELECT field_id, name
       FROM fields
-      WHERE user_id = :userId AND status = 'active'
+      WHERE user_id = :user_id AND status = 'active'
       `,
       {
         type: sequelize.QueryTypes.SELECT,
-        replacements: { userId },
+        replacements: { user_id },
       }
     );
 
@@ -554,25 +568,25 @@ async function getDisasterAssessment(userId) {
 
     // For each field, get latest disaster assessment
     const assessments = await Promise.all(
-      fieldsResult.map(async (field) => {
+      fieldsResult.map(async field => {
         try {
           const assessment = await mlService.getDisasterAssessment(field.field_id);
           return {
             field_id: field.field_id,
-            field_name: field.name,
-            risk_level: assessment.risk_level,
-            disaster_types: assessment.disaster_types,
+            fieldname: field.name,
+            risklevel: assessment.risklevel,
+            disastertypes: assessment.disastertypes,
             confidence: assessment.confidence,
-            assessed_at: assessment.assessed_at
+            assessedat: assessment.assessedat,
           };
         } catch (error) {
           return {
             field_id: field.field_id,
-            field_name: field.name,
-            risk_level: 'unknown',
-            disaster_types: [],
+            fieldname: field.name,
+            risklevel: 'unknown',
+            disastertypes: [],
             confidence: 0,
-            assessed_at: null
+            assessedat: null,
           };
         }
       })
@@ -581,10 +595,10 @@ async function getDisasterAssessment(userId) {
     return {
       assessments,
       available: true,
-      high_risk_count: assessments.filter(a => a.risk_level === 'high').length
+      highriskcount: assessments.filter(a => a.risklevel === 'high').length,
     };
   } catch (error) {
-    logger.warn('dashboard.disaster_assessment.error', { error: error.message });
+    logger.warn('dashboard.disasterassessment.error', { error: error.message });
     return { assessments: [], available: false };
   }
 }

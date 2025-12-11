@@ -1,28 +1,30 @@
-'use strict';
-
 const request = require('supertest');
 
 // Mock rate limiter to no-op for tests
 jest.mock('../../src/api/middleware/rateLimit.middleware', () => ({
-  apiLimiter: (_req, _res, next) => next(),
-  authLimiter: (_req, _res, next) => next(),
+  apiLimiter: (req, res, next) => next(),
+  authLimiter: (req, res, next) => next(),
 }));
 
 // Mock auth middleware to inject a test user
 jest.mock('../../src/api/middleware/auth.middleware', () => ({
-  authMiddleware: (req, _res, next) => {
-    req.user = { userId: 'user-1' };
+  authMiddleware: (req, res, next) => {
+    req.user = { user_id: 'user-1' };
     next();
   },
-  requireRole: () => (_req, _res, next) => next(),
-  requireAnyRole: () => (_req, _res, next) => next(),
+  requireRole: () => (req, res, next) => next(),
+  requireAnyRole: () => (req, res, next) => next(),
 }));
 
 // In-memory fake Redis
 const redisStore = new Map();
 function matchPattern(key, pattern) {
   // very simple wildcard (*) matcher
-  const re = new RegExp('^' + String(pattern).replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$');
+  const re = new RegExp(
+    `^${String(pattern)
+      .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+      .replace(/\*/g, '.*')}$`
+  );
   return re.test(key);
 }
 const fakeRedisClient = {
@@ -30,7 +32,7 @@ const fakeRedisClient = {
   async get(key) {
     return redisStore.has(key) ? redisStore.get(key) : null;
   },
-  async setEx(key, _ttl, value) {
+  async setEx(key, ttl, value) {
     redisStore.set(key, value);
     return 'OK';
   },
@@ -53,12 +55,14 @@ const fakeRedisClient = {
     redisStore.set(key, String(next));
     return next;
   },
-  async expire(_key, _ttl) {
+  async expire(key, ttl) {
     return 1;
   },
-  async scan(_cursor, opts = {}) {
+  async scan(cursor, opts = {}) {
     const { MATCH } = opts || {};
-    const keys = Array.from(redisStore.keys()).filter((k) => (!MATCH ? true : matchPattern(k, MATCH)));
+    const keys = Array.from(redisStore.keys()).filter(k =>
+      !MATCH ? true : matchPattern(k, MATCH)
+    );
     // single pass scan for tests
     return ['0', keys];
   },
@@ -70,7 +74,7 @@ jest.mock('../../src/config/redis.config', () => ({
 }));
 
 process.env.NODE_ENV = 'test';
-process.env.JWT_SECRET = 'test-secret';
+process.env.JWTSECRET = 'test-secret';
 
 const app = require('../../src/app');
 const { sequelize } = require('../../src/config/database.config');
@@ -84,61 +88,67 @@ describe('Fields API Integration', () => {
     redisStore.clear();
 
     // Default spies/mocks
-    querySpy = jest.spyOn(sequelize, 'query').mockImplementation(async (sql, { replacements } = {}) => {
-      // GET by id
-      if (/FROM\s+fields\s+f/i.test(sql) && /WHERE\s+f\.field_id/i.test(sql) && replacements?.fieldId) {
-        return [
-          {
-            field_id: replacements.fieldId,
-            user_id: replacements.userId,
-            name: 'North plot',
-            boundary: { type: 'MultiPolygon', coordinates: [[[80.1, 7.2]]] },
-            area_sqm: 10000.12,
-            center: { type: 'Point', coordinates: [80.105, 7.205] },
-            status: 'active',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-        ];
-      }
+    querySpy = jest
+      .spyOn(sequelize, 'query')
+      .mockImplementation(async (sql, { replacements } = {}) => {
+        // GET by id
+        if (
+          /FROM\s+fields\s+f/i.test(sql) &&
+          /WHERE\s+f\.field_id/i.test(sql) &&
+          replacements?.field_id
+        ) {
+          return [
+            {
+              field_id: replacements.field_id,
+              user_id: replacements.user_id,
+              name: 'North plot',
+              boundary: { type: 'MultiPolygon', coordinates: [[[80.1, 7.2]]] },
+              areasqm: 10000.12,
+              center: { type: 'Point', coordinates: [80.105, 7.205] },
+              status: 'active',
+              createdat: new Date().toISOString(),
+              updatedat: new Date().toISOString(),
+            },
+          ];
+        }
 
-      // LIST with filters
-      if (/FROM\s+fields\s+f/i.test(sql) && /ORDER BY/i.test(sql)) {
-        const total_count = 2;
-        return [
-          {
-            field_id: 'f-list-1',
-            user_id: 'user-1',
-            name: 'A',
-            boundary: { type: 'MultiPolygon', coordinates: [[[80.1, 7.2]]] },
-            area_sqm: 15000,
-            center: { type: 'Point', coordinates: [80.11, 7.21] },
-            status: 'active',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            total_count,
-          },
-          {
-            field_id: 'f-list-2',
-            user_id: 'user-1',
-            name: 'B',
-            boundary: { type: 'MultiPolygon', coordinates: [[[80.3, 7.4]]] },
-            area_sqm: 25000,
-            center: { type: 'Point', coordinates: [80.31, 7.41] },
-            status: 'active',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            total_count,
-          },
-        ];
-      }
+        // LIST with filters
+        if (/FROM\s+fields\s+f/i.test(sql) && /ORDER BY/i.test(sql)) {
+          const totalcount = 2;
+          return [
+            {
+              field_id: 'f-list-1',
+              user_id: 'user-1',
+              name: 'A',
+              boundary: { type: 'MultiPolygon', coordinates: [[[80.1, 7.2]]] },
+              areasqm: 15000,
+              center: { type: 'Point', coordinates: [80.11, 7.21] },
+              status: 'active',
+              createdat: new Date().toISOString(),
+              updatedat: new Date().toISOString(),
+              totalcount,
+            },
+            {
+              field_id: 'f-list-2',
+              user_id: 'user-1',
+              name: 'B',
+              boundary: { type: 'MultiPolygon', coordinates: [[[80.3, 7.4]]] },
+              areasqm: 25000,
+              center: { type: 'Point', coordinates: [80.31, 7.41] },
+              status: 'active',
+              createdat: new Date().toISOString(),
+              updatedat: new Date().toISOString(),
+              totalcount,
+            },
+          ];
+        }
 
-      return [];
-    });
+        return [];
+      });
 
     // Model methods
-    jest.spyOn(Field, 'findOne').mockImplementation(async (_args) => null);
-    jest.spyOn(Field, 'create').mockImplementation(async (payload) => ({
+    jest.spyOn(Field, 'findOne').mockImplementation(async args => null);
+    jest.spyOn(Field, 'create').mockImplementation(async payload => ({
       field_id: '11111111-1111-4111-8111-111111111111',
       user_id: payload.user_id,
       name: payload.name,
@@ -176,62 +186,70 @@ describe('Fields API Integration', () => {
         name: 'North plot',
         boundary: {
           type: 'Polygon',
-          coordinates: [[[80.1, 7.2], [80.12, 7.2], [80.12, 7.22], [80.1, 7.22], [80.1, 7.2]]],
+          coordinates: [
+            [
+              [80.1, 7.2],
+              [80.12, 7.2],
+              [80.12, 7.22],
+              [80.1, 7.22],
+              [80.1, 7.2],
+            ],
+          ],
         },
       })
       .expect(201);
 
     expect(createRes.body.success).toBe(true);
     expect(createRes.body.data).toHaveProperty('field_id');
-    expect(createRes.body.data).toHaveProperty('area_sqm');
+    expect(createRes.body.data).toHaveProperty('areasqm');
 
-    const fieldId = createRes.body.data.field_id;
+    const field_id = createRes.body.data.field_id;
 
     // Get by id
     const getRes = await request(app)
-      .get(`/api/v1/fields/${fieldId}`)
+      .get(`/api/v1/fields/${field_id}`)
       .set('Authorization', 'Bearer token')
       .expect(200);
 
     expect(getRes.body.success).toBe(true);
-    expect(getRes.body.data).toHaveProperty('field_id', fieldId);
+    expect(getRes.body.data).toHaveProperty('field_id', field_id);
 
     // List with bbox (first miss then hit to test caching)
     const listRes1 = await request(app)
-      .get('/api/v1/fields?bbox=80.10,7.20,80.50,7.80&page=1&page_size=10')
+      .get('/api/v1/fields?bbox=80.10,7.20,80.50,7.80&page=1&pagesize=10')
       .set('Authorization', 'Bearer token')
       .expect(200);
 
     expect(listRes1.body.success).toBe(true);
     expect(Array.isArray(listRes1.body.data)).toBe(true);
-    expect(listRes1.body.pagination).toMatchObject({ page: 1, page_size: 10, total: 2 });
+    expect(listRes1.body.pagination).toMatchObject({ page: 1, pagesize: 10, total: 2 });
     // meta is optional here; ensure structure presence if returned
     if (listRes1.body.meta) {
-      expect(listRes1.body.meta).toHaveProperty('cache_hit', false);
+      expect(listRes1.body.meta).toHaveProperty('cachehit', false);
     }
 
     const listRes2 = await request(app)
-      .get('/api/v1/fields?bbox=80.10,7.20,80.50,7.80&page=1&page_size=10')
+      .get('/api/v1/fields?bbox=80.10,7.20,80.50,7.80&page=1&pagesize=10')
       .set('Authorization', 'Bearer token')
       .expect(200);
 
     if (listRes2.body.meta) {
-      expect(listRes2.body.meta).toHaveProperty('cache_hit', true);
+      expect(listRes2.body.meta).toHaveProperty('cachehit', true);
     }
 
     // Patch name and status
     const patchRes = await request(app)
-      .patch(`/api/v1/fields/${fieldId}`)
+      .patch(`/api/v1/fields/${field_id}`)
       .set('Authorization', 'Bearer token')
       .send({ name: 'Renamed', status: 'archived' })
       .expect(200);
 
     expect(patchRes.body.success).toBe(true);
-    expect(patchRes.body.data).toHaveProperty('field_id', fieldId);
+    expect(patchRes.body.data).toHaveProperty('field_id', field_id);
 
     // Delete (soft)
     const deleteRes = await request(app)
-      .delete(`/api/v1/fields/${fieldId}`)
+      .delete(`/api/v1/fields/${field_id}`)
       .set('Authorization', 'Bearer token')
       .expect(200);
 
@@ -244,7 +262,13 @@ describe('Fields API Integration', () => {
       .set('Authorization', 'Bearer token')
       .send({
         name: 'Bad',
-        boundary: { type: 'LineString', coordinates: [[80.1, 7.2], [80.2, 7.25]] },
+        boundary: {
+          type: 'LineString',
+          coordinates: [
+            [80.1, 7.2],
+            [80.2, 7.25],
+          ],
+        },
       })
       .expect(400);
 
@@ -262,7 +286,15 @@ describe('Fields API Integration', () => {
         name: 'Duplicate',
         boundary: {
           type: 'Polygon',
-          coordinates: [[[80.1, 7.2], [80.12, 7.2], [80.12, 7.22], [80.1, 7.22], [80.1, 7.2]]],
+          coordinates: [
+            [
+              [80.1, 7.2],
+              [80.12, 7.2],
+              [80.12, 7.22],
+              [80.1, 7.22],
+              [80.1, 7.2],
+            ],
+          ],
         },
       })
       .expect(409);
@@ -278,6 +310,6 @@ describe('Fields API Integration', () => {
       .expect(400);
 
     expect(res.body.success).toBe(false);
-    expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    expect(res.body.error.code).toBe('VALIDATIONERROR');
   });
 });

@@ -3,9 +3,9 @@
  * Progress indicator for AI boundary detection
  */
 
-import React from 'react';
+import React from "react";
 
-import { LoadingState } from '../../../shared/ui/LoadingState';
+import { LoadingState } from "../../../shared/ui/LoadingState";
 
 interface BoundaryDetectionProgressProps {
   progress: number; // 0-100
@@ -15,10 +15,10 @@ interface BoundaryDetectionProgressProps {
 
 /**
  * BoundaryDetectionProgress
- * 
+ *
  * Full-screen progress modal during AI boundary detection
  * Shows progress bar, current step, and estimated time
- * 
+ *
  * Steps:
  * 1. Retrieving satellite image (0-25%)
  * 2. Analyzing field boundaries (25-50%)
@@ -81,7 +81,7 @@ export const BoundaryDetectionProgress: React.FC<
         {/* Estimated Time */}
         <div className="text-center mb-6">
           <p className="text-sm text-gray-600">
-            Estimated time remaining:{' '}
+            Estimated time remaining:{" "}
             <span className="font-semibold text-gray-900">
               {estimatedTime}s
             </span>
@@ -146,24 +146,24 @@ const ProgressStep: React.FC<ProgressStepProps> = ({
           shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs
           ${
             isComplete
-              ? 'bg-green-500 text-white'
+              ? "bg-green-500 text-white"
               : isActive
-              ? 'bg-brand-blue text-white animate-pulse'
-              : 'bg-gray-200 text-gray-400'
+                ? "bg-brand-blue text-white animate-pulse"
+                : "bg-gray-200 text-gray-400"
           }
         `}
       >
-        {isComplete ? '✓' : isActive ? '●' : '○'}
+        {isComplete ? "✓" : isActive ? "●" : "○"}
       </div>
       <p
         className={`
           text-xs
           ${
             isComplete
-              ? 'text-green-700 font-medium'
+              ? "text-green-700 font-medium"
               : isActive
-              ? 'text-gray-900 font-medium'
-              : 'text-gray-500'
+                ? "text-gray-900 font-medium"
+                : "text-gray-500"
           }
         `}
       >
@@ -174,4 +174,3 @@ const ProgressStep: React.FC<ProgressStepProps> = ({
 };
 
 export default BoundaryDetectionProgress;
-

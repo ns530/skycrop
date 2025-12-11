@@ -1,20 +1,16 @@
 'use strict';
 
+const crypto = require('crypto');
 const { sequelize } = require('../config/database.config');
 const Field = require('../models/field.model');
 const { getRedisClient, initRedis } = require('../config/redis.config');
-const crypto = require('crypto');
-const {
-  ValidationError,
-  ConflictError,
-  NotFoundError,
-} = require('../errors/custom-errors');
+const { ValidationError, ConflictError, NotFoundError } = require('../errors/custom-errors');
 
 /**
  * Env & constants
  */
-const FIELD_CACHE_TTL_SEC_LIST = parseInt(process.env.FIELD_CACHE_TTL_SEC_LIST || '300', 10); // 5m
-const FIELD_CACHE_TTL_SEC_DETAIL = parseInt(process.env.FIELD_CACHE_TTL_SEC_DETAIL || '600', 10); // 10m
+const FIELDCACHETTLSECLIST = parseInt(process.env.FIELDCACHETTLSECLIST || '300', 10); // 5m
+const FIELDCACHETTLSECDETAIL = parseInt(process.env.FIELDCACHETTLSECDETAIL || '600', 10); // 10m
 
 const STATUS = ['active', 'archived', 'deleted'];
 
@@ -79,28 +75,52 @@ function isFiniteNumber(n) {
 
 function validatePolygonCoordinates(rings) {
   if (!Array.isArray(rings) || rings.length === 0) {
-    throw new ValidationError('Polygon must have at least one linear ring', { field: 'boundary.coordinates' });
+    throw new ValidationError('Polygon must have at least one linear ring', {
+      field: 'boundary.coordinates',
+    });
   }
   const outer = rings[0];
   if (!Array.isArray(outer) || outer.length < 4) {
-    throw new ValidationError('Outer ring must have at least 4 positions (closed ring)', { field: 'boundary.coordinates' });
+    throw new ValidationError('Outer ring must have at least 4 positions (closed ring)', {
+      field: 'boundary.coordinates',
+    });
   }
   const first = outer[0];
   const last = outer[outer.length - 1];
-  if (!first || !last || first.length < 2 || last.length < 2 || first[0] !== last[0] || first[1] !== last[1]) {
-    throw new ValidationError('Outer ring must be closed (first equals last)', { field: 'boundary.coordinates' });
+  if (
+    !first ||
+    !last ||
+    first.length < 2 ||
+    last.length < 2 ||
+    first[0] !== last[0] ||
+    first[1] !== last[1]
+  ) {
+    throw new ValidationError('Outer ring must be closed (first equals last)', {
+      field: 'boundary.coordinates',
+    });
   }
   for (const pos of outer) {
     const [lon, lat] = pos;
-    if (!isFiniteNumber(lon) || !isFiniteNumber(lat) || lon < -180 || lon > 180 || lat < -90 || lat > 90) {
-      throw new ValidationError('Coordinates out of range for SRID 4326', { field: 'boundary.coordinates' });
+    if (
+      !isFiniteNumber(lon) ||
+      !isFiniteNumber(lat) ||
+      lon < -180 ||
+      lon > 180 ||
+      lat < -90 ||
+      lat > 90
+    ) {
+      throw new ValidationError('Coordinates out of range for SRID 4326', {
+        field: 'boundary.coordinates',
+      });
     }
   }
 }
 
 function normalizeToMultiPolygon(geo) {
   if (!geo || typeof geo !== 'object' || !geo.type) {
-    throw new ValidationError('Boundary must be a GeoJSON Polygon or MultiPolygon', { field: 'boundary' });
+    throw new ValidationError('Boundary must be a GeoJSON Polygon or MultiPolygon', {
+      field: 'boundary',
+    });
   }
   if (geo.type === 'Polygon') {
     validatePolygonCoordinates(geo.coordinates);
@@ -111,16 +131,20 @@ function normalizeToMultiPolygon(geo) {
   }
   if (geo.type === 'MultiPolygon') {
     if (!Array.isArray(geo.coordinates) || geo.coordinates.length === 0) {
-      throw new ValidationError('MultiPolygon must have at least one polygon', { field: 'boundary.coordinates' });
+      throw new ValidationError('MultiPolygon must have at least one polygon', {
+        field: 'boundary.coordinates',
+      });
     }
     // Validate first polygon outer ring for minimal checks
     validatePolygonCoordinates(geo.coordinates[0]);
     return geo;
   }
-  throw new ValidationError('Unsupported geometry type; only Polygon or MultiPolygon accepted', { field: 'boundary.type' });
+  throw new ValidationError('Unsupported geometry type; only Polygon or MultiPolygon accepted', {
+    field: 'boundary.type',
+  });
 }
 
-// Approximate area in hectares (fallback for legacy "area" column; authoritative is area_sqm via DB trigger)
+// Approximate area in hectares (fallback for legacy "area" column; authoritative is areasqm via DB trigger)
 function approxAreaHectares(geo) {
   const polygons = geo.type === 'Polygon' ? [geo.coordinates] : geo.coordinates;
   let sumM2 = 0;
@@ -157,7 +181,7 @@ function approxAreaHectares(geo) {
 function parseBbox(bboxStr) {
   if (!bboxStr) return null;
   const parts = String(bboxStr).split(',').map(parseFloat);
-  if (parts.length !== 4 || parts.some((n) => !isFiniteNumber(n))) {
+  if (parts.length !== 4 || parts.some(n => !isFiniteNumber(n))) {
     throw new ValidationError('Invalid bbox format; expected "minLon,minLat,maxLon,maxLat"');
   }
   const [minLon, minLat, maxLon, maxLat] = parts;
@@ -172,9 +196,11 @@ function parseBbox(bboxStr) {
 
 function parseNear(nearStr) {
   if (!nearStr) return null;
-  const parts = String(nearStr).split(',').map((v) => v.trim());
+  const parts = String(nearStr)
+    .split(',')
+    .map(v => v.trim());
   if (parts.length !== 3) {
-    throw new ValidationError('Invalid near format; expected "lat,lon,radius_m"');
+    throw new ValidationError('Invalid near format; expected "lat,lon,radiusm"');
   }
   const lat = parseFloat(parts[0]);
   const lon = parseFloat(parts[1]);
@@ -186,7 +212,7 @@ function parseNear(nearStr) {
     throw new ValidationError('near.lon out of range');
   }
   if (!Number.isFinite(radius) || radius <= 0 || radius > 200000) {
-    throw new ValidationError('near.radius_m must be 1..200000');
+    throw new ValidationError('near.radiusm must be 1..200000');
   }
   return { lat, lon, radius };
 }
@@ -213,32 +239,32 @@ function stableHash(obj) {
   return crypto.createHash('sha1').update(json).digest('hex');
 }
 
-function listCacheKey(userId, query) {
+function listCacheKey(user_id, query) {
   const base = {
-    userId,
+    user_id,
     bbox: query.bbox || null,
     near: query.near || null,
     intersects: query.intersects || null,
     page: query.page || 1,
-    page_size: query.page_size || 20,
-    sort: query.sort || 'created_at',
+    pagesize: query.pagesize || 20,
+    sort: query.sort || 'createdat',
     order: query.order || 'desc',
   };
   const h = stableHash(base);
-  return `fields:list:${userId}:${h}`;
+  return `fields:list:${user_id}:${h}`;
 }
 
-function byIdCacheKey(fieldId) {
-  return `fields:byId:${fieldId}`;
+function byIdCacheKey(field_id) {
+  return `fields:byId:${field_id}`;
 }
 
-async function invalidateFieldCaches(userId, fieldId) {
+async function invalidateFieldCaches(user_id, field_id) {
   // Invalidate list caches for user and specific id cache
-  await redisDelPattern(`fields:list:${userId}:*`);
-  if (fieldId) {
+  await redisDelPattern(`fields:list:${user_id}:*`);
+  if (field_id) {
     const redis = await getRedis();
     if (redis) {
-      await redis.del(byIdCacheKey(fieldId));
+      await redis.del(byIdCacheKey(field_id));
     }
   }
 }
@@ -246,16 +272,16 @@ async function invalidateFieldCaches(userId, fieldId) {
 /**
  * Raw query builder for list with spatial filters and pagination
  */
-async function queryFieldsList(userId, filters) {
+async function queryFieldsList(user_id, filters) {
   const bbox = parseBbox(filters.bbox || null);
   const near = parseNear(filters.near || null);
   const inter = parseIntersects(filters.intersects || null);
 
   const params = {
-    userId,
+    user_id,
   };
 
-  const where = ['f.user_id = :userId', "f.status = 'active'"];
+  const where = ['f.user_id = :user_id', "f.status = 'active'"];
   const joins = [];
   const conds = [];
 
@@ -265,8 +291,8 @@ async function queryFieldsList(userId, filters) {
     params.maxLon = bbox.maxLon;
     params.maxLat = bbox.maxLat;
     conds.push(
-      `f.boundary && ST_MakeEnvelope(:minLon, :minLat, :maxLon, :maxLat, 4326)`,
-      `ST_Intersects(f.boundary, ST_MakeEnvelope(:minLon, :minLat, :maxLon, :maxLat, 4326))`
+      `f.boundary && STMakeEnvelope(:minLon, :minLat, :maxLon, :maxLat, 4326)`,
+      `STIntersects(f.boundary, STMakeEnvelope(:minLon, :minLat, :maxLon, :maxLat, 4326))`
     );
   }
 
@@ -275,22 +301,20 @@ async function queryFieldsList(userId, filters) {
     params.nearLon = near.lon;
     params.nearRadius = near.radius;
     conds.push(
-      `ST_DWithin(f.center::geography, ST_SetSRID(ST_Point(:nearLon, :nearLat), 4326)::geography, :nearRadius)`
+      `STDWithin(f.center::geography, STSetSRID(STPoint(:nearLon, :nearLat), 4326)::geography, :nearRadius)`
     );
   }
 
   if (inter) {
     if (inter.type === 'field') {
-      params.intersectsFieldId = inter.id;
+      params.intersectsfield_id = inter.id;
       // Restrict lookup to same user to avoid cross-tenant leakage
       conds.push(
-        `ST_Intersects(f.boundary, (SELECT boundary FROM fields f2 WHERE f2.field_id = :intersectsFieldId AND f2.user_id = :userId LIMIT 1))`
+        `STIntersects(f.boundary, (SELECT boundary FROM fields f2 WHERE f2.field_id = :intersectsfield_id AND f2.user_id = :user_id LIMIT 1))`
       );
     } else if (inter.type === 'geometry') {
       params.intersectsGeo = JSON.stringify(inter.geometry);
-      conds.push(
-        `ST_Intersects(f.boundary, ST_SetSRID(ST_GeomFromGeoJSON(:intersectsGeo), 4326))`
-      );
+      conds.push(`STIntersects(f.boundary, STSetSRID(STGeomFromGeoJSON(:intersectsGeo), 4326))`);
     }
   }
 
@@ -298,11 +322,13 @@ async function queryFieldsList(userId, filters) {
     where.push(...conds);
   }
 
-  const sort = ['name', 'created_at', 'area_sqm'].includes(filters.sort) ? filters.sort : 'created_at';
+  const sort = ['name', 'createdat', 'areasqm'].includes(filters.sort)
+    ? filters.sort
+    : 'createdat';
   const order = (filters.order || 'desc').toLowerCase() === 'asc' ? 'ASC' : 'DESC';
 
   const page = Math.max(parseInt(filters.page || '1', 10), 1);
-  const pageSize = Math.min(Math.max(parseInt(filters.page_size || '20', 10), 1), 100);
+  const pageSize = Math.min(Math.max(parseInt(filters.pagesize || '20', 10), 1), 100);
   const offset = (page - 1) * pageSize;
 
   const whereSql = where.join(' AND ');
@@ -311,13 +337,13 @@ async function queryFieldsList(userId, filters) {
       f.field_id,
       f.user_id,
       f.name,
-      ST_AsGeoJSON(f.boundary)::json AS boundary,
-      f.area_sqm,
-      ST_AsGeoJSON(f.center)::json AS center,
+      STAsGeoJSON(f.boundary)::json AS boundary,
+      f.areasqm,
+      STAsGeoJSON(f.center)::json AS center,
       f.status,
-      f.created_at,
-      f.updated_at,
-      COUNT(*) OVER() AS total_count
+      f.createdat,
+      f.updatedat,
+      COUNT(*) OVER() AS totalcount
     FROM fields f
     ${joins.join('\n')}
     WHERE ${whereSql}
@@ -333,9 +359,9 @@ async function queryFieldsList(userId, filters) {
     replacements: params,
   });
 
-  const total = rows.length ? Number(rows[0].total_count) : 0;
+  const total = rows.length ? Number(rows[0].totalcount) : 0;
   // strip window column
-  const data = rows.map(({ total_count, ...r }) => r);
+  const data = rows.map(({ totalcount, ...r }) => r);
 
   return { items: data, total, page, pageSize };
 }
@@ -346,22 +372,25 @@ async function queryFieldsList(userId, filters) {
 class FieldService {
   /**
    * Create Field with GeoJSON boundary (Polygon/MultiPolygon).
-   * - Normalize to MultiPolygon, SRID 4326 (DB trigger ensures SRID and center/area_sqm)
+   * - Normalize to MultiPolygon, SRID 4326 (DB trigger ensures SRID and center/areasqm)
    * - Validate structure and lon/lat ranges
    * - Enforce name uniqueness per user
    * - Cache invalidation on success
    */
-  async createWithBoundary(userId, name, boundary) {
-    if (!userId) throw new ValidationError('userId is required');
+  async createWithBoundary(user_id, name, boundary) {
+    if (!user_id) throw new ValidationError('user_id is required');
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       throw new ValidationError('Field name is required', { field: 'name' });
     }
 
-    const existing = await Field.findOne({ where: { user_id: userId, name: name.trim() } });
+    const existing = await Field.findOne({ where: { user_id: user_id, name: name.trim() } });
     if (existing) {
-      throw new ConflictError(`You already have a field named '${name}'. Please choose a different name.`, {
-        field: 'name',
-      });
+      throw new ConflictError(
+        `You already have a field named '${name}'. Please choose a different name.`,
+        {
+          field: 'name',
+        }
+      );
     }
 
     // Normalize geometry
@@ -373,37 +402,40 @@ class FieldService {
       throw new ValidationError('Invalid boundary geometry', { cause: e.message });
     }
 
-    // Legacy area (hectares) fallback for NOT NULL column; authoritative area_sqm computed in DB trigger
+    // Legacy area (hectares) fallback for NOT NULL column; authoritative areasqm computed in DB trigger
     const areaHa = Number(approxAreaHectares(boundary).toFixed(2));
 
     try {
-      // Create field with placeholder values - trigger will compute actual center and area_sqm
+      // Create field with placeholder values - trigger will compute actual center and areasqm
       // We use a simple point and 0 area as placeholders that satisfy Sequelize validation
       const { sequelize } = Field;
-      
+
       // Create a temporary point for center (trigger will override)
       const tempCenter = {
         type: 'Point',
         coordinates: [0, 0],
       };
-      
+
       const created = await Field.create({
-        user_id: userId,
+        user_id: user_id,
         name: name.trim(),
         boundary: normalized,
         area: areaHa,
         status: 'active',
         center: tempCenter, // Placeholder - trigger will override
-        area_sqm: 0, // Placeholder - trigger will override
+        areasqm: 0, // Placeholder - trigger will override
       });
-      
-      await invalidateFieldCaches(userId, created.field_id);
+
+      await invalidateFieldCaches(user_id, created.field_id);
       // Reload using raw to include computed columns as GeoJSON
-      const one = await this.getById(userId, created.field_id);
+      const one = await this.getById(user_id, created.field_id);
       return one;
     } catch (err) {
       // Map potential PostGIS validity errors to 400
-      if (String(err.message || '').includes('Geometry') || String(err.message || '').includes('ST_IsValid')) {
+      if (
+        String(err.message || '').includes('Geometry') ||
+        String(err.message || '').includes('STIsValid')
+      ) {
         throw new ValidationError('Geometry invalid or self-intersecting', { field: 'boundary' });
       }
       throw err;
@@ -414,29 +446,29 @@ class FieldService {
    * List with spatial filters, pagination, sorting
    * - Cache by user + query hash for 5m
    */
-  async list(userId, query = {}) {
-    if (!userId) throw new ValidationError('userId is required');
+  async list(user_id, query = {}) {
+    if (!user_id) throw new ValidationError('user_id is required');
 
-    const key = listCacheKey(userId, query);
+    const key = listCacheKey(user_id, query);
     const cached = await redisGetJSON(key);
     if (cached) {
       return { ...cached, cacheHit: true };
     }
 
-    const result = await queryFieldsList(userId, query);
-    await redisSetJSON(key, result, FIELD_CACHE_TTL_SEC_LIST);
+    const result = await queryFieldsList(user_id, query);
+    await redisSetJSON(key, result, FIELDCACHETTLSECLIST);
     return { ...result, cacheHit: false };
   }
 
   /**
    * Get field by id (owner-only). Cached for 10m.
    */
-  async getById(userId, fieldId) {
-    if (!userId || !fieldId) throw new ValidationError('userId and fieldId are required');
+  async getById(user_id, field_id) {
+    if (!user_id || !field_id) throw new ValidationError('user_id and field_id are required');
 
-    const key = byIdCacheKey(fieldId);
+    const key = byIdCacheKey(field_id);
     const cached = await redisGetJSON(key);
-    if (cached && cached.user_id === userId && cached.status !== 'deleted') {
+    if (cached && cached.user_id === user_id && cached.status !== 'deleted') {
       return cached;
     }
 
@@ -447,19 +479,19 @@ class FieldService {
         f.field_id,
         f.user_id,
         f.name,
-        ST_AsGeoJSON(f.boundary)::json AS boundary,
-        f.area_sqm,
-        ST_AsGeoJSON(f.center)::json AS center,
+        STAsGeoJSON(f.boundary)::json AS boundary,
+        f.areasqm,
+        STAsGeoJSON(f.center)::json AS center,
         f.status,
-        f.created_at,
-        f.updated_at
+        f.createdat,
+        f.updatedat
       FROM fields f
-      WHERE f.field_id = :fieldId AND f.user_id = :userId
+      WHERE f.field_id = :field_id AND f.user_id = :user_id
       LIMIT 1
       `,
       {
         type: sequelize.QueryTypes.SELECT,
-        replacements: { fieldId, userId },
+        replacements: { field_id, user_id },
       }
     );
 
@@ -468,16 +500,16 @@ class FieldService {
       throw new NotFoundError('Field not found');
     }
 
-    await redisSetJSON(key, field, FIELD_CACHE_TTL_SEC_DETAIL);
+    await redisSetJSON(key, field, FIELDCACHETTLSECDETAIL);
     return field;
   }
 
   /**
    * Update metadata: name and/or status
    */
-  async update(userId, fieldId, { name, status }) {
+  async update(user_id, field_id, { name, status }) {
     const field = await Field.scope('allStatuses').findOne({
-      where: { field_id: fieldId, user_id: userId },
+      where: { field_id: field_id, user_id: user_id },
     });
     if (!field || field.status === 'deleted') {
       throw new NotFoundError('Field not found');
@@ -485,12 +517,15 @@ class FieldService {
 
     if (typeof name === 'string' && name.trim().length > 0 && name.trim() !== field.name) {
       const exists = await Field.findOne({
-        where: { user_id: userId, name: name.trim() },
+        where: { user_id: user_id, name: name.trim() },
       });
       if (exists) {
-        throw new ConflictError(`You already have a field named '${name}'. Please choose a different name.`, {
-          field: 'name',
-        });
+        throw new ConflictError(
+          `You already have a field named '${name}'. Please choose a different name.`,
+          {
+            field: 'name',
+          }
+        );
       }
       field.name = name.trim();
     }
@@ -503,24 +538,24 @@ class FieldService {
     }
 
     await field.save();
-    await invalidateFieldCaches(userId, field.field_id);
-    const fresh = await this.getById(userId, field.field_id);
+    await invalidateFieldCaches(user_id, field.field_id);
+    const fresh = await this.getById(user_id, field.field_id);
     return fresh;
   }
 
   /**
    * Soft delete (status = 'deleted')
    */
-  async delete(userId, fieldId) {
+  async delete(user_id, field_id) {
     const field = await Field.scope('allStatuses').findOne({
-      where: { field_id: fieldId, user_id: userId },
+      where: { field_id: field_id, user_id: user_id },
     });
     if (!field || field.status === 'deleted') {
       throw new NotFoundError('Field not found');
     }
     field.status = 'deleted';
     await field.save();
-    await invalidateFieldCaches(userId, field.field_id);
+    await invalidateFieldCaches(user_id, field.field_id);
     return { success: true };
   }
 }

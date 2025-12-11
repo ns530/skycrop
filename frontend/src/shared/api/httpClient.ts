@@ -1,4 +1,9 @@
-import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, {
+  AxiosError,
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse,
+} from "axios";
 
 export interface ApiErrorPayload {
   success?: boolean;
@@ -14,9 +19,14 @@ export class ApiError extends Error {
   public readonly code?: string;
   public readonly details?: Record<string, unknown> | null;
 
-  constructor(message: string, status?: number, code?: string, details?: Record<string, unknown> | null) {
+  constructor(
+    message: string,
+    status?: number,
+    code?: string,
+    details?: Record<string, unknown> | null,
+  ) {
     super(message);
-    this.name = 'ApiError';
+    this.name = "ApiError";
     this.status = status;
     this.code = code;
     this.details = details ?? null;
@@ -63,13 +73,16 @@ export const setAuthTokens = (tokens: AuthTokens) => {
  * - refreshFn: called on 401 responses to attempt token refresh
  * - onAuthError: called when refresh fails or is not available (should logout)
  */
-export const configureAuthHandlers = (handlers: { refreshFn?: RefreshFn; onAuthError?: AuthErrorHandler }) => {
+export const configureAuthHandlers = (handlers: {
+  refreshFn?: RefreshFn;
+  onAuthError?: AuthErrorHandler;
+}) => {
   authState.refreshFn = handlers.refreshFn ?? null;
   authState.onAuthError = handlers.onAuthError ?? null;
 };
 
 // Use environment configuration (works in both Vite and Jest)
-import { env } from '../../config/env';
+import { env } from "../../config/env";
 const apiBaseURL = env.API_BASE_URL;
 
 const httpClient: AxiosInstance = axios.create({
@@ -82,7 +95,6 @@ const httpClient: AxiosInstance = axios.create({
  */
 httpClient.interceptors.request.use((config) => {
   if (authState.tokens.accessToken && config.headers) {
-     
     config.headers.Authorization = `Bearer ${authState.tokens.accessToken}`;
   }
   return config;
@@ -101,7 +113,9 @@ interface AxiosRequestConfigWithRetry extends AxiosRequestConfig {
 httpClient.interceptors.response.use(
   (response: AxiosResponse) => response,
   async (error: AxiosError<ApiErrorPayload>) => {
-    const originalRequest = error.config as AxiosRequestConfigWithRetry | undefined;
+    const originalRequest = error.config as
+      | AxiosRequestConfigWithRetry
+      | undefined;
     const status = error.response?.status;
 
     if (!originalRequest) {
@@ -109,7 +123,9 @@ httpClient.interceptors.response.use(
     }
 
     const isUnauthorized = status === 401;
-    const canAttemptRefresh = Boolean(authState.refreshFn && authState.tokens.refreshToken);
+    const canAttemptRefresh = Boolean(
+      authState.refreshFn && authState.tokens.refreshToken,
+    );
 
     if (!isUnauthorized || !canAttemptRefresh) {
       if (isUnauthorized && authState.onAuthError) {
@@ -177,7 +193,7 @@ httpClient.interceptors.response.use(
       }
       return Promise.reject(normalizeApiError(error));
     }
-  }
+  },
 );
 
 /**
@@ -196,7 +212,7 @@ export const normalizeApiError = (error: unknown): ApiError => {
     const message =
       payload?.error?.message ??
       axiosError.message ??
-      (status ? `Request failed with status ${status}` : 'Request failed');
+      (status ? `Request failed with status ${status}` : "Request failed");
 
     return new ApiError(message, status, code, payload?.error?.details ?? null);
   }
@@ -205,7 +221,7 @@ export const normalizeApiError = (error: unknown): ApiError => {
     return new ApiError(error.message);
   }
 
-  return new ApiError('An unexpected error occurred');
+  return new ApiError("An unexpected error occurred");
 };
 
 export { httpClient };

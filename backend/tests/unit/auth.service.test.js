@@ -1,6 +1,4 @@
-'use strict';
-
-process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret';
+process.env.JWTSECRET = process.env.JWTSECRET || 'test-secret';
 
 // Mock Redis config to avoid real connection
 const fakeRedisStore = new Map();
@@ -28,7 +26,7 @@ const fakeRedis = {
     fakeRedisStore.set(key, String(next));
     return next;
   },
-  async expire(_key, _ttl) {
+  async expire(key, ttl) {
     return 1;
   },
 };
@@ -68,27 +66,27 @@ describe('AuthService - signup/login', () => {
 
   test('signup rejects invalid email', async () => {
     await expect(service.signup('not-an-email', 'Password1', 'Name')).rejects.toMatchObject({
-      code: 'VALIDATION_ERROR',
+      code: 'VALIDATIONERROR',
     });
   });
 
   test('signup rejects weak password', async () => {
     await expect(service.signup('user@example.com', 'weak', 'Name')).rejects.toMatchObject({
-      code: 'VALIDATION_ERROR',
+      code: 'VALIDATIONERROR',
     });
   });
 
   test('signup rejects missing name', async () => {
     await expect(service.signup('user@example.com', 'Password1', '')).rejects.toMatchObject({
-      code: 'VALIDATION_ERROR',
+      code: 'VALIDATIONERROR',
     });
   });
 
   test('signup rejects duplicate email', async () => {
     mockUser.findByEmail.mockResolvedValueOnce({ user_id: 'u1' });
-    await expect(
-      service.signup('user@example.com', 'Password1', 'Name')
-    ).rejects.toMatchObject({ code: 'CONFLICT' });
+    await expect(service.signup('user@example.com', 'Password1', 'Name')).rejects.toMatchObject({
+      code: 'CONFLICT',
+    });
   });
 
   test('signup success issues jwt and verification token', async () => {
@@ -98,7 +96,7 @@ describe('AuthService - signup/login', () => {
       email: 'user@example.com',
       name: 'Name',
       role: 'farmer',
-      email_verified: false,
+      emailverified: false,
     });
 
     const result = await service.signup('user@example.com', 'Password1', 'Name');
@@ -124,8 +122,8 @@ describe('AuthService - signup/login', () => {
       email: 'user@example.com',
       name: 'User',
       role: 'farmer',
-      email_verified: true,
-      password_hash: '$2b$10$invalid-hash-will-not-match',
+      emailverified: true,
+      passwordhash: '$2b$10$invalid-hash-will-not-match',
       update: jest.fn(),
     });
 

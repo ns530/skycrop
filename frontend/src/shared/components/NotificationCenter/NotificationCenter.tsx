@@ -1,22 +1,28 @@
 /**
  * NotificationCenter Component
- * 
+ *
  * Dropdown panel showing recent notifications
  * with actions to mark as read, clear, etc.
  */
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
-import { notificationService, type StoredNotification } from '../../services/notificationService';
-import { Button } from '../../ui/Button';
+import {
+  notificationService,
+  type StoredNotification,
+} from "../../services/notificationService";
+import { Button } from "../../ui/Button";
 
 interface NotificationCenterProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, onClose }) => {
+export const NotificationCenter: React.FC<NotificationCenterProps> = ({
+  isOpen,
+  onClose,
+}) => {
   const [notifications, setNotifications] = useState<StoredNotification[]>([]);
   const navigate = useNavigate();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -32,10 +38,13 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
       setNotifications(notificationService.getStoredNotifications());
     };
 
-    window.addEventListener('skycrop:notification', handleNotificationUpdate);
+    window.addEventListener("skycrop:notification", handleNotificationUpdate);
 
     return () => {
-      window.removeEventListener('skycrop:notification', handleNotificationUpdate);
+      window.removeEventListener(
+        "skycrop:notification",
+        handleNotificationUpdate,
+      );
     };
   }, []);
 
@@ -44,13 +53,16 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
     if (!isOpen) return;
 
     const handleClickOutside = (event: MouseEvent) => {
-      if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
+      if (
+        panelRef.current &&
+        !panelRef.current.contains(event.target as Node)
+      ) {
         onClose();
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, onClose]);
 
   // Close on Escape key
@@ -58,18 +70,18 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
     if (!isOpen) return;
 
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         onClose();
       }
     };
 
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, onClose]);
 
   const handleNotificationClick = (notification: StoredNotification) => {
     notificationService.markAsRead(notification.id);
-    
+
     if (notification.url) {
       navigate(notification.url);
       onClose();
@@ -85,7 +97,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
   };
 
   const handleClearAll = () => {
-    if (confirm('Clear all notifications?')) {
+    if (confirm("Clear all notifications?")) {
       notificationService.clearAll();
       setNotifications([]);
     }
@@ -146,7 +158,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
         {activeNotifications.length === 0 ? (
           <div className="px-4 py-12 text-center">
             <div className="text-4xl mb-3">🔔</div>
-            <p className="text-sm font-medium text-gray-900 mb-1">No notifications</p>
+            <p className="text-sm font-medium text-gray-900 mb-1">
+              No notifications
+            </p>
             <p className="text-xs text-gray-500">You&apos;re all caught up!</p>
           </div>
         ) : (
@@ -169,7 +183,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
           <button
             type="button"
             onClick={() => {
-              navigate('/settings/notifications');
+              navigate("/settings/notifications");
               onClose();
             }}
             className="text-xs text-blue-600 hover:text-blue-700 hover:underline"
@@ -192,25 +206,29 @@ interface NotificationItemProps {
   onDismiss: (e: React.MouseEvent) => void;
 }
 
-const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onClick, onDismiss }) => {
+const NotificationItem: React.FC<NotificationItemProps> = ({
+  notification,
+  onClick,
+  onDismiss,
+}) => {
   const getTypeIcon = () => {
     const icons = {
-      'health-alert': '🚨',
-      'weather-warning': '🌧️',
-      'recommendation': '🤖',
-      'yield-update': '📊',
-      'system': '⚙️',
-      'general': '📰',
+      "health-alert": "🚨",
+      "weather-warning": "🌧️",
+      recommendation: "🤖",
+      "yield-update": "📊",
+      system: "⚙️",
+      general: "📰",
     };
-    return icons[notification.type] || '📬';
+    return icons[notification.type] || "📬";
   };
 
   const getPriorityColor = () => {
     const colors = {
-      critical: 'bg-red-50 border-l-4 border-l-red-500',
-      high: 'bg-orange-50 border-l-4 border-l-orange-500',
-      medium: 'bg-blue-50 border-l-4 border-l-blue-500',
-      low: 'bg-gray-50 border-l-4 border-l-gray-300',
+      critical: "bg-red-50 border-l-4 border-l-red-500",
+      high: "bg-orange-50 border-l-4 border-l-orange-500",
+      medium: "bg-blue-50 border-l-4 border-l-blue-500",
+      low: "bg-gray-50 border-l-4 border-l-gray-300",
     };
     return colors[notification.priority] || colors.low;
   };
@@ -222,7 +240,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onCli
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
 
-    if (minutes < 1) return 'Just now';
+    if (minutes < 1) return "Just now";
     if (minutes < 60) return `${minutes}m ago`;
     if (hours < 24) return `${hours}h ago`;
     if (days < 7) return `${days}d ago`;
@@ -230,7 +248,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onCli
   };
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === 'Enter' || event.key === ' ') {
+    if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       onClick();
     }
@@ -245,7 +263,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onCli
       className={`
         relative px-4 py-3 cursor-pointer transition-colors
         hover:bg-gray-50
-        ${!notification.read ? getPriorityColor() : 'bg-white'}
+        ${!notification.read ? getPriorityColor() : "bg-white"}
       `}
     >
       <div className="flex items-start gap-3">
@@ -255,10 +273,12 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onCli
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
-            <p className={`text-sm font-medium ${!notification.read ? 'text-gray-900' : 'text-gray-700'}`}>
+            <p
+              className={`text-sm font-medium ${!notification.read ? "text-gray-900" : "text-gray-700"}`}
+            >
               {notification.title}
             </p>
-            
+
             {/* Dismiss button */}
             <button
               type="button"
@@ -283,7 +303,10 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onCli
           <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
             <span>{getRelativeTime(notification.timestamp)}</span>
             {!notification.read && (
-              <span className="inline-block h-2 w-2 rounded-full bg-blue-500" aria-label="Unread" />
+              <span
+                className="inline-block h-2 w-2 rounded-full bg-blue-500"
+                aria-label="Unread"
+              />
             )}
           </div>
         </div>
@@ -293,4 +316,3 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onCli
 };
 
 export default NotificationCenter;
-

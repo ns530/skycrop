@@ -1,11 +1,11 @@
-import { useCallback } from 'react';
+import { useCallback } from "react";
 
-import { useToastContext } from '../ui/Toast';
+import { useToastContext } from "../ui/Toast";
 
 export interface ShowToastOptions {
   title?: string;
   description?: string;
-  variant?: 'default' | 'success' | 'error' | 'warning';
+  variant?: "default" | "success" | "error" | "warning";
   duration?: number;
 }
 
@@ -23,7 +23,7 @@ export const useToast = () => {
     (options: ShowToastOptions) => {
       showToast(options);
     },
-    [showToast]
+    [showToast],
   );
 
   return {

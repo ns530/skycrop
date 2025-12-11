@@ -9,7 +9,9 @@ const router = express.Router();
 
 // Path params schema and reusable validator for :id
 const uuidParam = Joi.object({
-  id: Joi.string().guid({ version: ['uuidv4', 'uuidv5', 'uuidv1'] }).required(),
+  id: Joi.string()
+    .guid({ version: ['uuidv4', 'uuidv5', 'uuidv1'] })
+    .required(),
 });
 
 const validateIdParam = (req, res, next) => {

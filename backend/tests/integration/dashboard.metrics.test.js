@@ -1,21 +1,19 @@
-'use strict';
-
 const request = require('supertest');
 
 // Mock rate limiter to no-op for tests
 jest.mock('../../src/api/middleware/rateLimit.middleware', () => ({
-  apiLimiter: (_req, _res, next) => next(),
-  authLimiter: (_req, _res, next) => next(),
+  apiLimiter: (req, res, next) => next(),
+  authLimiter: (req, res, next) => next(),
 }));
 
 // Mock auth middleware to inject a test user
 jest.mock('../../src/api/middleware/auth.middleware', () => ({
-  authMiddleware: (req, _res, next) => {
-    req.user = { userId: 'test-user-123' };
+  authMiddleware: (req, res, next) => {
+    req.user = { user_id: 'test-user-123' };
     next();
   },
-  requireRole: () => (_req, _res, next) => next(),
-  requireAnyRole: () => (_req, _res, next) => next(),
+  requireRole: () => (req, res, next) => next(),
+  requireAnyRole: () => (req, res, next) => next(),
 }));
 
 // In-memory fake Redis
@@ -25,11 +23,11 @@ const fakeRedisClient = {
   async get(key) {
     return redisStore.has(key) ? redisStore.get(key) : null;
   },
-  async setEx(key, _ttl, value) {
+  async setEx(key, ttl, value) {
     redisStore.set(key, value);
     return 'OK';
   },
-  async setex(key, _ttl, value) {
+  async setex(key, ttl, value) {
     redisStore.set(key, value);
     return 'OK';
   },
@@ -52,24 +50,24 @@ jest.mock('../../src/services/weather.service', () => ({
           { date: '2025-12-09', rain_mm: 1, tmin: 22, tmax: 32, wind: 5 },
           { date: '2025-12-10', rain_mm: 0, tmin: 21, tmax: 31, wind: 4 },
           { date: '2025-12-11', rain_mm: 3, tmin: 23, tmax: 33, wind: 6 },
-          { date: '2025-12-12', rain_mm: 0, tmin: 22, tmax: 32, wind: 5 }
+          { date: '2025-12-12', rain_mm: 0, tmin: 22, tmax: 32, wind: 5 },
         ],
-        totals: { rain_3d_mm: 3, rain_7d_mm: 6 }
-      }
-    })
-  }))
+        totals: { rain_3d_mm: 3, rain_7d_mm: 6 },
+      },
+    }),
+  })),
 }));
 
 // Mock ML Gateway service
 jest.mock('../../src/services/mlGateway.service', () => ({
   getMLGatewayService: jest.fn(() => ({
     getDisasterAssessment: jest.fn().mockResolvedValue({
-      risk_level: 'low',
-      disaster_types: ['flood'],
+      risklevel: 'low',
+      disastertypes: ['flood'],
       confidence: 0.85,
-      assessed_at: new Date().toISOString()
-    })
-  }))
+      assessedat: new Date().toISOString(),
+    }),
+  })),
 }));
 
 // Mock Sequelize entirely
@@ -85,19 +83,42 @@ jest.mock('sequelize', () => {
 
     static init(attributes, options) {
       // Mock init method - just return the class
-      this._attributes = attributes;
-      this._options = options;
+      this.attributes = attributes;
+      this.options = options;
       return this;
     }
 
-    static findOne() { return Promise.resolve(null); }
-    static findAll() { return Promise.resolve([]); }
-    static create(data) { return Promise.resolve(new this(data)); }
-    static update() { return Promise.resolve([0]); }
-    static destroy() { return Promise.resolve(0); }
-    static hasMany() { return this; }
-    static belongsTo() { return this; }
-    static scope() { return this; }
+    static findOne() {
+      return Promise.resolve(null);
+    }
+
+    static findAll() {
+      return Promise.resolve([]);
+    }
+
+    static create(data) {
+      return Promise.resolve(new this(data));
+    }
+
+    static update() {
+      return Promise.resolve([0]);
+    }
+
+    static destroy() {
+      return Promise.resolve(0);
+    }
+
+    static hasMany() {
+      return this;
+    }
+
+    static belongsTo() {
+      return this;
+    }
+
+    static scope() {
+      return this;
+    }
   }
 
   const mockSequelize = {
@@ -114,7 +135,7 @@ jest.mock('sequelize', () => {
       ModelClass.init(attributes, options);
       return ModelClass;
     }),
-    literal: jest.fn((val) => ({ val, _isSequelizeLiteral: true })),
+    literal: jest.fn(val => ({ val, isSequelizeLiteral: true })),
     Op: {
       ne: Symbol('ne'),
       gte: Symbol('gte'),
@@ -134,7 +155,7 @@ jest.mock('sequelize', () => {
     DataTypes: {
       UUID: 'UUID',
       UUIDV4: 'UUIDV4',
-      STRING: (length) => `STRING(${length})`,
+      STRING: length => `STRING(${length})`,
       TEXT: 'TEXT',
       INTEGER: 'INTEGER',
       DECIMAL: (precision, scale) => `DECIMAL(${precision},${scale})`,
@@ -155,8 +176,8 @@ const { QueryTypes } = require('sequelize');
 const { sequelize } = require('../../src/config/database.config');
 
 process.env.NODE_ENV = 'test';
-process.env.JWT_SECRET = 'test-secret';
-process.env.DASHBOARD_CACHE_TTL_SEC = '300';
+process.env.JWTSECRET = 'test-secret';
+process.env.DASHBOARDCACHETTLSEC = '300';
 
 const app = require('../../src/app');
 
@@ -169,26 +190,111 @@ describe('GET /api/v1/dashboard/metrics', () => {
   it('returns dashboard metrics with cache miss then hit', async () => {
     // Mock database queries
     sequelize.query
-      .mockResolvedValueOnce([{ total_fields: 5, active_fields: 4, total_area_sqm: 250000, avg_field_size_sqm: 62500 }]) // field metrics
-      .mockResolvedValueOnce([ // health metrics
-        { health_score: 75, health_status: 'good', ndvi_mean: 0.65, ndwi_mean: 0.25, measurement_date: '2025-11-15T10:00:00Z', field_id: 'field-1', field_name: 'Field 1' },
-        { health_score: 82, health_status: 'excellent', ndvi_mean: 0.72, ndwi_mean: 0.30, measurement_date: '2025-11-15T10:00:00Z', field_id: 'field-2', field_name: 'Field 2' },
-        { health_score: 68, health_status: 'fair', ndvi_mean: 0.58, ndwi_mean: 0.20, measurement_date: '2025-11-15T10:00:00Z', field_id: 'field-3', field_name: 'Field 3' },
-        { health_score: 45, health_status: 'poor', ndvi_mean: 0.35, ndwi_mean: 0.10, measurement_date: '2025-11-15T10:00:00Z', field_id: 'field-4', field_name: 'Field 4' }
+      .mockResolvedValueOnce([
+        { totalfields: 5, activefields: 4, totalareasqm: 250000, avgfieldsizesqm: 62500 },
+      ]) // field metrics
+      .mockResolvedValueOnce([
+        // health metrics
+        {
+          healthscore: 75,
+          healthstatus: 'good',
+          ndvimean: 0.65,
+          ndwimean: 0.25,
+          measurementdate: '2025-11-15T10:00:00Z',
+          field_id: 'field-1',
+          fieldname: 'Field 1',
+        },
+        {
+          healthscore: 82,
+          healthstatus: 'excellent',
+          ndvimean: 0.72,
+          ndwimean: 0.3,
+          measurementdate: '2025-11-15T10:00:00Z',
+          field_id: 'field-2',
+          fieldname: 'Field 2',
+        },
+        {
+          healthscore: 68,
+          healthstatus: 'fair',
+          ndvimean: 0.58,
+          ndwimean: 0.2,
+          measurementdate: '2025-11-15T10:00:00Z',
+          field_id: 'field-3',
+          fieldname: 'Field 3',
+        },
+        {
+          healthscore: 45,
+          healthstatus: 'poor',
+          ndvimean: 0.35,
+          ndwimean: 0.1,
+          measurementdate: '2025-11-15T10:00:00Z',
+          field_id: 'field-4',
+          fieldname: 'Field 4',
+        },
       ])
-      .mockResolvedValueOnce([{ total_alerts: 3, high_severity: 1, medium_severity: 2, low_severity: 0, water_alerts: 2, fertilizer_alerts: 1 }]) // alert metrics
-      .mockResolvedValueOnce([ // recent health activity
-        { activity_type: 'health_assessment', activity_date: '2025-11-18T08:00:00Z', field_name: 'Field 1', health_status: 'good', health_score: 75 },
-        { activity_type: 'health_assessment', activity_date: '2025-11-17T14:00:00Z', field_name: 'Field 2', health_status: 'excellent', health_score: 82 }
+      .mockResolvedValueOnce([
+        {
+          totalalerts: 3,
+          highseverity: 1,
+          mediumseverity: 2,
+          lowseverity: 0,
+          wateralerts: 2,
+          fertilizeralerts: 1,
+        },
+      ]) // alert metrics
+      .mockResolvedValueOnce([
+        // recent health activity
+        {
+          activitytype: 'healthassessment',
+          activitydate: '2025-11-18T08:00:00Z',
+          fieldname: 'Field 1',
+          healthstatus: 'good',
+          healthscore: 75,
+        },
+        {
+          activitytype: 'healthassessment',
+          activitydate: '2025-11-17T14:00:00Z',
+          fieldname: 'Field 2',
+          healthstatus: 'excellent',
+          healthscore: 82,
+        },
       ])
-      .mockResolvedValueOnce([ // recent recommendation activity
-        { activity_type: 'recommendation', activity_date: '2025-11-16T10:00:00Z', field_name: 'Field 3', type: 'water', severity: 'high' }
+      .mockResolvedValueOnce([
+        // recent recommendation activity
+        {
+          activitytype: 'recommendation',
+          activitydate: '2025-11-16T10:00:00Z',
+          fieldname: 'Field 3',
+          type: 'water',
+          severity: 'high',
+        },
       ])
-      .mockResolvedValueOnce([ // field thumbnails
-        { field_id: 'field-1', name: 'Field 1', center: { type: 'Point', coordinates: [80.1, 7.2] }, area_sqm: 100000 },
-        { field_id: 'field-2', name: 'Field 2', center: { type: 'Point', coordinates: [80.2, 7.3] }, area_sqm: 75000 },
-        { field_id: 'field-3', name: 'Field 3', center: { type: 'Point', coordinates: [80.3, 7.4] }, area_sqm: 50000 },
-        { field_id: 'field-4', name: 'Field 4', center: { type: 'Point', coordinates: [80.4, 7.5] }, area_sqm: 25000 }
+      .mockResolvedValueOnce([
+        // field thumbnails
+        {
+          field_id: 'field-1',
+          name: 'Field 1',
+          center: { type: 'Point', coordinates: [80.1, 7.2] },
+          areasqm: 100000,
+        },
+        {
+          field_id: 'field-2',
+          name: 'Field 2',
+          center: { type: 'Point', coordinates: [80.2, 7.3] },
+          areasqm: 75000,
+        },
+        {
+          field_id: 'field-3',
+          name: 'Field 3',
+          center: { type: 'Point', coordinates: [80.3, 7.4] },
+          areasqm: 50000,
+        },
+        {
+          field_id: 'field-4',
+          name: 'Field 4',
+          center: { type: 'Point', coordinates: [80.4, 7.5] },
+          areasqm: 25000,
+        },
       ]);
 
     const res1 = await request(app)
@@ -201,40 +307,40 @@ describe('GET /api/v1/dashboard/metrics', () => {
     expect(res1.body.data).toHaveProperty('fields');
     expect(res1.body.data).toHaveProperty('health');
     expect(res1.body.data).toHaveProperty('alerts');
-    expect(res1.body.data).toHaveProperty('recent_activity');
-    expect(res1.body.data).toHaveProperty('field_thumbnails');
-    expect(res1.body.meta).toMatchObject({ cache_hit: false, correlation_id: 'dashboard-req-1' });
+    expect(res1.body.data).toHaveProperty('recentactivity');
+    expect(res1.body.data).toHaveProperty('fieldthumbnails');
+    expect(res1.body.meta).toMatchObject({ cachehit: false, correlationid: 'dashboard-req-1' });
 
     // Verify field metrics
     expect(res1.body.data.fields).toEqual({
       total: 5,
       active: 4,
-      total_area_hectares: 25,
-      average_size_hectares: 6.25
+      totalareahectares: 25,
+      averagesizehectares: 6.25,
     });
 
     // Verify health metrics
-    expect(res1.body.data.health.average_score).toBe(68); // (75+82+68+45)/4
-    expect(res1.body.data.health.status_distribution).toEqual({ good: 2, moderate: 1, poor: 1 });
-    expect(res1.body.data.health.total_assessed).toBe(4);
+    expect(res1.body.data.health.averagescore).toBe(68); // (75+82+68+45)/4
+    expect(res1.body.data.health.statusdistribution).toEqual({ good: 2, moderate: 1, poor: 1 });
+    expect(res1.body.data.health.totalassessed).toBe(4);
 
     // Verify alert metrics
     expect(res1.body.data.alerts.total).toBe(3);
-    expect(res1.body.data.alerts.by_severity).toEqual({ high: 1, medium: 2, low: 0 });
-    expect(res1.body.data.alerts.by_type).toEqual({ water: 2, fertilizer: 1 });
+    expect(res1.body.data.alerts.byseverity).toEqual({ high: 1, medium: 2, low: 0 });
+    expect(res1.body.data.alerts.bytype).toEqual({ water: 2, fertilizer: 1 });
 
     // Verify recent activity
-    expect(res1.body.data.recent_activity).toHaveLength(3);
-    expect(res1.body.data.recent_activity[0].type).toBe('health_assessment');
-    expect(res1.body.data.recent_activity[0].field_name).toBe('Field 1');
+    expect(res1.body.data.recentactivity).toHaveLength(3);
+    expect(res1.body.data.recentactivity[0].type).toBe('healthassessment');
+    expect(res1.body.data.recentactivity[0].fieldname).toBe('Field 1');
 
     // Verify field thumbnails
-    expect(res1.body.data.field_thumbnails).toHaveLength(4);
-    expect(res1.body.data.field_thumbnails[0]).toMatchObject({
+    expect(res1.body.data.fieldthumbnails).toHaveLength(4);
+    expect(res1.body.data.fieldthumbnails[0]).toMatchObject({
       field_id: 'field-1',
-      field_name: 'Field 1',
-      thumbnail_url: expect.stringContaining('/api/v1/satellite/tiles/'),
-      area_hectares: 10
+      fieldname: 'Field 1',
+      thumbnailurl: expect.stringContaining('/api/v1/satellite/tiles/'),
+      areahectares: 10,
     });
 
     // Second request should hit cache
@@ -244,7 +350,7 @@ describe('GET /api/v1/dashboard/metrics', () => {
       .set('X-Request-Id', 'dashboard-req-2')
       .expect(200);
 
-    expect(res2.body.meta).toMatchObject({ cache_hit: true, correlation_id: 'dashboard-req-2' });
+    expect(res2.body.meta).toMatchObject({ cachehit: true, correlationid: 'dashboard-req-2' });
     // Database should not be queried again
     expect(sequelize.query).toHaveBeenCalledTimes(6); // Only called once for the first request
   });
@@ -252,9 +358,20 @@ describe('GET /api/v1/dashboard/metrics', () => {
   it('handles empty results gracefully', async () => {
     // Mock empty results
     sequelize.query
-      .mockResolvedValueOnce([{ total_fields: 0, active_fields: 0, total_area_sqm: null, avg_field_size_sqm: null }])
+      .mockResolvedValueOnce([
+        { totalfields: 0, activefields: 0, totalareasqm: null, avgfieldsizesqm: null },
+      ])
       .mockResolvedValueOnce([]) // no health records
-      .mockResolvedValueOnce([{ total_alerts: 0, high_severity: 0, medium_severity: 0, low_severity: 0, water_alerts: 0, fertilizer_alerts: 0 }])
+      .mockResolvedValueOnce([
+        {
+          totalalerts: 0,
+          highseverity: 0,
+          mediumseverity: 0,
+          lowseverity: 0,
+          wateralerts: 0,
+          fertilizeralerts: 0,
+        },
+      ])
       .mockResolvedValueOnce([])
       .mockResolvedValueOnce([])
       .mockResolvedValueOnce([]);
@@ -266,18 +383,29 @@ describe('GET /api/v1/dashboard/metrics', () => {
 
     expect(res.body.success).toBe(true);
     expect(res.body.data.fields.total).toBe(0);
-    expect(res.body.data.health.average_score).toBe(50); // default
-    expect(res.body.data.health.total_assessed).toBe(0);
+    expect(res.body.data.health.averagescore).toBe(50); // default
+    expect(res.body.data.health.totalassessed).toBe(0);
     expect(res.body.data.alerts.total).toBe(0);
-    expect(res.body.data.recent_activity).toEqual([]);
-    expect(res.body.data.field_thumbnails).toEqual([]);
+    expect(res.body.data.recentactivity).toEqual([]);
+    expect(res.body.data.fieldthumbnails).toEqual([]);
   });
 
-  it('propagates X-Request-Id into meta.correlation_id', async () => {
+  it('propagates X-Request-Id into meta.correlationid', async () => {
     sequelize.query
-      .mockResolvedValueOnce([{ total_fields: 1, active_fields: 1, total_area_sqm: 10000, avg_field_size_sqm: 10000 }])
+      .mockResolvedValueOnce([
+        { totalfields: 1, activefields: 1, totalareasqm: 10000, avgfieldsizesqm: 10000 },
+      ])
       .mockResolvedValueOnce([])
-      .mockResolvedValueOnce([{ total_alerts: 0, high_severity: 0, medium_severity: 0, low_severity: 0, water_alerts: 0, fertilizer_alerts: 0 }])
+      .mockResolvedValueOnce([
+        {
+          totalalerts: 0,
+          highseverity: 0,
+          mediumseverity: 0,
+          lowseverity: 0,
+          wateralerts: 0,
+          fertilizeralerts: 0,
+        },
+      ])
       .mockResolvedValueOnce([])
       .mockResolvedValueOnce([])
       .mockResolvedValueOnce([]);
@@ -288,6 +416,6 @@ describe('GET /api/v1/dashboard/metrics', () => {
       .set('X-Request-Id', 'dashboard-corr-xyz')
       .expect(200);
 
-    expect(res.body.meta.correlation_id).toBe('dashboard-corr-xyz');
+    expect(res.body.meta.correlationid).toBe('dashboard-corr-xyz');
   });
 });

@@ -3,9 +3,19 @@
  * Public-facing API for browsing published content
  */
 
-import { httpClient, normalizeApiError, type PaginatedResponse, type ListParams } from '../../../shared/api';
+import {
+  httpClient,
+  normalizeApiError,
+  type PaginatedResponse,
+  type ListParams,
+} from "../../../shared/api";
 
-export type NewsCategory = 'farming-tips' | 'weather' | 'market-prices' | 'government-schemes' | 'general';
+export type NewsCategory =
+  | "farming-tips"
+  | "weather"
+  | "market-prices"
+  | "government-schemes"
+  | "general";
 
 export interface NewsArticle {
   id: string;
@@ -78,7 +88,9 @@ const mapBackendArticle = (item: BackendNewsArticle): NewsArticle => ({
   tags: item.tags,
 });
 
-const mapListParamsToQuery = (params?: NewsListParams): Record<string, unknown> => {
+const mapListParamsToQuery = (
+  params?: NewsListParams,
+): Record<string, unknown> => {
   if (!params) return {};
 
   return {
@@ -88,7 +100,7 @@ const mapListParamsToQuery = (params?: NewsListParams): Record<string, unknown> 
     order: params.order,
     category: params.category,
     search: params.search,
-    tags: params.tags?.join(','),
+    tags: params.tags?.join(","),
   };
 };
 
@@ -98,24 +110,27 @@ const mapListParamsToQuery = (params?: NewsListParams): Record<string, unknown> 
 
 /**
  * Get list of published news articles
- * 
+ *
  * GET /api/v1/news
- * 
+ *
  * Note: Currently uses admin content API as fallback
  * Will be replaced with dedicated news endpoint
  */
 export const getNewsList = async (
-  params?: NewsListParams
+  params?: NewsListParams,
 ): Promise<PaginatedResponse<NewsArticle>> => {
   try {
     // For now, use admin content API but filter for published only
     // In production, this would be /api/v1/news
-    const res = await httpClient.get<BackendNewsListEnvelope>('/admin/content', {
-      params: {
-        ...mapListParamsToQuery(params),
-        status: 'published', // Only published articles
+    const res = await httpClient.get<BackendNewsListEnvelope>(
+      "/admin/content",
+      {
+        params: {
+          ...mapListParamsToQuery(params),
+          status: "published", // Only published articles
+        },
       },
-    });
+    );
 
     const { data, pagination, meta } = res.data;
 
@@ -135,14 +150,16 @@ export const getNewsList = async (
 
 /**
  * Get single news article by ID
- * 
+ *
  * GET /api/v1/news/:id
  */
 export const getNewsArticle = async (id: string): Promise<NewsArticle> => {
   try {
     // For now, use admin content API
     // In production, this would be /api/v1/news/:id
-    const res = await httpClient.get<BackendNewsSingleEnvelope>(`/admin/content/${id}`);
+    const res = await httpClient.get<BackendNewsSingleEnvelope>(
+      `/admin/content/${id}`,
+    );
     return mapBackendArticle(res.data.data);
   } catch (error) {
     throw normalizeApiError(error);
@@ -151,12 +168,12 @@ export const getNewsArticle = async (id: string): Promise<NewsArticle> => {
 
 /**
  * Search news articles
- * 
+ *
  * GET /api/v1/news/search?q={query}
  */
 export const searchNews = async (
   query: string,
-  params?: ListParams
+  params?: ListParams,
 ): Promise<PaginatedResponse<NewsArticle>> => {
   try {
     return getNewsList({
@@ -173,7 +190,7 @@ export const searchNews = async (
  */
 export const getNewsByCategory = async (
   category: NewsCategory,
-  params?: ListParams
+  params?: ListParams,
 ): Promise<PaginatedResponse<NewsArticle>> => {
   try {
     return getNewsList({
@@ -196,7 +213,6 @@ export const trackArticleView = async (id: string): Promise<void> => {
     console.log(`Tracking view for article: ${id}`);
   } catch (error) {
     // Silent fail - analytics shouldn't break user experience
-    console.warn('Failed to track article view:', error);
+    console.warn("Failed to track article view:", error);
   }
 };
-

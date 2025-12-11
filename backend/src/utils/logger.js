@@ -2,18 +2,10 @@
 
 const { createLogger, format, transports } = require('winston');
 
-const {
-  combine,
-  timestamp,
-  errors,
-  json,
-  colorize,
-  printf,
-  splat,
-} = format;
+const { combine, timestamp, errors, json, colorize, printf, splat } = format;
 
 const NODE_ENV = process.env.NODE_ENV || 'development';
-const LOG_LEVEL = process.env.LOG_LEVEL || (NODE_ENV === 'development' ? 'debug' : 'info');
+const LOGLEVEL = process.env.LOGLEVEL || (NODE_ENV === 'development' ? 'debug' : 'info');
 
 const devFormat = combine(
   colorize(),
@@ -27,23 +19,16 @@ const devFormat = combine(
   })
 );
 
-const prodFormat = combine(
-  timestamp(),
-  splat(),
-  errors({ stack: true }),
-  json()
-);
+const prodFormat = combine(timestamp(), splat(), errors({ stack: true }), json());
 
 const logger = createLogger({
-  level: LOG_LEVEL,
+  level: LOGLEVEL,
   format: NODE_ENV === 'development' ? devFormat : prodFormat,
   defaultMeta: {
     service: 'skycrop-backend',
     environment: NODE_ENV,
   },
-  transports: [
-    new transports.Console(),
-  ],
+  transports: [new transports.Console()],
 });
 
 /**
@@ -51,7 +36,7 @@ const logger = createLogger({
  * Usage: morgan('combined', { stream: loggerStream })
  */
 const loggerStream = {
-  write: (message) => {
+  write: message => {
     logger.info(message.trim());
   },
 };

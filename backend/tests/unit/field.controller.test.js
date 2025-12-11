@@ -1,5 +1,3 @@
-'use strict';
-
 // Mock the field service and logger
 jest.mock('../../src/services/field.service', () => ({
   getFieldService: jest.fn(),
@@ -39,7 +37,7 @@ describe('Field Controller', () => {
 
     // Setup mock request/response
     mockReq = {
-      user: { userId: 'test-user-id' },
+      user: { user_id: 'test-user-id' },
       params: {},
       query: {},
       body: {},
@@ -75,21 +73,24 @@ describe('Field Controller', () => {
         await fieldController.list(mockReq, mockRes, mockNext);
 
         expect(mockFieldService.list).toHaveBeenCalledWith('test-user-id', {});
-        expect(logger.info).toHaveBeenCalledWith('fields.list', expect.objectContaining({
-          route: '/api/v1/fields',
-          method: 'GET',
-          user_id: 'test-user-id',
-          correlation_id: 'test-correlation-id',
-          cache_hit: false,
-        }));
+        expect(logger.info).toHaveBeenCalledWith(
+          'fields.list',
+          expect.objectContaining({
+            route: '/api/v1/fields',
+            method: 'GET',
+            user_id: 'test-user-id',
+            correlationid: 'test-correlation-id',
+            cachehit: false,
+          })
+        );
         expect(mockRes.status).toHaveBeenCalledWith(200);
-        expect(mockRes.json).toHaveBeenCalledWith({
+        expect(mockReson).toHaveBeenCalledWith({
           success: true,
           data: [{ id: 'field1', name: 'Field 1' }],
-          pagination: { page: 1, page_size: 20, total: 1 },
+          pagination: { page: 1, pagesize: 20, total: 1 },
           meta: expect.objectContaining({
-            correlation_id: 'test-correlation-id',
-            cache_hit: false,
+            correlationid: 'test-correlation-id',
+            cachehit: false,
           }),
         });
         expect(mockNext).not.toHaveBeenCalled();
@@ -117,12 +118,14 @@ describe('Field Controller', () => {
 
       await fieldController.list(mockReq, mockRes, mockNext);
 
-      expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
-        meta: expect.objectContaining({
-          correlation_id: null,
-          cache_hit: true,
-        }),
-      }));
+      expect(mockReson).toHaveBeenCalledWith(
+        expect.objectContaining({
+          meta: expect.objectContaining({
+            correlationid: null,
+            cachehit: true,
+          }),
+        })
+      );
     });
   });
 
@@ -140,18 +143,21 @@ describe('Field Controller', () => {
         'New Field',
         { type: 'Polygon', coordinates: [] }
       );
-      expect(logger.info).toHaveBeenCalledWith('fields.create', expect.objectContaining({
-        route: '/api/v1/fields',
-        method: 'POST',
-        user_id: 'test-user-id',
-        correlation_id: 'create-correlation-id',
-      }));
+      expect(logger.info).toHaveBeenCalledWith(
+        'fields.create',
+        expect.objectContaining({
+          route: '/api/v1/fields',
+          method: 'POST',
+          user_id: 'test-user-id',
+          correlationid: 'create-correlation-id',
+        })
+      );
       expect(mockRes.status).toHaveBeenCalledWith(201);
-      expect(mockRes.json).toHaveBeenCalledWith({
+      expect(mockReson).toHaveBeenCalledWith({
         success: true,
         data: mockData,
         meta: expect.objectContaining({
-          correlation_id: 'create-correlation-id',
+          correlationid: 'create-correlation-id',
         }),
       });
     });
@@ -177,19 +183,22 @@ describe('Field Controller', () => {
       await fieldController.getById(mockReq, mockRes, mockNext);
 
       expect(mockFieldService.getById).toHaveBeenCalledWith('test-user-id', 'field123');
-      expect(logger.info).toHaveBeenCalledWith('fields.getById', expect.objectContaining({
-        route: '/api/v1/fields/{id}',
-        method: 'GET',
-        user_id: 'test-user-id',
-        field_id: 'field123',
-        correlation_id: 'get-correlation-id',
-      }));
+      expect(logger.info).toHaveBeenCalledWith(
+        'fields.getById',
+        expect.objectContaining({
+          route: '/api/v1/fields/{id}',
+          method: 'GET',
+          user_id: 'test-user-id',
+          field_id: 'field123',
+          correlationid: 'get-correlation-id',
+        })
+      );
       expect(mockRes.status).toHaveBeenCalledWith(200);
-      expect(mockRes.json).toHaveBeenCalledWith({
+      expect(mockReson).toHaveBeenCalledWith({
         success: true,
         data: mockData,
         meta: expect.objectContaining({
-          correlation_id: 'get-correlation-id',
+          correlationid: 'get-correlation-id',
         }),
       });
     });
@@ -215,24 +224,26 @@ describe('Field Controller', () => {
 
       await fieldController.update(mockReq, mockRes, mockNext);
 
-      expect(mockFieldService.update).toHaveBeenCalledWith(
-        'test-user-id',
-        'field123',
-        { name: 'Updated Field', status: 'active' }
+      expect(mockFieldService.update).toHaveBeenCalledWith('test-user-id', 'field123', {
+        name: 'Updated Field',
+        status: 'active',
+      });
+      expect(logger.info).toHaveBeenCalledWith(
+        'fields.update',
+        expect.objectContaining({
+          route: '/api/v1/fields/{id}',
+          method: 'PATCH',
+          user_id: 'test-user-id',
+          field_id: 'field123',
+          correlationid: 'update-correlation-id',
+        })
       );
-      expect(logger.info).toHaveBeenCalledWith('fields.update', expect.objectContaining({
-        route: '/api/v1/fields/{id}',
-        method: 'PATCH',
-        user_id: 'test-user-id',
-        field_id: 'field123',
-        correlation_id: 'update-correlation-id',
-      }));
       expect(mockRes.status).toHaveBeenCalledWith(200);
-      expect(mockRes.json).toHaveBeenCalledWith({
+      expect(mockReson).toHaveBeenCalledWith({
         success: true,
         data: mockData,
         meta: expect.objectContaining({
-          correlation_id: 'update-correlation-id',
+          correlationid: 'update-correlation-id',
         }),
       });
     });
@@ -258,13 +269,12 @@ describe('Field Controller', () => {
 
       await fieldController.updateBoundary(mockReq, mockRes, mockNext);
 
-      expect(mockFieldService.updateBoundary).toHaveBeenCalledWith(
-        'test-user-id',
-        'field123',
-        { type: 'Polygon', coordinates: [] }
-      );
+      expect(mockFieldService.updateBoundary).toHaveBeenCalledWith('test-user-id', 'field123', {
+        type: 'Polygon',
+        coordinates: [],
+      });
       expect(mockRes.status).toHaveBeenCalledWith(200);
-      expect(mockRes.json).toHaveBeenCalledWith({
+      expect(mockReson).toHaveBeenCalledWith({
         success: true,
         data: mockData,
       });
@@ -292,7 +302,7 @@ describe('Field Controller', () => {
 
       expect(mockFieldService.archive).toHaveBeenCalledWith('test-user-id', 'field123');
       expect(mockRes.status).toHaveBeenCalledWith(200);
-      expect(mockRes.json).toHaveBeenCalledWith({
+      expect(mockReson).toHaveBeenCalledWith({
         success: true,
         data: mockData,
       });
@@ -319,19 +329,22 @@ describe('Field Controller', () => {
       await fieldController.remove(mockReq, mockRes, mockNext);
 
       expect(mockFieldService.delete).toHaveBeenCalledWith('test-user-id', 'field123');
-      expect(logger.info).toHaveBeenCalledWith('fields.delete', expect.objectContaining({
-        route: '/api/v1/fields/{id}',
-        method: 'DELETE',
-        user_id: 'test-user-id',
-        field_id: 'field123',
-        correlation_id: 'delete-correlation-id',
-      }));
+      expect(logger.info).toHaveBeenCalledWith(
+        'fields.delete',
+        expect.objectContaining({
+          route: '/api/v1/fields/{id}',
+          method: 'DELETE',
+          user_id: 'test-user-id',
+          field_id: 'field123',
+          correlationid: 'delete-correlation-id',
+        })
+      );
       expect(mockRes.status).toHaveBeenCalledWith(200);
-      expect(mockRes.json).toHaveBeenCalledWith({
+      expect(mockReson).toHaveBeenCalledWith({
         success: true,
         data: mockData,
         meta: expect.objectContaining({
-          correlation_id: 'delete-correlation-id',
+          correlationid: 'delete-correlation-id',
         }),
       });
     });
@@ -357,7 +370,7 @@ describe('Field Controller', () => {
 
       expect(mockFieldService.restore).toHaveBeenCalledWith('test-user-id', 'field123');
       expect(mockRes.status).toHaveBeenCalledWith(200);
-      expect(mockRes.json).toHaveBeenCalledWith({
+      expect(mockReson).toHaveBeenCalledWith({
         success: true,
         data: mockData,
       });

@@ -1,5 +1,3 @@
-'use strict';
-
 const RecommendationEngineService = require('../../src/services/recommendationEngine.service');
 
 describe('RecommendationEngineService', () => {
@@ -43,9 +41,9 @@ describe('RecommendationEngineService', () => {
     it('should throw 404 error when field not found', async () => {
       mockFieldModel.findByPk.mockResolvedValue(null);
 
-      await expect(
-        service.generateRecommendations('non-existent-field', 'user-1')
-      ).rejects.toThrow('Field not found');
+      await expect(service.generateRecommendations('non-existent-field', 'user-1')).rejects.toThrow(
+        'Field not found'
+      );
     });
 
     it('should throw 403 error when user does not own field', async () => {
@@ -96,10 +94,10 @@ describe('RecommendationEngineService', () => {
       mockHealthMonitoringService.analyzeFieldHealth.mockResolvedValue(mockHealth);
       mockWeatherService.getForecastByCoords.mockResolvedValue(mockWeather);
 
-      let createdRecommendations = [];
-      mockRecommendationModel.create.mockImplementation((data) => {
+      const createdRecommendations = [];
+      mockRecommendationModel.create.mockImplementation(data => {
         const rec = {
-          recommendation_id: `rec-${createdRecommendations.length + 1}`,
+          recommendationid: `rec-${createdRecommendations.length + 1}`,
           ...data,
         };
         createdRecommendations.push(rec);
@@ -108,12 +106,12 @@ describe('RecommendationEngineService', () => {
 
       const result = await service.generateRecommendations('field-1', 'user-1');
 
-      expect(result.fieldId).toBe('field-1');
+      expect(result.field_id).toBe('field-1');
       expect(result.recommendations).toBeDefined();
       expect(result.recommendations.length).toBeGreaterThan(0);
 
       // Check for fertilizer recommendation
-      const fertilizerRec = result.recommendations.find((r) => r.type === 'fertilizer');
+      const fertilizerRec = result.recommendations.find(r => r.type === 'fertilizer');
       expect(fertilizerRec).toBeDefined();
       expect(fertilizerRec.priority).toBe('high');
       expect(fertilizerRec.title).toContain('nitrogen fertilizer');
@@ -159,10 +157,10 @@ describe('RecommendationEngineService', () => {
       mockHealthMonitoringService.analyzeFieldHealth.mockResolvedValue(mockHealth);
       mockWeatherService.getForecastByCoords.mockResolvedValue(mockWeather);
 
-      let createdRecommendations = [];
-      mockRecommendationModel.create.mockImplementation((data) => {
+      const createdRecommendations = [];
+      mockRecommendationModel.create.mockImplementation(data => {
         const rec = {
-          recommendation_id: `rec-${createdRecommendations.length + 1}`,
+          recommendationid: `rec-${createdRecommendations.length + 1}`,
           ...data,
         };
         createdRecommendations.push(rec);
@@ -172,7 +170,7 @@ describe('RecommendationEngineService', () => {
       const result = await service.generateRecommendations('field-1', 'user-1');
 
       // Check for irrigation recommendation
-      const irrigationRec = result.recommendations.find((r) => r.type === 'irrigation');
+      const irrigationRec = result.recommendations.find(r => r.type === 'irrigation');
       expect(irrigationRec).toBeDefined();
       expect(irrigationRec.priority).toBe('critical');
       expect(irrigationRec.title).toContain('Immediate irrigation');
@@ -215,10 +213,10 @@ describe('RecommendationEngineService', () => {
       mockHealthMonitoringService.analyzeFieldHealth.mockResolvedValue(mockHealth);
       mockWeatherService.getForecastByCoords.mockResolvedValue(mockWeather);
 
-      let createdRecommendations = [];
-      mockRecommendationModel.create.mockImplementation((data) => {
+      const createdRecommendations = [];
+      mockRecommendationModel.create.mockImplementation(data => {
         const rec = {
-          recommendation_id: `rec-${createdRecommendations.length + 1}`,
+          recommendationid: `rec-${createdRecommendations.length + 1}`,
           ...data,
         };
         createdRecommendations.push(rec);
@@ -231,7 +229,7 @@ describe('RecommendationEngineService', () => {
       // available from the weather service normalization. This is a known limitation.
       // The test verifies that the system handles weather data successfully
       expect(result.recommendations).toBeDefined();
-      expect(result.fieldId).toBe('field-1');
+      expect(result.field_id).toBe('field-1');
       expect(result.healthSummary).toBeDefined();
     });
 
@@ -254,16 +252,12 @@ describe('RecommendationEngineService', () => {
         trend: {
           direction: 'declining',
         },
-        anomalies: [
-          { date: '2024-01-01', type: 'drop', severity: 'high' },
-        ],
+        anomalies: [{ date: '2024-01-01', type: 'drop', severity: 'high' }],
       };
 
       const mockWeather = {
         data: {
-          days: [
-            { date: '2024-01-01', rain_mm: 5, tmax: 30, tmin: 22, wind: 2 },
-          ],
+          days: [{ date: '2024-01-01', rain_mm: 5, tmax: 30, tmin: 22, wind: 2 }],
         },
       };
 
@@ -271,10 +265,10 @@ describe('RecommendationEngineService', () => {
       mockHealthMonitoringService.analyzeFieldHealth.mockResolvedValue(mockHealth);
       mockWeatherService.getForecastByCoords.mockResolvedValue(mockWeather);
 
-      let createdRecommendations = [];
-      mockRecommendationModel.create.mockImplementation((data) => {
+      const createdRecommendations = [];
+      mockRecommendationModel.create.mockImplementation(data => {
         const rec = {
-          recommendation_id: `rec-${createdRecommendations.length + 1}`,
+          recommendationid: `rec-${createdRecommendations.length + 1}`,
           ...data,
         };
         createdRecommendations.push(rec);
@@ -284,7 +278,7 @@ describe('RecommendationEngineService', () => {
       const result = await service.generateRecommendations('field-1', 'user-1');
 
       // Check for field inspection recommendation
-      const inspectionRec = result.recommendations.find((r) => r.type === 'field_inspection');
+      const inspectionRec = result.recommendations.find(r => r.type === 'fieldinspection');
       expect(inspectionRec).toBeDefined();
       expect(inspectionRec.priority).toBe('high');
       expect(inspectionRec.title).toContain('field inspection');
@@ -314,12 +308,14 @@ describe('RecommendationEngineService', () => {
 
       mockFieldModel.findByPk.mockResolvedValue(mockField);
       mockHealthMonitoringService.analyzeFieldHealth.mockResolvedValue(mockHealth);
-      mockWeatherService.getForecastByCoords.mockRejectedValue(new Error('Weather API unavailable'));
+      mockWeatherService.getForecastByCoords.mockRejectedValue(
+        new Error('Weather API unavailable')
+      );
 
-      let createdRecommendations = [];
-      mockRecommendationModel.create.mockImplementation((data) => {
+      const createdRecommendations = [];
+      mockRecommendationModel.create.mockImplementation(data => {
         const rec = {
-          recommendation_id: `rec-${createdRecommendations.length + 1}`,
+          recommendationid: `rec-${createdRecommendations.length + 1}`,
           ...data,
         };
         createdRecommendations.push(rec);
@@ -329,7 +325,7 @@ describe('RecommendationEngineService', () => {
       // Should not throw error, should continue with available data
       const result = await service.generateRecommendations('field-1', 'user-1');
 
-      expect(result.fieldId).toBe('field-1');
+      expect(result.field_id).toBe('field-1');
       expect(result.recommendations).toBeDefined();
       // Should still generate health-based recommendations even without weather data
     });
@@ -353,9 +349,7 @@ describe('RecommendationEngineService', () => {
         trend: {
           direction: 'declining',
         },
-        anomalies: [
-          { date: '2024-01-01', type: 'drop', severity: 'critical' },
-        ],
+        anomalies: [{ date: '2024-01-01', type: 'drop', severity: 'critical' }],
       };
 
       const mockWeather = {
@@ -372,10 +366,10 @@ describe('RecommendationEngineService', () => {
       mockHealthMonitoringService.analyzeFieldHealth.mockResolvedValue(mockHealth);
       mockWeatherService.getForecastByCoords.mockResolvedValue(mockWeather);
 
-      let createdRecommendations = [];
-      mockRecommendationModel.create.mockImplementation((data) => {
+      const createdRecommendations = [];
+      mockRecommendationModel.create.mockImplementation(data => {
         const rec = {
-          recommendation_id: `rec-${createdRecommendations.length + 1}`,
+          recommendationid: `rec-${createdRecommendations.length + 1}`,
           ...data,
         };
         createdRecommendations.push(rec);
@@ -421,17 +415,17 @@ describe('RecommendationEngineService', () => {
       });
 
       mockRecommendationModel.create.mockResolvedValue({
-        recommendation_id: 'rec-1',
+        recommendationid: 'rec-1',
         field_id: 'field-1',
         user_id: 'user-1',
         type: 'monitoring',
         priority: 'low',
         title: 'Continue monitoring',
         description: 'Field health is good',
-        action_steps: '[]',
-        urgency_score: 30,
+        actionsteps: '[]',
+        urgencyscore: 30,
         status: 'pending',
-        generated_at: new Date(),
+        generatedat: new Date(),
       });
 
       const result = await service.generateRecommendations('field-1', 'user-1');
@@ -470,10 +464,10 @@ describe('RecommendationEngineService', () => {
         data: { days: [{ date: '2024-01-01', rain_mm: 0, tmax: 30, tmin: 22, wind: 2 }] },
       });
 
-      let createdRecommendations = [];
-      mockRecommendationModel.create.mockImplementation((data) => {
+      const createdRecommendations = [];
+      mockRecommendationModel.create.mockImplementation(data => {
         const rec = {
-          recommendation_id: `rec-${createdRecommendations.length + 1}`,
+          recommendationid: `rec-${createdRecommendations.length + 1}`,
           ...data,
         };
         createdRecommendations.push(rec);
@@ -489,7 +483,7 @@ describe('RecommendationEngineService', () => {
     });
   });
 
-  describe('_normalizeWeatherData', () => {
+  describe('normalizeWeatherData', () => {
     it('should transform weather service format correctly', () => {
       const weatherResponse = {
         days: [
@@ -498,20 +492,20 @@ describe('RecommendationEngineService', () => {
         ],
       };
 
-      const result = service._normalizeWeatherData(weatherResponse);
+      const result = service.normalizeWeatherData(weatherResponse);
 
       expect(result).toHaveLength(2);
       expect(result[0]).toMatchObject({
         date: '2024-01-01',
-        rainfall_amount: 10,
-        temp_max: 32,
-        temp_min: 24,
+        rainfallamount: 10,
+        tempmax: 32,
+        tempmin: 24,
         wind_speed: 3,
       });
     });
 
     it('should handle missing weather data', () => {
-      const result = service._normalizeWeatherData(null);
+      const result = service.normalizeWeatherData(null);
       expect(result).toBeNull();
     });
 
@@ -522,14 +516,13 @@ describe('RecommendationEngineService', () => {
         ],
       };
 
-      const result = service._normalizeWeatherData(weatherResponse);
+      const result = service.normalizeWeatherData(weatherResponse);
 
       expect(result).toHaveLength(1);
-      expect(result[0].rainfall_amount).toBe(0);
+      expect(result[0].rainfallamount).toBe(0);
       expect(result[0].humidity).toBe(70);
-      expect(result[0].temp_max).toBe(30);
-      expect(result[0].temp_min).toBe(22);
+      expect(result[0].tempmax).toBe(30);
+      expect(result[0].tempmin).toBe(22);
     });
   });
 });
-

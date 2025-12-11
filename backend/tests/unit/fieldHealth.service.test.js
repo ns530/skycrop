@@ -1,11 +1,13 @@
-'use strict';
-
 process.env.NODE_ENV = 'test';
 
 // In-memory fake Redis
 const store = new Map();
 function matchPattern(key, pattern) {
-  const re = new RegExp('^' + String(pattern).replace(/[.+^${}()|[\\]\\\\]/g, '\\$&').replace(/\\\*/g, '.*') + '$');
+  const re = new RegExp(
+    `^${String(pattern)
+      .replace(/[.+^${}()|[\\]\\\\]/g, '\\$&')
+      .replace(/\\\*/g, '.*')}$`
+  );
   return re.test(key);
 }
 const fakeRedis = {
@@ -13,7 +15,7 @@ const fakeRedis = {
   async get(key) {
     return store.has(key) ? store.get(key) : null;
   },
-  async setEx(key, _ttl, value) {
+  async setEx(key, ttl, value) {
     store.set(key, value);
     return 'OK';
   },
@@ -36,12 +38,12 @@ const fakeRedis = {
     store.set(key, String(next));
     return next;
   },
-  async expire(_key, _ttl) {
+  async expire(key, ttl) {
     return 1;
   },
-  async scan(_cursor, opts = {}) {
+  async scan(cursor, opts = {}) {
     const { MATCH } = opts || {};
-    const keys = Array.from(store.keys()).filter((k) => (!MATCH ? true : matchPattern(k, MATCH)));
+    const keys = Array.from(store.keys()).filter(k => (!MATCH ? true : matchPattern(k, MATCH)));
     return ['0', keys];
   },
 };
@@ -56,7 +58,7 @@ jest.mock('../../src/config/redis.config', () => ({
 const Field = require('../../src/models/field.model');
 const HealthRecord = require('../../src/models/health.model');
 
- // Weather service dynamic mock
+// Weather service dynamic mock
 let mockForecast = jest.fn();
 jest.mock('../../src/services/weather.service', () => ({
   getWeatherService: () => ({
@@ -93,12 +95,12 @@ describe('FieldHealthService unit', () => {
       if (where && where.field_id && Array.isArray(order)) {
         return {
           field_id: where.field_id,
-          measurement_date: new Date().toISOString(),
-          health_status: 'good',
-          ndvi_mean: 0.34,
-          ndwi_mean: 0.22,
-          tdvi_mean: 0.15,
-          cloud_cover: 10,
+          measurementdate: new Date().toISOString(),
+          healthstatus: 'good',
+          ndvimean: 0.34,
+          ndwimean: 0.22,
+          tdvimean: 0.15,
+          cloudcover: 10,
         };
       }
       return null;
@@ -108,11 +110,11 @@ describe('FieldHealthService unit', () => {
     mockForecast = jest.fn().mockRejectedValue(new Error('forecast unavailable'));
   });
 
-  test('throws ValidationError when userId is missing', async () => {
+  test('throws ValidationError when user_id is missing', async () => {
     await expect(svc.getFieldHealth('field-1', null)).rejects.toBeInstanceOf(ValidationError);
   });
 
-  test('throws ValidationError when fieldId is missing', async () => {
+  test('throws ValidationError when field_id is missing', async () => {
     await expect(svc.getFieldHealth(null, 'user-1')).rejects.toBeInstanceOf(ValidationError);
   });
 
@@ -131,7 +133,7 @@ describe('FieldHealthService unit', () => {
     expect(res).toMatchObject({
       id: 'field-1',
       score: 50,
-      status: 'moderate', // 50 → moderate per _statusFromScore
+      status: 'moderate', // 50 → moderate per statusFromScore
       signals: [],
     });
     expect(Array.isArray(res.advice)).toBe(true);
@@ -174,43 +176,43 @@ describe('FieldHealthService unit', () => {
     expect(tips).toMatch(/Significant rain expected soon/i);
   });
 
-  test('_signalsFromRecord returns present metrics with weights', () => {
-    const rec = { ndvi_mean: 0.2, ndwi_mean: 0.3, tdvi_mean: 0.1, cloud_cover: 25 };
-    const sigs = svc._signalsFromRecord(rec);
-    const keys = sigs.map((s) => s.key).sort();
-    expect(keys).toEqual(['cloud', 'ndvi_mean', 'ndwi_mean', 'tdvi_mean'].sort());
-    const w = Object.fromEntries(sigs.map((s) => [s.key, s.weight]));
-    expect(w.ndvi_mean).toBeCloseTo(0.4, 5);
-    expect(w.ndwi_mean).toBeCloseTo(0.3, 5);
-    expect(w.tdvi_mean).toBeCloseTo(0.2, 5);
+  test('signalsFromRecord returns present metrics with weights', () => {
+    const rec = { ndvimean: 0.2, ndwimean: 0.3, tdvimean: 0.1, cloudcover: 25 };
+    const sigs = svc.signalsFromRecord(rec);
+    const keys = sigs.map(s => s.key).sort();
+    expect(keys).toEqual(['cloud', 'ndvimean', 'ndwimean', 'tdvimean'].sort());
+    const w = Object.fromEntries(sigs.map(s => [s.key, s.weight]));
+    expect(w.ndvimean).toBeCloseTo(0.4, 5);
+    expect(w.ndwimean).toBeCloseTo(0.3, 5);
+    expect(w.tdvimean).toBeCloseTo(0.2, 5);
     expect(w.cloud).toBeCloseTo(0.1, 5);
   });
 
-  test('_statusFromScore thresholds: 70→good, 40→moderate, <40→poor', () => {
-    expect(svc._statusFromScore(70)).toBe('good');
-    expect(svc._statusFromScore(69)).toBe('moderate');
-    expect(svc._statusFromScore(40)).toBe('moderate');
-    expect(svc._statusFromScore(39)).toBe('poor');
+  test('statusFromScore thresholds: 70→good, 40→moderate, <40→poor', () => {
+    expect(svc.statusFromScore(70)).toBe('good');
+    expect(svc.statusFromScore(69)).toBe('moderate');
+    expect(svc.statusFromScore(40)).toBe('moderate');
+    expect(svc.statusFromScore(39)).toBe('poor');
   });
 
-  test('_scoreFromRecord clamps and adjusts with ndvi/ndwi/cloud', () => {
-    const base = { health_status: 'good', ndvi_mean: 0.9, ndwi_mean: 1.0, cloud_cover: 90 };
-    const score = svc._scoreFromRecord(base);
+  test('scoreFromRecord clamps and adjusts with ndvi/ndwi/cloud', () => {
+    const base = { healthstatus: 'good', ndvimean: 0.9, ndwimean: 1.0, cloudcover: 90 };
+    const score = svc.scoreFromRecord(base);
     // Should be within 0..100 range (clamped)
     expect(score).toBeGreaterThanOrEqual(0);
     expect(score).toBeLessThanOrEqual(100);
   });
 
-  test('_maybeGetForecast returns null when weather service throws', async () => {
+  test('maybeGetForecast returns null when weather service throws', async () => {
     mockForecast = jest.fn().mockRejectedValue(new Error('fail'));
     // Call private via any
-    const out = await svc._maybeGetForecast('user-1', 'field-9');
+    const out = await svc.maybeGetForecast('user-1', 'field-9');
     expect(out).toBeNull();
   });
 
   test('ownership validation messages for missing parameters are precise', async () => {
     // Directly assert private method throws with specific messages
-    await expect(svc._assertOwnership(null, 'f')).rejects.toThrow(/userId is required/i);
-    await expect(svc._assertOwnership('u', null)).rejects.toThrow(/fieldId is required/i);
+    await expect(svc.assertOwnership(null, 'f')).rejects.toThrow(/user_id is required/i);
+    await expect(svc.assertOwnership('u', null)).rejects.toThrow(/field_id is required/i);
   });
 });

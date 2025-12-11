@@ -47,9 +47,7 @@ module.exports = {
     },
   },
   coverageReporters: ['text-summary', 'lcov'],
-  testMatch: [
-    '**/tests/**/*.test.js',
-  ],
+  testMatch: ['**/tests/**/*.test.js'],
   moduleFileExtensions: ['js', 'json'],
   verbose: false,
 };

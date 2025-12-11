@@ -5,35 +5,35 @@ const { logger } = require('../utils/logger');
 /**
  * Push Notification Service
  * Handles push notifications through Firebase Cloud Messaging (FCM)
- * 
+ *
  * For MVP: Uses console logging (stub)
  * For Production: Integrate with Firebase Cloud Messaging
  */
 class PushNotificationService {
   constructor() {
-    this.provider = process.env.PUSH_PROVIDER || 'console'; // 'fcm' or 'console'
+    this.provider = process.env.PUSHPROVIDER || 'console'; // 'fcm' or 'console'
     this.initialized = false;
-    
+
     if (this.provider === 'fcm') {
-      this._initFirebase();
+      this.initFirebase();
     } else {
       logger.info('Push notification service: Console mode (MVP)');
     }
   }
 
-  _initFirebase() {
+  initFirebase() {
     try {
       const admin = require('firebase-admin');
-      
-      const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
+
+      const serviceAccount = process.env.FIREBASESERVICEACCOUNT;
       if (!serviceAccount) {
-        logger.warn('FIREBASE_SERVICE_ACCOUNT not set, push service will use console logging');
+        logger.warn('FIREBASESERVICEACCOUNT not set, push service will use console logging');
         this.provider = 'console';
         return;
       }
 
       const credentials = JSON.parse(serviceAccount);
-      
+
       admin.initializeApp({
         credential: admin.credential.cert(credentials),
       });
@@ -43,7 +43,9 @@ class PushNotificationService {
       this.initialized = true;
       logger.info('Firebase Cloud Messaging initialized');
     } catch (error) {
-      logger.warn('Firebase not available, falling back to console logging', { error: error.message });
+      logger.warn('Firebase not available, falling back to console logging', {
+        error: error.message,
+      });
       this.provider = 'console';
     }
   }
@@ -61,24 +63,23 @@ class PushNotificationService {
 
     try {
       if (this.provider === 'fcm' && this.initialized) {
-        return await this._sendViaFCM(deviceToken, title, body, data);
-      } else {
-        return await this._sendViaConsole(deviceToken, title, body, data);
+        return await this.sendViaFCM(deviceToken, title, body, data);
       }
+      return await this.sendViaConsole(deviceToken, title, body, data);
     } catch (error) {
       const latency = Date.now() - started;
       logger.error('push.send.error', {
-        deviceToken: deviceToken.substring(0, 20) + '...',
+        deviceToken: `${deviceToken.substring(0, 20)}...`,
         title,
         provider: this.provider,
-        latency_ms: latency,
+        latencyms: latency,
         error: error.message,
       });
       throw error;
     }
   }
 
-  async _sendViaFCM(deviceToken, title, body, data) {
+  async sendViaFCM(deviceToken, title, body, data) {
     const started = Date.now();
 
     const message = {
@@ -95,7 +96,7 @@ class PushNotificationService {
         priority: 'high',
         notification: {
           sound: 'default',
-          clickAction: 'FLUTTER_NOTIFICATION_CLICK',
+          clickAction: 'FLUTTERNOTIFICATIONCLICK',
         },
       },
       apns: {
@@ -109,27 +110,27 @@ class PushNotificationService {
     };
 
     const response = await this.messaging.send(message);
-    
+
     const latency = Date.now() - started;
     logger.info('push.sent', {
-      deviceToken: deviceToken.substring(0, 20) + '...',
+      deviceToken: `${deviceToken.substring(0, 20)}...`,
       title,
       provider: 'fcm',
       messageId: response,
-      latency_ms: latency,
+      latencyms: latency,
     });
 
     return {
       success: true,
       provider: 'fcm',
       messageId: response,
-      latency_ms: latency,
+      latencyms: latency,
     };
   }
 
-  async _sendViaConsole(deviceToken, title, body, data) {
+  async sendViaConsole(deviceToken, title, body, data) {
     logger.info('push.sent.console', {
-      deviceToken: deviceToken.substring(0, 20) + '...',
+      deviceToken: `${deviceToken.substring(0, 20)}...`,
       title,
       body,
       data,
@@ -146,37 +147,37 @@ class PushNotificationService {
     return {
       success: true,
       provider: 'console',
-      messageId: 'console-' + Date.now(),
-      latency_ms: 0,
+      messageId: `console-${Date.now()}`,
+      latencyms: 0,
     };
   }
 
   /**
    * Send push notification to user (looks up device tokens)
-   * @param {string} userId - User UUID
+   * @param {string} user_id - User UUID
    * @param {string} title - Notification title
    * @param {string} body - Notification body
    * @param {Object} data - Additional data payload
    * @returns {Promise<Object>} Send result
    */
-  async sendToUser(userId, title, body, data = {}) {
+  async sendToUser(user_id, title, body, data = {}) {
     try {
       // Get user's device tokens from database
       const DeviceToken = require('../models/deviceToken.model');
-      
+
       const devices = await DeviceToken.findAll({
         where: {
-          user_id: userId,
+          user_id: user_id,
           active: true,
         },
       });
 
       if (devices.length === 0) {
-        logger.warn('push.no_devices', { userId });
+        logger.warn('push.nodevices', { user_id });
         return {
           success: false,
-          reason: 'no_devices',
-          userId,
+          reason: 'nodevices',
+          user_id,
         };
       }
 
@@ -184,28 +185,30 @@ class PushNotificationService {
       const results = [];
       for (const device of devices) {
         try {
-          const result = await this.sendToDevice(device.device_token, title, body, data);
+          const result = await this.sendToDevice(device.devicetoken, title, body, data);
           results.push({
-            deviceId: device.token_id,
+            deviceId: device.tokenid,
             ...result,
           });
 
-          // Update last_used timestamp
-          await device.update({ last_used: new Date() });
+          // Update lastused timestamp
+          await device.update({ lastused: new Date() });
         } catch (error) {
           logger.error('push.device.failed', {
-            deviceId: device.token_id,
+            deviceId: device.tokenid,
             error: error.message,
           });
-          
+
           // If token is invalid, mark device as inactive
-          if (error.code === 'messaging/invalid-registration-token' ||
-              error.code === 'messaging/registration-token-not-registered') {
+          if (
+            error.code === 'messaging/invalid-registration-token' ||
+            error.code === 'messaging/registration-token-not-registered'
+          ) {
             await device.update({ active: false });
           }
-          
+
           results.push({
-            deviceId: device.token_id,
+            deviceId: device.tokenid,
             success: false,
             error: error.message,
           });
@@ -214,14 +217,14 @@ class PushNotificationService {
 
       return {
         success: results.some(r => r.success),
-        userId,
+        user_id,
         totalDevices: devices.length,
         successCount: results.filter(r => r.success).length,
         results,
       };
     } catch (error) {
       logger.error('push.sendToUser.error', {
-        userId,
+        user_id,
         error: error.message,
       });
       throw error;
@@ -230,22 +233,22 @@ class PushNotificationService {
 
   /**
    * Send push notification to multiple users
-   * @param {Array<string>} userIds - Array of user UUIDs
+   * @param {Array<string>} user_ids - Array of user UUIDs
    * @param {string} title - Notification title
    * @param {string} body - Notification body
    * @param {Object} data - Additional data payload
    * @returns {Promise<Array>} Array of send results
    */
-  async sendToUsers(userIds, title, body, data = {}) {
+  async sendToUsers(user_ids, title, body, data = {}) {
     const results = [];
-    for (const userId of userIds) {
+    for (const user_id of user_ids) {
       try {
-        const result = await this.sendToUser(userId, title, body, data);
+        const result = await this.sendToUser(user_id, title, body, data);
         results.push(result);
       } catch (error) {
         results.push({
           success: false,
-          userId,
+          user_id,
           error: error.message,
         });
       }
@@ -255,59 +258,59 @@ class PushNotificationService {
 
   /**
    * Register device token for a user
-   * @param {string} userId - User UUID
+   * @param {string} user_id - User UUID
    * @param {string} deviceToken - FCM device token
    * @param {string} platform - Platform ('android' or 'ios')
    * @returns {Promise<Object>} Registration result
    */
-  async registerDevice(userId, deviceToken, platform) {
+  async registerDevice(user_id, deviceToken, platform) {
     try {
       const DeviceToken = require('../models/deviceToken.model');
-      
+
       // Check if token already exists
       let device = await DeviceToken.findOne({
-        where: { device_token: deviceToken },
+        where: { devicetoken: deviceToken },
       });
 
       if (device) {
         // Update existing token
         await device.update({
-          user_id: userId,
+          user_id: user_id,
           platform,
           active: true,
-          last_used: new Date(),
+          lastused: new Date(),
         });
-        
+
         logger.info('push.device.updated', {
-          userId,
-          deviceId: device.token_id,
+          user_id,
+          deviceId: device.tokenid,
           platform,
         });
       } else {
         // Create new token
         device = await DeviceToken.create({
-          user_id: userId,
-          device_token: deviceToken,
+          user_id: user_id,
+          devicetoken: deviceToken,
           platform,
           active: true,
-          last_used: new Date(),
+          lastused: new Date(),
         });
-        
+
         logger.info('push.device.registered', {
-          userId,
-          deviceId: device.token_id,
+          user_id,
+          deviceId: device.tokenid,
           platform,
         });
       }
 
       return {
         success: true,
-        deviceId: device.token_id,
+        deviceId: device.tokenid,
         platform: device.platform,
       };
     } catch (error) {
       logger.error('push.device.register.error', {
-        userId,
+        user_id,
         error: error.message,
       });
       throw error;
@@ -322,28 +325,28 @@ class PushNotificationService {
   async unregisterDevice(deviceToken) {
     try {
       const DeviceToken = require('../models/deviceToken.model');
-      
+
       const device = await DeviceToken.findOne({
-        where: { device_token: deviceToken },
+        where: { devicetoken: deviceToken },
       });
 
       if (device) {
         await device.update({ active: false });
-        
+
         logger.info('push.device.unregistered', {
-          deviceId: device.token_id,
-          userId: device.user_id,
+          deviceId: device.tokenid,
+          user_id: device.user_id,
         });
 
         return {
           success: true,
-          deviceId: device.token_id,
+          deviceId: device.tokenid,
         };
       }
 
       return {
         success: false,
-        reason: 'device_not_found',
+        reason: 'devicenotfound',
       };
     } catch (error) {
       logger.error('push.device.unregister.error', {
@@ -368,4 +371,3 @@ module.exports = {
   PushNotificationService,
   getPushNotificationService,
 };
-

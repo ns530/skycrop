@@ -5,32 +5,32 @@ const { sequelize } = require('../config/database.config');
 
 /**
  * YieldPrediction Model
- * Mirrors PostgreSQL "yield_predictions" defined in backend/database/init.sql
+ * Mirrors PostgreSQL "yieldpredictions" defined in backend/database/init.sql
  *
  * Columns:
- * - prediction_id UUID PK
+ * - predictionid UUID PK
  * - field_id UUID FK
- * - prediction_date DATE
- * - predicted_yield_per_ha DECIMAL(10,2)
- * - predicted_total_yield DECIMAL(10,2)
- * - confidence_lower DECIMAL(10,2)
- * - confidence_upper DECIMAL(10,2)
- * - expected_revenue DECIMAL(12,2)
- * - harvest_date_estimate DATE (nullable)
- * - model_version VARCHAR(20)
- * - features_used JSONB
- * - actual_yield DECIMAL(10,2) (nullable)
- * - accuracy_mape DECIMAL(5,2) (nullable)
- * - created_at TIMESTAMP DEFAULT NOW()
+ * - predictiondate DATE
+ * - predictedyieldperha DECIMAL(10,2)
+ * - predictedtotalyield DECIMAL(10,2)
+ * - confidencelower DECIMAL(10,2)
+ * - confidenceupper DECIMAL(10,2)
+ * - expectedrevenue DECIMAL(12,2)
+ * - harvestdateestimate DATE (nullable)
+ * - modelversion VARCHAR(20)
+ * - featuresused JSONB
+ * - actualyield DECIMAL(10,2) (nullable)
+ * - accuracymape DECIMAL(5,2) (nullable)
+ * - createdat TIMESTAMP DEFAULT NOW()
  *
  * Indexes:
- * - (field_id, prediction_date DESC)
- * - (harvest_date_estimate)
+ * - (field_id, predictiondate DESC)
+ * - (harvestdateestimate)
  */
 const YieldPrediction = sequelize.define(
   'YieldPrediction',
   {
-    prediction_id: {
+    predictionid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
@@ -39,68 +39,68 @@ const YieldPrediction = sequelize.define(
       type: DataTypes.UUID,
       allowNull: false,
     },
-    prediction_date: {
+    predictiondate: {
       type: DataTypes.DATEONLY,
       allowNull: false,
     },
-    predicted_yield_per_ha: {
+    predictedyieldperha: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
       validate: { min: 0 },
     },
-    predicted_total_yield: {
+    predictedtotalyield: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
       validate: { min: 0 },
     },
-    confidence_lower: {
+    confidencelower: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
-    confidence_upper: {
+    confidenceupper: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
-    expected_revenue: {
+    expectedrevenue: {
       type: DataTypes.DECIMAL(12, 2),
       allowNull: false,
       validate: { min: 0 },
     },
-    harvest_date_estimate: {
+    harvestdateestimate: {
       type: DataTypes.DATEONLY,
       allowNull: true,
     },
-    model_version: {
+    modelversion: {
       type: DataTypes.STRING(20),
       allowNull: false,
     },
-    features_used: {
-      type: DataTypes.JSONB,
+    featuresused: {
+      type: DataTypesONB,
       allowNull: false,
     },
-    actual_yield: {
+    actualyield: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: true,
       validate: { min: 0 },
     },
-    accuracy_mape: {
+    accuracymape: {
       type: DataTypes.DECIMAL(5, 2),
       allowNull: true,
     },
-    created_at: {
+    createdat: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: literal('NOW()'),
     },
   },
   {
-    tableName: 'yield_predictions',
-    timestamps: false, // only created_at is present
+    tableName: 'yieldpredictions',
+    timestamps: false, // only createdat is present
     underscored: true,
     freezeTableName: true,
     indexes: [
-      { fields: ['field_id', { name: 'prediction_date', order: 'DESC' }] },
-      { fields: ['harvest_date_estimate'] },
+      { fields: ['field_id', { name: 'predictiondate', order: 'DESC' }] },
+      { fields: ['harvestdateestimate'] },
     ],
   }
 );

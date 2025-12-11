@@ -3,7 +3,7 @@
  * Interactive chart showing yield trends over multiple seasons
  */
 
-import React from 'react';
+import React from "react";
 import {
   BarChart,
   Bar,
@@ -18,10 +18,10 @@ import {
   ReferenceLine,
   ComposedChart,
   TooltipProps,
-} from 'recharts';
+} from "recharts";
 
-import { Card } from '../../../shared/ui/Card';
-import type { ActualYieldRecord } from '../api/yieldApi';
+import { Card } from "../../../shared/ui/Card";
+import type { ActualYieldRecord } from "../api/yieldApi";
 
 interface ChartDataPoint {
   date: string;
@@ -51,16 +51,24 @@ interface YieldTrendChartProps {
 /**
  * Custom tooltip for chart
  */
-const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label }) => {
+const CustomTooltip: React.FC<CustomTooltipProps> = ({
+  active,
+  payload,
+  label,
+}) => {
   if (!active || !payload || !payload.length) return null;
 
-  const actualData = payload.find((p: TooltipPayload) => p.dataKey === 'actual');
-  const predictedData = payload.find((p: TooltipPayload) => p.dataKey === 'predicted');
+  const actualData = payload.find(
+    (p: TooltipPayload) => p.dataKey === "actual",
+  );
+  const predictedData = payload.find(
+    (p: TooltipPayload) => p.dataKey === "predicted",
+  );
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3">
       <p className="text-xs font-medium text-gray-900 mb-2">{label}</p>
-      
+
       {actualData && (
         <div className="flex items-center gap-2 mb-1">
           <div className="w-3 h-3 rounded bg-green-600" />
@@ -70,7 +78,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label })
           </span>
         </div>
       )}
-      
+
       {predictedData && predictedData.value && (
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-blue-600" />
@@ -84,15 +92,15 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label })
       {actualData && predictedData && predictedData.value && (
         <div className="mt-2 pt-2 border-t border-gray-200">
           <p className="text-xs text-gray-600">
-            Difference:{' '}
+            Difference:{" "}
             <span
               className={`font-medium ${
                 actualData.value > predictedData.value
-                  ? 'text-green-700'
-                  : 'text-red-700'
+                  ? "text-green-700"
+                  : "text-red-700"
               }`}
             >
-              {actualData.value > predictedData.value ? '+' : ''}
+              {actualData.value > predictedData.value ? "+" : ""}
               {(actualData.value - predictedData.value).toFixed(0)} kg/ha
             </span>
           </p>
@@ -104,13 +112,13 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label })
 
 /**
  * YieldTrendChart
- * 
+ *
  * Shows yield trends over multiple harvests
  * - Bar chart for actual yields
  * - Line overlay for predicted yields
  * - Comparison visualization
  * - Season-over-season growth
- * 
+ *
  * @example
  * ```tsx
  * <YieldTrendChart
@@ -121,7 +129,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label })
  */
 export const YieldTrendChart: React.FC<YieldTrendChartProps> = ({
   records,
-  title = 'Yield History',
+  title = "Yield History",
   height = 350,
   showPredictions = true,
 }) => {
@@ -131,7 +139,9 @@ export const YieldTrendChart: React.FC<YieldTrendChartProps> = ({
       <Card title={title}>
         <div className="text-center py-12">
           <div className="text-4xl mb-2">🌾</div>
-          <p className="text-sm text-gray-600 mb-1">No yield data recorded yet</p>
+          <p className="text-sm text-gray-600 mb-1">
+            No yield data recorded yet
+          </p>
           <p className="text-xs text-gray-500">
             Record your harvest yields to see trends over time
           </p>
@@ -142,13 +152,14 @@ export const YieldTrendChart: React.FC<YieldTrendChartProps> = ({
 
   // Prepare chart data (sorted by date)
   const sortedRecords = [...records].sort(
-    (a, b) => new Date(a.harvestDate).getTime() - new Date(b.harvestDate).getTime()
+    (a, b) =>
+      new Date(a.harvestDate).getTime() - new Date(b.harvestDate).getTime(),
   );
 
   const chartData = sortedRecords.map((record) => ({
-    date: new Date(record.harvestDate).toLocaleDateString('en-US', {
-      month: 'short',
-      year: '2-digit',
+    date: new Date(record.harvestDate).toLocaleDateString("en-US", {
+      month: "short",
+      year: "2-digit",
     }),
     actual: record.actualYieldKgPerHa,
     predicted: record.predictedYieldKgPerHa || null,
@@ -157,23 +168,27 @@ export const YieldTrendChart: React.FC<YieldTrendChartProps> = ({
 
   // Calculate statistics
   const actualYields = records.map((r) => r.actualYieldKgPerHa);
-  const avgYield = actualYields.reduce((sum, y) => sum + y, 0) / actualYields.length;
+  const avgYield =
+    actualYields.reduce((sum, y) => sum + y, 0) / actualYields.length;
   const minYield = Math.min(...actualYields);
   const maxYield = Math.max(...actualYields);
   const latestYield = actualYields[actualYields.length - 1];
 
   // Calculate growth trend
   const firstYield = actualYields[0];
-  const growthRate = actualYields.length > 1
-    ? ((latestYield - firstYield) / firstYield) * 100
-    : 0;
+  const growthRate =
+    actualYields.length > 1
+      ? ((latestYield - firstYield) / firstYield) * 100
+      : 0;
 
   // Calculate prediction accuracy
   const recordsWithPredictions = records.filter((r) => r.predictedYieldKgPerHa);
   const avgAccuracy =
     recordsWithPredictions.length > 0
       ? recordsWithPredictions.reduce((sum, r) => {
-          const error = Math.abs(r.actualYieldKgPerHa - (r.predictedYieldKgPerHa || 0));
+          const error = Math.abs(
+            r.actualYieldKgPerHa - (r.predictedYieldKgPerHa || 0),
+          );
           const mape = (error / r.actualYieldKgPerHa) * 100;
           return sum + (100 - mape);
         }, 0) / recordsWithPredictions.length
@@ -187,14 +202,18 @@ export const YieldTrendChart: React.FC<YieldTrendChartProps> = ({
           <p className="text-xs text-gray-500 mb-1">Latest</p>
           <p className="text-lg font-semibold text-gray-900">
             {latestYield.toFixed(0)}
-            <span className="text-xs font-normal text-gray-600 ml-1">kg/ha</span>
+            <span className="text-xs font-normal text-gray-600 ml-1">
+              kg/ha
+            </span>
           </p>
         </div>
         <div className="text-center">
           <p className="text-xs text-gray-500 mb-1">Average</p>
           <p className="text-lg font-semibold text-gray-900">
             {avgYield.toFixed(0)}
-            <span className="text-xs font-normal text-gray-600 ml-1">kg/ha</span>
+            <span className="text-xs font-normal text-gray-600 ml-1">
+              kg/ha
+            </span>
           </p>
         </div>
         <div className="text-center">
@@ -207,10 +226,15 @@ export const YieldTrendChart: React.FC<YieldTrendChartProps> = ({
           <p className="text-xs text-gray-500 mb-1">Growth</p>
           <p
             className={`text-lg font-semibold ${
-              growthRate > 0 ? 'text-green-600' : growthRate < 0 ? 'text-red-600' : 'text-gray-600'
+              growthRate > 0
+                ? "text-green-600"
+                : growthRate < 0
+                  ? "text-red-600"
+                  : "text-gray-600"
             }`}
           >
-            {growthRate > 0 ? '↑' : growthRate < 0 ? '↓' : '→'} {Math.abs(growthRate).toFixed(1)}%
+            {growthRate > 0 ? "↑" : growthRate < 0 ? "↓" : "→"}{" "}
+            {Math.abs(growthRate).toFixed(1)}%
           </p>
         </div>
       </div>
@@ -227,7 +251,7 @@ export const YieldTrendChart: React.FC<YieldTrendChartProps> = ({
       )}
 
       {/* Chart */}
-      <div style={{ width: '100%', height }}>
+      <div style={{ width: "100%", height }}>
         <ResponsiveContainer>
           <ComposedChart
             data={chartData}
@@ -236,17 +260,17 @@ export const YieldTrendChart: React.FC<YieldTrendChartProps> = ({
             <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
             <XAxis
               dataKey="date"
-              tick={{ fontSize: 12, fill: '#6B7280' }}
-              tickLine={{ stroke: '#E5E7EB' }}
+              tick={{ fontSize: 12, fill: "#6B7280" }}
+              tickLine={{ stroke: "#E5E7EB" }}
             />
             <YAxis
-              tick={{ fontSize: 12, fill: '#6B7280' }}
-              tickLine={{ stroke: '#E5E7EB' }}
+              tick={{ fontSize: 12, fill: "#6B7280" }}
+              tickLine={{ stroke: "#E5E7EB" }}
               label={{
-                value: 'Yield (kg/ha)',
+                value: "Yield (kg/ha)",
                 angle: -90,
-                position: 'insideLeft',
-                style: { fontSize: 12, fill: '#6B7280' },
+                position: "insideLeft",
+                style: { fontSize: 12, fill: "#6B7280" },
               }}
             />
             <Tooltip content={<CustomTooltip />} />
@@ -277,8 +301,8 @@ export const YieldTrendChart: React.FC<YieldTrendChartProps> = ({
               label={{
                 value: `Avg: ${avgYield.toFixed(0)}`,
                 fontSize: 10,
-                fill: '#6B7280',
-                position: 'right' as const,
+                fill: "#6B7280",
+                position: "right" as const,
               }}
             />
 
@@ -292,7 +316,7 @@ export const YieldTrendChart: React.FC<YieldTrendChartProps> = ({
                 dataKey="predicted"
                 stroke="#3B82F6"
                 strokeWidth={2}
-                dot={{ r: 4, fill: '#3B82F6', strokeWidth: 2, stroke: '#fff' }}
+                dot={{ r: 4, fill: "#3B82F6", strokeWidth: 2, stroke: "#fff" }}
                 connectNulls={false}
               />
             )}
@@ -303,10 +327,11 @@ export const YieldTrendChart: React.FC<YieldTrendChartProps> = ({
       {/* Footer Info */}
       <div className="mt-4 pt-4 border-t">
         <p className="text-xs text-gray-500">
-          💡 <strong>Tip:</strong> Track your yields over time to identify patterns and improve farming practices.
+          💡 <strong>Tip:</strong> Track your yields over time to identify
+          patterns and improve farming practices.
           {avgAccuracy !== null &&
             avgAccuracy > 85 &&
-            ' Your predictions are highly accurate!'}
+            " Your predictions are highly accurate!"}
         </p>
       </div>
     </Card>
@@ -314,4 +339,3 @@ export const YieldTrendChart: React.FC<YieldTrendChartProps> = ({
 };
 
 export default YieldTrendChart;
-

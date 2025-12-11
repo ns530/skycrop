@@ -1,21 +1,21 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { useNavigate } from "react-router-dom";
 
-import { useUiState } from '../../../shared/context/UiContext';
-import { Button } from '../../../shared/ui/Button';
-import { Card } from '../../../shared/ui/Card';
-import { ErrorState } from '../../../shared/ui/ErrorState';
-import { LoadingState } from '../../../shared/ui/LoadingState';
-import { YieldForecastSection } from '../../yield/components';
-import { APIPerformanceCard } from '../components/APIPerformanceCard';
-import { DisasterAssessmentSection } from '../components/DisasterAssessmentSection';
-import { NDVICard } from '../components/NDVICard';
-import { NDWICard } from '../components/NDWICard';
-import { SystemUptimeCard } from '../components/SystemUptimeCard';
-import { TDVICard } from '../components/TDVICard';
-import { UserAnalyticsSection } from '../components/UserAnalyticsSection';
-import { WeatherForecastSection } from '../components/WeatherForecastSection';
-import { useDashboard } from '../hooks';
+import { useUiState } from "../../../shared/context/UiContext";
+import { Button } from "../../../shared/ui/Button";
+import { Card } from "../../../shared/ui/Card";
+import { ErrorState } from "../../../shared/ui/ErrorState";
+import { LoadingState } from "../../../shared/ui/LoadingState";
+import { YieldForecastSection } from "../../yield/components";
+import { APIPerformanceCard } from "../components/APIPerformanceCard";
+import { DisasterAssessmentSection } from "../components/DisasterAssessmentSection";
+import { NDVICard } from "../components/NDVICard";
+import { NDWICard } from "../components/NDWICard";
+import { SystemUptimeCard } from "../components/SystemUptimeCard";
+import { TDVICard } from "../components/TDVICard";
+import { UserAnalyticsSection } from "../components/UserAnalyticsSection";
+import { WeatherForecastSection } from "../components/WeatherForecastSection";
+import { useDashboard } from "../hooks";
 
 /**
  * DashboardPage
@@ -31,34 +31,38 @@ export const DashboardPage: React.FC = () => {
 
   const handleAddField = () => {
     setCurrentField(undefined);
-    navigate('/fields/create');
+    navigate("/fields/create");
   };
 
   const handleOpenFieldsList = () => {
-    navigate('/fields');
+    navigate("/fields");
   };
 
   const handleViewWeather = () => {
-    navigate('/weather');
+    navigate("/weather");
   };
 
   const handleViewField = (fieldId: string) => {
     navigate(`/fields/${fieldId}`);
   };
 
-  const getHealthStatusFromScore = (score: number): 'excellent' | 'fair' | 'poor' => {
-    if (score >= 70) return 'excellent';
-    if (score >= 40) return 'fair';
-    return 'poor';
+  const getHealthStatusFromScore = (
+    score: number,
+  ): "excellent" | "fair" | "poor" => {
+    if (score >= 70) return "excellent";
+    if (score >= 40) return "fair";
+    return "poor";
   };
 
   const formatActivityDate = (dateString: string): string => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    const diffInHours = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
+    );
 
     if (diffInHours < 24) {
-      return diffInHours === 0 ? 'Just now' : `${diffInHours}h ago`;
+      return diffInHours === 0 ? "Just now" : `${diffInHours}h ago`;
     }
     const diffInDays = Math.floor(diffInHours / 24);
     return `${diffInDays}d ago`;
@@ -68,12 +72,13 @@ export const DashboardPage: React.FC = () => {
     return (
       <section aria-labelledby="farmer-dashboard-heading" className="space-y-4">
         <header className="space-y-1">
-          <h1 id="farmer-dashboard-heading" className="text-lg font-semibold text-gray-900">
+          <h1
+            id="farmer-dashboard-heading"
+            className="text-lg font-semibold text-gray-900"
+          >
             Farmer dashboard
           </h1>
-          <p className="text-sm text-gray-600">
-            Loading your farm overview...
-          </p>
+          <p className="text-sm text-gray-600">Loading your farm overview...</p>
         </header>
         <LoadingState message="Loading dashboard data..." />
       </section>
@@ -84,7 +89,10 @@ export const DashboardPage: React.FC = () => {
     return (
       <section aria-labelledby="farmer-dashboard-heading" className="space-y-4">
         <header className="space-y-1">
-          <h1 id="farmer-dashboard-heading" className="text-lg font-semibold text-gray-900">
+          <h1
+            id="farmer-dashboard-heading"
+            className="text-lg font-semibold text-gray-900"
+          >
             Farmer dashboard
           </h1>
           <p className="text-sm text-gray-600">
@@ -113,13 +121,16 @@ export const DashboardPage: React.FC = () => {
     system,
     weather_forecast,
     user_analytics,
-    disaster_assessment
+    disaster_assessment,
   } = dashboardData;
 
   return (
     <section aria-labelledby="farmer-dashboard-heading" className="space-y-6">
       <header className="space-y-1">
-        <h1 id="farmer-dashboard-heading" className="text-lg font-semibold text-gray-900">
+        <h1
+          id="farmer-dashboard-heading"
+          className="text-lg font-semibold text-gray-900"
+        >
           Farmer dashboard
         </h1>
         <p className="text-sm text-gray-600">
@@ -132,7 +143,8 @@ export const DashboardPage: React.FC = () => {
         <Card title="Fields monitored" status="excellent" showStatusStripe>
           <p className="text-2xl font-semibold text-gray-900">{fields.total}</p>
           <p className="mt-1 text-xs text-gray-500">
-            {fields.active} active • {fields.total_area_hectares.toFixed(1)} ha total
+            {fields.active} active • {fields.total_area_hectares.toFixed(1)} ha
+            total
           </p>
         </Card>
         <Card
@@ -140,9 +152,13 @@ export const DashboardPage: React.FC = () => {
           status={getHealthStatusFromScore(health.average_score)}
           showStatusStripe
         >
-          <p className="text-2xl font-semibold text-gray-900">{Math.round(health.average_score)}</p>
+          <p className="text-2xl font-semibold text-gray-900">
+            {Math.round(health.average_score)}
+          </p>
           <p className="mt-1 text-xs text-gray-500">
-            {health.status_distribution.good + health.status_distribution.moderate} healthy fields
+            {health.status_distribution.good +
+              health.status_distribution.moderate}{" "}
+            healthy fields
           </p>
         </Card>
         <Card title="Active alerts" status="fair" showStatusStripe>
@@ -151,15 +167,27 @@ export const DashboardPage: React.FC = () => {
             {alerts.by_severity.high} high priority • Last 7 days
           </p>
         </Card>
-        <NDVICard ndvi={vegetation_indices.ndvi} totalRecords={vegetation_indices.total_records} />
-        <NDWICard ndwi={vegetation_indices.ndwi} totalRecords={vegetation_indices.total_records} />
-        <TDVICard tdvi={vegetation_indices.tdvi} totalRecords={vegetation_indices.total_records} />
+        <NDVICard
+          ndvi={vegetation_indices.ndvi}
+          totalRecords={vegetation_indices.total_records}
+        />
+        <NDWICard
+          ndwi={vegetation_indices.ndwi}
+          totalRecords={vegetation_indices.total_records}
+        />
+        <TDVICard
+          tdvi={vegetation_indices.tdvi}
+          totalRecords={vegetation_indices.total_records}
+        />
         <SystemUptimeCard uptimeHours={system.uptime_hours} />
-        <APIPerformanceCard avgResponseTimeMs={system.api_performance.avg_response_time_ms} />
+        <APIPerformanceCard
+          avgResponseTimeMs={system.api_performance.avg_response_time_ms}
+        />
         <Card title="Recommendations" status="excellent" showStatusStripe>
           <p className="text-2xl font-semibold text-gray-900">{alerts.total}</p>
           <p className="mt-1 text-xs text-gray-500">
-            {alerts.by_type.water} water • {alerts.by_type.fertilizer} fertilizer
+            {alerts.by_type.water} water • {alerts.by_type.fertilizer}{" "}
+            fertilizer
           </p>
         </Card>
       </div>
@@ -227,14 +255,16 @@ export const DashboardPage: React.FC = () => {
       {field_thumbnails.length > 0 && (
         <YieldForecastSection
           request={{
-            features: [{
-              field_id: field_thumbnails[0].field_id,
-              // Mock features - in real implementation, these would come from field data
-              ndvi: 0.7,
-              precipitation: 120,
-              temperature: 25,
-              soil_moisture: 0.6
-            }]
+            features: [
+              {
+                field_id: field_thumbnails[0].field_id,
+                // Mock features - in real implementation, these would come from field data
+                ndvi: 0.7,
+                precipitation: 120,
+                temperature: 25,
+                soil_moisture: 0.6,
+              },
+            ],
           }}
           fieldArea={field_thumbnails[0].area_hectares}
         />
@@ -247,16 +277,19 @@ export const DashboardPage: React.FC = () => {
             {recent_activity.slice(0, 5).map((activity, index) => (
               <div key={index} className="flex items-start space-x-3">
                 <div className="flex-shrink-0">
-                  <div className={`w-2 h-2 rounded-full mt-2 ${
-                    activity.type === 'health_assessment' ? 'bg-green-500' : 'bg-blue-500'
-                  }`} />
+                  <div
+                    className={`w-2 h-2 rounded-full mt-2 ${
+                      activity.type === "health_assessment"
+                        ? "bg-green-500"
+                        : "bg-blue-500"
+                    }`}
+                  />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-gray-900">
-                    {activity.type === 'health_assessment'
+                    {activity.type === "health_assessment"
                       ? `Health assessment: ${activity.details.status} (${activity.details.score})`
-                      : `Recommendation: ${activity.details.type} (${activity.details.severity})`
-                    }
+                      : `Recommendation: ${activity.details.type} (${activity.details.severity})`}
                   </p>
                   <p className="text-xs text-gray-500">
                     {activity.field_name} • {formatActivityDate(activity.date)}

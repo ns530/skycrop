@@ -1,21 +1,22 @@
 /* eslint-disable no-underscore-dangle */
+
 'use strict';
 
 describe('SatelliteService branch coverage lifts', () => {
-  const ORIGINAL_ENV = { ...process.env };
+  const ORIGINALENV = { ...process.env };
 
   beforeEach(() => {
     jest.resetModules();
     jest.clearAllMocks();
-    process.env = { ...ORIGINAL_ENV };
+    process.env = { ...ORIGINALENV };
   });
 
   afterAll(() => {
-    process.env = ORIGINAL_ENV;
+    process.env = ORIGINALENV;
   });
 
   function mockMakeRedisWithSetexOnly(overrides = {}) {
-    // Missing setEx to exercise fallback path in _cacheSetTile
+    // Missing setEx to exercise fallback path in cacheSetTile
     return {
       isOpen: true,
       get: jest.fn(async () => null),
@@ -29,14 +30,14 @@ describe('SatelliteService branch coverage lifts', () => {
   function mockMakeRedisWithInvalidCache() {
     return {
       isOpen: true,
-      get: jest.fn(async () => 'not-json'), // invalid JSON to exercise parse catch in _cacheGetTile
+      get: jest.fn(async () => 'not-json'), // invalid JSON to exercise parse catch in cacheGetTile
       setEx: jest.fn(async () => {}),
       del: jest.fn(async () => {}),
       scan: jest.fn(async () => ['0', []]),
     };
   }
 
-  jest.mock('../../src/config/redis.config.js', () => {
+  jest.mock('../../src/config/redis.config', () => {
     return {
       initRedis: jest.fn(async () => mockMakeRedisWithSetexOnly()),
       getRedisClient: jest.fn(() => mockMakeRedisWithSetexOnly()),
@@ -47,17 +48,17 @@ describe('SatelliteService branch coverage lifts', () => {
     post: jest.fn(),
   }));
 
-  const { ValidationError } = require('../../src/errors/custom-errors.js');
+  const { ValidationError } = require('../../src/errors/custom-errors');
 
   test('tileToBBox rejects zoom > 22 (covers validation branch)', () => {
-    const { SatelliteService } = require('../../src/services/satellite.service.js');
+    const { SatelliteService } = require('../../src/services/satellite.service');
     const svc = new SatelliteService();
     expect(() => svc.tileToBBox(23, 0, 0)).toThrow(/Invalid tile coordinates/i);
   });
 
-  test('getTile uses setex fallback when redis.setEx is unavailable (covers _cacheSetTile else branch + process validateStatus)', async () => {
+  test('getTile uses setex fallback when redis.setEx is unavailable (covers cacheSetTile else branch + process validateStatus)', async () => {
     jest.isolateModules(async () => {
-      const { initRedis } = require('../../src/config/redis.config.js');
+      const { initRedis } = require('../../src/config/redis.config');
       const redis = mockMakeRedisWithSetexOnly();
       initRedis.mockResolvedValueOnce(redis);
 
@@ -66,7 +67,7 @@ describe('SatelliteService branch coverage lifts', () => {
 
       // First call is OAuth token
       axios.post.mockImplementationOnce((url, form, config) => {
-        // execute validateStatus in _getOAuthToken
+        // execute validateStatus in getOAuthToken
         if (config && typeof config.validateStatus === 'function') {
           expect(config.validateStatus(200)).toBe(true);
           expect(config.validateStatus(499)).toBe(true);
@@ -74,7 +75,7 @@ describe('SatelliteService branch coverage lifts', () => {
         }
         return Promise.resolve({
           status: 200,
-          data: { access_token: 'tok', expires_in: 3600 },
+          data: { accesstoken: 'tok', expiresin: 3600 },
         });
       });
 
@@ -94,7 +95,7 @@ describe('SatelliteService branch coverage lifts', () => {
         });
       });
 
-      const { SatelliteService } = require('../../src/services/satellite.service.js');
+      const { SatelliteService } = require('../../src/services/satellite.service');
       const svc = new SatelliteService();
 
       const res = await svc.getTile({
@@ -103,7 +104,7 @@ describe('SatelliteService branch coverage lifts', () => {
         y: 2150,
         date: '2025-10-10',
         bands: 'RGB',
-        cloud_lt: 20,
+        cloudlt: 20,
         ifNoneMatch: null,
       });
 
@@ -113,9 +114,9 @@ describe('SatelliteService branch coverage lifts', () => {
     });
   });
 
-  test('getTile ignores invalid cache JSON then fetches (covers _cacheGetTile catch branch)', async () => {
+  test('getTile ignores invalid cache JSON then fetches (covers cacheGetTile catch branch)', async () => {
     jest.isolateModules(async () => {
-      const { initRedis } = require('../../src/config/redis.config.js');
+      const { initRedis } = require('../../src/config/redis.config');
       initRedis.mockResolvedValueOnce(mockMakeRedisWithInvalidCache());
 
       const axios = require('axios');
@@ -129,7 +130,7 @@ describe('SatelliteService branch coverage lifts', () => {
         }
         return Promise.resolve({
           status: 200,
-          data: { access_token: 'tok', expires_in: 3600 },
+          data: { accesstoken: 'tok', expiresin: 3600 },
         });
       });
 
@@ -143,7 +144,7 @@ describe('SatelliteService branch coverage lifts', () => {
         });
       });
 
-      const { SatelliteService } = require('../../src/services/satellite.service.js');
+      const { SatelliteService } = require('../../src/services/satellite.service');
       const svc = new SatelliteService();
 
       const res = await svc.getTile({
@@ -152,7 +153,7 @@ describe('SatelliteService branch coverage lifts', () => {
         y: 2150,
         date: '2025-10-10',
         bands: 'RGB',
-        cloud_lt: 10,
+        cloudlt: 10,
         ifNoneMatch: null,
       });
 
@@ -163,17 +164,21 @@ describe('SatelliteService branch coverage lifts', () => {
 
   test('getTile throws on invalid date format (covers date validation branch)', async () => {
     jest.isolateModules(async () => {
-      const { SatelliteService } = require('../../src/services/satellite.service.js');
+      const { SatelliteService } = require('../../src/services/satellite.service');
       const svc = new SatelliteService();
       await expect(
-        svc.getTile({ z: 12, x: 3567, y: 2150, date: '2025/10/10', bands: 'RGB' }),
-      ).rejects.toMatchObject({ name: 'ValidationError', code: 'VALIDATION_ERROR', statusCode: 400 });
+        svc.getTile({ z: 12, x: 3567, y: 2150, date: '2025/10/10', bands: 'RGB' })
+      ).rejects.toMatchObject({
+        name: 'ValidationError',
+        code: 'VALIDATIONERROR',
+        statusCode: 400,
+      });
     });
   });
 
-  test('OAuth error path (token 400) raises error (covers _getOAuthToken non-2xx branch)', async () => {
+  test('OAuth error path (token 400) raises error (covers getOAuthToken non-2xx branch)', async () => {
     jest.isolateModules(async () => {
-      const { initRedis } = require('../../src/config/redis.config.js');
+      const { initRedis } = require('../../src/config/redis.config');
       initRedis.mockResolvedValueOnce(mockMakeRedisWithSetexOnly());
 
       const axios = require('axios');
@@ -191,11 +196,11 @@ describe('SatelliteService branch coverage lifts', () => {
         });
       });
 
-      const { SatelliteService } = require('../../src/services/satellite.service.js');
+      const { SatelliteService } = require('../../src/services/satellite.service');
       const svc = new SatelliteService();
 
       await expect(
-        svc.getTile({ z: 12, x: 3567, y: 2150, date: '2025-10-10', bands: 'RGB' }),
+        svc.getTile({ z: 12, x: 3567, y: 2150, date: '2025-10-10', bands: 'RGB' })
       ).rejects.toBeInstanceOf(Error);
     });
   });

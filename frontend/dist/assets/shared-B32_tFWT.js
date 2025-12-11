@@ -1,14 +1,4692 @@
-var P=Object.defineProperty,O=Object.defineProperties;var L=Object.getOwnPropertyDescriptors;var k=Object.getOwnPropertySymbols;var A=Object.prototype.hasOwnProperty,j=Object.prototype.propertyIsEnumerable;var R=(s,e,t)=>e in s?P(s,e,{enumerable:!0,configurable:!0,writable:!0,value:t}):s[e]=t,p=(s,e)=>{for(var t in e||(e={}))A.call(e,t)&&R(s,t,e[t]);if(k)for(var t of k(e))j.call(e,t)&&R(s,t,e[t]);return s},g=(s,e)=>O(s,L(e));var v=(s,e)=>{var t={};for(var r in s)A.call(s,r)&&e.indexOf(r)<0&&(t[r]=s[r]);if(s!=null&&k)for(var r of k(s))e.indexOf(r)<0&&j.call(s,r)&&(t[r]=s[r]);return t};var x=(s,e,t)=>R(s,typeof e!="symbol"?e+"":e,t);var _=(s,e,t)=>new Promise((r,i)=>{var n=a=>{try{o(t.next(a))}catch(l){i(l)}},c=a=>{try{o(t.throw(a))}catch(l){i(l)}},o=a=>a.done?r(a.value):Promise.resolve(a.value).then(n,c);o((t=t.apply(s,e)).next())});import{e as clsx,r as reactExports,d as React,k as ReactDOM}from"./chart-vendor-C7uCl44m.js";import{j as jsxRuntimeExports}from"./feature-admin-Bw8S4RZv.js";
-import{u as useFieldDetail}from"./feature-fields-fUbMVOqT.js";import{a as axios}from"./http-vendor-DnTtldoj.js";import{c as MapContainer,T as TileLayer,d as useMap,G as GeoJSON}from"./map-vendor-BIpNu-NE.js";
-import{u as useLocation,L as Link,b as useParams,a as useNavigate}from"./router-vendor-D1DOKBjT.js";
-const Card=c=>{var o=c,{title:s,status:e="default",showStatusStripe:t=!1,className:r,children:i}=o,n=v(o,["title","status","showStatusStripe","className","children"]);const a=e==="excellent"?"bg-status-excellent":e==="fair"?"bg-status-fair":e==="poor"?"bg-status-poor":"bg-transparent";return jsxRuntimeExports.jsxs("section",g(p({className:clsx("relative flex rounded-lg border border-gray-100 bg-white shadow-sm","focus-within:ring-2 focus-within:ring-brand-blue focus-within:ring-offset-2",r)},n),{children:[t&&e!=="default"&&jsxRuntimeExports.jsx("div",{className:clsx("w-1 rounded-l-lg",a),"aria-hidden":"true"}),jsxRuntimeExports.jsxs("div",{className:clsx("flex-1 p-4 sm:p-5",t&&e!=="default"&&"ml-0"),children:[s&&jsxRuntimeExports.jsx("h2",{className:"text-sm font-semibold text-gray-900 mb-2","aria-label":s,children:s}),jsxRuntimeExports.jsx("div",{className:"text-sm text-gray-700",children:i})]})]}))},PageContainer=i=>{var n=i,{fullWidth:s,className:e,children:t}=n,r=v(n,["fullWidth","className","children"]);const c="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6",o=s?"mx-auto":"mx-auto max-w-page";return jsxRuntimeExports.jsx("div",g(p({className:clsx(c,o,e)},r),{children:t}))},getEnvConfig=()=>{try{const meta=eval("import.meta.env");return{API_BASE_URL:(meta==null?void 0:meta.VITE_API_BASE_URL)||"/api/v1",MODE:(meta==null?void 0:meta.MODE)||"development",IS_DEV:(meta==null?void 0:meta.DEV)===!0,IS_PROD:(meta==null?void 0:meta.PROD)===!0}}catch(s){return{API_BASE_URL:"/api/v1",MODE:"development",IS_DEV:!1,IS_PROD:!1}}},env=getEnvConfig();class ApiError extends Error{constructor(t,r,i,n){super(t);x(this,"status");x(this,"code");x(this,"details");this.name="ApiError",this.status=r,this.code=i,this.details=n!=null?n:null}}const authState={tokens:{accessToken:null,refreshToken:null},isRefreshing:!1,refreshPromise:null,refreshFn:null,onAuthError:null},setAuthTokens=s=>{var e;authState.tokens={accessToken:s.accessToken,refreshToken:(e=s.refreshToken)!=null?e:null}},configureAuthHandlers=s=>{var e,t;authState.refreshFn=(e=s.refreshFn)!=null?e:null,authState.onAuthError=(t=s.onAuthError)!=null?t:null},apiBaseURL=env.API_BASE_URL,httpClient=axios.create({baseURL:apiBaseURL,withCredentials:!1});httpClient.interceptors.request.use(s=>(authState.tokens.accessToken&&s.headers&&(s.headers.Authorization=`Bearer ${authState.tokens.accessToken}`),s));httpClient.interceptors.response.use(s=>s,s=>_(void 0,null,function*(){var n;const e=s.config,t=(n=s.response)==null?void 0:n.status;if(!e)return Promise.reject(normalizeApiError(s));const r=t===401,i=!!(authState.refreshFn&&authState.tokens.refreshToken);if(!r||!i)return r&&authState.onAuthError&&authState.onAuthError(),Promise.reject(normalizeApiError(s));if(e._retry)return authState.onAuthError&&authState.onAuthError(),Promise.reject(normalizeApiError(s));e._retry=!0;try{authState.isRefreshing||(authState.isRefreshing=!0,authState.refreshPromise=authState.refreshFn(authState.tokens).then(a=>(authState.isRefreshing=!1,authState.refreshPromise=null,!a||!a.accessToken?null:(setAuthTokens(a),a))).catch(()=>(authState.isRefreshing=!1,authState.refreshPromise=null,null)));const c=yield authState.refreshPromise;if(!c||!c.accessToken)return authState.onAuthError&&authState.onAuthError(),Promise.reject(normalizeApiError(s));const o=e;return o.headers||(o.headers={}),o.headers.Authorization=`Bearer ${c.accessToken}`,httpClient(o)}catch(c){return authState.onAuthError&&authState.onAuthError(),Promise.reject(normalizeApiError(s))}}));const normalizeApiError=s=>{var e,t,r,i,n,c,o,a;if(s instanceof ApiError)return s;if(axios.isAxiosError(s)){const l=s,u=(e=l.response)==null?void 0:e.status,d=(t=l.response)==null?void 0:t.data,h=(r=d==null?void 0:d.error)==null?void 0:r.code,m=(c=(n=(i=d==null?void 0:d.error)==null?void 0:i.message)!=null?n:l.message)!=null?c:u?`Request failed with status ${u}`:"Request failed";return new ApiError(m,u,h,(a=(o=d==null?void 0:d.error)==null?void 0:o.details)!=null?a:null)}return s instanceof Error?new ApiError(s.message):new ApiError("An unexpected error occurred")},ToastContext=reactExports.createContext(void 0),DEFAULT_DURATION=4e3,ToastProvider=({children:s})=>{const[e,t]=reactExports.useState([]),r=reactExports.useCallback(o=>{t(a=>a.filter(l=>l.id!==o))},[]),i=reactExports.useCallback(()=>{t([])},[]),n=reactExports.useCallback(o=>{var u;const a=`${Date.now()}-${Math.random().toString(36).slice(2)}`,l=p({id:a,duration:(u=o.duration)!=null?u:DEFAULT_DURATION},o);t(d=>[...d,l]),l.duration&&l.duration>0&&window.setTimeout(()=>r(a),l.duration)},[r]),c=reactExports.useMemo(()=>({toasts:e,showToast:n,dismissToast:r,clearToasts:i}),[e,n,r,i]);return jsxRuntimeExports.jsxs(ToastContext.Provider,{value:c,children:[s,jsxRuntimeExports.jsxs("section",{"aria-label":"Toast notifications",className:"fixed z-50 top-4 right-4 flex flex-col gap-2 max-w-sm",children:[jsxRuntimeExports.jsx("h2",{className:"sr-only",children:"Toast notifications"}),e.map(o=>jsxRuntimeExports.jsx(Toast,{toast:o,onDismiss:()=>r(o.id)},o.id))]})]})},variantClasses={default:"bg-gray-900 text-white",success:"bg-status-excellent text-white",error:"bg-status-poor text-white",warning:"bg-status-fair text-gray-900"},Toast=({toast:s,onDismiss:e})=>{const{title:t,description:r,variant:i="default"}=s,n=i==="error",c=n?"alert":"status",o=n?"assertive":"polite";return jsxRuntimeExports.jsxs("div",{role:c,"aria-live":o,className:clsx("flex items-start gap-3 rounded-md shadow-lg px-4 py-3 text-sm focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-brand-blue",variantClasses[i]),children:[jsxRuntimeExports.jsxs("div",{className:"flex-1",children:[t&&jsxRuntimeExports.jsx("p",{className:"font-medium",children:t}),r&&jsxRuntimeExports.jsx("p",{className:"mt-0.5 text-xs opacity-90",children:r})]}),jsxRuntimeExports.jsx("button",{type:"button",onClick:e,className:"ml-2 inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-xs font-medium hover:bg-white/10 focus-visible:outline-none","aria-label":"Dismiss notification",children:"×"})]})},useToastContext=()=>{const s=reactExports.useContext(ToastContext);if(!s)throw new Error("useToastContext must be used within a ToastProvider");return s},useToast=()=>{const{showToast:s,dismissToast:e,clearToasts:t,toasts:r}=useToastContext(),i=reactExports.useCallback(n=>{s(n)},[s]);return{toasts:r,showToast:i,dismissToast:e,clearToasts:t}},routesConfig={public:[{id:"auth.login",path:"/auth/login",label:"Login",breadcrumbLabel:"Sign in"},{id:"auth.register",path:"/auth/register",label:"Register",breadcrumbLabel:"Create account"},{id:"auth.resetPassword",path:"/auth/reset-password",label:"Reset password"}],farmer:[{id:"dashboard",path:"/dashboard",label:"Dashboard",isProtected:!0},{id:"fields.list",path:"/fields",label:"Fields",isProtected:!0},{id:"fields.create",path:"/fields/create",label:"Create field",isProtected:!0,breadcrumbLabel:"Add field"},{id:"fields.detail",path:"/fields/:fieldId",label:"Field details",isProtected:!0},{id:"fields.health",path:"/fields/:fieldId/health",label:"Health",breadcrumbLabel:"Field health",isProtected:!0},{id:"fields.recommendations",path:"/fields/:fieldId/recommendations",label:"Recommendations",breadcrumbLabel:"Field recommendations",isProtected:!0},{id:"fields.weather",path:"/fields/:fieldId/weather",label:"Weather",breadcrumbLabel:"Field weather",isProtected:!0},{id:"fields.editBoundary",path:"/fields/:fieldId/edit-boundary",label:"Edit boundary",breadcrumbLabel:"Edit boundary",isProtected:!0},{id:"weather.overview",path:"/weather",label:"Weather",isProtected:!0}],admin:[{id:"admin.overview",path:"/admin",label:"Admin",breadcrumbLabel:"Admin overview",isProtected:!0,roles:["admin"]},{id:"admin.users",path:"/admin/users",label:"Users",breadcrumbLabel:"User management",isProtected:!0,roles:["admin"]},{id:"admin.content",path:"/admin/content",label:"Content",breadcrumbLabel:"Content management",isProtected:!0,roles:["admin"]},{id:"admin.systemHealth",path:"/admin/system-health",label:"System health",breadcrumbLabel:"System health",isProtected:!0,roles:["admin"]}]},allRoutes=[...routesConfig.public,...routesConfig.farmer,...routesConfig.admin],findRouteByPath=s=>{const e=s==="/"?s:s.replace(/\/+$/,"");return allRoutes.find(t=>t.path===e)},useBreadcrumbs=()=>{const s=useLocation();return React.useMemo(()=>{var n,c;const{pathname:e}=s;if(e==="/"||e==="/dashboard"){const o=allRoutes.find(a=>a.path==="/dashboard");return[{label:(c=(n=o==null?void 0:o.breadcrumbLabel)!=null?n:o==null?void 0:o.label)!=null?c:"Dashboard",path:"/dashboard",isCurrent:!0,route:o}]}const t=e.split("/").filter(Boolean),r=[];let i="";return t.forEach((o,a)=>{var m;i+=`/${o}`;const l=findRouteByPath(i),u=(m=l==null?void 0:l.breadcrumbLabel)!=null?m:l==null?void 0:l.label,d=o.startsWith(":")?o.slice(1):o.charAt(0).toUpperCase()+o.slice(1),h=a===t.length-1;r.push({label:u!=null?u:d,path:i,isCurrent:h,route:l})}),r},[s])},Breadcrumbs=({items:s})=>s.length?jsxRuntimeExports.jsx("nav",{"aria-label":"Breadcrumb",className:"mb-3 text-xs sm:text-sm",children:jsxRuntimeExports.jsx("ol",{className:"flex flex-wrap items-center gap-1 text-gray-500",children:s.map((e,t)=>t===s.length-1?jsxRuntimeExports.jsxs("li",{className:"flex items-center gap-1 text-gray-900 font-medium",children:[t>0&&jsxRuntimeExports.jsx("span",{"aria-hidden":"true",children:"/"}),jsxRuntimeExports.jsx("span",{"aria-current":"page",children:e.label})]},e.path):jsxRuntimeExports.jsxs("li",{className:"flex items-center gap-1",children:[t>0&&jsxRuntimeExports.jsx("span",{"aria-hidden":"true",children:"/"}),jsxRuntimeExports.jsx(Link,{to:e.path,className:"text-gray-500 hover:text-gray-900 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 rounded-sm px-0.5",children:e.label})]},e.path))})}):null,Button=u=>{var d=u,{variant:s="primary",size:e="md",fullWidth:t=!1,as:r="button",href:i,target:n,rel:c,className:o,children:a}=d,l=v(d,["variant","size","fullWidth","as","href","target","rel","className","children"]);var N,C;const h="inline-flex items-center justify-center rounded-md font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors",m={sm:"text-xs px-3 h-9",md:"text-sm px-4 h-11",lg:"text-base px-5 h-12"},E={primary:"bg-brand-blue text-white hover:bg-blue-600",secondary:"bg-white text-gray-900 border border-gray-200 hover:bg-gray-50",ghost:"bg-transparent text-gray-900 hover:bg-gray-100",destructive:"bg-status-poor text-white hover:bg-red-600"},y=t?"w-full":"",T=l,{type:f}=T,b=v(T,["type"]),w=clsx(h,m[e],E[s],y,o);if(r==="a"){const S=b;return jsxRuntimeExports.jsx("a",g(p({href:i,target:n,rel:c,role:(N=S.role)!=null?N:"button",tabIndex:(C=S.tabIndex)!=null?C:0,className:w},S),{children:a}))}return jsxRuntimeExports.jsx("button",g(p({type:f!=null?f:"button",className:w},b),{children:a}))},SATELLITE_TILES={url:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",attribution:"&copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",maxZoom:18},DEFAULT_TILE_PROVIDER=SATELLITE_TILES,SRI_LANKA_CENTER={lat:7.9403,lng:81.0188};function MapReadyHandler({onReady:s}){const e=useMap();return reactExports.useEffect(()=>{s&&e&&s(e)},[e,s]),null}const BaseMap=({center:s,zoom:e=14,onMapReady:t,children:r,className:i="h-full w-full",scrollWheelZoom:n=!0})=>jsxRuntimeExports.jsxs(MapContainer,{center:s,zoom:e,className:i,zoomControl:!1,scrollWheelZoom:n,style:{height:"100%",width:"100%"},children:[jsxRuntimeExports.jsx(TileLayer,{url:DEFAULT_TILE_PROVIDER.url,attribution:DEFAULT_TILE_PROVIDER.attribution,maxZoom:DEFAULT_TILE_PROVIDER.maxZoom}),r,jsxRuntimeExports.jsx(MapReadyHandler,{onReady:t})]}),getFieldColor=s=>s.healthStatus&&{excellent:"#059669",good:"#10B981",fair:"#F59E0B",poor:"#EF4444"}[s.healthStatus]||"#3B82F6",FieldBoundaryLayer=({fields:s,selectedFieldId:e,onFieldClick:t})=>!s||s.length===0?null:jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment,{children:s.map(r=>{const i=e===r.id,n=getFieldColor(r),c={color:n,weight:i?3:2,fillOpacity:i?.4:.3,fillColor:n},o={weight:3,fillOpacity:.5};return jsxRuntimeExports.jsx(GeoJSON,{data:r.boundary,style:c,eventHandlers:{click:()=>{t&&t(r.id)},mouseover:a=>{a.target.setStyle(o)},mouseout:a=>{a.target.setStyle(c)}}},r.id)})}),MapControls=({onCenterOnUser:s,showLocationButton:e=!0})=>{const t=useMap(),r=()=>{t.zoomIn()},i=()=>{t.zoomOut()};return jsxRuntimeExports.jsxs("div",{className:"absolute top-4 right-4 z-[1000] flex flex-col gap-2",children:[jsxRuntimeExports.jsxs("div",{className:"bg-white rounded-lg shadow-lg overflow-hidden",children:[jsxRuntimeExports.jsx(Button,{onClick:r,variant:"secondary",size:"sm",className:"rounded-b-none border-b w-10 h-10 p-0 text-xl","aria-label":"Zoom in",title:"Zoom in",children:"+"}),jsxRuntimeExports.jsx(Button,{onClick:i,variant:"secondary",size:"sm",className:"rounded-t-none w-10 h-10 p-0 text-xl","aria-label":"Zoom out",title:"Zoom out",children:"−"})]}),e&&s&&jsxRuntimeExports.jsx(Button,{onClick:s,variant:"secondary",size:"sm",className:"bg-white shadow-lg w-10 h-10 p-0","aria-label":"Center on my location",title:"Center on my location",children:"📍"})]})},useMapCenter=()=>{const[s,e]=reactExports.useState(SRI_LANKA_CENTER),[t,r]=reactExports.useState(!1),[i,n]=reactExports.useState(null);return{center:s,setCenter:e,getUserLocation:()=>{if(!navigator.geolocation){n("Geolocation is not supported by your browser");return}r(!0),n(null),navigator.geolocation.getCurrentPosition(o=>{e({lat:o.coords.latitude,lng:o.coords.longitude}),r(!1)},o=>{let a="Unable to retrieve your location";switch(o.code){case o.PERMISSION_DENIED:a="Location permission denied. Please enable location access.";break;case o.POSITION_UNAVAILABLE:a="Location information unavailable.";break;case o.TIMEOUT:a="Location request timed out.";break}n(a),r(!1),console.warn("Geolocation error:",a)},{enableHighAccuracy:!0,timeout:1e4,maximumAge:0})},loading:t,error:i}},calculatePolygonCenter=s=>{var n;if(s.type==="MultiPolygon"){const c=(n=s.coordinates[0])==null?void 0:n[0];if(!c||c.length===0)return{lat:7.9403,lng:81.0188};let o=0,a=0;const l=c.length;return c.forEach(u=>{const[d,h]=u;o+=h,a+=d}),{lat:o/l,lng:a/l}}const e=s.coordinates[0];if(!e||e.length===0)return{lat:7.9403,lng:81.0188};let t=0,r=0;const i=e.length;return e.forEach(c=>{const[o,a]=c;t+=a,r+=o}),{lat:t/i,lng:r/i}},calculatePolygonArea=s=>{var c;const e=s.type==="Polygon"?s.coordinates[0]:(c=s.coordinates[0])==null?void 0:c[0];if(!e||e.length<4)return 0;let t=0;for(let o=0;o<e.length-1;o++){const[a,l]=e[o],[u,d]=e[o+1];t+=a*d-u*l}t=Math.abs(t)/2;const r=111.32;return t*r*r*Math.cos(7*Math.PI/180)*100},fieldKeys={all:["fields"],list:s=>["fields","list",s],detail:s=>["fields","detail",s]},healthKeys={field:(s,e)=>["health",s,e],indices:["health","indices"]},recommendationKeys={field:s=>["recommendations",s]},weatherKeys={forecast:(s,e)=>["weather","forecast",{lat:s,lon:e}],alerts:["weather","alerts"]},yieldKeys={forecast:s=>["yield","forecast",s],history:s=>["yield","history",s]},dashboardKeys={metrics:["dashboard","metrics"]},adminKeys={users:s=>["admin","users",s],content:s=>["admin","content",s],systemStatus:["admin","systemStatus"]},Spinner=()=>jsxRuntimeExports.jsx("span",{className:"inline-flex h-4 w-4 items-center justify-center rounded-full border-2 border-gray-300 border-t-brand-blue animate-spin","aria-hidden":"true"}),LoadingState=n=>{var c=n,{message:s="Loading…",description:e,compact:t,className:r}=c,i=v(c,["message","description","compact","className"]);const o=e?"loading-description":void 0;return t?jsxRuntimeExports.jsxs("div",g(p({className:clsx("inline-flex items-center gap-2 text-sm text-gray-600",r),role:"status","aria-live":"polite","aria-busy":"true","aria-describedby":o},i),{children:[jsxRuntimeExports.jsx(Spinner,{}),jsxRuntimeExports.jsxs("div",{className:"flex flex-col",children:[jsxRuntimeExports.jsx("span",{children:s}),e&&jsxRuntimeExports.jsx("span",{id:o,className:"text-xs text-gray-500",children:e})]})]})):jsxRuntimeExports.jsx(Card,{className:clsx("flex items-center justify-center",r),children:jsxRuntimeExports.jsxs("div",g(p({className:"flex items-center gap-3 text-sm text-gray-700",role:"status","aria-live":"polite","aria-busy":"true","aria-describedby":o},i),{children:[jsxRuntimeExports.jsx(Spinner,{}),jsxRuntimeExports.jsxs("div",{className:"flex flex-col",children:[jsxRuntimeExports.jsx("span",{className:"font-medium text-gray-900",children:s}),e&&jsxRuntimeExports.jsx("span",{id:o,className:"mt-0.5 text-xs text-gray-600",children:e})]})]}))})},ErrorIcon=()=>jsxRuntimeExports.jsx("span",{className:"inline-flex h-5 w-5 items-center justify-center rounded-full bg-status-poor/10 text-status-poor","aria-hidden":"true",children:jsxRuntimeExports.jsx("svg",{className:"h-3 w-3",viewBox:"0 0 20 20",fill:"currentColor","aria-hidden":"true",children:jsxRuntimeExports.jsx("path",{fillRule:"evenodd",d:"M10 2a8 8 0 1 0 .001 16.001A8 8 0 0 0 10 2Zm0 4a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 6Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z",clipRule:"evenodd"})})}),ErrorState=o=>{var a=o,{title:s="Something went wrong",message:e,onRetry:t,retryLabel:r="Retry",compact:i,className:n}=a,c=v(a,["title","message","onRetry","retryLabel","compact","className"]);const l=e?"error-state-description":void 0;return i?jsxRuntimeExports.jsxs("div",g(p({className:clsx("inline-flex items-center gap-2 text-sm text-red-700",n),role:"alert","aria-live":"assertive","aria-describedby":l},c),{children:[jsxRuntimeExports.jsx(ErrorIcon,{}),jsxRuntimeExports.jsxs("div",{className:"flex flex-col",children:[jsxRuntimeExports.jsx("span",{className:"font-medium",children:s}),e&&jsxRuntimeExports.jsx("span",{id:l,className:"text-xs text-red-600",children:e})]}),t&&jsxRuntimeExports.jsx(Button,{type:"button",size:"sm",variant:"secondary",className:"ml-2",onClick:t,"aria-label":r,children:r})]})):jsxRuntimeExports.jsxs(Card,{className:clsx("flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between",n),children:[jsxRuntimeExports.jsxs("div",g(p({className:"flex items-start gap-3 text-sm text-gray-800",role:"alert","aria-live":"assertive","aria-describedby":l},c),{children:[jsxRuntimeExports.jsx(ErrorIcon,{}),jsxRuntimeExports.jsxs("div",{className:"flex flex-col",children:[jsxRuntimeExports.jsx("span",{className:"font-semibold text-gray-900",children:s}),e&&jsxRuntimeExports.jsx("span",{id:l,className:"mt-0.5 text-xs text-gray-700",children:e})]})]})),t&&jsxRuntimeExports.jsx("div",{className:"flex items-center justify-end",children:jsxRuntimeExports.jsx(Button,{type:"button",size:"sm",variant:"secondary",onClick:t,"aria-label":r,children:r})})]})},FieldMapView=({fieldId:s,showHealthOverlay:e=!0,additionalFields:t=[],onFieldClick:r})=>{var y;const i=useParams(),n=s!=null?s:i.fieldId,{center:c,getUserLocation:o}=useMapCenter(),{data:a,isLoading:l,isError:u,error:d,refetch:h}=useFieldDetail(n!=null?n:""),m=reactExports.useMemo(()=>{if(a!=null&&a.geometry){const f=calculatePolygonCenter(a.geometry);return[f.lat,f.lng]}return[c.lat,c.lng]},[a,c]),E=reactExports.useMemo(()=>{const f=[];return a!=null&&a.geometry&&f.push({id:a.id,name:a.name,boundary:a.geometry,area:a.areaHa,healthStatus:a.latestHealthStatus}),f.push(...t),f},[a,t]);return l?jsxRuntimeExports.jsx("div",{className:"h-full w-full flex items-center justify-center bg-gray-900",children:jsxRuntimeExports.jsx(LoadingState,{message:"Loading map data..."})}):u?jsxRuntimeExports.jsx("div",{className:"h-full w-full flex items-center justify-center bg-gray-900 p-6",children:jsxRuntimeExports.jsx(ErrorState,{title:"Unable to load map",message:(y=d==null?void 0:d.message)!=null?y:"Failed to load field data for map display",onRetry:h})}):a?jsxRuntimeExports.jsxs("div",{className:"h-full w-full relative",children:[jsxRuntimeExports.jsxs(BaseMap,{center:m,zoom:15,children:[jsxRuntimeExports.jsx(FieldBoundaryLayer,{fields:E,selectedFieldId:n,onFieldClick:r}),jsxRuntimeExports.jsx(MapControls,{onCenterOnUser:o})]}),jsxRuntimeExports.jsxs("div",{className:"absolute top-4 left-4 z-[1000] bg-white/95 backdrop-blur-sm rounded-lg shadow-lg px-4 py-3 max-w-xs",children:[jsxRuntimeExports.jsx("p",{className:"text-xs uppercase tracking-wide text-gray-500 mb-1",children:"Current Field"}),jsxRuntimeExports.jsx("h3",{className:"text-base font-semibold text-gray-900 mb-1",children:a.name}),jsxRuntimeExports.jsxs("p",{className:"text-xs text-gray-600",children:[a.areaHa.toFixed(2)," hectares"]}),a.centroidLatLon&&jsxRuntimeExports.jsxs("p",{className:"text-[10px] text-gray-500 mt-1 font-mono",children:[a.centroidLatLon.lat.toFixed(5),", ",a.centroidLatLon.lon.toFixed(5)]})]})]}):jsxRuntimeExports.jsx("div",{className:"h-full w-full flex items-center justify-center bg-gray-900",children:jsxRuntimeExports.jsxs("div",{className:"text-center text-white/70 max-w-md px-4",children:[jsxRuntimeExports.jsx("div",{className:"mb-4 text-4xl",children:"🗺️"}),jsxRuntimeExports.jsx("p",{className:"text-sm",children:"No field selected. Select a field to view its location on the map."})]})})},getInitialOnlineStatus=()=>{var s;return typeof window=="undefined"||typeof navigator=="undefined"?!0:(s=navigator.onLine)!=null?s:!0},useOnlineStatus=()=>{const[s,e]=reactExports.useState(()=>getInitialOnlineStatus());return reactExports.useEffect(()=>{if(typeof window=="undefined")return;const t=()=>e(!0),r=()=>e(!1);return window.addEventListener("online",t),window.addEventListener("offline",r),()=>{window.removeEventListener("online",t),window.removeEventListener("offline",r)}},[]),{isOnline:s}},NOTIFICATION_STORAGE_KEY="skycrop_notifications",PREFERENCES_STORAGE_KEY="skycrop_notification_preferences",MAX_STORED_NOTIFICATIONS=50,DEFAULT_PREFERENCES={enabled:!1,types:{"health-alert":!0,"weather-warning":!0,recommendation:!0,"yield-update":!0,system:!0,general:!1},doNotDisturb:!1,quietHoursStart:"22:00",quietHoursEnd:"07:00",soundEnabled:!0,vibrationEnabled:!0},TYPE_ICONS={"health-alert":"🚨","weather-warning":"🌧️",recommendation:"🤖","yield-update":"📊",system:"⚙️",general:"📰"};class NotificationService{constructor(){x(this,"preferences");x(this,"notificationQueue",[]);this.preferences=this.loadPreferences()}isSupported(){return"Notification"in window}getPermission(){return this.isSupported()?Notification.permission:"denied"}requestPermission(){return _(this,null,function*(){if(!this.isSupported())throw new Error("Notifications not supported in this browser");if(this.getPermission()==="granted")return"granted";try{const e=yield Notification.requestPermission();return e==="granted"&&(this.preferences.enabled=!0,this.savePreferences(),this.send({type:"system",priority:"low",title:"🎉 Notifications Enabled!",body:"You'll now receive important alerts about your fields."})),e}catch(e){return console.error("Error requesting notification permission:",e),"denied"}})}send(e){return _(this,null,function*(){if(!this.canSendNotification(e))return console.log("Notification blocked by preferences:",e.type),null;if(this.isQuietHours()&&e.priority!=="critical")return console.log("Notification queued (quiet hours):",e.title),this.queueNotification(e),null;const t=this.storeNotification(e);try{const r=yield this.createBrowserNotification(e);return this.emitNotificationEvent(t),r}catch(r){return console.error("Error sending notification:",r),null}})}sendBatch(e){return _(this,null,function*(){for(const t of e)yield this.send(t),yield new Promise(r=>setTimeout(r,500))})}createBrowserNotification(e){return _(this,null,function*(){const t=p({body:e.body,icon:e.icon||this.getDefaultIcon(e.type),badge:e.badge,data:e.data,tag:e.tag||`${e.type}-${Date.now()}`,requireInteraction:e.requireInteraction||e.priority==="critical",vibrate:this.preferences.vibrationEnabled?[200,100,200]:void 0,silent:!this.preferences.soundEnabled},e.image&&{image:e.image}),r=new Notification(e.title,t);return r.onclick=()=>{window.focus(),r.close(),e.url?window.location.href=e.url:e.fieldId&&(window.location.href=`/fields/${e.fieldId}`)},r})}canSendNotification(e){return!(this.getPermission()!=="granted"||!this.preferences.enabled||this.preferences.doNotDisturb&&e.priority!=="critical"||!this.preferences.types[e.type])}isQuietHours(){if(!this.preferences.quietHoursStart||!this.preferences.quietHoursEnd)return!1;const e=new Date,t=`${e.getHours().toString().padStart(2,"0")}:${e.getMinutes().toString().padStart(2,"0")}`,r=this.preferences.quietHoursStart,i=this.preferences.quietHoursEnd;return r>i?t>=r||t<=i:t>=r&&t<=i}queueNotification(e){this.notificationQueue.push(e),this.notificationQueue.length>10&&this.notificationQueue.shift()}processQueue(){return _(this,null,function*(){if(this.notificationQueue.length===0)return;console.log(`Processing ${this.notificationQueue.length} queued notifications`);const e=[...this.notificationQueue];this.notificationQueue=[];for(const t of e)yield this.send(t)})}storeNotification(e){const t=g(p({},e),{id:e.id||`notif-${Date.now()}-${Math.random().toString(36).substr(2,9)}`,timestamp:e.timestamp||Date.now(),read:!1,dismissed:!1}),r=this.getStoredNotifications();r.unshift(t);const i=r.slice(0,MAX_STORED_NOTIFICATIONS);return localStorage.setItem(NOTIFICATION_STORAGE_KEY,JSON.stringify(i)),t}getStoredNotifications(){try{const e=localStorage.getItem(NOTIFICATION_STORAGE_KEY);return e?JSON.parse(e):[]}catch(e){return console.error("Error reading stored notifications:",e),[]}}markAsRead(e){const t=this.getStoredNotifications(),r=t.find(i=>i.id===e);r&&(r.read=!0,localStorage.setItem(NOTIFICATION_STORAGE_KEY,JSON.stringify(t)),this.emitNotificationEvent(r))}markAllAsRead(){const e=this.getStoredNotifications();e.forEach(t=>t.read=!0),localStorage.setItem(NOTIFICATION_STORAGE_KEY,JSON.stringify(e)),this.emitNotificationEvent(null)}dismissNotification(e){const t=this.getStoredNotifications(),r=t.find(i=>i.id===e);r&&(r.dismissed=!0,localStorage.setItem(NOTIFICATION_STORAGE_KEY,JSON.stringify(t)),this.emitNotificationEvent(r))}clearAll(){localStorage.setItem(NOTIFICATION_STORAGE_KEY,JSON.stringify([])),this.emitNotificationEvent(null)}getUnreadCount(){return this.getStoredNotifications().filter(e=>!e.read&&!e.dismissed).length}loadPreferences(){try{const e=localStorage.getItem(PREFERENCES_STORAGE_KEY);if(e)return p(p({},DEFAULT_PREFERENCES),JSON.parse(e))}catch(e){console.error("Error loading notification preferences:",e)}return DEFAULT_PREFERENCES}savePreferences(e){e&&(this.preferences=p(p({},this.preferences),e)),localStorage.setItem(PREFERENCES_STORAGE_KEY,JSON.stringify(this.preferences)),this.emitNotificationEvent(null)}getPreferences(){return p({},this.preferences)}getDefaultIcon(e){return`data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="75" font-size="75">${TYPE_ICONS[e]}</text></svg>`}emitNotificationEvent(e){window.dispatchEvent(new CustomEvent("skycrop:notification",{detail:{notification:e,count:this.getUnreadCount()}}))}initialize(){return _(this,null,function*(){this.getPermission()==="granted"&&!this.preferences.enabled&&(this.preferences.enabled=!0,this.savePreferences()),yield this.processQueue()})}}const notificationService=new NotificationService;notificationService.initialize().catch(console.error);const NotificationBell=({onClick:s,isOpen:e})=>{const[t,r]=reactExports.useState(0);return reactExports.useEffect(()=>{r(notificationService.getUnreadCount());const i=()=>{r(notificationService.getUnreadCount())};return window.addEventListener("skycrop:notification",i),()=>{window.removeEventListener("skycrop:notification",i)}},[]),jsxRuntimeExports.jsxs("button",{type:"button",onClick:s,className:`
+var P = Object.defineProperty,
+  O = Object.defineProperties;
+var L = Object.getOwnPropertyDescriptors;
+var k = Object.getOwnPropertySymbols;
+var A = Object.prototype.hasOwnProperty,
+  j = Object.prototype.propertyIsEnumerable;
+var R = (s, e, t) =>
+    e in s
+      ? P(s, e, { enumerable: !0, configurable: !0, writable: !0, value: t })
+      : (s[e] = t),
+  p = (s, e) => {
+    for (var t in e || (e = {})) A.call(e, t) && R(s, t, e[t]);
+    if (k) for (var t of k(e)) j.call(e, t) && R(s, t, e[t]);
+    return s;
+  },
+  g = (s, e) => O(s, L(e));
+var v = (s, e) => {
+  var t = {};
+  for (var r in s) A.call(s, r) && e.indexOf(r) < 0 && (t[r] = s[r]);
+  if (s != null && k)
+    for (var r of k(s)) e.indexOf(r) < 0 && j.call(s, r) && (t[r] = s[r]);
+  return t;
+};
+var x = (s, e, t) => R(s, typeof e != "symbol" ? e + "" : e, t);
+var _ = (s, e, t) =>
+  new Promise((r, i) => {
+    var n = (a) => {
+        try {
+          o(t.next(a));
+        } catch (l) {
+          i(l);
+        }
+      },
+      c = (a) => {
+        try {
+          o(t.throw(a));
+        } catch (l) {
+          i(l);
+        }
+      },
+      o = (a) => (a.done ? r(a.value) : Promise.resolve(a.value).then(n, c));
+    o((t = t.apply(s, e)).next());
+  });
+import {
+  e as clsx,
+  r as reactExports,
+  d as React,
+  k as ReactDOM,
+} from "./chart-vendor-C7uCl44m.js";
+import { j as jsxRuntimeExports } from "./feature-admin-Bw8S4RZv.js";
+import { u as useFieldDetail } from "./feature-fields-fUbMVOqT.js";
+import { a as axios } from "./http-vendor-DnTtldoj.js";
+import {
+  c as MapContainer,
+  T as TileLayer,
+  d as useMap,
+  G as GeoJSON,
+} from "./map-vendor-BIpNu-NE.js";
+import {
+  u as useLocation,
+  L as Link,
+  b as useParams,
+  a as useNavigate,
+} from "./router-vendor-D1DOKBjT.js";
+const Card = (c) => {
+    var o = c,
+      {
+        title: s,
+        status: e = "default",
+        showStatusStripe: t = !1,
+        className: r,
+        children: i,
+      } = o,
+      n = v(o, [
+        "title",
+        "status",
+        "showStatusStripe",
+        "className",
+        "children",
+      ]);
+    const a =
+      e === "excellent"
+        ? "bg-status-excellent"
+        : e === "fair"
+          ? "bg-status-fair"
+          : e === "poor"
+            ? "bg-status-poor"
+            : "bg-transparent";
+    return jsxRuntimeExports.jsxs(
+      "section",
+      g(
+        p(
+          {
+            className: clsx(
+              "relative flex rounded-lg border border-gray-100 bg-white shadow-sm",
+              "focus-within:ring-2 focus-within:ring-brand-blue focus-within:ring-offset-2",
+              r,
+            ),
+          },
+          n,
+        ),
+        {
+          children: [
+            t &&
+              e !== "default" &&
+              jsxRuntimeExports.jsx("div", {
+                className: clsx("w-1 rounded-l-lg", a),
+                "aria-hidden": "true",
+              }),
+            jsxRuntimeExports.jsxs("div", {
+              className: clsx(
+                "flex-1 p-4 sm:p-5",
+                t && e !== "default" && "ml-0",
+              ),
+              children: [
+                s &&
+                  jsxRuntimeExports.jsx("h2", {
+                    className: "text-sm font-semibold text-gray-900 mb-2",
+                    "aria-label": s,
+                    children: s,
+                  }),
+                jsxRuntimeExports.jsx("div", {
+                  className: "text-sm text-gray-700",
+                  children: i,
+                }),
+              ],
+            }),
+          ],
+        },
+      ),
+    );
+  },
+  PageContainer = (i) => {
+    var n = i,
+      { fullWidth: s, className: e, children: t } = n,
+      r = v(n, ["fullWidth", "className", "children"]);
+    const c = "w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6",
+      o = s ? "mx-auto" : "mx-auto max-w-page";
+    return jsxRuntimeExports.jsx(
+      "div",
+      g(p({ className: clsx(c, o, e) }, r), { children: t }),
+    );
+  },
+  getEnvConfig = () => {
+    try {
+      const meta = eval("import.meta.env");
+      return {
+        API_BASE_URL:
+          (meta == null ? void 0 : meta.VITE_API_BASE_URL) || "/api/v1",
+        MODE: (meta == null ? void 0 : meta.MODE) || "development",
+        IS_DEV: (meta == null ? void 0 : meta.DEV) === !0,
+        IS_PROD: (meta == null ? void 0 : meta.PROD) === !0,
+      };
+    } catch (s) {
+      return {
+        API_BASE_URL: "/api/v1",
+        MODE: "development",
+        IS_DEV: !1,
+        IS_PROD: !1,
+      };
+    }
+  },
+  env = getEnvConfig();
+class ApiError extends Error {
+  constructor(t, r, i, n) {
+    super(t);
+    x(this, "status");
+    x(this, "code");
+    x(this, "details");
+    ((this.name = "ApiError"),
+      (this.status = r),
+      (this.code = i),
+      (this.details = n != null ? n : null));
+  }
+}
+const authState = {
+    tokens: { accessToken: null, refreshToken: null },
+    isRefreshing: !1,
+    refreshPromise: null,
+    refreshFn: null,
+    onAuthError: null,
+  },
+  setAuthTokens = (s) => {
+    var e;
+    authState.tokens = {
+      accessToken: s.accessToken,
+      refreshToken: (e = s.refreshToken) != null ? e : null,
+    };
+  },
+  configureAuthHandlers = (s) => {
+    var e, t;
+    ((authState.refreshFn = (e = s.refreshFn) != null ? e : null),
+      (authState.onAuthError = (t = s.onAuthError) != null ? t : null));
+  },
+  apiBaseURL = env.API_BASE_URL,
+  httpClient = axios.create({ baseURL: apiBaseURL, withCredentials: !1 });
+httpClient.interceptors.request.use(
+  (s) => (
+    authState.tokens.accessToken &&
+      s.headers &&
+      (s.headers.Authorization = `Bearer ${authState.tokens.accessToken}`),
+    s
+  ),
+);
+httpClient.interceptors.response.use(
+  (s) => s,
+  (s) =>
+    _(void 0, null, function* () {
+      var n;
+      const e = s.config,
+        t = (n = s.response) == null ? void 0 : n.status;
+      if (!e) return Promise.reject(normalizeApiError(s));
+      const r = t === 401,
+        i = !!(authState.refreshFn && authState.tokens.refreshToken);
+      if (!r || !i)
+        return (
+          r && authState.onAuthError && authState.onAuthError(),
+          Promise.reject(normalizeApiError(s))
+        );
+      if (e._retry)
+        return (
+          authState.onAuthError && authState.onAuthError(),
+          Promise.reject(normalizeApiError(s))
+        );
+      e._retry = !0;
+      try {
+        authState.isRefreshing ||
+          ((authState.isRefreshing = !0),
+          (authState.refreshPromise = authState
+            .refreshFn(authState.tokens)
+            .then(
+              (a) => (
+                (authState.isRefreshing = !1),
+                (authState.refreshPromise = null),
+                !a || !a.accessToken ? null : (setAuthTokens(a), a)
+              ),
+            )
+            .catch(
+              () => (
+                (authState.isRefreshing = !1),
+                (authState.refreshPromise = null),
+                null
+              ),
+            )));
+        const c = yield authState.refreshPromise;
+        if (!c || !c.accessToken)
+          return (
+            authState.onAuthError && authState.onAuthError(),
+            Promise.reject(normalizeApiError(s))
+          );
+        const o = e;
+        return (
+          o.headers || (o.headers = {}),
+          (o.headers.Authorization = `Bearer ${c.accessToken}`),
+          httpClient(o)
+        );
+      } catch (c) {
+        return (
+          authState.onAuthError && authState.onAuthError(),
+          Promise.reject(normalizeApiError(s))
+        );
+      }
+    }),
+);
+const normalizeApiError = (s) => {
+    var e, t, r, i, n, c, o, a;
+    if (s instanceof ApiError) return s;
+    if (axios.isAxiosError(s)) {
+      const l = s,
+        u = (e = l.response) == null ? void 0 : e.status,
+        d = (t = l.response) == null ? void 0 : t.data,
+        h = (r = d == null ? void 0 : d.error) == null ? void 0 : r.code,
+        m =
+          (c =
+            (n =
+              (i = d == null ? void 0 : d.error) == null
+                ? void 0
+                : i.message) != null
+              ? n
+              : l.message) != null
+            ? c
+            : u
+              ? `Request failed with status ${u}`
+              : "Request failed";
+      return new ApiError(
+        m,
+        u,
+        h,
+        (a = (o = d == null ? void 0 : d.error) == null ? void 0 : o.details) !=
+          null
+          ? a
+          : null,
+      );
+    }
+    return s instanceof Error
+      ? new ApiError(s.message)
+      : new ApiError("An unexpected error occurred");
+  },
+  ToastContext = reactExports.createContext(void 0),
+  DEFAULT_DURATION = 4e3,
+  ToastProvider = ({ children: s }) => {
+    const [e, t] = reactExports.useState([]),
+      r = reactExports.useCallback((o) => {
+        t((a) => a.filter((l) => l.id !== o));
+      }, []),
+      i = reactExports.useCallback(() => {
+        t([]);
+      }, []),
+      n = reactExports.useCallback(
+        (o) => {
+          var u;
+          const a = `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+            l = p(
+              {
+                id: a,
+                duration: (u = o.duration) != null ? u : DEFAULT_DURATION,
+              },
+              o,
+            );
+          (t((d) => [...d, l]),
+            l.duration &&
+              l.duration > 0 &&
+              window.setTimeout(() => r(a), l.duration));
+        },
+        [r],
+      ),
+      c = reactExports.useMemo(
+        () => ({ toasts: e, showToast: n, dismissToast: r, clearToasts: i }),
+        [e, n, r, i],
+      );
+    return jsxRuntimeExports.jsxs(ToastContext.Provider, {
+      value: c,
+      children: [
+        s,
+        jsxRuntimeExports.jsxs("section", {
+          "aria-label": "Toast notifications",
+          className: "fixed z-50 top-4 right-4 flex flex-col gap-2 max-w-sm",
+          children: [
+            jsxRuntimeExports.jsx("h2", {
+              className: "sr-only",
+              children: "Toast notifications",
+            }),
+            e.map((o) =>
+              jsxRuntimeExports.jsx(
+                Toast,
+                { toast: o, onDismiss: () => r(o.id) },
+                o.id,
+              ),
+            ),
+          ],
+        }),
+      ],
+    });
+  },
+  variantClasses = {
+    default: "bg-gray-900 text-white",
+    success: "bg-status-excellent text-white",
+    error: "bg-status-poor text-white",
+    warning: "bg-status-fair text-gray-900",
+  },
+  Toast = ({ toast: s, onDismiss: e }) => {
+    const { title: t, description: r, variant: i = "default" } = s,
+      n = i === "error",
+      c = n ? "alert" : "status",
+      o = n ? "assertive" : "polite";
+    return jsxRuntimeExports.jsxs("div", {
+      role: c,
+      "aria-live": o,
+      className: clsx(
+        "flex items-start gap-3 rounded-md shadow-lg px-4 py-3 text-sm focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-brand-blue",
+        variantClasses[i],
+      ),
+      children: [
+        jsxRuntimeExports.jsxs("div", {
+          className: "flex-1",
+          children: [
+            t &&
+              jsxRuntimeExports.jsx("p", {
+                className: "font-medium",
+                children: t,
+              }),
+            r &&
+              jsxRuntimeExports.jsx("p", {
+                className: "mt-0.5 text-xs opacity-90",
+                children: r,
+              }),
+          ],
+        }),
+        jsxRuntimeExports.jsx("button", {
+          type: "button",
+          onClick: e,
+          className:
+            "ml-2 inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-xs font-medium hover:bg-white/10 focus-visible:outline-none",
+          "aria-label": "Dismiss notification",
+          children: "×",
+        }),
+      ],
+    });
+  },
+  useToastContext = () => {
+    const s = reactExports.useContext(ToastContext);
+    if (!s)
+      throw new Error("useToastContext must be used within a ToastProvider");
+    return s;
+  },
+  useToast = () => {
+    const {
+        showToast: s,
+        dismissToast: e,
+        clearToasts: t,
+        toasts: r,
+      } = useToastContext(),
+      i = reactExports.useCallback(
+        (n) => {
+          s(n);
+        },
+        [s],
+      );
+    return { toasts: r, showToast: i, dismissToast: e, clearToasts: t };
+  },
+  routesConfig = {
+    public: [
+      {
+        id: "auth.login",
+        path: "/auth/login",
+        label: "Login",
+        breadcrumbLabel: "Sign in",
+      },
+      {
+        id: "auth.register",
+        path: "/auth/register",
+        label: "Register",
+        breadcrumbLabel: "Create account",
+      },
+      {
+        id: "auth.resetPassword",
+        path: "/auth/reset-password",
+        label: "Reset password",
+      },
+    ],
+    farmer: [
+      {
+        id: "dashboard",
+        path: "/dashboard",
+        label: "Dashboard",
+        isProtected: !0,
+      },
+      { id: "fields.list", path: "/fields", label: "Fields", isProtected: !0 },
+      {
+        id: "fields.create",
+        path: "/fields/create",
+        label: "Create field",
+        isProtected: !0,
+        breadcrumbLabel: "Add field",
+      },
+      {
+        id: "fields.detail",
+        path: "/fields/:fieldId",
+        label: "Field details",
+        isProtected: !0,
+      },
+      {
+        id: "fields.health",
+        path: "/fields/:fieldId/health",
+        label: "Health",
+        breadcrumbLabel: "Field health",
+        isProtected: !0,
+      },
+      {
+        id: "fields.recommendations",
+        path: "/fields/:fieldId/recommendations",
+        label: "Recommendations",
+        breadcrumbLabel: "Field recommendations",
+        isProtected: !0,
+      },
+      {
+        id: "fields.weather",
+        path: "/fields/:fieldId/weather",
+        label: "Weather",
+        breadcrumbLabel: "Field weather",
+        isProtected: !0,
+      },
+      {
+        id: "fields.editBoundary",
+        path: "/fields/:fieldId/edit-boundary",
+        label: "Edit boundary",
+        breadcrumbLabel: "Edit boundary",
+        isProtected: !0,
+      },
+      {
+        id: "weather.overview",
+        path: "/weather",
+        label: "Weather",
+        isProtected: !0,
+      },
+    ],
+    admin: [
+      {
+        id: "admin.overview",
+        path: "/admin",
+        label: "Admin",
+        breadcrumbLabel: "Admin overview",
+        isProtected: !0,
+        roles: ["admin"],
+      },
+      {
+        id: "admin.users",
+        path: "/admin/users",
+        label: "Users",
+        breadcrumbLabel: "User management",
+        isProtected: !0,
+        roles: ["admin"],
+      },
+      {
+        id: "admin.content",
+        path: "/admin/content",
+        label: "Content",
+        breadcrumbLabel: "Content management",
+        isProtected: !0,
+        roles: ["admin"],
+      },
+      {
+        id: "admin.systemHealth",
+        path: "/admin/system-health",
+        label: "System health",
+        breadcrumbLabel: "System health",
+        isProtected: !0,
+        roles: ["admin"],
+      },
+    ],
+  },
+  allRoutes = [
+    ...routesConfig.public,
+    ...routesConfig.farmer,
+    ...routesConfig.admin,
+  ],
+  findRouteByPath = (s) => {
+    const e = s === "/" ? s : s.replace(/\/+$/, "");
+    return allRoutes.find((t) => t.path === e);
+  },
+  useBreadcrumbs = () => {
+    const s = useLocation();
+    return React.useMemo(() => {
+      var n, c;
+      const { pathname: e } = s;
+      if (e === "/" || e === "/dashboard") {
+        const o = allRoutes.find((a) => a.path === "/dashboard");
+        return [
+          {
+            label:
+              (c =
+                (n = o == null ? void 0 : o.breadcrumbLabel) != null
+                  ? n
+                  : o == null
+                    ? void 0
+                    : o.label) != null
+                ? c
+                : "Dashboard",
+            path: "/dashboard",
+            isCurrent: !0,
+            route: o,
+          },
+        ];
+      }
+      const t = e.split("/").filter(Boolean),
+        r = [];
+      let i = "";
+      return (
+        t.forEach((o, a) => {
+          var m;
+          i += `/${o}`;
+          const l = findRouteByPath(i),
+            u =
+              (m = l == null ? void 0 : l.breadcrumbLabel) != null
+                ? m
+                : l == null
+                  ? void 0
+                  : l.label,
+            d = o.startsWith(":")
+              ? o.slice(1)
+              : o.charAt(0).toUpperCase() + o.slice(1),
+            h = a === t.length - 1;
+          r.push({ label: u != null ? u : d, path: i, isCurrent: h, route: l });
+        }),
+        r
+      );
+    }, [s]);
+  },
+  Breadcrumbs = ({ items: s }) =>
+    s.length
+      ? jsxRuntimeExports.jsx("nav", {
+          "aria-label": "Breadcrumb",
+          className: "mb-3 text-xs sm:text-sm",
+          children: jsxRuntimeExports.jsx("ol", {
+            className: "flex flex-wrap items-center gap-1 text-gray-500",
+            children: s.map((e, t) =>
+              t === s.length - 1
+                ? jsxRuntimeExports.jsxs(
+                    "li",
+                    {
+                      className:
+                        "flex items-center gap-1 text-gray-900 font-medium",
+                      children: [
+                        t > 0 &&
+                          jsxRuntimeExports.jsx("span", {
+                            "aria-hidden": "true",
+                            children: "/",
+                          }),
+                        jsxRuntimeExports.jsx("span", {
+                          "aria-current": "page",
+                          children: e.label,
+                        }),
+                      ],
+                    },
+                    e.path,
+                  )
+                : jsxRuntimeExports.jsxs(
+                    "li",
+                    {
+                      className: "flex items-center gap-1",
+                      children: [
+                        t > 0 &&
+                          jsxRuntimeExports.jsx("span", {
+                            "aria-hidden": "true",
+                            children: "/",
+                          }),
+                        jsxRuntimeExports.jsx(Link, {
+                          to: e.path,
+                          className:
+                            "text-gray-500 hover:text-gray-900 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 rounded-sm px-0.5",
+                          children: e.label,
+                        }),
+                      ],
+                    },
+                    e.path,
+                  ),
+            ),
+          }),
+        })
+      : null,
+  Button = (u) => {
+    var d = u,
+      {
+        variant: s = "primary",
+        size: e = "md",
+        fullWidth: t = !1,
+        as: r = "button",
+        href: i,
+        target: n,
+        rel: c,
+        className: o,
+        children: a,
+      } = d,
+      l = v(d, [
+        "variant",
+        "size",
+        "fullWidth",
+        "as",
+        "href",
+        "target",
+        "rel",
+        "className",
+        "children",
+      ]);
+    var N, C;
+    const h =
+        "inline-flex items-center justify-center rounded-md font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors",
+      m = {
+        sm: "text-xs px-3 h-9",
+        md: "text-sm px-4 h-11",
+        lg: "text-base px-5 h-12",
+      },
+      E = {
+        primary: "bg-brand-blue text-white hover:bg-blue-600",
+        secondary:
+          "bg-white text-gray-900 border border-gray-200 hover:bg-gray-50",
+        ghost: "bg-transparent text-gray-900 hover:bg-gray-100",
+        destructive: "bg-status-poor text-white hover:bg-red-600",
+      },
+      y = t ? "w-full" : "",
+      T = l,
+      { type: f } = T,
+      b = v(T, ["type"]),
+      w = clsx(h, m[e], E[s], y, o);
+    if (r === "a") {
+      const S = b;
+      return jsxRuntimeExports.jsx(
+        "a",
+        g(
+          p(
+            {
+              href: i,
+              target: n,
+              rel: c,
+              role: (N = S.role) != null ? N : "button",
+              tabIndex: (C = S.tabIndex) != null ? C : 0,
+              className: w,
+            },
+            S,
+          ),
+          { children: a },
+        ),
+      );
+    }
+    return jsxRuntimeExports.jsx(
+      "button",
+      g(p({ type: f != null ? f : "button", className: w }, b), {
+        children: a,
+      }),
+    );
+  },
+  SATELLITE_TILES = {
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    attribution:
+      "&copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
+    maxZoom: 18,
+  },
+  DEFAULT_TILE_PROVIDER = SATELLITE_TILES,
+  SRI_LANKA_CENTER = { lat: 7.9403, lng: 81.0188 };
+function MapReadyHandler({ onReady: s }) {
+  const e = useMap();
+  return (
+    reactExports.useEffect(() => {
+      s && e && s(e);
+    }, [e, s]),
+    null
+  );
+}
+const BaseMap = ({
+    center: s,
+    zoom: e = 14,
+    onMapReady: t,
+    children: r,
+    className: i = "h-full w-full",
+    scrollWheelZoom: n = !0,
+  }) =>
+    jsxRuntimeExports.jsxs(MapContainer, {
+      center: s,
+      zoom: e,
+      className: i,
+      zoomControl: !1,
+      scrollWheelZoom: n,
+      style: { height: "100%", width: "100%" },
+      children: [
+        jsxRuntimeExports.jsx(TileLayer, {
+          url: DEFAULT_TILE_PROVIDER.url,
+          attribution: DEFAULT_TILE_PROVIDER.attribution,
+          maxZoom: DEFAULT_TILE_PROVIDER.maxZoom,
+        }),
+        r,
+        jsxRuntimeExports.jsx(MapReadyHandler, { onReady: t }),
+      ],
+    }),
+  getFieldColor = (s) =>
+    (s.healthStatus &&
+      {
+        excellent: "#059669",
+        good: "#10B981",
+        fair: "#F59E0B",
+        poor: "#EF4444",
+      }[s.healthStatus]) ||
+    "#3B82F6",
+  FieldBoundaryLayer = ({ fields: s, selectedFieldId: e, onFieldClick: t }) =>
+    !s || s.length === 0
+      ? null
+      : jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, {
+          children: s.map((r) => {
+            const i = e === r.id,
+              n = getFieldColor(r),
+              c = {
+                color: n,
+                weight: i ? 3 : 2,
+                fillOpacity: i ? 0.4 : 0.3,
+                fillColor: n,
+              },
+              o = { weight: 3, fillOpacity: 0.5 };
+            return jsxRuntimeExports.jsx(
+              GeoJSON,
+              {
+                data: r.boundary,
+                style: c,
+                eventHandlers: {
+                  click: () => {
+                    t && t(r.id);
+                  },
+                  mouseover: (a) => {
+                    a.target.setStyle(o);
+                  },
+                  mouseout: (a) => {
+                    a.target.setStyle(c);
+                  },
+                },
+              },
+              r.id,
+            );
+          }),
+        }),
+  MapControls = ({ onCenterOnUser: s, showLocationButton: e = !0 }) => {
+    const t = useMap(),
+      r = () => {
+        t.zoomIn();
+      },
+      i = () => {
+        t.zoomOut();
+      };
+    return jsxRuntimeExports.jsxs("div", {
+      className: "absolute top-4 right-4 z-[1000] flex flex-col gap-2",
+      children: [
+        jsxRuntimeExports.jsxs("div", {
+          className: "bg-white rounded-lg shadow-lg overflow-hidden",
+          children: [
+            jsxRuntimeExports.jsx(Button, {
+              onClick: r,
+              variant: "secondary",
+              size: "sm",
+              className: "rounded-b-none border-b w-10 h-10 p-0 text-xl",
+              "aria-label": "Zoom in",
+              title: "Zoom in",
+              children: "+",
+            }),
+            jsxRuntimeExports.jsx(Button, {
+              onClick: i,
+              variant: "secondary",
+              size: "sm",
+              className: "rounded-t-none w-10 h-10 p-0 text-xl",
+              "aria-label": "Zoom out",
+              title: "Zoom out",
+              children: "−",
+            }),
+          ],
+        }),
+        e &&
+          s &&
+          jsxRuntimeExports.jsx(Button, {
+            onClick: s,
+            variant: "secondary",
+            size: "sm",
+            className: "bg-white shadow-lg w-10 h-10 p-0",
+            "aria-label": "Center on my location",
+            title: "Center on my location",
+            children: "📍",
+          }),
+      ],
+    });
+  },
+  useMapCenter = () => {
+    const [s, e] = reactExports.useState(SRI_LANKA_CENTER),
+      [t, r] = reactExports.useState(!1),
+      [i, n] = reactExports.useState(null);
+    return {
+      center: s,
+      setCenter: e,
+      getUserLocation: () => {
+        if (!navigator.geolocation) {
+          n("Geolocation is not supported by your browser");
+          return;
+        }
+        (r(!0),
+          n(null),
+          navigator.geolocation.getCurrentPosition(
+            (o) => {
+              (e({ lat: o.coords.latitude, lng: o.coords.longitude }), r(!1));
+            },
+            (o) => {
+              let a = "Unable to retrieve your location";
+              switch (o.code) {
+                case o.PERMISSION_DENIED:
+                  a =
+                    "Location permission denied. Please enable location access.";
+                  break;
+                case o.POSITION_UNAVAILABLE:
+                  a = "Location information unavailable.";
+                  break;
+                case o.TIMEOUT:
+                  a = "Location request timed out.";
+                  break;
+              }
+              (n(a), r(!1), console.warn("Geolocation error:", a));
+            },
+            { enableHighAccuracy: !0, timeout: 1e4, maximumAge: 0 },
+          ));
+      },
+      loading: t,
+      error: i,
+    };
+  },
+  calculatePolygonCenter = (s) => {
+    var n;
+    if (s.type === "MultiPolygon") {
+      const c = (n = s.coordinates[0]) == null ? void 0 : n[0];
+      if (!c || c.length === 0) return { lat: 7.9403, lng: 81.0188 };
+      let o = 0,
+        a = 0;
+      const l = c.length;
+      return (
+        c.forEach((u) => {
+          const [d, h] = u;
+          ((o += h), (a += d));
+        }),
+        { lat: o / l, lng: a / l }
+      );
+    }
+    const e = s.coordinates[0];
+    if (!e || e.length === 0) return { lat: 7.9403, lng: 81.0188 };
+    let t = 0,
+      r = 0;
+    const i = e.length;
+    return (
+      e.forEach((c) => {
+        const [o, a] = c;
+        ((t += a), (r += o));
+      }),
+      { lat: t / i, lng: r / i }
+    );
+  },
+  calculatePolygonArea = (s) => {
+    var c;
+    const e =
+      s.type === "Polygon"
+        ? s.coordinates[0]
+        : (c = s.coordinates[0]) == null
+          ? void 0
+          : c[0];
+    if (!e || e.length < 4) return 0;
+    let t = 0;
+    for (let o = 0; o < e.length - 1; o++) {
+      const [a, l] = e[o],
+        [u, d] = e[o + 1];
+      t += a * d - u * l;
+    }
+    t = Math.abs(t) / 2;
+    const r = 111.32;
+    return t * r * r * Math.cos((7 * Math.PI) / 180) * 100;
+  },
+  fieldKeys = {
+    all: ["fields"],
+    list: (s) => ["fields", "list", s],
+    detail: (s) => ["fields", "detail", s],
+  },
+  healthKeys = {
+    field: (s, e) => ["health", s, e],
+    indices: ["health", "indices"],
+  },
+  recommendationKeys = { field: (s) => ["recommendations", s] },
+  weatherKeys = {
+    forecast: (s, e) => ["weather", "forecast", { lat: s, lon: e }],
+    alerts: ["weather", "alerts"],
+  },
+  yieldKeys = {
+    forecast: (s) => ["yield", "forecast", s],
+    history: (s) => ["yield", "history", s],
+  },
+  dashboardKeys = { metrics: ["dashboard", "metrics"] },
+  adminKeys = {
+    users: (s) => ["admin", "users", s],
+    content: (s) => ["admin", "content", s],
+    systemStatus: ["admin", "systemStatus"],
+  },
+  Spinner = () =>
+    jsxRuntimeExports.jsx("span", {
+      className:
+        "inline-flex h-4 w-4 items-center justify-center rounded-full border-2 border-gray-300 border-t-brand-blue animate-spin",
+      "aria-hidden": "true",
+    }),
+  LoadingState = (n) => {
+    var c = n,
+      { message: s = "Loading…", description: e, compact: t, className: r } = c,
+      i = v(c, ["message", "description", "compact", "className"]);
+    const o = e ? "loading-description" : void 0;
+    return t
+      ? jsxRuntimeExports.jsxs(
+          "div",
+          g(
+            p(
+              {
+                className: clsx(
+                  "inline-flex items-center gap-2 text-sm text-gray-600",
+                  r,
+                ),
+                role: "status",
+                "aria-live": "polite",
+                "aria-busy": "true",
+                "aria-describedby": o,
+              },
+              i,
+            ),
+            {
+              children: [
+                jsxRuntimeExports.jsx(Spinner, {}),
+                jsxRuntimeExports.jsxs("div", {
+                  className: "flex flex-col",
+                  children: [
+                    jsxRuntimeExports.jsx("span", { children: s }),
+                    e &&
+                      jsxRuntimeExports.jsx("span", {
+                        id: o,
+                        className: "text-xs text-gray-500",
+                        children: e,
+                      }),
+                  ],
+                }),
+              ],
+            },
+          ),
+        )
+      : jsxRuntimeExports.jsx(Card, {
+          className: clsx("flex items-center justify-center", r),
+          children: jsxRuntimeExports.jsxs(
+            "div",
+            g(
+              p(
+                {
+                  className: "flex items-center gap-3 text-sm text-gray-700",
+                  role: "status",
+                  "aria-live": "polite",
+                  "aria-busy": "true",
+                  "aria-describedby": o,
+                },
+                i,
+              ),
+              {
+                children: [
+                  jsxRuntimeExports.jsx(Spinner, {}),
+                  jsxRuntimeExports.jsxs("div", {
+                    className: "flex flex-col",
+                    children: [
+                      jsxRuntimeExports.jsx("span", {
+                        className: "font-medium text-gray-900",
+                        children: s,
+                      }),
+                      e &&
+                        jsxRuntimeExports.jsx("span", {
+                          id: o,
+                          className: "mt-0.5 text-xs text-gray-600",
+                          children: e,
+                        }),
+                    ],
+                  }),
+                ],
+              },
+            ),
+          ),
+        });
+  },
+  ErrorIcon = () =>
+    jsxRuntimeExports.jsx("span", {
+      className:
+        "inline-flex h-5 w-5 items-center justify-center rounded-full bg-status-poor/10 text-status-poor",
+      "aria-hidden": "true",
+      children: jsxRuntimeExports.jsx("svg", {
+        className: "h-3 w-3",
+        viewBox: "0 0 20 20",
+        fill: "currentColor",
+        "aria-hidden": "true",
+        children: jsxRuntimeExports.jsx("path", {
+          fillRule: "evenodd",
+          d: "M10 2a8 8 0 1 0 .001 16.001A8 8 0 0 0 10 2Zm0 4a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 6Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z",
+          clipRule: "evenodd",
+        }),
+      }),
+    }),
+  ErrorState = (o) => {
+    var a = o,
+      {
+        title: s = "Something went wrong",
+        message: e,
+        onRetry: t,
+        retryLabel: r = "Retry",
+        compact: i,
+        className: n,
+      } = a,
+      c = v(a, [
+        "title",
+        "message",
+        "onRetry",
+        "retryLabel",
+        "compact",
+        "className",
+      ]);
+    const l = e ? "error-state-description" : void 0;
+    return i
+      ? jsxRuntimeExports.jsxs(
+          "div",
+          g(
+            p(
+              {
+                className: clsx(
+                  "inline-flex items-center gap-2 text-sm text-red-700",
+                  n,
+                ),
+                role: "alert",
+                "aria-live": "assertive",
+                "aria-describedby": l,
+              },
+              c,
+            ),
+            {
+              children: [
+                jsxRuntimeExports.jsx(ErrorIcon, {}),
+                jsxRuntimeExports.jsxs("div", {
+                  className: "flex flex-col",
+                  children: [
+                    jsxRuntimeExports.jsx("span", {
+                      className: "font-medium",
+                      children: s,
+                    }),
+                    e &&
+                      jsxRuntimeExports.jsx("span", {
+                        id: l,
+                        className: "text-xs text-red-600",
+                        children: e,
+                      }),
+                  ],
+                }),
+                t &&
+                  jsxRuntimeExports.jsx(Button, {
+                    type: "button",
+                    size: "sm",
+                    variant: "secondary",
+                    className: "ml-2",
+                    onClick: t,
+                    "aria-label": r,
+                    children: r,
+                  }),
+              ],
+            },
+          ),
+        )
+      : jsxRuntimeExports.jsxs(Card, {
+          className: clsx(
+            "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between",
+            n,
+          ),
+          children: [
+            jsxRuntimeExports.jsxs(
+              "div",
+              g(
+                p(
+                  {
+                    className: "flex items-start gap-3 text-sm text-gray-800",
+                    role: "alert",
+                    "aria-live": "assertive",
+                    "aria-describedby": l,
+                  },
+                  c,
+                ),
+                {
+                  children: [
+                    jsxRuntimeExports.jsx(ErrorIcon, {}),
+                    jsxRuntimeExports.jsxs("div", {
+                      className: "flex flex-col",
+                      children: [
+                        jsxRuntimeExports.jsx("span", {
+                          className: "font-semibold text-gray-900",
+                          children: s,
+                        }),
+                        e &&
+                          jsxRuntimeExports.jsx("span", {
+                            id: l,
+                            className: "mt-0.5 text-xs text-gray-700",
+                            children: e,
+                          }),
+                      ],
+                    }),
+                  ],
+                },
+              ),
+            ),
+            t &&
+              jsxRuntimeExports.jsx("div", {
+                className: "flex items-center justify-end",
+                children: jsxRuntimeExports.jsx(Button, {
+                  type: "button",
+                  size: "sm",
+                  variant: "secondary",
+                  onClick: t,
+                  "aria-label": r,
+                  children: r,
+                }),
+              }),
+          ],
+        });
+  },
+  FieldMapView = ({
+    fieldId: s,
+    showHealthOverlay: e = !0,
+    additionalFields: t = [],
+    onFieldClick: r,
+  }) => {
+    var y;
+    const i = useParams(),
+      n = s != null ? s : i.fieldId,
+      { center: c, getUserLocation: o } = useMapCenter(),
+      {
+        data: a,
+        isLoading: l,
+        isError: u,
+        error: d,
+        refetch: h,
+      } = useFieldDetail(n != null ? n : ""),
+      m = reactExports.useMemo(() => {
+        if (a != null && a.geometry) {
+          const f = calculatePolygonCenter(a.geometry);
+          return [f.lat, f.lng];
+        }
+        return [c.lat, c.lng];
+      }, [a, c]),
+      E = reactExports.useMemo(() => {
+        const f = [];
+        return (
+          a != null &&
+            a.geometry &&
+            f.push({
+              id: a.id,
+              name: a.name,
+              boundary: a.geometry,
+              area: a.areaHa,
+              healthStatus: a.latestHealthStatus,
+            }),
+          f.push(...t),
+          f
+        );
+      }, [a, t]);
+    return l
+      ? jsxRuntimeExports.jsx("div", {
+          className:
+            "h-full w-full flex items-center justify-center bg-gray-900",
+          children: jsxRuntimeExports.jsx(LoadingState, {
+            message: "Loading map data...",
+          }),
+        })
+      : u
+        ? jsxRuntimeExports.jsx("div", {
+            className:
+              "h-full w-full flex items-center justify-center bg-gray-900 p-6",
+            children: jsxRuntimeExports.jsx(ErrorState, {
+              title: "Unable to load map",
+              message:
+                (y = d == null ? void 0 : d.message) != null
+                  ? y
+                  : "Failed to load field data for map display",
+              onRetry: h,
+            }),
+          })
+        : a
+          ? jsxRuntimeExports.jsxs("div", {
+              className: "h-full w-full relative",
+              children: [
+                jsxRuntimeExports.jsxs(BaseMap, {
+                  center: m,
+                  zoom: 15,
+                  children: [
+                    jsxRuntimeExports.jsx(FieldBoundaryLayer, {
+                      fields: E,
+                      selectedFieldId: n,
+                      onFieldClick: r,
+                    }),
+                    jsxRuntimeExports.jsx(MapControls, { onCenterOnUser: o }),
+                  ],
+                }),
+                jsxRuntimeExports.jsxs("div", {
+                  className:
+                    "absolute top-4 left-4 z-[1000] bg-white/95 backdrop-blur-sm rounded-lg shadow-lg px-4 py-3 max-w-xs",
+                  children: [
+                    jsxRuntimeExports.jsx("p", {
+                      className:
+                        "text-xs uppercase tracking-wide text-gray-500 mb-1",
+                      children: "Current Field",
+                    }),
+                    jsxRuntimeExports.jsx("h3", {
+                      className: "text-base font-semibold text-gray-900 mb-1",
+                      children: a.name,
+                    }),
+                    jsxRuntimeExports.jsxs("p", {
+                      className: "text-xs text-gray-600",
+                      children: [a.areaHa.toFixed(2), " hectares"],
+                    }),
+                    a.centroidLatLon &&
+                      jsxRuntimeExports.jsxs("p", {
+                        className: "text-[10px] text-gray-500 mt-1 font-mono",
+                        children: [
+                          a.centroidLatLon.lat.toFixed(5),
+                          ", ",
+                          a.centroidLatLon.lon.toFixed(5),
+                        ],
+                      }),
+                  ],
+                }),
+              ],
+            })
+          : jsxRuntimeExports.jsx("div", {
+              className:
+                "h-full w-full flex items-center justify-center bg-gray-900",
+              children: jsxRuntimeExports.jsxs("div", {
+                className: "text-center text-white/70 max-w-md px-4",
+                children: [
+                  jsxRuntimeExports.jsx("div", {
+                    className: "mb-4 text-4xl",
+                    children: "🗺️",
+                  }),
+                  jsxRuntimeExports.jsx("p", {
+                    className: "text-sm",
+                    children:
+                      "No field selected. Select a field to view its location on the map.",
+                  }),
+                ],
+              }),
+            });
+  },
+  getInitialOnlineStatus = () => {
+    var s;
+    return typeof window == "undefined" || typeof navigator == "undefined"
+      ? !0
+      : (s = navigator.onLine) != null
+        ? s
+        : !0;
+  },
+  useOnlineStatus = () => {
+    const [s, e] = reactExports.useState(() => getInitialOnlineStatus());
+    return (
+      reactExports.useEffect(() => {
+        if (typeof window == "undefined") return;
+        const t = () => e(!0),
+          r = () => e(!1);
+        return (
+          window.addEventListener("online", t),
+          window.addEventListener("offline", r),
+          () => {
+            (window.removeEventListener("online", t),
+              window.removeEventListener("offline", r));
+          }
+        );
+      }, []),
+      { isOnline: s }
+    );
+  },
+  NOTIFICATION_STORAGE_KEY = "skycrop_notifications",
+  PREFERENCES_STORAGE_KEY = "skycrop_notification_preferences",
+  MAX_STORED_NOTIFICATIONS = 50,
+  DEFAULT_PREFERENCES = {
+    enabled: !1,
+    types: {
+      "health-alert": !0,
+      "weather-warning": !0,
+      recommendation: !0,
+      "yield-update": !0,
+      system: !0,
+      general: !1,
+    },
+    doNotDisturb: !1,
+    quietHoursStart: "22:00",
+    quietHoursEnd: "07:00",
+    soundEnabled: !0,
+    vibrationEnabled: !0,
+  },
+  TYPE_ICONS = {
+    "health-alert": "🚨",
+    "weather-warning": "🌧️",
+    recommendation: "🤖",
+    "yield-update": "📊",
+    system: "⚙️",
+    general: "📰",
+  };
+class NotificationService {
+  constructor() {
+    x(this, "preferences");
+    x(this, "notificationQueue", []);
+    this.preferences = this.loadPreferences();
+  }
+  isSupported() {
+    return "Notification" in window;
+  }
+  getPermission() {
+    return this.isSupported() ? Notification.permission : "denied";
+  }
+  requestPermission() {
+    return _(this, null, function* () {
+      if (!this.isSupported())
+        throw new Error("Notifications not supported in this browser");
+      if (this.getPermission() === "granted") return "granted";
+      try {
+        const e = yield Notification.requestPermission();
+        return (
+          e === "granted" &&
+            ((this.preferences.enabled = !0),
+            this.savePreferences(),
+            this.send({
+              type: "system",
+              priority: "low",
+              title: "🎉 Notifications Enabled!",
+              body: "You'll now receive important alerts about your fields.",
+            })),
+          e
+        );
+      } catch (e) {
+        return (
+          console.error("Error requesting notification permission:", e),
+          "denied"
+        );
+      }
+    });
+  }
+  send(e) {
+    return _(this, null, function* () {
+      if (!this.canSendNotification(e))
+        return (
+          console.log("Notification blocked by preferences:", e.type),
+          null
+        );
+      if (this.isQuietHours() && e.priority !== "critical")
+        return (
+          console.log("Notification queued (quiet hours):", e.title),
+          this.queueNotification(e),
+          null
+        );
+      const t = this.storeNotification(e);
+      try {
+        const r = yield this.createBrowserNotification(e);
+        return (this.emitNotificationEvent(t), r);
+      } catch (r) {
+        return (console.error("Error sending notification:", r), null);
+      }
+    });
+  }
+  sendBatch(e) {
+    return _(this, null, function* () {
+      for (const t of e)
+        (yield this.send(t), yield new Promise((r) => setTimeout(r, 500)));
+    });
+  }
+  createBrowserNotification(e) {
+    return _(this, null, function* () {
+      const t = p(
+          {
+            body: e.body,
+            icon: e.icon || this.getDefaultIcon(e.type),
+            badge: e.badge,
+            data: e.data,
+            tag: e.tag || `${e.type}-${Date.now()}`,
+            requireInteraction:
+              e.requireInteraction || e.priority === "critical",
+            vibrate: this.preferences.vibrationEnabled
+              ? [200, 100, 200]
+              : void 0,
+            silent: !this.preferences.soundEnabled,
+          },
+          e.image && { image: e.image },
+        ),
+        r = new Notification(e.title, t);
+      return (
+        (r.onclick = () => {
+          (window.focus(),
+            r.close(),
+            e.url
+              ? (window.location.href = e.url)
+              : e.fieldId && (window.location.href = `/fields/${e.fieldId}`));
+        }),
+        r
+      );
+    });
+  }
+  canSendNotification(e) {
+    return !(
+      this.getPermission() !== "granted" ||
+      !this.preferences.enabled ||
+      (this.preferences.doNotDisturb && e.priority !== "critical") ||
+      !this.preferences.types[e.type]
+    );
+  }
+  isQuietHours() {
+    if (!this.preferences.quietHoursStart || !this.preferences.quietHoursEnd)
+      return !1;
+    const e = new Date(),
+      t = `${e.getHours().toString().padStart(2, "0")}:${e.getMinutes().toString().padStart(2, "0")}`,
+      r = this.preferences.quietHoursStart,
+      i = this.preferences.quietHoursEnd;
+    return r > i ? t >= r || t <= i : t >= r && t <= i;
+  }
+  queueNotification(e) {
+    (this.notificationQueue.push(e),
+      this.notificationQueue.length > 10 && this.notificationQueue.shift());
+  }
+  processQueue() {
+    return _(this, null, function* () {
+      if (this.notificationQueue.length === 0) return;
+      console.log(
+        `Processing ${this.notificationQueue.length} queued notifications`,
+      );
+      const e = [...this.notificationQueue];
+      this.notificationQueue = [];
+      for (const t of e) yield this.send(t);
+    });
+  }
+  storeNotification(e) {
+    const t = g(p({}, e), {
+        id:
+          e.id ||
+          `notif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        timestamp: e.timestamp || Date.now(),
+        read: !1,
+        dismissed: !1,
+      }),
+      r = this.getStoredNotifications();
+    r.unshift(t);
+    const i = r.slice(0, MAX_STORED_NOTIFICATIONS);
+    return (
+      localStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(i)),
+      t
+    );
+  }
+  getStoredNotifications() {
+    try {
+      const e = localStorage.getItem(NOTIFICATION_STORAGE_KEY);
+      return e ? JSON.parse(e) : [];
+    } catch (e) {
+      return (console.error("Error reading stored notifications:", e), []);
+    }
+  }
+  markAsRead(e) {
+    const t = this.getStoredNotifications(),
+      r = t.find((i) => i.id === e);
+    r &&
+      ((r.read = !0),
+      localStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(t)),
+      this.emitNotificationEvent(r));
+  }
+  markAllAsRead() {
+    const e = this.getStoredNotifications();
+    (e.forEach((t) => (t.read = !0)),
+      localStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(e)),
+      this.emitNotificationEvent(null));
+  }
+  dismissNotification(e) {
+    const t = this.getStoredNotifications(),
+      r = t.find((i) => i.id === e);
+    r &&
+      ((r.dismissed = !0),
+      localStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(t)),
+      this.emitNotificationEvent(r));
+  }
+  clearAll() {
+    (localStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify([])),
+      this.emitNotificationEvent(null));
+  }
+  getUnreadCount() {
+    return this.getStoredNotifications().filter((e) => !e.read && !e.dismissed)
+      .length;
+  }
+  loadPreferences() {
+    try {
+      const e = localStorage.getItem(PREFERENCES_STORAGE_KEY);
+      if (e) return p(p({}, DEFAULT_PREFERENCES), JSON.parse(e));
+    } catch (e) {
+      console.error("Error loading notification preferences:", e);
+    }
+    return DEFAULT_PREFERENCES;
+  }
+  savePreferences(e) {
+    (e && (this.preferences = p(p({}, this.preferences), e)),
+      localStorage.setItem(
+        PREFERENCES_STORAGE_KEY,
+        JSON.stringify(this.preferences),
+      ),
+      this.emitNotificationEvent(null));
+  }
+  getPreferences() {
+    return p({}, this.preferences);
+  }
+  getDefaultIcon(e) {
+    return `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="75" font-size="75">${TYPE_ICONS[e]}</text></svg>`;
+  }
+  emitNotificationEvent(e) {
+    window.dispatchEvent(
+      new CustomEvent("skycrop:notification", {
+        detail: { notification: e, count: this.getUnreadCount() },
+      }),
+    );
+  }
+  initialize() {
+    return _(this, null, function* () {
+      (this.getPermission() === "granted" &&
+        !this.preferences.enabled &&
+        ((this.preferences.enabled = !0), this.savePreferences()),
+        yield this.processQueue());
+    });
+  }
+}
+const notificationService = new NotificationService();
+notificationService.initialize().catch(console.error);
+const NotificationBell = ({ onClick: s, isOpen: e }) => {
+    const [t, r] = reactExports.useState(0);
+    return (
+      reactExports.useEffect(() => {
+        r(notificationService.getUnreadCount());
+        const i = () => {
+          r(notificationService.getUnreadCount());
+        };
+        return (
+          window.addEventListener("skycrop:notification", i),
+          () => {
+            window.removeEventListener("skycrop:notification", i);
+          }
+        );
+      }, []),
+      jsxRuntimeExports.jsxs("button", {
+        type: "button",
+        onClick: s,
+        className: `
         relative inline-flex items-center justify-center
         h-9 w-9 rounded-md
         transition-colors
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
-        ${e?"bg-gray-100 text-gray-900":"text-gray-700 hover:bg-gray-50"}
-      `,"aria-label":`Notifications${t>0?` (${t} unread)`:""}`,children:[jsxRuntimeExports.jsx("svg",{className:"h-5 w-5",fill:"none",viewBox:"0 0 24 24",stroke:"currentColor","aria-hidden":"true",children:jsxRuntimeExports.jsx("path",{strokeLinecap:"round",strokeLinejoin:"round",strokeWidth:2,d:"M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"})}),t>0&&jsxRuntimeExports.jsx("span",{className:"absolute top-0 right-0 inline-flex items-center justify-center h-5 w-5 text-xs font-bold text-white bg-red-500 rounded-full",children:t>9?"9+":t})]})},NotificationCenter=({isOpen:s,onClose:e})=>{const[t,r]=reactExports.useState([]),i=useNavigate(),n=reactExports.useRef(null);reactExports.useEffect(()=>{s&&r(notificationService.getStoredNotifications())},[s]),reactExports.useEffect(()=>{const h=()=>{r(notificationService.getStoredNotifications())};return window.addEventListener("skycrop:notification",h),()=>{window.removeEventListener("skycrop:notification",h)}},[]),reactExports.useEffect(()=>{if(!s)return;const h=m=>{n.current&&!n.current.contains(m.target)&&e()};return document.addEventListener("mousedown",h),()=>document.removeEventListener("mousedown",h)},[s,e]),reactExports.useEffect(()=>{if(!s)return;const h=m=>{m.key==="Escape"&&e()};return document.addEventListener("keydown",h),()=>document.removeEventListener("keydown",h)},[s,e]);const c=h=>{notificationService.markAsRead(h.id),h.url?(i(h.url),e()):h.fieldId&&(i(`/fields/${h.fieldId}`),e())},o=()=>{notificationService.markAllAsRead(),r(notificationService.getStoredNotifications())},a=()=>{confirm("Clear all notifications?")&&(notificationService.clearAll(),r([]))},l=(h,m)=>{h.stopPropagation(),notificationService.dismissNotification(m),r(notificationService.getStoredNotifications())},u=t.filter(h=>!h.dismissed),d=u.filter(h=>!h.read).length;return s?jsxRuntimeExports.jsxs("div",{ref:n,className:"absolute right-0 top-12 z-50 w-96 max-w-[calc(100vw-2rem)] rounded-lg border border-gray-200 bg-white shadow-xl",role:"dialog","aria-label":"Notification center",children:[jsxRuntimeExports.jsxs("div",{className:"flex items-center justify-between border-b border-gray-200 px-4 py-3",children:[jsxRuntimeExports.jsxs("h2",{className:"text-sm font-semibold text-gray-900",children:["Notifications",d>0&&jsxRuntimeExports.jsxs("span",{className:"ml-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800",children:[d," new"]})]}),jsxRuntimeExports.jsx("div",{className:"flex items-center gap-2",children:u.length>0&&jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment,{children:[jsxRuntimeExports.jsx("button",{type:"button",onClick:o,className:"text-xs text-blue-600 hover:text-blue-700 hover:underline",children:"Mark all read"}),jsxRuntimeExports.jsx("button",{type:"button",onClick:a,className:"text-xs text-gray-500 hover:text-gray-700 hover:underline",children:"Clear all"})]})})]}),jsxRuntimeExports.jsx("div",{className:"max-h-[480px] overflow-y-auto",children:u.length===0?jsxRuntimeExports.jsxs("div",{className:"px-4 py-12 text-center",children:[jsxRuntimeExports.jsx("div",{className:"text-4xl mb-3",children:"🔔"}),jsxRuntimeExports.jsx("p",{className:"text-sm font-medium text-gray-900 mb-1",children:"No notifications"}),jsxRuntimeExports.jsx("p",{className:"text-xs text-gray-500",children:"You're all caught up!"})]}):jsxRuntimeExports.jsx("div",{className:"divide-y divide-gray-100",children:u.map(h=>jsxRuntimeExports.jsx(NotificationItem,{notification:h,onClick:()=>c(h),onDismiss:m=>l(m,h.id)},h.id))})}),u.length>0&&jsxRuntimeExports.jsx("div",{className:"border-t border-gray-200 px-4 py-3 text-center",children:jsxRuntimeExports.jsx("button",{type:"button",onClick:()=>{i("/settings/notifications"),e()},className:"text-xs text-blue-600 hover:text-blue-700 hover:underline",children:"Notification settings"})})]}):null},NotificationItem=({notification:s,onClick:e,onDismiss:t})=>{const r=()=>({"health-alert":"🚨","weather-warning":"🌧️",recommendation:"🤖","yield-update":"📊",system:"⚙️",general:"📰"})[s.type]||"📬",i=()=>{const c={critical:"bg-red-50 border-l-4 border-l-red-500",high:"bg-orange-50 border-l-4 border-l-orange-500",medium:"bg-blue-50 border-l-4 border-l-blue-500",low:"bg-gray-50 border-l-4 border-l-gray-300"};return c[s.priority]||c.low},n=c=>{const a=Date.now()-c,l=Math.floor(a/6e4),u=Math.floor(a/36e5),d=Math.floor(a/864e5);return l<1?"Just now":l<60?`${l}m ago`:u<24?`${u}h ago`:d<7?`${d}d ago`:new Date(c).toLocaleDateString()};return jsxRuntimeExports.jsx("div",{onClick:e,className:`
+        ${e ? "bg-gray-100 text-gray-900" : "text-gray-700 hover:bg-gray-50"}
+      `,
+        "aria-label": `Notifications${t > 0 ? ` (${t} unread)` : ""}`,
+        children: [
+          jsxRuntimeExports.jsx("svg", {
+            className: "h-5 w-5",
+            fill: "none",
+            viewBox: "0 0 24 24",
+            stroke: "currentColor",
+            "aria-hidden": "true",
+            children: jsxRuntimeExports.jsx("path", {
+              strokeLinecap: "round",
+              strokeLinejoin: "round",
+              strokeWidth: 2,
+              d: "M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9",
+            }),
+          }),
+          t > 0 &&
+            jsxRuntimeExports.jsx("span", {
+              className:
+                "absolute top-0 right-0 inline-flex items-center justify-center h-5 w-5 text-xs font-bold text-white bg-red-500 rounded-full",
+              children: t > 9 ? "9+" : t,
+            }),
+        ],
+      })
+    );
+  },
+  NotificationCenter = ({ isOpen: s, onClose: e }) => {
+    const [t, r] = reactExports.useState([]),
+      i = useNavigate(),
+      n = reactExports.useRef(null);
+    (reactExports.useEffect(() => {
+      s && r(notificationService.getStoredNotifications());
+    }, [s]),
+      reactExports.useEffect(() => {
+        const h = () => {
+          r(notificationService.getStoredNotifications());
+        };
+        return (
+          window.addEventListener("skycrop:notification", h),
+          () => {
+            window.removeEventListener("skycrop:notification", h);
+          }
+        );
+      }, []),
+      reactExports.useEffect(() => {
+        if (!s) return;
+        const h = (m) => {
+          n.current && !n.current.contains(m.target) && e();
+        };
+        return (
+          document.addEventListener("mousedown", h),
+          () => document.removeEventListener("mousedown", h)
+        );
+      }, [s, e]),
+      reactExports.useEffect(() => {
+        if (!s) return;
+        const h = (m) => {
+          m.key === "Escape" && e();
+        };
+        return (
+          document.addEventListener("keydown", h),
+          () => document.removeEventListener("keydown", h)
+        );
+      }, [s, e]));
+    const c = (h) => {
+        (notificationService.markAsRead(h.id),
+          h.url
+            ? (i(h.url), e())
+            : h.fieldId && (i(`/fields/${h.fieldId}`), e()));
+      },
+      o = () => {
+        (notificationService.markAllAsRead(),
+          r(notificationService.getStoredNotifications()));
+      },
+      a = () => {
+        confirm("Clear all notifications?") &&
+          (notificationService.clearAll(), r([]));
+      },
+      l = (h, m) => {
+        (h.stopPropagation(),
+          notificationService.dismissNotification(m),
+          r(notificationService.getStoredNotifications()));
+      },
+      u = t.filter((h) => !h.dismissed),
+      d = u.filter((h) => !h.read).length;
+    return s
+      ? jsxRuntimeExports.jsxs("div", {
+          ref: n,
+          className:
+            "absolute right-0 top-12 z-50 w-96 max-w-[calc(100vw-2rem)] rounded-lg border border-gray-200 bg-white shadow-xl",
+          role: "dialog",
+          "aria-label": "Notification center",
+          children: [
+            jsxRuntimeExports.jsxs("div", {
+              className:
+                "flex items-center justify-between border-b border-gray-200 px-4 py-3",
+              children: [
+                jsxRuntimeExports.jsxs("h2", {
+                  className: "text-sm font-semibold text-gray-900",
+                  children: [
+                    "Notifications",
+                    d > 0 &&
+                      jsxRuntimeExports.jsxs("span", {
+                        className:
+                          "ml-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800",
+                        children: [d, " new"],
+                      }),
+                  ],
+                }),
+                jsxRuntimeExports.jsx("div", {
+                  className: "flex items-center gap-2",
+                  children:
+                    u.length > 0 &&
+                    jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, {
+                      children: [
+                        jsxRuntimeExports.jsx("button", {
+                          type: "button",
+                          onClick: o,
+                          className:
+                            "text-xs text-blue-600 hover:text-blue-700 hover:underline",
+                          children: "Mark all read",
+                        }),
+                        jsxRuntimeExports.jsx("button", {
+                          type: "button",
+                          onClick: a,
+                          className:
+                            "text-xs text-gray-500 hover:text-gray-700 hover:underline",
+                          children: "Clear all",
+                        }),
+                      ],
+                    }),
+                }),
+              ],
+            }),
+            jsxRuntimeExports.jsx("div", {
+              className: "max-h-[480px] overflow-y-auto",
+              children:
+                u.length === 0
+                  ? jsxRuntimeExports.jsxs("div", {
+                      className: "px-4 py-12 text-center",
+                      children: [
+                        jsxRuntimeExports.jsx("div", {
+                          className: "text-4xl mb-3",
+                          children: "🔔",
+                        }),
+                        jsxRuntimeExports.jsx("p", {
+                          className: "text-sm font-medium text-gray-900 mb-1",
+                          children: "No notifications",
+                        }),
+                        jsxRuntimeExports.jsx("p", {
+                          className: "text-xs text-gray-500",
+                          children: "You're all caught up!",
+                        }),
+                      ],
+                    })
+                  : jsxRuntimeExports.jsx("div", {
+                      className: "divide-y divide-gray-100",
+                      children: u.map((h) =>
+                        jsxRuntimeExports.jsx(
+                          NotificationItem,
+                          {
+                            notification: h,
+                            onClick: () => c(h),
+                            onDismiss: (m) => l(m, h.id),
+                          },
+                          h.id,
+                        ),
+                      ),
+                    }),
+            }),
+            u.length > 0 &&
+              jsxRuntimeExports.jsx("div", {
+                className: "border-t border-gray-200 px-4 py-3 text-center",
+                children: jsxRuntimeExports.jsx("button", {
+                  type: "button",
+                  onClick: () => {
+                    (i("/settings/notifications"), e());
+                  },
+                  className:
+                    "text-xs text-blue-600 hover:text-blue-700 hover:underline",
+                  children: "Notification settings",
+                }),
+              }),
+          ],
+        })
+      : null;
+  },
+  NotificationItem = ({ notification: s, onClick: e, onDismiss: t }) => {
+    const r = () =>
+        ({
+          "health-alert": "🚨",
+          "weather-warning": "🌧️",
+          recommendation: "🤖",
+          "yield-update": "📊",
+          system: "⚙️",
+          general: "📰",
+        })[s.type] || "📬",
+      i = () => {
+        const c = {
+          critical: "bg-red-50 border-l-4 border-l-red-500",
+          high: "bg-orange-50 border-l-4 border-l-orange-500",
+          medium: "bg-blue-50 border-l-4 border-l-blue-500",
+          low: "bg-gray-50 border-l-4 border-l-gray-300",
+        };
+        return c[s.priority] || c.low;
+      },
+      n = (c) => {
+        const a = Date.now() - c,
+          l = Math.floor(a / 6e4),
+          u = Math.floor(a / 36e5),
+          d = Math.floor(a / 864e5);
+        return l < 1
+          ? "Just now"
+          : l < 60
+            ? `${l}m ago`
+            : u < 24
+              ? `${u}h ago`
+              : d < 7
+                ? `${d}d ago`
+                : new Date(c).toLocaleDateString();
+      };
+    return jsxRuntimeExports.jsx("div", {
+      onClick: e,
+      className: `
         relative px-4 py-3 cursor-pointer transition-colors
         hover:bg-gray-50
-        ${s.read?"bg-white":i()}
-      `,children:jsxRuntimeExports.jsxs("div",{className:"flex items-start gap-3",children:[jsxRuntimeExports.jsx("div",{className:"text-2xl flex-shrink-0",children:r()}),jsxRuntimeExports.jsxs("div",{className:"flex-1 min-w-0",children:[jsxRuntimeExports.jsxs("div",{className:"flex items-start justify-between gap-2",children:[jsxRuntimeExports.jsx("p",{className:`text-sm font-medium ${s.read?"text-gray-700":"text-gray-900"}`,children:s.title}),jsxRuntimeExports.jsx("button",{type:"button",onClick:t,className:"text-gray-400 hover:text-gray-600 flex-shrink-0","aria-label":"Dismiss notification",children:jsxRuntimeExports.jsx("svg",{className:"h-4 w-4",fill:"currentColor",viewBox:"0 0 20 20",children:jsxRuntimeExports.jsx("path",{fillRule:"evenodd",d:"M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z",clipRule:"evenodd"})})})]}),jsxRuntimeExports.jsx("p",{className:"mt-1 text-xs text-gray-600 line-clamp-2",children:s.body}),jsxRuntimeExports.jsxs("div",{className:"mt-2 flex items-center gap-2 text-xs text-gray-500",children:[jsxRuntimeExports.jsx("span",{children:n(s.timestamp)}),!s.read&&jsxRuntimeExports.jsx("span",{className:"inline-block h-2 w-2 rounded-full bg-blue-500","aria-label":"Unread"})]})]})]})})},PageLoader=({message:s="Loading..."})=>jsxRuntimeExports.jsx("div",{className:"flex items-center justify-center min-h-screen bg-gray-50",children:jsxRuntimeExports.jsxs("div",{className:"flex flex-col items-center space-y-4",children:[jsxRuntimeExports.jsx("div",{className:"animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-brand-blue",role:"status","aria-label":s,children:jsxRuntimeExports.jsx("span",{className:"sr-only",children:s})}),jsxRuntimeExports.jsx("p",{className:"text-sm text-gray-600 font-medium",children:s}),jsxRuntimeExports.jsxs("div",{className:"mt-8 w-full max-w-2xl space-y-3 animate-pulse",children:[jsxRuntimeExports.jsx("div",{className:"h-4 bg-gray-200 rounded w-3/4"}),jsxRuntimeExports.jsx("div",{className:"h-4 bg-gray-200 rounded w-full"}),jsxRuntimeExports.jsx("div",{className:"h-4 bg-gray-200 rounded w-5/6"})]})]})}),PACKET_TYPES=Object.create(null);PACKET_TYPES.open="0";PACKET_TYPES.close="1";PACKET_TYPES.ping="2";PACKET_TYPES.pong="3";PACKET_TYPES.message="4";PACKET_TYPES.upgrade="5";PACKET_TYPES.noop="6";const PACKET_TYPES_REVERSE=Object.create(null);Object.keys(PACKET_TYPES).forEach(s=>{PACKET_TYPES_REVERSE[PACKET_TYPES[s]]=s});const ERROR_PACKET={type:"error",data:"parser error"},withNativeBlob$1=typeof Blob=="function"||typeof Blob!="undefined"&&Object.prototype.toString.call(Blob)==="[object BlobConstructor]",withNativeArrayBuffer$2=typeof ArrayBuffer=="function",isView$1=s=>typeof ArrayBuffer.isView=="function"?ArrayBuffer.isView(s):s&&s.buffer instanceof ArrayBuffer,encodePacket=({type:s,data:e},t,r)=>withNativeBlob$1&&e instanceof Blob?t?r(e):encodeBlobAsBase64(e,r):withNativeArrayBuffer$2&&(e instanceof ArrayBuffer||isView$1(e))?t?r(e):encodeBlobAsBase64(new Blob([e]),r):r(PACKET_TYPES[s]+(e||"")),encodeBlobAsBase64=(s,e)=>{const t=new FileReader;return t.onload=function(){const r=t.result.split(",")[1];e("b"+(r||""))},t.readAsDataURL(s)};function toArray(s){return s instanceof Uint8Array?s:s instanceof ArrayBuffer?new Uint8Array(s):new Uint8Array(s.buffer,s.byteOffset,s.byteLength)}let TEXT_ENCODER;function encodePacketToBinary(s,e){if(withNativeBlob$1&&s.data instanceof Blob)return s.data.arrayBuffer().then(toArray).then(e);if(withNativeArrayBuffer$2&&(s.data instanceof ArrayBuffer||isView$1(s.data)))return e(toArray(s.data));encodePacket(s,!1,t=>{TEXT_ENCODER||(TEXT_ENCODER=new TextEncoder),e(TEXT_ENCODER.encode(t))})}const chars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",lookup$1=typeof Uint8Array=="undefined"?[]:new Uint8Array(256);for(let s=0;s<chars.length;s++)lookup$1[chars.charCodeAt(s)]=s;const decode$1=s=>{let e=s.length*.75,t=s.length,r,i=0,n,c,o,a;s[s.length-1]==="="&&(e--,s[s.length-2]==="="&&e--);const l=new ArrayBuffer(e),u=new Uint8Array(l);for(r=0;r<t;r+=4)n=lookup$1[s.charCodeAt(r)],c=lookup$1[s.charCodeAt(r+1)],o=lookup$1[s.charCodeAt(r+2)],a=lookup$1[s.charCodeAt(r+3)],u[i++]=n<<2|c>>4,u[i++]=(c&15)<<4|o>>2,u[i++]=(o&3)<<6|a&63;return l},withNativeArrayBuffer$1=typeof ArrayBuffer=="function",decodePacket=(s,e)=>{if(typeof s!="string")return{type:"message",data:mapBinary(s,e)};const t=s.charAt(0);return t==="b"?{type:"message",data:decodeBase64Packet(s.substring(1),e)}:PACKET_TYPES_REVERSE[t]?s.length>1?{type:PACKET_TYPES_REVERSE[t],data:s.substring(1)}:{type:PACKET_TYPES_REVERSE[t]}:ERROR_PACKET},decodeBase64Packet=(s,e)=>{if(withNativeArrayBuffer$1){const t=decode$1(s);return mapBinary(t,e)}else return{base64:!0,data:s}},mapBinary=(s,e)=>{switch(e){case"blob":return s instanceof Blob?s:new Blob([s]);case"arraybuffer":default:return s instanceof ArrayBuffer?s:s.buffer}},SEPARATOR="",encodePayload=(s,e)=>{const t=s.length,r=new Array(t);let i=0;s.forEach((n,c)=>{encodePacket(n,!1,o=>{r[c]=o,++i===t&&e(r.join(SEPARATOR))})})},decodePayload=(s,e)=>{const t=s.split(SEPARATOR),r=[];for(let i=0;i<t.length;i++){const n=decodePacket(t[i],e);if(r.push(n),n.type==="error")break}return r};function createPacketEncoderStream(){return new TransformStream({transform(s,e){encodePacketToBinary(s,t=>{const r=t.length;let i;if(r<126)i=new Uint8Array(1),new DataView(i.buffer).setUint8(0,r);else if(r<65536){i=new Uint8Array(3);const n=new DataView(i.buffer);n.setUint8(0,126),n.setUint16(1,r)}else{i=new Uint8Array(9);const n=new DataView(i.buffer);n.setUint8(0,127),n.setBigUint64(1,BigInt(r))}s.data&&typeof s.data!="string"&&(i[0]|=128),e.enqueue(i),e.enqueue(t)})}})}let TEXT_DECODER;function totalLength(s){return s.reduce((e,t)=>e+t.length,0)}function concatChunks(s,e){if(s[0].length===e)return s.shift();const t=new Uint8Array(e);let r=0;for(let i=0;i<e;i++)t[i]=s[0][r++],r===s[0].length&&(s.shift(),r=0);return s.length&&r<s[0].length&&(s[0]=s[0].slice(r)),t}function createPacketDecoderStream(s,e){TEXT_DECODER||(TEXT_DECODER=new TextDecoder);const t=[];let r=0,i=-1,n=!1;return new TransformStream({transform(c,o){for(t.push(c);;){if(r===0){if(totalLength(t)<1)break;const a=concatChunks(t,1);n=(a[0]&128)===128,i=a[0]&127,i<126?r=3:i===126?r=1:r=2}else if(r===1){if(totalLength(t)<2)break;const a=concatChunks(t,2);i=new DataView(a.buffer,a.byteOffset,a.length).getUint16(0),r=3}else if(r===2){if(totalLength(t)<8)break;const a=concatChunks(t,8),l=new DataView(a.buffer,a.byteOffset,a.length),u=l.getUint32(0);if(u>Math.pow(2,21)-1){o.enqueue(ERROR_PACKET);break}i=u*Math.pow(2,32)+l.getUint32(4),r=3}else{if(totalLength(t)<i)break;const a=concatChunks(t,i);o.enqueue(decodePacket(n?a:TEXT_DECODER.decode(a),e)),r=0}if(i===0||i>s){o.enqueue(ERROR_PACKET);break}}}})}const protocol$1=4;function Emitter(s){if(s)return mixin(s)}function mixin(s){for(var e in Emitter.prototype)s[e]=Emitter.prototype[e];return s}Emitter.prototype.on=Emitter.prototype.addEventListener=function(s,e){return this._callbacks=this._callbacks||{},(this._callbacks["$"+s]=this._callbacks["$"+s]||[]).push(e),this};Emitter.prototype.once=function(s,e){function t(){this.off(s,t),e.apply(this,arguments)}return t.fn=e,this.on(s,t),this};Emitter.prototype.off=Emitter.prototype.removeListener=Emitter.prototype.removeAllListeners=Emitter.prototype.removeEventListener=function(s,e){if(this._callbacks=this._callbacks||{},arguments.length==0)return this._callbacks={},this;var t=this._callbacks["$"+s];if(!t)return this;if(arguments.length==1)return delete this._callbacks["$"+s],this;for(var r,i=0;i<t.length;i++)if(r=t[i],r===e||r.fn===e){t.splice(i,1);break}return t.length===0&&delete this._callbacks["$"+s],this};Emitter.prototype.emit=function(s){this._callbacks=this._callbacks||{};for(var e=new Array(arguments.length-1),t=this._callbacks["$"+s],r=1;r<arguments.length;r++)e[r-1]=arguments[r];if(t){t=t.slice(0);for(var r=0,i=t.length;r<i;++r)t[r].apply(this,e)}return this};Emitter.prototype.emitReserved=Emitter.prototype.emit;Emitter.prototype.listeners=function(s){return this._callbacks=this._callbacks||{},this._callbacks["$"+s]||[]};Emitter.prototype.hasListeners=function(s){return!!this.listeners(s).length};const nextTick=typeof Promise=="function"&&typeof Promise.resolve=="function"?e=>Promise.resolve().then(e):(e,t)=>t(e,0),globalThisShim=typeof self!="undefined"?self:typeof window!="undefined"?window:Function("return this")(),defaultBinaryType="arraybuffer";function createCookieJar(){}function pick(s,...e){return e.reduce((t,r)=>(s.hasOwnProperty(r)&&(t[r]=s[r]),t),{})}const NATIVE_SET_TIMEOUT=globalThisShim.setTimeout,NATIVE_CLEAR_TIMEOUT=globalThisShim.clearTimeout;function installTimerFunctions(s,e){e.useNativeTimers?(s.setTimeoutFn=NATIVE_SET_TIMEOUT.bind(globalThisShim),s.clearTimeoutFn=NATIVE_CLEAR_TIMEOUT.bind(globalThisShim)):(s.setTimeoutFn=globalThisShim.setTimeout.bind(globalThisShim),s.clearTimeoutFn=globalThisShim.clearTimeout.bind(globalThisShim))}const BASE64_OVERHEAD=1.33;function byteLength(s){return typeof s=="string"?utf8Length(s):Math.ceil((s.byteLength||s.size)*BASE64_OVERHEAD)}function utf8Length(s){let e=0,t=0;for(let r=0,i=s.length;r<i;r++)e=s.charCodeAt(r),e<128?t+=1:e<2048?t+=2:e<55296||e>=57344?t+=3:(r++,t+=4);return t}function randomString(){return Date.now().toString(36).substring(3)+Math.random().toString(36).substring(2,5)}function encode(s){let e="";for(let t in s)s.hasOwnProperty(t)&&(e.length&&(e+="&"),e+=encodeURIComponent(t)+"="+encodeURIComponent(s[t]));return e}function decode(s){let e={},t=s.split("&");for(let r=0,i=t.length;r<i;r++){let n=t[r].split("=");e[decodeURIComponent(n[0])]=decodeURIComponent(n[1])}return e}class TransportError extends Error{constructor(e,t,r){super(e),this.description=t,this.context=r,this.type="TransportError"}}class Transport extends Emitter{constructor(e){super(),this.writable=!1,installTimerFunctions(this,e),this.opts=e,this.query=e.query,this.socket=e.socket,this.supportsBinary=!e.forceBase64}onError(e,t,r){return super.emitReserved("error",new TransportError(e,t,r)),this}open(){return this.readyState="opening",this.doOpen(),this}close(){return(this.readyState==="opening"||this.readyState==="open")&&(this.doClose(),this.onClose()),this}send(e){this.readyState==="open"&&this.write(e)}onOpen(){this.readyState="open",this.writable=!0,super.emitReserved("open")}onData(e){const t=decodePacket(e,this.socket.binaryType);this.onPacket(t)}onPacket(e){super.emitReserved("packet",e)}onClose(e){this.readyState="closed",super.emitReserved("close",e)}pause(e){}createUri(e,t={}){return e+"://"+this._hostname()+this._port()+this.opts.path+this._query(t)}_hostname(){const e=this.opts.hostname;return e.indexOf(":")===-1?e:"["+e+"]"}_port(){return this.opts.port&&(this.opts.secure&&+(this.opts.port!==443)||!this.opts.secure&&Number(this.opts.port)!==80)?":"+this.opts.port:""}_query(e){const t=encode(e);return t.length?"?"+t:""}}class Polling extends Transport{constructor(){super(...arguments),this._polling=!1}get name(){return"polling"}doOpen(){this._poll()}pause(e){this.readyState="pausing";const t=()=>{this.readyState="paused",e()};if(this._polling||!this.writable){let r=0;this._polling&&(r++,this.once("pollComplete",function(){--r||t()})),this.writable||(r++,this.once("drain",function(){--r||t()}))}else t()}_poll(){this._polling=!0,this.doPoll(),this.emitReserved("poll")}onData(e){const t=r=>{if(this.readyState==="opening"&&r.type==="open"&&this.onOpen(),r.type==="close")return this.onClose({description:"transport closed by the server"}),!1;this.onPacket(r)};decodePayload(e,this.socket.binaryType).forEach(t),this.readyState!=="closed"&&(this._polling=!1,this.emitReserved("pollComplete"),this.readyState==="open"&&this._poll())}doClose(){const e=()=>{this.write([{type:"close"}])};this.readyState==="open"?e():this.once("open",e)}write(e){this.writable=!1,encodePayload(e,t=>{this.doWrite(t,()=>{this.writable=!0,this.emitReserved("drain")})})}uri(){const e=this.opts.secure?"https":"http",t=this.query||{};return this.opts.timestampRequests!==!1&&(t[this.opts.timestampParam]=randomString()),!this.supportsBinary&&!t.sid&&(t.b64=1),this.createUri(e,t)}}let value=!1;try{value=typeof XMLHttpRequest!="undefined"&&"withCredentials"in new XMLHttpRequest}catch(s){}const hasCORS=value;function empty(){}class BaseXHR extends Polling{constructor(e){if(super(e),typeof location!="undefined"){const t=location.protocol==="https:";let r=location.port;r||(r=t?"443":"80"),this.xd=typeof location!="undefined"&&e.hostname!==location.hostname||r!==e.port}}doWrite(e,t){const r=this.request({method:"POST",data:e});r.on("success",t),r.on("error",(i,n)=>{this.onError("xhr post error",i,n)})}doPoll(){const e=this.request();e.on("data",this.onData.bind(this)),e.on("error",(t,r)=>{this.onError("xhr poll error",t,r)}),this.pollXhr=e}}class Request extends Emitter{constructor(e,t,r){super(),this.createRequest=e,installTimerFunctions(this,r),this._opts=r,this._method=r.method||"GET",this._uri=t,this._data=r.data!==void 0?r.data:null,this._create()}_create(){var e;const t=pick(this._opts,"agent","pfx","key","passphrase","cert","ca","ciphers","rejectUnauthorized","autoUnref");t.xdomain=!!this._opts.xd;const r=this._xhr=this.createRequest(t);try{r.open(this._method,this._uri,!0);try{if(this._opts.extraHeaders){r.setDisableHeaderCheck&&r.setDisableHeaderCheck(!0);for(let i in this._opts.extraHeaders)this._opts.extraHeaders.hasOwnProperty(i)&&r.setRequestHeader(i,this._opts.extraHeaders[i])}}catch(i){}if(this._method==="POST")try{r.setRequestHeader("Content-type","text/plain;charset=UTF-8")}catch(i){}try{r.setRequestHeader("Accept","*/*")}catch(i){}(e=this._opts.cookieJar)===null||e===void 0||e.addCookies(r),"withCredentials"in r&&(r.withCredentials=this._opts.withCredentials),this._opts.requestTimeout&&(r.timeout=this._opts.requestTimeout),r.onreadystatechange=()=>{var i;r.readyState===3&&((i=this._opts.cookieJar)===null||i===void 0||i.parseCookies(r.getResponseHeader("set-cookie"))),r.readyState===4&&(r.status===200||r.status===1223?this._onLoad():this.setTimeoutFn(()=>{this._onError(typeof r.status=="number"?r.status:0)},0))},r.send(this._data)}catch(i){this.setTimeoutFn(()=>{this._onError(i)},0);return}typeof document!="undefined"&&(this._index=Request.requestsCount++,Request.requests[this._index]=this)}_onError(e){this.emitReserved("error",e,this._xhr),this._cleanup(!0)}_cleanup(e){if(!(typeof this._xhr=="undefined"||this._xhr===null)){if(this._xhr.onreadystatechange=empty,e)try{this._xhr.abort()}catch(t){}typeof document!="undefined"&&delete Request.requests[this._index],this._xhr=null}}_onLoad(){const e=this._xhr.responseText;e!==null&&(this.emitReserved("data",e),this.emitReserved("success"),this._cleanup())}abort(){this._cleanup()}}Request.requestsCount=0;Request.requests={};if(typeof document!="undefined"){if(typeof attachEvent=="function")attachEvent("onunload",unloadHandler);else if(typeof addEventListener=="function"){const s="onpagehide"in globalThisShim?"pagehide":"unload";addEventListener(s,unloadHandler,!1)}}function unloadHandler(){for(let s in Request.requests)Request.requests.hasOwnProperty(s)&&Request.requests[s].abort()}const hasXHR2=function(){const s=newRequest({xdomain:!1});return s&&s.responseType!==null}();class XHR extends BaseXHR{constructor(e){super(e);const t=e&&e.forceBase64;this.supportsBinary=hasXHR2&&!t}request(e={}){return Object.assign(e,{xd:this.xd},this.opts),new Request(newRequest,this.uri(),e)}}function newRequest(s){const e=s.xdomain;try{if(typeof XMLHttpRequest!="undefined"&&(!e||hasCORS))return new XMLHttpRequest}catch(t){}if(!e)try{return new globalThisShim[["Active"].concat("Object").join("X")]("Microsoft.XMLHTTP")}catch(t){}}const isReactNative=typeof navigator!="undefined"&&typeof navigator.product=="string"&&navigator.product.toLowerCase()==="reactnative";class BaseWS extends Transport{get name(){return"websocket"}doOpen(){const e=this.uri(),t=this.opts.protocols,r=isReactNative?{}:pick(this.opts,"agent","perMessageDeflate","pfx","key","passphrase","cert","ca","ciphers","rejectUnauthorized","localAddress","protocolVersion","origin","maxPayload","family","checkServerIdentity");this.opts.extraHeaders&&(r.headers=this.opts.extraHeaders);try{this.ws=this.createSocket(e,t,r)}catch(i){return this.emitReserved("error",i)}this.ws.binaryType=this.socket.binaryType,this.addEventListeners()}addEventListeners(){this.ws.onopen=()=>{this.opts.autoUnref&&this.ws._socket.unref(),this.onOpen()},this.ws.onclose=e=>this.onClose({description:"websocket connection closed",context:e}),this.ws.onmessage=e=>this.onData(e.data),this.ws.onerror=e=>this.onError("websocket error",e)}write(e){this.writable=!1;for(let t=0;t<e.length;t++){const r=e[t],i=t===e.length-1;encodePacket(r,this.supportsBinary,n=>{try{this.doWrite(r,n)}catch(c){}i&&nextTick(()=>{this.writable=!0,this.emitReserved("drain")},this.setTimeoutFn)})}}doClose(){typeof this.ws!="undefined"&&(this.ws.onerror=()=>{},this.ws.close(),this.ws=null)}uri(){const e=this.opts.secure?"wss":"ws",t=this.query||{};return this.opts.timestampRequests&&(t[this.opts.timestampParam]=randomString()),this.supportsBinary||(t.b64=1),this.createUri(e,t)}}const WebSocketCtor=globalThisShim.WebSocket||globalThisShim.MozWebSocket;class WS extends BaseWS{createSocket(e,t,r){return isReactNative?new WebSocketCtor(e,t,r):t?new WebSocketCtor(e,t):new WebSocketCtor(e)}doWrite(e,t){this.ws.send(t)}}class WT extends Transport{get name(){return"webtransport"}doOpen(){try{this._transport=new WebTransport(this.createUri("https"),this.opts.transportOptions[this.name])}catch(e){return this.emitReserved("error",e)}this._transport.closed.then(()=>{this.onClose()}).catch(e=>{this.onError("webtransport error",e)}),this._transport.ready.then(()=>{this._transport.createBidirectionalStream().then(e=>{const t=createPacketDecoderStream(Number.MAX_SAFE_INTEGER,this.socket.binaryType),r=e.readable.pipeThrough(t).getReader(),i=createPacketEncoderStream();i.readable.pipeTo(e.writable),this._writer=i.writable.getWriter();const n=()=>{r.read().then(({done:o,value:a})=>{o||(this.onPacket(a),n())}).catch(o=>{})};n();const c={type:"open"};this.query.sid&&(c.data=`{"sid":"${this.query.sid}"}`),this._writer.write(c).then(()=>this.onOpen())})})}write(e){this.writable=!1;for(let t=0;t<e.length;t++){const r=e[t],i=t===e.length-1;this._writer.write(r).then(()=>{i&&nextTick(()=>{this.writable=!0,this.emitReserved("drain")},this.setTimeoutFn)})}}doClose(){var e;(e=this._transport)===null||e===void 0||e.close()}}const transports={websocket:WS,webtransport:WT,polling:XHR},re=/^(?:(?![^:@\/?#]+:[^:@\/]*@)(http|https|ws|wss):\/\/)?((?:(([^:@\/?#]*)(?::([^:@\/?#]*))?)?@)?((?:[a-f0-9]{0,4}:){2,7}[a-f0-9]{0,4}|[^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/,parts=["source","protocol","authority","userInfo","user","password","host","port","relative","path","directory","file","query","anchor"];function parse(s){if(s.length>8e3)throw"URI too long";const e=s,t=s.indexOf("["),r=s.indexOf("]");t!=-1&&r!=-1&&(s=s.substring(0,t)+s.substring(t,r).replace(/:/g,";")+s.substring(r,s.length));let i=re.exec(s||""),n={},c=14;for(;c--;)n[parts[c]]=i[c]||"";return t!=-1&&r!=-1&&(n.source=e,n.host=n.host.substring(1,n.host.length-1).replace(/;/g,":"),n.authority=n.authority.replace("[","").replace("]","").replace(/;/g,":"),n.ipv6uri=!0),n.pathNames=pathNames(n,n.path),n.queryKey=queryKey(n,n.query),n}function pathNames(s,e){const t=/\/{2,9}/g,r=e.replace(t,"/").split("/");return(e.slice(0,1)=="/"||e.length===0)&&r.splice(0,1),e.slice(-1)=="/"&&r.splice(r.length-1,1),r}function queryKey(s,e){const t={};return e.replace(/(?:^|&)([^&=]*)=?([^&]*)/g,function(r,i,n){i&&(t[i]=n)}),t}const withEventListeners=typeof addEventListener=="function"&&typeof removeEventListener=="function",OFFLINE_EVENT_LISTENERS=[];withEventListeners&&addEventListener("offline",()=>{OFFLINE_EVENT_LISTENERS.forEach(s=>s())},!1);class SocketWithoutUpgrade extends Emitter{constructor(e,t){if(super(),this.binaryType=defaultBinaryType,this.writeBuffer=[],this._prevBufferLen=0,this._pingInterval=-1,this._pingTimeout=-1,this._maxPayload=-1,this._pingTimeoutTime=1/0,e&&typeof e=="object"&&(t=e,e=null),e){const r=parse(e);t.hostname=r.host,t.secure=r.protocol==="https"||r.protocol==="wss",t.port=r.port,r.query&&(t.query=r.query)}else t.host&&(t.hostname=parse(t.host).host);installTimerFunctions(this,t),this.secure=t.secure!=null?t.secure:typeof location!="undefined"&&location.protocol==="https:",t.hostname&&!t.port&&(t.port=this.secure?"443":"80"),this.hostname=t.hostname||(typeof location!="undefined"?location.hostname:"localhost"),this.port=t.port||(typeof location!="undefined"&&location.port?location.port:this.secure?"443":"80"),this.transports=[],this._transportsByName={},t.transports.forEach(r=>{const i=r.prototype.name;this.transports.push(i),this._transportsByName[i]=r}),this.opts=Object.assign({path:"/engine.io",agent:!1,withCredentials:!1,upgrade:!0,timestampParam:"t",rememberUpgrade:!1,addTrailingSlash:!0,rejectUnauthorized:!0,perMessageDeflate:{threshold:1024},transportOptions:{},closeOnBeforeunload:!1},t),this.opts.path=this.opts.path.replace(/\/$/,"")+(this.opts.addTrailingSlash?"/":""),typeof this.opts.query=="string"&&(this.opts.query=decode(this.opts.query)),withEventListeners&&(this.opts.closeOnBeforeunload&&(this._beforeunloadEventListener=()=>{this.transport&&(this.transport.removeAllListeners(),this.transport.close())},addEventListener("beforeunload",this._beforeunloadEventListener,!1)),this.hostname!=="localhost"&&(this._offlineEventListener=()=>{this._onClose("transport close",{description:"network connection lost"})},OFFLINE_EVENT_LISTENERS.push(this._offlineEventListener))),this.opts.withCredentials&&(this._cookieJar=void 0),this._open()}createTransport(e){const t=Object.assign({},this.opts.query);t.EIO=protocol$1,t.transport=e,this.id&&(t.sid=this.id);const r=Object.assign({},this.opts,{query:t,socket:this,hostname:this.hostname,secure:this.secure,port:this.port},this.opts.transportOptions[e]);return new this._transportsByName[e](r)}_open(){if(this.transports.length===0){this.setTimeoutFn(()=>{this.emitReserved("error","No transports available")},0);return}const e=this.opts.rememberUpgrade&&SocketWithoutUpgrade.priorWebsocketSuccess&&this.transports.indexOf("websocket")!==-1?"websocket":this.transports[0];this.readyState="opening";const t=this.createTransport(e);t.open(),this.setTransport(t)}setTransport(e){this.transport&&this.transport.removeAllListeners(),this.transport=e,e.on("drain",this._onDrain.bind(this)).on("packet",this._onPacket.bind(this)).on("error",this._onError.bind(this)).on("close",t=>this._onClose("transport close",t))}onOpen(){this.readyState="open",SocketWithoutUpgrade.priorWebsocketSuccess=this.transport.name==="websocket",this.emitReserved("open"),this.flush()}_onPacket(e){if(this.readyState==="opening"||this.readyState==="open"||this.readyState==="closing")switch(this.emitReserved("packet",e),this.emitReserved("heartbeat"),e.type){case"open":this.onHandshake(JSON.parse(e.data));break;case"ping":this._sendPacket("pong"),this.emitReserved("ping"),this.emitReserved("pong"),this._resetPingTimeout();break;case"error":const t=new Error("server error");t.code=e.data,this._onError(t);break;case"message":this.emitReserved("data",e.data),this.emitReserved("message",e.data);break}}onHandshake(e){this.emitReserved("handshake",e),this.id=e.sid,this.transport.query.sid=e.sid,this._pingInterval=e.pingInterval,this._pingTimeout=e.pingTimeout,this._maxPayload=e.maxPayload,this.onOpen(),this.readyState!=="closed"&&this._resetPingTimeout()}_resetPingTimeout(){this.clearTimeoutFn(this._pingTimeoutTimer);const e=this._pingInterval+this._pingTimeout;this._pingTimeoutTime=Date.now()+e,this._pingTimeoutTimer=this.setTimeoutFn(()=>{this._onClose("ping timeout")},e),this.opts.autoUnref&&this._pingTimeoutTimer.unref()}_onDrain(){this.writeBuffer.splice(0,this._prevBufferLen),this._prevBufferLen=0,this.writeBuffer.length===0?this.emitReserved("drain"):this.flush()}flush(){if(this.readyState!=="closed"&&this.transport.writable&&!this.upgrading&&this.writeBuffer.length){const e=this._getWritablePackets();this.transport.send(e),this._prevBufferLen=e.length,this.emitReserved("flush")}}_getWritablePackets(){if(!(this._maxPayload&&this.transport.name==="polling"&&this.writeBuffer.length>1))return this.writeBuffer;let t=1;for(let r=0;r<this.writeBuffer.length;r++){const i=this.writeBuffer[r].data;if(i&&(t+=byteLength(i)),r>0&&t>this._maxPayload)return this.writeBuffer.slice(0,r);t+=2}return this.writeBuffer}_hasPingExpired(){if(!this._pingTimeoutTime)return!0;const e=Date.now()>this._pingTimeoutTime;return e&&(this._pingTimeoutTime=0,nextTick(()=>{this._onClose("ping timeout")},this.setTimeoutFn)),e}write(e,t,r){return this._sendPacket("message",e,t,r),this}send(e,t,r){return this._sendPacket("message",e,t,r),this}_sendPacket(e,t,r,i){if(typeof t=="function"&&(i=t,t=void 0),typeof r=="function"&&(i=r,r=null),this.readyState==="closing"||this.readyState==="closed")return;r=r||{},r.compress=r.compress!==!1;const n={type:e,data:t,options:r};this.emitReserved("packetCreate",n),this.writeBuffer.push(n),i&&this.once("flush",i),this.flush()}close(){const e=()=>{this._onClose("forced close"),this.transport.close()},t=()=>{this.off("upgrade",t),this.off("upgradeError",t),e()},r=()=>{this.once("upgrade",t),this.once("upgradeError",t)};return(this.readyState==="opening"||this.readyState==="open")&&(this.readyState="closing",this.writeBuffer.length?this.once("drain",()=>{this.upgrading?r():e()}):this.upgrading?r():e()),this}_onError(e){if(SocketWithoutUpgrade.priorWebsocketSuccess=!1,this.opts.tryAllTransports&&this.transports.length>1&&this.readyState==="opening")return this.transports.shift(),this._open();this.emitReserved("error",e),this._onClose("transport error",e)}_onClose(e,t){if(this.readyState==="opening"||this.readyState==="open"||this.readyState==="closing"){if(this.clearTimeoutFn(this._pingTimeoutTimer),this.transport.removeAllListeners("close"),this.transport.close(),this.transport.removeAllListeners(),withEventListeners&&(this._beforeunloadEventListener&&removeEventListener("beforeunload",this._beforeunloadEventListener,!1),this._offlineEventListener)){const r=OFFLINE_EVENT_LISTENERS.indexOf(this._offlineEventListener);r!==-1&&OFFLINE_EVENT_LISTENERS.splice(r,1)}this.readyState="closed",this.id=null,this.emitReserved("close",e,t),this.writeBuffer=[],this._prevBufferLen=0}}}SocketWithoutUpgrade.protocol=protocol$1;class SocketWithUpgrade extends SocketWithoutUpgrade{constructor(){super(...arguments),this._upgrades=[]}onOpen(){if(super.onOpen(),this.readyState==="open"&&this.opts.upgrade)for(let e=0;e<this._upgrades.length;e++)this._probe(this._upgrades[e])}_probe(e){let t=this.createTransport(e),r=!1;SocketWithoutUpgrade.priorWebsocketSuccess=!1;const i=()=>{r||(t.send([{type:"ping",data:"probe"}]),t.once("packet",d=>{if(!r)if(d.type==="pong"&&d.data==="probe"){if(this.upgrading=!0,this.emitReserved("upgrading",t),!t)return;SocketWithoutUpgrade.priorWebsocketSuccess=t.name==="websocket",this.transport.pause(()=>{r||this.readyState!=="closed"&&(u(),this.setTransport(t),t.send([{type:"upgrade"}]),this.emitReserved("upgrade",t),t=null,this.upgrading=!1,this.flush())})}else{const h=new Error("probe error");h.transport=t.name,this.emitReserved("upgradeError",h)}}))};function n(){r||(r=!0,u(),t.close(),t=null)}const c=d=>{const h=new Error("probe error: "+d);h.transport=t.name,n(),this.emitReserved("upgradeError",h)};function o(){c("transport closed")}function a(){c("socket closed")}function l(d){t&&d.name!==t.name&&n()}const u=()=>{t.removeListener("open",i),t.removeListener("error",c),t.removeListener("close",o),this.off("close",a),this.off("upgrading",l)};t.once("open",i),t.once("error",c),t.once("close",o),this.once("close",a),this.once("upgrading",l),this._upgrades.indexOf("webtransport")!==-1&&e!=="webtransport"?this.setTimeoutFn(()=>{r||t.open()},200):t.open()}onHandshake(e){this._upgrades=this._filterUpgrades(e.upgrades),super.onHandshake(e)}_filterUpgrades(e){const t=[];for(let r=0;r<e.length;r++)~this.transports.indexOf(e[r])&&t.push(e[r]);return t}}let Socket$1=class extends SocketWithUpgrade{constructor(e,t={}){const r=typeof e=="object"?e:t;(!r.transports||r.transports&&typeof r.transports[0]=="string")&&(r.transports=(r.transports||["polling","websocket","webtransport"]).map(i=>transports[i]).filter(i=>!!i)),super(e,r)}};function url(s,e="",t){let r=s;t=t||typeof location!="undefined"&&location,s==null&&(s=t.protocol+"//"+t.host),typeof s=="string"&&(s.charAt(0)==="/"&&(s.charAt(1)==="/"?s=t.protocol+s:s=t.host+s),/^(https?|wss?):\/\//.test(s)||(typeof t!="undefined"?s=t.protocol+"//"+s:s="https://"+s),r=parse(s)),r.port||(/^(http|ws)$/.test(r.protocol)?r.port="80":/^(http|ws)s$/.test(r.protocol)&&(r.port="443")),r.path=r.path||"/";const n=r.host.indexOf(":")!==-1?"["+r.host+"]":r.host;return r.id=r.protocol+"://"+n+":"+r.port+e,r.href=r.protocol+"://"+n+(t&&t.port===r.port?"":":"+r.port),r}const withNativeArrayBuffer=typeof ArrayBuffer=="function",isView=s=>typeof ArrayBuffer.isView=="function"?ArrayBuffer.isView(s):s.buffer instanceof ArrayBuffer,toString=Object.prototype.toString,withNativeBlob=typeof Blob=="function"||typeof Blob!="undefined"&&toString.call(Blob)==="[object BlobConstructor]",withNativeFile=typeof File=="function"||typeof File!="undefined"&&toString.call(File)==="[object FileConstructor]";function isBinary(s){return withNativeArrayBuffer&&(s instanceof ArrayBuffer||isView(s))||withNativeBlob&&s instanceof Blob||withNativeFile&&s instanceof File}function hasBinary(s,e){if(!s||typeof s!="object")return!1;if(Array.isArray(s)){for(let t=0,r=s.length;t<r;t++)if(hasBinary(s[t]))return!0;return!1}if(isBinary(s))return!0;if(s.toJSON&&typeof s.toJSON=="function"&&arguments.length===1)return hasBinary(s.toJSON(),!0);for(const t in s)if(Object.prototype.hasOwnProperty.call(s,t)&&hasBinary(s[t]))return!0;return!1}function deconstructPacket(s){const e=[],t=s.data,r=s;return r.data=_deconstructPacket(t,e),r.attachments=e.length,{packet:r,buffers:e}}function _deconstructPacket(s,e){if(!s)return s;if(isBinary(s)){const t={_placeholder:!0,num:e.length};return e.push(s),t}else if(Array.isArray(s)){const t=new Array(s.length);for(let r=0;r<s.length;r++)t[r]=_deconstructPacket(s[r],e);return t}else if(typeof s=="object"&&!(s instanceof Date)){const t={};for(const r in s)Object.prototype.hasOwnProperty.call(s,r)&&(t[r]=_deconstructPacket(s[r],e));return t}return s}function reconstructPacket(s,e){return s.data=_reconstructPacket(s.data,e),delete s.attachments,s}function _reconstructPacket(s,e){if(!s)return s;if(s&&s._placeholder===!0){if(typeof s.num=="number"&&s.num>=0&&s.num<e.length)return e[s.num];throw new Error("illegal attachments")}else if(Array.isArray(s))for(let t=0;t<s.length;t++)s[t]=_reconstructPacket(s[t],e);else if(typeof s=="object")for(const t in s)Object.prototype.hasOwnProperty.call(s,t)&&(s[t]=_reconstructPacket(s[t],e));return s}const RESERVED_EVENTS$1=["connect","connect_error","disconnect","disconnecting","newListener","removeListener"],protocol=5;var PacketType;(function(s){s[s.CONNECT=0]="CONNECT",s[s.DISCONNECT=1]="DISCONNECT",s[s.EVENT=2]="EVENT",s[s.ACK=3]="ACK",s[s.CONNECT_ERROR=4]="CONNECT_ERROR",s[s.BINARY_EVENT=5]="BINARY_EVENT",s[s.BINARY_ACK=6]="BINARY_ACK"})(PacketType||(PacketType={}));class Encoder{constructor(e){this.replacer=e}encode(e){return(e.type===PacketType.EVENT||e.type===PacketType.ACK)&&hasBinary(e)?this.encodeAsBinary({type:e.type===PacketType.EVENT?PacketType.BINARY_EVENT:PacketType.BINARY_ACK,nsp:e.nsp,data:e.data,id:e.id}):[this.encodeAsString(e)]}encodeAsString(e){let t=""+e.type;return(e.type===PacketType.BINARY_EVENT||e.type===PacketType.BINARY_ACK)&&(t+=e.attachments+"-"),e.nsp&&e.nsp!=="/"&&(t+=e.nsp+","),e.id!=null&&(t+=e.id),e.data!=null&&(t+=JSON.stringify(e.data,this.replacer)),t}encodeAsBinary(e){const t=deconstructPacket(e),r=this.encodeAsString(t.packet),i=t.buffers;return i.unshift(r),i}}function isObject(s){return Object.prototype.toString.call(s)==="[object Object]"}class Decoder extends Emitter{constructor(e){super(),this.reviver=e}add(e){let t;if(typeof e=="string"){if(this.reconstructor)throw new Error("got plaintext data when reconstructing a packet");t=this.decodeString(e);const r=t.type===PacketType.BINARY_EVENT;r||t.type===PacketType.BINARY_ACK?(t.type=r?PacketType.EVENT:PacketType.ACK,this.reconstructor=new BinaryReconstructor(t),t.attachments===0&&super.emitReserved("decoded",t)):super.emitReserved("decoded",t)}else if(isBinary(e)||e.base64)if(this.reconstructor)t=this.reconstructor.takeBinaryData(e),t&&(this.reconstructor=null,super.emitReserved("decoded",t));else throw new Error("got binary data when not reconstructing a packet");else throw new Error("Unknown type: "+e)}decodeString(e){let t=0;const r={type:Number(e.charAt(0))};if(PacketType[r.type]===void 0)throw new Error("unknown packet type "+r.type);if(r.type===PacketType.BINARY_EVENT||r.type===PacketType.BINARY_ACK){const n=t+1;for(;e.charAt(++t)!=="-"&&t!=e.length;);const c=e.substring(n,t);if(c!=Number(c)||e.charAt(t)!=="-")throw new Error("Illegal attachments");r.attachments=Number(c)}if(e.charAt(t+1)==="/"){const n=t+1;for(;++t&&!(e.charAt(t)===","||t===e.length););r.nsp=e.substring(n,t)}else r.nsp="/";const i=e.charAt(t+1);if(i!==""&&Number(i)==i){const n=t+1;for(;++t;){const c=e.charAt(t);if(c==null||Number(c)!=c){--t;break}if(t===e.length)break}r.id=Number(e.substring(n,t+1))}if(e.charAt(++t)){const n=this.tryParse(e.substr(t));if(Decoder.isPayloadValid(r.type,n))r.data=n;else throw new Error("invalid payload")}return r}tryParse(e){try{return JSON.parse(e,this.reviver)}catch(t){return!1}}static isPayloadValid(e,t){switch(e){case PacketType.CONNECT:return isObject(t);case PacketType.DISCONNECT:return t===void 0;case PacketType.CONNECT_ERROR:return typeof t=="string"||isObject(t);case PacketType.EVENT:case PacketType.BINARY_EVENT:return Array.isArray(t)&&(typeof t[0]=="number"||typeof t[0]=="string"&&RESERVED_EVENTS$1.indexOf(t[0])===-1);case PacketType.ACK:case PacketType.BINARY_ACK:return Array.isArray(t)}}destroy(){this.reconstructor&&(this.reconstructor.finishedReconstruction(),this.reconstructor=null)}}class BinaryReconstructor{constructor(e){this.packet=e,this.buffers=[],this.reconPack=e}takeBinaryData(e){if(this.buffers.push(e),this.buffers.length===this.reconPack.attachments){const t=reconstructPacket(this.reconPack,this.buffers);return this.finishedReconstruction(),t}return null}finishedReconstruction(){this.reconPack=null,this.buffers=[]}}const parser=Object.freeze(Object.defineProperty({__proto__:null,Decoder,Encoder,get PacketType(){return PacketType},protocol},Symbol.toStringTag,{value:"Module"}));function on(s,e,t){return s.on(e,t),function(){s.off(e,t)}}const RESERVED_EVENTS=Object.freeze({connect:1,connect_error:1,disconnect:1,disconnecting:1,newListener:1,removeListener:1});class Socket extends Emitter{constructor(e,t,r){super(),this.connected=!1,this.recovered=!1,this.receiveBuffer=[],this.sendBuffer=[],this._queue=[],this._queueSeq=0,this.ids=0,this.acks={},this.flags={},this.io=e,this.nsp=t,r&&r.auth&&(this.auth=r.auth),this._opts=Object.assign({},r),this.io._autoConnect&&this.open()}get disconnected(){return!this.connected}subEvents(){if(this.subs)return;const e=this.io;this.subs=[on(e,"open",this.onopen.bind(this)),on(e,"packet",this.onpacket.bind(this)),on(e,"error",this.onerror.bind(this)),on(e,"close",this.onclose.bind(this))]}get active(){return!!this.subs}connect(){return this.connected?this:(this.subEvents(),this.io._reconnecting||this.io.open(),this.io._readyState==="open"&&this.onopen(),this)}open(){return this.connect()}send(...e){return e.unshift("message"),this.emit.apply(this,e),this}emit(e,...t){var r,i,n;if(RESERVED_EVENTS.hasOwnProperty(e))throw new Error('"'+e.toString()+'" is a reserved event name');if(t.unshift(e),this._opts.retries&&!this.flags.fromQueue&&!this.flags.volatile)return this._addToQueue(t),this;const c={type:PacketType.EVENT,data:t};if(c.options={},c.options.compress=this.flags.compress!==!1,typeof t[t.length-1]=="function"){const u=this.ids++,d=t.pop();this._registerAckCallback(u,d),c.id=u}const o=(i=(r=this.io.engine)===null||r===void 0?void 0:r.transport)===null||i===void 0?void 0:i.writable,a=this.connected&&!(!((n=this.io.engine)===null||n===void 0)&&n._hasPingExpired());return this.flags.volatile&&!o||(a?(this.notifyOutgoingListeners(c),this.packet(c)):this.sendBuffer.push(c)),this.flags={},this}_registerAckCallback(e,t){var r;const i=(r=this.flags.timeout)!==null&&r!==void 0?r:this._opts.ackTimeout;if(i===void 0){this.acks[e]=t;return}const n=this.io.setTimeoutFn(()=>{delete this.acks[e];for(let o=0;o<this.sendBuffer.length;o++)this.sendBuffer[o].id===e&&this.sendBuffer.splice(o,1);t.call(this,new Error("operation has timed out"))},i),c=(...o)=>{this.io.clearTimeoutFn(n),t.apply(this,o)};c.withError=!0,this.acks[e]=c}emitWithAck(e,...t){return new Promise((r,i)=>{const n=(c,o)=>c?i(c):r(o);n.withError=!0,t.push(n),this.emit(e,...t)})}_addToQueue(e){let t;typeof e[e.length-1]=="function"&&(t=e.pop());const r={id:this._queueSeq++,tryCount:0,pending:!1,args:e,flags:Object.assign({fromQueue:!0},this.flags)};e.push((i,...n)=>r!==this._queue[0]?void 0:(i!==null?r.tryCount>this._opts.retries&&(this._queue.shift(),t&&t(i)):(this._queue.shift(),t&&t(null,...n)),r.pending=!1,this._drainQueue())),this._queue.push(r),this._drainQueue()}_drainQueue(e=!1){if(!this.connected||this._queue.length===0)return;const t=this._queue[0];t.pending&&!e||(t.pending=!0,t.tryCount++,this.flags=t.flags,this.emit.apply(this,t.args))}packet(e){e.nsp=this.nsp,this.io._packet(e)}onopen(){typeof this.auth=="function"?this.auth(e=>{this._sendConnectPacket(e)}):this._sendConnectPacket(this.auth)}_sendConnectPacket(e){this.packet({type:PacketType.CONNECT,data:this._pid?Object.assign({pid:this._pid,offset:this._lastOffset},e):e})}onerror(e){this.connected||this.emitReserved("connect_error",e)}onclose(e,t){this.connected=!1,delete this.id,this.emitReserved("disconnect",e,t),this._clearAcks()}_clearAcks(){Object.keys(this.acks).forEach(e=>{if(!this.sendBuffer.some(r=>String(r.id)===e)){const r=this.acks[e];delete this.acks[e],r.withError&&r.call(this,new Error("socket has been disconnected"))}})}onpacket(e){if(e.nsp===this.nsp)switch(e.type){case PacketType.CONNECT:e.data&&e.data.sid?this.onconnect(e.data.sid,e.data.pid):this.emitReserved("connect_error",new Error("It seems you are trying to reach a Socket.IO server in v2.x with a v3.x client, but they are not compatible (more information here: https://socket.io/docs/v3/migrating-from-2-x-to-3-0/)"));break;case PacketType.EVENT:case PacketType.BINARY_EVENT:this.onevent(e);break;case PacketType.ACK:case PacketType.BINARY_ACK:this.onack(e);break;case PacketType.DISCONNECT:this.ondisconnect();break;case PacketType.CONNECT_ERROR:this.destroy();const r=new Error(e.data.message);r.data=e.data.data,this.emitReserved("connect_error",r);break}}onevent(e){const t=e.data||[];e.id!=null&&t.push(this.ack(e.id)),this.connected?this.emitEvent(t):this.receiveBuffer.push(Object.freeze(t))}emitEvent(e){if(this._anyListeners&&this._anyListeners.length){const t=this._anyListeners.slice();for(const r of t)r.apply(this,e)}super.emit.apply(this,e),this._pid&&e.length&&typeof e[e.length-1]=="string"&&(this._lastOffset=e[e.length-1])}ack(e){const t=this;let r=!1;return function(...i){r||(r=!0,t.packet({type:PacketType.ACK,id:e,data:i}))}}onack(e){const t=this.acks[e.id];typeof t=="function"&&(delete this.acks[e.id],t.withError&&e.data.unshift(null),t.apply(this,e.data))}onconnect(e,t){this.id=e,this.recovered=t&&this._pid===t,this._pid=t,this.connected=!0,this.emitBuffered(),this.emitReserved("connect"),this._drainQueue(!0)}emitBuffered(){this.receiveBuffer.forEach(e=>this.emitEvent(e)),this.receiveBuffer=[],this.sendBuffer.forEach(e=>{this.notifyOutgoingListeners(e),this.packet(e)}),this.sendBuffer=[]}ondisconnect(){this.destroy(),this.onclose("io server disconnect")}destroy(){this.subs&&(this.subs.forEach(e=>e()),this.subs=void 0),this.io._destroy(this)}disconnect(){return this.connected&&this.packet({type:PacketType.DISCONNECT}),this.destroy(),this.connected&&this.onclose("io client disconnect"),this}close(){return this.disconnect()}compress(e){return this.flags.compress=e,this}get volatile(){return this.flags.volatile=!0,this}timeout(e){return this.flags.timeout=e,this}onAny(e){return this._anyListeners=this._anyListeners||[],this._anyListeners.push(e),this}prependAny(e){return this._anyListeners=this._anyListeners||[],this._anyListeners.unshift(e),this}offAny(e){if(!this._anyListeners)return this;if(e){const t=this._anyListeners;for(let r=0;r<t.length;r++)if(e===t[r])return t.splice(r,1),this}else this._anyListeners=[];return this}listenersAny(){return this._anyListeners||[]}onAnyOutgoing(e){return this._anyOutgoingListeners=this._anyOutgoingListeners||[],this._anyOutgoingListeners.push(e),this}prependAnyOutgoing(e){return this._anyOutgoingListeners=this._anyOutgoingListeners||[],this._anyOutgoingListeners.unshift(e),this}offAnyOutgoing(e){if(!this._anyOutgoingListeners)return this;if(e){const t=this._anyOutgoingListeners;for(let r=0;r<t.length;r++)if(e===t[r])return t.splice(r,1),this}else this._anyOutgoingListeners=[];return this}listenersAnyOutgoing(){return this._anyOutgoingListeners||[]}notifyOutgoingListeners(e){if(this._anyOutgoingListeners&&this._anyOutgoingListeners.length){const t=this._anyOutgoingListeners.slice();for(const r of t)r.apply(this,e.data)}}}function Backoff(s){s=s||{},this.ms=s.min||100,this.max=s.max||1e4,this.factor=s.factor||2,this.jitter=s.jitter>0&&s.jitter<=1?s.jitter:0,this.attempts=0}Backoff.prototype.duration=function(){var s=this.ms*Math.pow(this.factor,this.attempts++);if(this.jitter){var e=Math.random(),t=Math.floor(e*this.jitter*s);s=Math.floor(e*10)&1?s+t:s-t}return Math.min(s,this.max)|0};Backoff.prototype.reset=function(){this.attempts=0};Backoff.prototype.setMin=function(s){this.ms=s};Backoff.prototype.setMax=function(s){this.max=s};Backoff.prototype.setJitter=function(s){this.jitter=s};class Manager extends Emitter{constructor(e,t){var r;super(),this.nsps={},this.subs=[],e&&typeof e=="object"&&(t=e,e=void 0),t=t||{},t.path=t.path||"/socket.io",this.opts=t,installTimerFunctions(this,t),this.reconnection(t.reconnection!==!1),this.reconnectionAttempts(t.reconnectionAttempts||1/0),this.reconnectionDelay(t.reconnectionDelay||1e3),this.reconnectionDelayMax(t.reconnectionDelayMax||5e3),this.randomizationFactor((r=t.randomizationFactor)!==null&&r!==void 0?r:.5),this.backoff=new Backoff({min:this.reconnectionDelay(),max:this.reconnectionDelayMax(),jitter:this.randomizationFactor()}),this.timeout(t.timeout==null?2e4:t.timeout),this._readyState="closed",this.uri=e;const i=t.parser||parser;this.encoder=new i.Encoder,this.decoder=new i.Decoder,this._autoConnect=t.autoConnect!==!1,this._autoConnect&&this.open()}reconnection(e){return arguments.length?(this._reconnection=!!e,e||(this.skipReconnect=!0),this):this._reconnection}reconnectionAttempts(e){return e===void 0?this._reconnectionAttempts:(this._reconnectionAttempts=e,this)}reconnectionDelay(e){var t;return e===void 0?this._reconnectionDelay:(this._reconnectionDelay=e,(t=this.backoff)===null||t===void 0||t.setMin(e),this)}randomizationFactor(e){var t;return e===void 0?this._randomizationFactor:(this._randomizationFactor=e,(t=this.backoff)===null||t===void 0||t.setJitter(e),this)}reconnectionDelayMax(e){var t;return e===void 0?this._reconnectionDelayMax:(this._reconnectionDelayMax=e,(t=this.backoff)===null||t===void 0||t.setMax(e),this)}timeout(e){return arguments.length?(this._timeout=e,this):this._timeout}maybeReconnectOnOpen(){!this._reconnecting&&this._reconnection&&this.backoff.attempts===0&&this.reconnect()}open(e){if(~this._readyState.indexOf("open"))return this;this.engine=new Socket$1(this.uri,this.opts);const t=this.engine,r=this;this._readyState="opening",this.skipReconnect=!1;const i=on(t,"open",function(){r.onopen(),e&&e()}),n=o=>{this.cleanup(),this._readyState="closed",this.emitReserved("error",o),e?e(o):this.maybeReconnectOnOpen()},c=on(t,"error",n);if(this._timeout!==!1){const o=this._timeout,a=this.setTimeoutFn(()=>{i(),n(new Error("timeout")),t.close()},o);this.opts.autoUnref&&a.unref(),this.subs.push(()=>{this.clearTimeoutFn(a)})}return this.subs.push(i),this.subs.push(c),this}connect(e){return this.open(e)}onopen(){this.cleanup(),this._readyState="open",this.emitReserved("open");const e=this.engine;this.subs.push(on(e,"ping",this.onping.bind(this)),on(e,"data",this.ondata.bind(this)),on(e,"error",this.onerror.bind(this)),on(e,"close",this.onclose.bind(this)),on(this.decoder,"decoded",this.ondecoded.bind(this)))}onping(){this.emitReserved("ping")}ondata(e){try{this.decoder.add(e)}catch(t){this.onclose("parse error",t)}}ondecoded(e){nextTick(()=>{this.emitReserved("packet",e)},this.setTimeoutFn)}onerror(e){this.emitReserved("error",e)}socket(e,t){let r=this.nsps[e];return r?this._autoConnect&&!r.active&&r.connect():(r=new Socket(this,e,t),this.nsps[e]=r),r}_destroy(e){const t=Object.keys(this.nsps);for(const r of t)if(this.nsps[r].active)return;this._close()}_packet(e){const t=this.encoder.encode(e);for(let r=0;r<t.length;r++)this.engine.write(t[r],e.options)}cleanup(){this.subs.forEach(e=>e()),this.subs.length=0,this.decoder.destroy()}_close(){this.skipReconnect=!0,this._reconnecting=!1,this.onclose("forced close")}disconnect(){return this._close()}onclose(e,t){var r;this.cleanup(),(r=this.engine)===null||r===void 0||r.close(),this.backoff.reset(),this._readyState="closed",this.emitReserved("close",e,t),this._reconnection&&!this.skipReconnect&&this.reconnect()}reconnect(){if(this._reconnecting||this.skipReconnect)return this;const e=this;if(this.backoff.attempts>=this._reconnectionAttempts)this.backoff.reset(),this.emitReserved("reconnect_failed"),this._reconnecting=!1;else{const t=this.backoff.duration();this._reconnecting=!0;const r=this.setTimeoutFn(()=>{e.skipReconnect||(this.emitReserved("reconnect_attempt",e.backoff.attempts),!e.skipReconnect&&e.open(i=>{i?(e._reconnecting=!1,e.reconnect(),this.emitReserved("reconnect_error",i)):e.onreconnect()}))},t);this.opts.autoUnref&&r.unref(),this.subs.push(()=>{this.clearTimeoutFn(r)})}}onreconnect(){const e=this.backoff.attempts;this._reconnecting=!1,this.backoff.reset(),this.emitReserved("reconnect",e)}}const cache={};function lookup(s,e){typeof s=="object"&&(e=s,s=void 0),e=e||{};const t=url(s,e.path||"/socket.io"),r=t.source,i=t.id,n=t.path,c=cache[i]&&n in cache[i].nsps,o=e.forceNew||e["force new connection"]||e.multiplex===!1||c;let a;return o?a=new Manager(r,e):(cache[i]||(cache[i]=new Manager(r,e)),a=cache[i]),t.query&&!e.query&&(e.query=t.queryKey),a.socket(t.path,e)}Object.assign(lookup,{Manager,Socket,io:lookup,connect:lookup});const API_URL=env.API_BASE_URL.replace("/api/v1","");class WebSocketService{constructor(){x(this,"socket",null);x(this,"token",null);x(this,"isConnecting",!1);x(this,"reconnectAttempts",0);x(this,"maxReconnectAttempts",5);x(this,"subscribedFields",new Set);x(this,"eventCallbacks",new Map)}connect(e){return _(this,null,function*(){var t;if((t=this.socket)!=null&&t.connected){console.log("[WebSocket] Already connected");return}if(this.isConnecting){console.log("[WebSocket] Connection already in progress");return}if(!e){console.warn("[WebSocket] No authentication token available");return}this.token=e,this.isConnecting=!0;try{console.log("[WebSocket] Connecting to",API_URL),this.socket=lookup(API_URL,{auth:{token:this.token},transports:["websocket","polling"],reconnection:!0,reconnectionDelay:1e3,reconnectionDelayMax:5e3,reconnectionAttempts:this.maxReconnectAttempts}),this._setupEventListeners(),this.isConnecting=!1}catch(r){throw console.error("[WebSocket] Connection failed:",r),this.isConnecting=!1,r}})}disconnect(){this.socket&&(console.log("[WebSocket] Disconnecting"),this.socket.disconnect(),this.socket=null,this.subscribedFields.clear(),this.eventCallbacks.clear())}isConnected(){var e,t;return(t=(e=this.socket)==null?void 0:e.connected)!=null?t:!1}subscribeToField(e){var t;if(!((t=this.socket)!=null&&t.connected)){console.warn("[WebSocket] Not connected, cannot subscribe to field");return}console.log("[WebSocket] Subscribing to field:",e),this.socket.emit("subscribe_field",e),this.subscribedFields.add(e)}unsubscribeFromField(e){var t;(t=this.socket)!=null&&t.connected&&(console.log("[WebSocket] Unsubscribing from field:",e),this.socket.emit("unsubscribe_field",e),this.subscribedFields.delete(e))}on(e,t){this.eventCallbacks.has(e)||this.eventCallbacks.set(e,new Set),this.eventCallbacks.get(e).add(t),this.socket&&this.socket.on(e,t)}off(e,t){const r=this.eventCallbacks.get(e);r&&(r.delete(t),r.size===0&&this.eventCallbacks.delete(e)),this.socket&&this.socket.off(e,t)}_resubscribeToFields(){var e;!((e=this.socket)!=null&&e.connected)||this.subscribedFields.size===0||(console.log("[WebSocket] Resubscribing to",this.subscribedFields.size,"fields"),this.subscribedFields.forEach(t=>{var r;(r=this.socket)==null||r.emit("subscribe_field",t)}))}_reattachEventListeners(){this.socket&&this.eventCallbacks.forEach((e,t)=>{e.forEach(r=>{this.socket.on(t,r)})})}_setupEventListeners(){this.socket&&(this.socket.on("connect",()=>{var e;console.log("[WebSocket] Connected, Socket ID:",(e=this.socket)==null?void 0:e.id),this.reconnectAttempts=0,this._resubscribeToFields(),this._reattachEventListeners(),this._triggerCallbacks("connect",{})}),this.socket.on("disconnect",e=>{console.log("[WebSocket] Disconnected:",e),this._triggerCallbacks("disconnect",{reason:e})}),this.socket.on("connect_error",e=>{console.error("[WebSocket] Connection error:",e.message),this.reconnectAttempts++,this.reconnectAttempts>=this.maxReconnectAttempts&&console.error("[WebSocket] Max reconnect attempts reached"),this._triggerCallbacks("connect_error",{error:e})}),this.socket.on("health_updated",e=>{console.log("[WebSocket] Health updated:",e),this._triggerCallbacks("health_updated",e)}),this.socket.on("health_alert",e=>{console.log("[WebSocket] Health alert:",e),this._triggerCallbacks("health_alert",e)}),this.socket.on("recommendations_updated",e=>{console.log("[WebSocket] Recommendations updated:",e),this._triggerCallbacks("recommendations_updated",e)}),this.socket.on("recommendation_created",e=>{console.log("[WebSocket] Recommendation created:",e),this._triggerCallbacks("recommendation_created",e)}),this.socket.on("yield_prediction_ready",e=>{console.log("[WebSocket] Yield prediction ready:",e),this._triggerCallbacks("yield_prediction_ready",e)}),this.socket.on("subscribed",e=>{console.log("[WebSocket] Subscribed to field:",e.fieldId),this._triggerCallbacks("subscribed",e)}),this.socket.on("unsubscribed",e=>{console.log("[WebSocket] Unsubscribed from field:",e.fieldId),this._triggerCallbacks("unsubscribed",e)}))}_triggerCallbacks(e,t){const r=this.eventCallbacks.get(e);r&&r.forEach(i=>{try{i(t)}catch(n){console.error(`[WebSocket] Error in ${e} callback:`,n)}})}}const websocketService=new WebSocketService,NotificationsContext=reactExports.createContext(void 0),NotificationsProvider=({children:s})=>{const[e,t]=reactExports.useState([]),{showToast:r}=useToast(),i=e.filter(u=>!u.read).length,n=reactExports.useCallback(u=>{const d=g(p({},u),{id:`notif-${Date.now()}-${Math.random().toString(36).substr(2,9)}`});t(h=>[d,...h].slice(0,50))},[]),c=reactExports.useCallback(u=>{t(d=>d.map(h=>h.id===u?g(p({},h),{read:!0}):h))},[]),o=reactExports.useCallback(()=>{t(u=>u.map(d=>g(p({},d),{read:!0})))},[]),a=reactExports.useCallback(()=>{t([])},[]);reactExports.useEffect(()=>{const u=f=>{var b,w;n({type:"health",title:"Field Health Updated",message:`${f.fieldName}: Health score ${((b=f.health)==null?void 0:b.score)||"N/A"} (${((w=f.health)==null?void 0:w.status)||"unknown"})`,timestamp:new Date().toISOString(),read:!1,fieldId:f.fieldId,fieldName:f.fieldName})},d=f=>{var b;n({type:"alert",title:`${((b=f.severity)==null?void 0:b.toUpperCase())||"ALERT"}: Field Health Alert`,message:`${f.fieldName}: ${f.message}`,timestamp:new Date().toISOString(),read:!1,fieldId:f.fieldId,fieldName:f.fieldName,priority:f.severity==="critical"?"high":"medium"}),f.severity==="critical"&&r({variant:"error",title:"Critical Field Health Alert",description:`${f.fieldName}: ${f.message}`})},h=f=>{var b;n({type:"recommendation",title:"New Recommendations",message:`${f.fieldName}: ${f.message}`,timestamp:new Date().toISOString(),read:!1,fieldId:f.fieldId,fieldName:f.fieldName,priority:(b=f.recommendations)!=null&&b.some(w=>w.priority==="critical")?"high":"medium"})},m=f=>{n({type:"yield",title:"Yield Prediction Ready",message:`${f.fieldName}: ${f.message}`,timestamp:new Date().toISOString(),read:!1,fieldId:f.fieldId,fieldName:f.fieldName})},E=f=>{f.reason!=="io client disconnect"&&n({type:"system",title:"Connection Lost",message:"Real-time updates temporarily unavailable",timestamp:new Date().toISOString(),read:!1})},y=()=>{n({type:"system",title:"Connected",message:"Real-time updates enabled",timestamp:new Date().toISOString(),read:!1})};return websocketService.on("health_updated",u),websocketService.on("health_alert",d),websocketService.on("recommendation_created",h),websocketService.on("yield_prediction_ready",m),websocketService.on("disconnect",E),websocketService.on("connect",y),()=>{websocketService.off("health_updated",u),websocketService.off("health_alert",d),websocketService.off("recommendation_created",h),websocketService.off("yield_prediction_ready",m),websocketService.off("disconnect",E),websocketService.off("connect",y)}},[n,r]);const l={notifications:e,unreadCount:i,addNotification:n,markAsRead:c,markAllAsRead:o,clearAll:a};return jsxRuntimeExports.jsx(NotificationsContext.Provider,{value:l,children:s})},UiContext=reactExports.createContext(void 0),UI_STORAGE_KEY="skycrop_ui_prefs",getDefaultState=()=>({currentFieldId:void 0,defaultHealthIndex:"NDVI",defaultHealthRange:"30d"}),loadInitialState=()=>{var s,e;if(typeof window=="undefined")return getDefaultState();try{const t=window.localStorage.getItem(UI_STORAGE_KEY);if(!t)return getDefaultState();const r=JSON.parse(t);return{currentFieldId:r.currentFieldId,defaultHealthIndex:(s=r.defaultHealthIndex)!=null?s:"NDVI",defaultHealthRange:(e=r.defaultHealthRange)!=null?e:"30d"}}catch(t){return getDefaultState()}},persistState=s=>{if(typeof window!="undefined")try{window.localStorage.setItem(UI_STORAGE_KEY,JSON.stringify(s))}catch(e){}},UiProvider=({children:s})=>{const[e,t]=reactExports.useState(()=>loadInitialState()),r=reactExports.useCallback(o=>{t(a=>{const l=g(p({},a),{currentFieldId:o});return persistState(l),l})},[]),i=reactExports.useCallback(o=>{t(a=>{const l=g(p({},a),{defaultHealthIndex:o});return persistState(l),l})},[]),n=reactExports.useCallback(o=>{t(a=>{const l=g(p({},a),{defaultHealthRange:o});return persistState(l),l})},[]),c=reactExports.useMemo(()=>({state:e,setCurrentField:r,setHealthIndex:i,setHealthRange:n}),[e,r,i,n]);return jsxRuntimeExports.jsx(UiContext.Provider,{value:c,children:s})},useUiState=()=>{const s=reactExports.useContext(UiContext);if(!s)throw new Error("useUiState must be used within a UiProvider");return s},Modal=({isOpen:s,onClose:e,title:t,children:r})=>{const i=reactExports.useRef(null),n=reactExports.useRef(null),c=reactExports.useId();return reactExports.useEffect(()=>{if(!s||typeof document=="undefined")return;n.current=document.activeElement;const o=i.current;(()=>{if(!o)return;const u=["a[href]","button:not([disabled])","textarea:not([disabled])","input:not([disabled])","select:not([disabled])",'[tabindex]:not([tabindex="-1"])'].join(", "),d=Array.from(o.querySelectorAll(u)).filter(h=>!h.hasAttribute("data-focus-guard"));d.length>0?d[0].focus():o.focus()})();const l=u=>{if(u.key==="Escape"){u.stopPropagation(),e();return}if(u.key!=="Tab"||!o)return;const d=["a[href]","button:not([disabled])","textarea:not([disabled])","input:not([disabled])","select:not([disabled])",'[tabindex]:not([tabindex="-1"])'].join(", "),h=Array.from(o.querySelectorAll(d)).filter(f=>!f.hasAttribute("data-focus-guard"));if(h.length===0)return;const m=h[0],E=h[h.length-1],y=document.activeElement;u.shiftKey?(!y||y===m)&&(u.preventDefault(),E.focus()):(!y||y===E)&&(u.preventDefault(),m.focus())};return document.addEventListener("keydown",l),()=>{document.removeEventListener("keydown",l),n.current&&n.current.focus&&n.current.focus()}},[s,e]),!s||typeof document=="undefined"?null:ReactDOM.createPortal(jsxRuntimeExports.jsx("div",{className:"fixed inset-0 z-40 flex items-center justify-center bg-black/40 px-4 py-6",onClick:e,children:jsxRuntimeExports.jsxs("div",{ref:i,role:"dialog","aria-modal":"true","aria-labelledby":t?c:void 0,className:clsx("w-full max-w-lg rounded-lg bg-white shadow-xl outline-none","focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2"),tabIndex:-1,onClick:o=>o.stopPropagation(),children:[t&&jsxRuntimeExports.jsxs("header",{className:"flex items-center justify-between border-b border-gray-100 px-4 py-3",children:[jsxRuntimeExports.jsx("h2",{id:c,className:"text-sm font-semibold text-gray-900",children:t}),jsxRuntimeExports.jsx("button",{type:"button",onClick:e,className:"inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2","aria-label":"Close dialog",children:"×"})]}),jsxRuntimeExports.jsx("div",{className:"px-4 py-4 text-sm text-gray-800",children:r})]})}),document.body)};export{ApiError as A,Button as B,Card as C,ErrorState as E,FieldBoundaryLayer as F,LoadingState as L,Modal as M,NotificationBell as N,PageContainer as P,ToastProvider as T,UiProvider as U,adminKeys as a,useUiState as b,configureAuthHandlers as c,dashboardKeys as d,useOnlineStatus as e,fieldKeys as f,useMapCenter as g,httpClient as h,BaseMap as i,MapControls as j,calculatePolygonCenter as k,calculatePolygonArea as l,healthKeys as m,normalizeApiError as n,useBreadcrumbs as o,Breadcrumbs as p,FieldMapView as q,recommendationKeys as r,setAuthTokens as s,NotificationCenter as t,useToast as u,PageLoader as v,weatherKeys as w,NotificationsProvider as x,yieldKeys as y,notificationService as z};
+        ${s.read ? "bg-white" : i()}
+      `,
+      children: jsxRuntimeExports.jsxs("div", {
+        className: "flex items-start gap-3",
+        children: [
+          jsxRuntimeExports.jsx("div", {
+            className: "text-2xl flex-shrink-0",
+            children: r(),
+          }),
+          jsxRuntimeExports.jsxs("div", {
+            className: "flex-1 min-w-0",
+            children: [
+              jsxRuntimeExports.jsxs("div", {
+                className: "flex items-start justify-between gap-2",
+                children: [
+                  jsxRuntimeExports.jsx("p", {
+                    className: `text-sm font-medium ${s.read ? "text-gray-700" : "text-gray-900"}`,
+                    children: s.title,
+                  }),
+                  jsxRuntimeExports.jsx("button", {
+                    type: "button",
+                    onClick: t,
+                    className:
+                      "text-gray-400 hover:text-gray-600 flex-shrink-0",
+                    "aria-label": "Dismiss notification",
+                    children: jsxRuntimeExports.jsx("svg", {
+                      className: "h-4 w-4",
+                      fill: "currentColor",
+                      viewBox: "0 0 20 20",
+                      children: jsxRuntimeExports.jsx("path", {
+                        fillRule: "evenodd",
+                        d: "M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z",
+                        clipRule: "evenodd",
+                      }),
+                    }),
+                  }),
+                ],
+              }),
+              jsxRuntimeExports.jsx("p", {
+                className: "mt-1 text-xs text-gray-600 line-clamp-2",
+                children: s.body,
+              }),
+              jsxRuntimeExports.jsxs("div", {
+                className: "mt-2 flex items-center gap-2 text-xs text-gray-500",
+                children: [
+                  jsxRuntimeExports.jsx("span", { children: n(s.timestamp) }),
+                  !s.read &&
+                    jsxRuntimeExports.jsx("span", {
+                      className:
+                        "inline-block h-2 w-2 rounded-full bg-blue-500",
+                      "aria-label": "Unread",
+                    }),
+                ],
+              }),
+            ],
+          }),
+        ],
+      }),
+    });
+  },
+  PageLoader = ({ message: s = "Loading..." }) =>
+    jsxRuntimeExports.jsx("div", {
+      className: "flex items-center justify-center min-h-screen bg-gray-50",
+      children: jsxRuntimeExports.jsxs("div", {
+        className: "flex flex-col items-center space-y-4",
+        children: [
+          jsxRuntimeExports.jsx("div", {
+            className:
+              "animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-brand-blue",
+            role: "status",
+            "aria-label": s,
+            children: jsxRuntimeExports.jsx("span", {
+              className: "sr-only",
+              children: s,
+            }),
+          }),
+          jsxRuntimeExports.jsx("p", {
+            className: "text-sm text-gray-600 font-medium",
+            children: s,
+          }),
+          jsxRuntimeExports.jsxs("div", {
+            className: "mt-8 w-full max-w-2xl space-y-3 animate-pulse",
+            children: [
+              jsxRuntimeExports.jsx("div", {
+                className: "h-4 bg-gray-200 rounded w-3/4",
+              }),
+              jsxRuntimeExports.jsx("div", {
+                className: "h-4 bg-gray-200 rounded w-full",
+              }),
+              jsxRuntimeExports.jsx("div", {
+                className: "h-4 bg-gray-200 rounded w-5/6",
+              }),
+            ],
+          }),
+        ],
+      }),
+    }),
+  PACKET_TYPES = Object.create(null);
+PACKET_TYPES.open = "0";
+PACKET_TYPES.close = "1";
+PACKET_TYPES.ping = "2";
+PACKET_TYPES.pong = "3";
+PACKET_TYPES.message = "4";
+PACKET_TYPES.upgrade = "5";
+PACKET_TYPES.noop = "6";
+const PACKET_TYPES_REVERSE = Object.create(null);
+Object.keys(PACKET_TYPES).forEach((s) => {
+  PACKET_TYPES_REVERSE[PACKET_TYPES[s]] = s;
+});
+const ERROR_PACKET = { type: "error", data: "parser error" },
+  withNativeBlob$1 =
+    typeof Blob == "function" ||
+    (typeof Blob != "undefined" &&
+      Object.prototype.toString.call(Blob) === "[object BlobConstructor]"),
+  withNativeArrayBuffer$2 = typeof ArrayBuffer == "function",
+  isView$1 = (s) =>
+    typeof ArrayBuffer.isView == "function"
+      ? ArrayBuffer.isView(s)
+      : s && s.buffer instanceof ArrayBuffer,
+  encodePacket = ({ type: s, data: e }, t, r) =>
+    withNativeBlob$1 && e instanceof Blob
+      ? t
+        ? r(e)
+        : encodeBlobAsBase64(e, r)
+      : withNativeArrayBuffer$2 && (e instanceof ArrayBuffer || isView$1(e))
+        ? t
+          ? r(e)
+          : encodeBlobAsBase64(new Blob([e]), r)
+        : r(PACKET_TYPES[s] + (e || "")),
+  encodeBlobAsBase64 = (s, e) => {
+    const t = new FileReader();
+    return (
+      (t.onload = function () {
+        const r = t.result.split(",")[1];
+        e("b" + (r || ""));
+      }),
+      t.readAsDataURL(s)
+    );
+  };
+function toArray(s) {
+  return s instanceof Uint8Array
+    ? s
+    : s instanceof ArrayBuffer
+      ? new Uint8Array(s)
+      : new Uint8Array(s.buffer, s.byteOffset, s.byteLength);
+}
+let TEXT_ENCODER;
+function encodePacketToBinary(s, e) {
+  if (withNativeBlob$1 && s.data instanceof Blob)
+    return s.data.arrayBuffer().then(toArray).then(e);
+  if (
+    withNativeArrayBuffer$2 &&
+    (s.data instanceof ArrayBuffer || isView$1(s.data))
+  )
+    return e(toArray(s.data));
+  encodePacket(s, !1, (t) => {
+    (TEXT_ENCODER || (TEXT_ENCODER = new TextEncoder()),
+      e(TEXT_ENCODER.encode(t)));
+  });
+}
+const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
+  lookup$1 = typeof Uint8Array == "undefined" ? [] : new Uint8Array(256);
+for (let s = 0; s < chars.length; s++) lookup$1[chars.charCodeAt(s)] = s;
+const decode$1 = (s) => {
+    let e = s.length * 0.75,
+      t = s.length,
+      r,
+      i = 0,
+      n,
+      c,
+      o,
+      a;
+    s[s.length - 1] === "=" && (e--, s[s.length - 2] === "=" && e--);
+    const l = new ArrayBuffer(e),
+      u = new Uint8Array(l);
+    for (r = 0; r < t; r += 4)
+      ((n = lookup$1[s.charCodeAt(r)]),
+        (c = lookup$1[s.charCodeAt(r + 1)]),
+        (o = lookup$1[s.charCodeAt(r + 2)]),
+        (a = lookup$1[s.charCodeAt(r + 3)]),
+        (u[i++] = (n << 2) | (c >> 4)),
+        (u[i++] = ((c & 15) << 4) | (o >> 2)),
+        (u[i++] = ((o & 3) << 6) | (a & 63)));
+    return l;
+  },
+  withNativeArrayBuffer$1 = typeof ArrayBuffer == "function",
+  decodePacket = (s, e) => {
+    if (typeof s != "string") return { type: "message", data: mapBinary(s, e) };
+    const t = s.charAt(0);
+    return t === "b"
+      ? { type: "message", data: decodeBase64Packet(s.substring(1), e) }
+      : PACKET_TYPES_REVERSE[t]
+        ? s.length > 1
+          ? { type: PACKET_TYPES_REVERSE[t], data: s.substring(1) }
+          : { type: PACKET_TYPES_REVERSE[t] }
+        : ERROR_PACKET;
+  },
+  decodeBase64Packet = (s, e) => {
+    if (withNativeArrayBuffer$1) {
+      const t = decode$1(s);
+      return mapBinary(t, e);
+    } else return { base64: !0, data: s };
+  },
+  mapBinary = (s, e) => {
+    switch (e) {
+      case "blob":
+        return s instanceof Blob ? s : new Blob([s]);
+      case "arraybuffer":
+      default:
+        return s instanceof ArrayBuffer ? s : s.buffer;
+    }
+  },
+  SEPARATOR = "",
+  encodePayload = (s, e) => {
+    const t = s.length,
+      r = new Array(t);
+    let i = 0;
+    s.forEach((n, c) => {
+      encodePacket(n, !1, (o) => {
+        ((r[c] = o), ++i === t && e(r.join(SEPARATOR)));
+      });
+    });
+  },
+  decodePayload = (s, e) => {
+    const t = s.split(SEPARATOR),
+      r = [];
+    for (let i = 0; i < t.length; i++) {
+      const n = decodePacket(t[i], e);
+      if ((r.push(n), n.type === "error")) break;
+    }
+    return r;
+  };
+function createPacketEncoderStream() {
+  return new TransformStream({
+    transform(s, e) {
+      encodePacketToBinary(s, (t) => {
+        const r = t.length;
+        let i;
+        if (r < 126)
+          ((i = new Uint8Array(1)), new DataView(i.buffer).setUint8(0, r));
+        else if (r < 65536) {
+          i = new Uint8Array(3);
+          const n = new DataView(i.buffer);
+          (n.setUint8(0, 126), n.setUint16(1, r));
+        } else {
+          i = new Uint8Array(9);
+          const n = new DataView(i.buffer);
+          (n.setUint8(0, 127), n.setBigUint64(1, BigInt(r)));
+        }
+        (s.data && typeof s.data != "string" && (i[0] |= 128),
+          e.enqueue(i),
+          e.enqueue(t));
+      });
+    },
+  });
+}
+let TEXT_DECODER;
+function totalLength(s) {
+  return s.reduce((e, t) => e + t.length, 0);
+}
+function concatChunks(s, e) {
+  if (s[0].length === e) return s.shift();
+  const t = new Uint8Array(e);
+  let r = 0;
+  for (let i = 0; i < e; i++)
+    ((t[i] = s[0][r++]), r === s[0].length && (s.shift(), (r = 0)));
+  return (s.length && r < s[0].length && (s[0] = s[0].slice(r)), t);
+}
+function createPacketDecoderStream(s, e) {
+  TEXT_DECODER || (TEXT_DECODER = new TextDecoder());
+  const t = [];
+  let r = 0,
+    i = -1,
+    n = !1;
+  return new TransformStream({
+    transform(c, o) {
+      for (t.push(c); ; ) {
+        if (r === 0) {
+          if (totalLength(t) < 1) break;
+          const a = concatChunks(t, 1);
+          ((n = (a[0] & 128) === 128),
+            (i = a[0] & 127),
+            i < 126 ? (r = 3) : i === 126 ? (r = 1) : (r = 2));
+        } else if (r === 1) {
+          if (totalLength(t) < 2) break;
+          const a = concatChunks(t, 2);
+          ((i = new DataView(a.buffer, a.byteOffset, a.length).getUint16(0)),
+            (r = 3));
+        } else if (r === 2) {
+          if (totalLength(t) < 8) break;
+          const a = concatChunks(t, 8),
+            l = new DataView(a.buffer, a.byteOffset, a.length),
+            u = l.getUint32(0);
+          if (u > Math.pow(2, 21) - 1) {
+            o.enqueue(ERROR_PACKET);
+            break;
+          }
+          ((i = u * Math.pow(2, 32) + l.getUint32(4)), (r = 3));
+        } else {
+          if (totalLength(t) < i) break;
+          const a = concatChunks(t, i);
+          (o.enqueue(decodePacket(n ? a : TEXT_DECODER.decode(a), e)), (r = 0));
+        }
+        if (i === 0 || i > s) {
+          o.enqueue(ERROR_PACKET);
+          break;
+        }
+      }
+    },
+  });
+}
+const protocol$1 = 4;
+function Emitter(s) {
+  if (s) return mixin(s);
+}
+function mixin(s) {
+  for (var e in Emitter.prototype) s[e] = Emitter.prototype[e];
+  return s;
+}
+Emitter.prototype.on = Emitter.prototype.addEventListener = function (s, e) {
+  return (
+    (this._callbacks = this._callbacks || {}),
+    (this._callbacks["$" + s] = this._callbacks["$" + s] || []).push(e),
+    this
+  );
+};
+Emitter.prototype.once = function (s, e) {
+  function t() {
+    (this.off(s, t), e.apply(this, arguments));
+  }
+  return ((t.fn = e), this.on(s, t), this);
+};
+Emitter.prototype.off =
+  Emitter.prototype.removeListener =
+  Emitter.prototype.removeAllListeners =
+  Emitter.prototype.removeEventListener =
+    function (s, e) {
+      if (((this._callbacks = this._callbacks || {}), arguments.length == 0))
+        return ((this._callbacks = {}), this);
+      var t = this._callbacks["$" + s];
+      if (!t) return this;
+      if (arguments.length == 1) return (delete this._callbacks["$" + s], this);
+      for (var r, i = 0; i < t.length; i++)
+        if (((r = t[i]), r === e || r.fn === e)) {
+          t.splice(i, 1);
+          break;
+        }
+      return (t.length === 0 && delete this._callbacks["$" + s], this);
+    };
+Emitter.prototype.emit = function (s) {
+  this._callbacks = this._callbacks || {};
+  for (
+    var e = new Array(arguments.length - 1),
+      t = this._callbacks["$" + s],
+      r = 1;
+    r < arguments.length;
+    r++
+  )
+    e[r - 1] = arguments[r];
+  if (t) {
+    t = t.slice(0);
+    for (var r = 0, i = t.length; r < i; ++r) t[r].apply(this, e);
+  }
+  return this;
+};
+Emitter.prototype.emitReserved = Emitter.prototype.emit;
+Emitter.prototype.listeners = function (s) {
+  return (
+    (this._callbacks = this._callbacks || {}),
+    this._callbacks["$" + s] || []
+  );
+};
+Emitter.prototype.hasListeners = function (s) {
+  return !!this.listeners(s).length;
+};
+const nextTick =
+    typeof Promise == "function" && typeof Promise.resolve == "function"
+      ? (e) => Promise.resolve().then(e)
+      : (e, t) => t(e, 0),
+  globalThisShim =
+    typeof self != "undefined"
+      ? self
+      : typeof window != "undefined"
+        ? window
+        : Function("return this")(),
+  defaultBinaryType = "arraybuffer";
+function createCookieJar() {}
+function pick(s, ...e) {
+  return e.reduce((t, r) => (s.hasOwnProperty(r) && (t[r] = s[r]), t), {});
+}
+const NATIVE_SET_TIMEOUT = globalThisShim.setTimeout,
+  NATIVE_CLEAR_TIMEOUT = globalThisShim.clearTimeout;
+function installTimerFunctions(s, e) {
+  e.useNativeTimers
+    ? ((s.setTimeoutFn = NATIVE_SET_TIMEOUT.bind(globalThisShim)),
+      (s.clearTimeoutFn = NATIVE_CLEAR_TIMEOUT.bind(globalThisShim)))
+    : ((s.setTimeoutFn = globalThisShim.setTimeout.bind(globalThisShim)),
+      (s.clearTimeoutFn = globalThisShim.clearTimeout.bind(globalThisShim)));
+}
+const BASE64_OVERHEAD = 1.33;
+function byteLength(s) {
+  return typeof s == "string"
+    ? utf8Length(s)
+    : Math.ceil((s.byteLength || s.size) * BASE64_OVERHEAD);
+}
+function utf8Length(s) {
+  let e = 0,
+    t = 0;
+  for (let r = 0, i = s.length; r < i; r++)
+    ((e = s.charCodeAt(r)),
+      e < 128
+        ? (t += 1)
+        : e < 2048
+          ? (t += 2)
+          : e < 55296 || e >= 57344
+            ? (t += 3)
+            : (r++, (t += 4)));
+  return t;
+}
+function randomString() {
+  return (
+    Date.now().toString(36).substring(3) +
+    Math.random().toString(36).substring(2, 5)
+  );
+}
+function encode(s) {
+  let e = "";
+  for (let t in s)
+    s.hasOwnProperty(t) &&
+      (e.length && (e += "&"),
+      (e += encodeURIComponent(t) + "=" + encodeURIComponent(s[t])));
+  return e;
+}
+function decode(s) {
+  let e = {},
+    t = s.split("&");
+  for (let r = 0, i = t.length; r < i; r++) {
+    let n = t[r].split("=");
+    e[decodeURIComponent(n[0])] = decodeURIComponent(n[1]);
+  }
+  return e;
+}
+class TransportError extends Error {
+  constructor(e, t, r) {
+    (super(e),
+      (this.description = t),
+      (this.context = r),
+      (this.type = "TransportError"));
+  }
+}
+class Transport extends Emitter {
+  constructor(e) {
+    (super(),
+      (this.writable = !1),
+      installTimerFunctions(this, e),
+      (this.opts = e),
+      (this.query = e.query),
+      (this.socket = e.socket),
+      (this.supportsBinary = !e.forceBase64));
+  }
+  onError(e, t, r) {
+    return (super.emitReserved("error", new TransportError(e, t, r)), this);
+  }
+  open() {
+    return ((this.readyState = "opening"), this.doOpen(), this);
+  }
+  close() {
+    return (
+      (this.readyState === "opening" || this.readyState === "open") &&
+        (this.doClose(), this.onClose()),
+      this
+    );
+  }
+  send(e) {
+    this.readyState === "open" && this.write(e);
+  }
+  onOpen() {
+    ((this.readyState = "open"),
+      (this.writable = !0),
+      super.emitReserved("open"));
+  }
+  onData(e) {
+    const t = decodePacket(e, this.socket.binaryType);
+    this.onPacket(t);
+  }
+  onPacket(e) {
+    super.emitReserved("packet", e);
+  }
+  onClose(e) {
+    ((this.readyState = "closed"), super.emitReserved("close", e));
+  }
+  pause(e) {}
+  createUri(e, t = {}) {
+    return (
+      e +
+      "://" +
+      this._hostname() +
+      this._port() +
+      this.opts.path +
+      this._query(t)
+    );
+  }
+  _hostname() {
+    const e = this.opts.hostname;
+    return e.indexOf(":") === -1 ? e : "[" + e + "]";
+  }
+  _port() {
+    return this.opts.port &&
+      ((this.opts.secure && +(this.opts.port !== 443)) ||
+        (!this.opts.secure && Number(this.opts.port) !== 80))
+      ? ":" + this.opts.port
+      : "";
+  }
+  _query(e) {
+    const t = encode(e);
+    return t.length ? "?" + t : "";
+  }
+}
+class Polling extends Transport {
+  constructor() {
+    (super(...arguments), (this._polling = !1));
+  }
+  get name() {
+    return "polling";
+  }
+  doOpen() {
+    this._poll();
+  }
+  pause(e) {
+    this.readyState = "pausing";
+    const t = () => {
+      ((this.readyState = "paused"), e());
+    };
+    if (this._polling || !this.writable) {
+      let r = 0;
+      (this._polling &&
+        (r++,
+        this.once("pollComplete", function () {
+          --r || t();
+        })),
+        this.writable ||
+          (r++,
+          this.once("drain", function () {
+            --r || t();
+          })));
+    } else t();
+  }
+  _poll() {
+    ((this._polling = !0), this.doPoll(), this.emitReserved("poll"));
+  }
+  onData(e) {
+    const t = (r) => {
+      if (
+        (this.readyState === "opening" && r.type === "open" && this.onOpen(),
+        r.type === "close")
+      )
+        return (
+          this.onClose({ description: "transport closed by the server" }),
+          !1
+        );
+      this.onPacket(r);
+    };
+    (decodePayload(e, this.socket.binaryType).forEach(t),
+      this.readyState !== "closed" &&
+        ((this._polling = !1),
+        this.emitReserved("pollComplete"),
+        this.readyState === "open" && this._poll()));
+  }
+  doClose() {
+    const e = () => {
+      this.write([{ type: "close" }]);
+    };
+    this.readyState === "open" ? e() : this.once("open", e);
+  }
+  write(e) {
+    ((this.writable = !1),
+      encodePayload(e, (t) => {
+        this.doWrite(t, () => {
+          ((this.writable = !0), this.emitReserved("drain"));
+        });
+      }));
+  }
+  uri() {
+    const e = this.opts.secure ? "https" : "http",
+      t = this.query || {};
+    return (
+      this.opts.timestampRequests !== !1 &&
+        (t[this.opts.timestampParam] = randomString()),
+      !this.supportsBinary && !t.sid && (t.b64 = 1),
+      this.createUri(e, t)
+    );
+  }
+}
+let value = !1;
+try {
+  value =
+    typeof XMLHttpRequest != "undefined" &&
+    "withCredentials" in new XMLHttpRequest();
+} catch (s) {}
+const hasCORS = value;
+function empty() {}
+class BaseXHR extends Polling {
+  constructor(e) {
+    if ((super(e), typeof location != "undefined")) {
+      const t = location.protocol === "https:";
+      let r = location.port;
+      (r || (r = t ? "443" : "80"),
+        (this.xd =
+          (typeof location != "undefined" &&
+            e.hostname !== location.hostname) ||
+          r !== e.port));
+    }
+  }
+  doWrite(e, t) {
+    const r = this.request({ method: "POST", data: e });
+    (r.on("success", t),
+      r.on("error", (i, n) => {
+        this.onError("xhr post error", i, n);
+      }));
+  }
+  doPoll() {
+    const e = this.request();
+    (e.on("data", this.onData.bind(this)),
+      e.on("error", (t, r) => {
+        this.onError("xhr poll error", t, r);
+      }),
+      (this.pollXhr = e));
+  }
+}
+class Request extends Emitter {
+  constructor(e, t, r) {
+    (super(),
+      (this.createRequest = e),
+      installTimerFunctions(this, r),
+      (this._opts = r),
+      (this._method = r.method || "GET"),
+      (this._uri = t),
+      (this._data = r.data !== void 0 ? r.data : null),
+      this._create());
+  }
+  _create() {
+    var e;
+    const t = pick(
+      this._opts,
+      "agent",
+      "pfx",
+      "key",
+      "passphrase",
+      "cert",
+      "ca",
+      "ciphers",
+      "rejectUnauthorized",
+      "autoUnref",
+    );
+    t.xdomain = !!this._opts.xd;
+    const r = (this._xhr = this.createRequest(t));
+    try {
+      r.open(this._method, this._uri, !0);
+      try {
+        if (this._opts.extraHeaders) {
+          r.setDisableHeaderCheck && r.setDisableHeaderCheck(!0);
+          for (let i in this._opts.extraHeaders)
+            this._opts.extraHeaders.hasOwnProperty(i) &&
+              r.setRequestHeader(i, this._opts.extraHeaders[i]);
+        }
+      } catch (i) {}
+      if (this._method === "POST")
+        try {
+          r.setRequestHeader("Content-type", "text/plain;charset=UTF-8");
+        } catch (i) {}
+      try {
+        r.setRequestHeader("Accept", "*/*");
+      } catch (i) {}
+      ((e = this._opts.cookieJar) === null || e === void 0 || e.addCookies(r),
+        "withCredentials" in r &&
+          (r.withCredentials = this._opts.withCredentials),
+        this._opts.requestTimeout && (r.timeout = this._opts.requestTimeout),
+        (r.onreadystatechange = () => {
+          var i;
+          (r.readyState === 3 &&
+            ((i = this._opts.cookieJar) === null ||
+              i === void 0 ||
+              i.parseCookies(r.getResponseHeader("set-cookie"))),
+            r.readyState === 4 &&
+              (r.status === 200 || r.status === 1223
+                ? this._onLoad()
+                : this.setTimeoutFn(() => {
+                    this._onError(typeof r.status == "number" ? r.status : 0);
+                  }, 0)));
+        }),
+        r.send(this._data));
+    } catch (i) {
+      this.setTimeoutFn(() => {
+        this._onError(i);
+      }, 0);
+      return;
+    }
+    typeof document != "undefined" &&
+      ((this._index = Request.requestsCount++),
+      (Request.requests[this._index] = this));
+  }
+  _onError(e) {
+    (this.emitReserved("error", e, this._xhr), this._cleanup(!0));
+  }
+  _cleanup(e) {
+    if (!(typeof this._xhr == "undefined" || this._xhr === null)) {
+      if (((this._xhr.onreadystatechange = empty), e))
+        try {
+          this._xhr.abort();
+        } catch (t) {}
+      (typeof document != "undefined" && delete Request.requests[this._index],
+        (this._xhr = null));
+    }
+  }
+  _onLoad() {
+    const e = this._xhr.responseText;
+    e !== null &&
+      (this.emitReserved("data", e),
+      this.emitReserved("success"),
+      this._cleanup());
+  }
+  abort() {
+    this._cleanup();
+  }
+}
+Request.requestsCount = 0;
+Request.requests = {};
+if (typeof document != "undefined") {
+  if (typeof attachEvent == "function") attachEvent("onunload", unloadHandler);
+  else if (typeof addEventListener == "function") {
+    const s = "onpagehide" in globalThisShim ? "pagehide" : "unload";
+    addEventListener(s, unloadHandler, !1);
+  }
+}
+function unloadHandler() {
+  for (let s in Request.requests)
+    Request.requests.hasOwnProperty(s) && Request.requests[s].abort();
+}
+const hasXHR2 = (function () {
+  const s = newRequest({ xdomain: !1 });
+  return s && s.responseType !== null;
+})();
+class XHR extends BaseXHR {
+  constructor(e) {
+    super(e);
+    const t = e && e.forceBase64;
+    this.supportsBinary = hasXHR2 && !t;
+  }
+  request(e = {}) {
+    return (
+      Object.assign(e, { xd: this.xd }, this.opts),
+      new Request(newRequest, this.uri(), e)
+    );
+  }
+}
+function newRequest(s) {
+  const e = s.xdomain;
+  try {
+    if (typeof XMLHttpRequest != "undefined" && (!e || hasCORS))
+      return new XMLHttpRequest();
+  } catch (t) {}
+  if (!e)
+    try {
+      return new globalThisShim[["Active"].concat("Object").join("X")](
+        "Microsoft.XMLHTTP",
+      );
+    } catch (t) {}
+}
+const isReactNative =
+  typeof navigator != "undefined" &&
+  typeof navigator.product == "string" &&
+  navigator.product.toLowerCase() === "reactnative";
+class BaseWS extends Transport {
+  get name() {
+    return "websocket";
+  }
+  doOpen() {
+    const e = this.uri(),
+      t = this.opts.protocols,
+      r = isReactNative
+        ? {}
+        : pick(
+            this.opts,
+            "agent",
+            "perMessageDeflate",
+            "pfx",
+            "key",
+            "passphrase",
+            "cert",
+            "ca",
+            "ciphers",
+            "rejectUnauthorized",
+            "localAddress",
+            "protocolVersion",
+            "origin",
+            "maxPayload",
+            "family",
+            "checkServerIdentity",
+          );
+    this.opts.extraHeaders && (r.headers = this.opts.extraHeaders);
+    try {
+      this.ws = this.createSocket(e, t, r);
+    } catch (i) {
+      return this.emitReserved("error", i);
+    }
+    ((this.ws.binaryType = this.socket.binaryType), this.addEventListeners());
+  }
+  addEventListeners() {
+    ((this.ws.onopen = () => {
+      (this.opts.autoUnref && this.ws._socket.unref(), this.onOpen());
+    }),
+      (this.ws.onclose = (e) =>
+        this.onClose({
+          description: "websocket connection closed",
+          context: e,
+        })),
+      (this.ws.onmessage = (e) => this.onData(e.data)),
+      (this.ws.onerror = (e) => this.onError("websocket error", e)));
+  }
+  write(e) {
+    this.writable = !1;
+    for (let t = 0; t < e.length; t++) {
+      const r = e[t],
+        i = t === e.length - 1;
+      encodePacket(r, this.supportsBinary, (n) => {
+        try {
+          this.doWrite(r, n);
+        } catch (c) {}
+        i &&
+          nextTick(() => {
+            ((this.writable = !0), this.emitReserved("drain"));
+          }, this.setTimeoutFn);
+      });
+    }
+  }
+  doClose() {
+    typeof this.ws != "undefined" &&
+      ((this.ws.onerror = () => {}), this.ws.close(), (this.ws = null));
+  }
+  uri() {
+    const e = this.opts.secure ? "wss" : "ws",
+      t = this.query || {};
+    return (
+      this.opts.timestampRequests &&
+        (t[this.opts.timestampParam] = randomString()),
+      this.supportsBinary || (t.b64 = 1),
+      this.createUri(e, t)
+    );
+  }
+}
+const WebSocketCtor = globalThisShim.WebSocket || globalThisShim.MozWebSocket;
+class WS extends BaseWS {
+  createSocket(e, t, r) {
+    return isReactNative
+      ? new WebSocketCtor(e, t, r)
+      : t
+        ? new WebSocketCtor(e, t)
+        : new WebSocketCtor(e);
+  }
+  doWrite(e, t) {
+    this.ws.send(t);
+  }
+}
+class WT extends Transport {
+  get name() {
+    return "webtransport";
+  }
+  doOpen() {
+    try {
+      this._transport = new WebTransport(
+        this.createUri("https"),
+        this.opts.transportOptions[this.name],
+      );
+    } catch (e) {
+      return this.emitReserved("error", e);
+    }
+    (this._transport.closed
+      .then(() => {
+        this.onClose();
+      })
+      .catch((e) => {
+        this.onError("webtransport error", e);
+      }),
+      this._transport.ready.then(() => {
+        this._transport.createBidirectionalStream().then((e) => {
+          const t = createPacketDecoderStream(
+              Number.MAX_SAFE_INTEGER,
+              this.socket.binaryType,
+            ),
+            r = e.readable.pipeThrough(t).getReader(),
+            i = createPacketEncoderStream();
+          (i.readable.pipeTo(e.writable),
+            (this._writer = i.writable.getWriter()));
+          const n = () => {
+            r.read()
+              .then(({ done: o, value: a }) => {
+                o || (this.onPacket(a), n());
+              })
+              .catch((o) => {});
+          };
+          n();
+          const c = { type: "open" };
+          (this.query.sid && (c.data = `{"sid":"${this.query.sid}"}`),
+            this._writer.write(c).then(() => this.onOpen()));
+        });
+      }));
+  }
+  write(e) {
+    this.writable = !1;
+    for (let t = 0; t < e.length; t++) {
+      const r = e[t],
+        i = t === e.length - 1;
+      this._writer.write(r).then(() => {
+        i &&
+          nextTick(() => {
+            ((this.writable = !0), this.emitReserved("drain"));
+          }, this.setTimeoutFn);
+      });
+    }
+  }
+  doClose() {
+    var e;
+    (e = this._transport) === null || e === void 0 || e.close();
+  }
+}
+const transports = { websocket: WS, webtransport: WT, polling: XHR },
+  re =
+    /^(?:(?![^:@\/?#]+:[^:@\/]*@)(http|https|ws|wss):\/\/)?((?:(([^:@\/?#]*)(?::([^:@\/?#]*))?)?@)?((?:[a-f0-9]{0,4}:){2,7}[a-f0-9]{0,4}|[^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/,
+  parts = [
+    "source",
+    "protocol",
+    "authority",
+    "userInfo",
+    "user",
+    "password",
+    "host",
+    "port",
+    "relative",
+    "path",
+    "directory",
+    "file",
+    "query",
+    "anchor",
+  ];
+function parse(s) {
+  if (s.length > 8e3) throw "URI too long";
+  const e = s,
+    t = s.indexOf("["),
+    r = s.indexOf("]");
+  t != -1 &&
+    r != -1 &&
+    (s =
+      s.substring(0, t) +
+      s.substring(t, r).replace(/:/g, ";") +
+      s.substring(r, s.length));
+  let i = re.exec(s || ""),
+    n = {},
+    c = 14;
+  for (; c--; ) n[parts[c]] = i[c] || "";
+  return (
+    t != -1 &&
+      r != -1 &&
+      ((n.source = e),
+      (n.host = n.host.substring(1, n.host.length - 1).replace(/;/g, ":")),
+      (n.authority = n.authority
+        .replace("[", "")
+        .replace("]", "")
+        .replace(/;/g, ":")),
+      (n.ipv6uri = !0)),
+    (n.pathNames = pathNames(n, n.path)),
+    (n.queryKey = queryKey(n, n.query)),
+    n
+  );
+}
+function pathNames(s, e) {
+  const t = /\/{2,9}/g,
+    r = e.replace(t, "/").split("/");
+  return (
+    (e.slice(0, 1) == "/" || e.length === 0) && r.splice(0, 1),
+    e.slice(-1) == "/" && r.splice(r.length - 1, 1),
+    r
+  );
+}
+function queryKey(s, e) {
+  const t = {};
+  return (
+    e.replace(/(?:^|&)([^&=]*)=?([^&]*)/g, function (r, i, n) {
+      i && (t[i] = n);
+    }),
+    t
+  );
+}
+const withEventListeners =
+    typeof addEventListener == "function" &&
+    typeof removeEventListener == "function",
+  OFFLINE_EVENT_LISTENERS = [];
+withEventListeners &&
+  addEventListener(
+    "offline",
+    () => {
+      OFFLINE_EVENT_LISTENERS.forEach((s) => s());
+    },
+    !1,
+  );
+class SocketWithoutUpgrade extends Emitter {
+  constructor(e, t) {
+    if (
+      (super(),
+      (this.binaryType = defaultBinaryType),
+      (this.writeBuffer = []),
+      (this._prevBufferLen = 0),
+      (this._pingInterval = -1),
+      (this._pingTimeout = -1),
+      (this._maxPayload = -1),
+      (this._pingTimeoutTime = 1 / 0),
+      e && typeof e == "object" && ((t = e), (e = null)),
+      e)
+    ) {
+      const r = parse(e);
+      ((t.hostname = r.host),
+        (t.secure = r.protocol === "https" || r.protocol === "wss"),
+        (t.port = r.port),
+        r.query && (t.query = r.query));
+    } else t.host && (t.hostname = parse(t.host).host);
+    (installTimerFunctions(this, t),
+      (this.secure =
+        t.secure != null
+          ? t.secure
+          : typeof location != "undefined" && location.protocol === "https:"),
+      t.hostname && !t.port && (t.port = this.secure ? "443" : "80"),
+      (this.hostname =
+        t.hostname ||
+        (typeof location != "undefined" ? location.hostname : "localhost")),
+      (this.port =
+        t.port ||
+        (typeof location != "undefined" && location.port
+          ? location.port
+          : this.secure
+            ? "443"
+            : "80")),
+      (this.transports = []),
+      (this._transportsByName = {}),
+      t.transports.forEach((r) => {
+        const i = r.prototype.name;
+        (this.transports.push(i), (this._transportsByName[i] = r));
+      }),
+      (this.opts = Object.assign(
+        {
+          path: "/engine.io",
+          agent: !1,
+          withCredentials: !1,
+          upgrade: !0,
+          timestampParam: "t",
+          rememberUpgrade: !1,
+          addTrailingSlash: !0,
+          rejectUnauthorized: !0,
+          perMessageDeflate: { threshold: 1024 },
+          transportOptions: {},
+          closeOnBeforeunload: !1,
+        },
+        t,
+      )),
+      (this.opts.path =
+        this.opts.path.replace(/\/$/, "") +
+        (this.opts.addTrailingSlash ? "/" : "")),
+      typeof this.opts.query == "string" &&
+        (this.opts.query = decode(this.opts.query)),
+      withEventListeners &&
+        (this.opts.closeOnBeforeunload &&
+          ((this._beforeunloadEventListener = () => {
+            this.transport &&
+              (this.transport.removeAllListeners(), this.transport.close());
+          }),
+          addEventListener(
+            "beforeunload",
+            this._beforeunloadEventListener,
+            !1,
+          )),
+        this.hostname !== "localhost" &&
+          ((this._offlineEventListener = () => {
+            this._onClose("transport close", {
+              description: "network connection lost",
+            });
+          }),
+          OFFLINE_EVENT_LISTENERS.push(this._offlineEventListener))),
+      this.opts.withCredentials && (this._cookieJar = void 0),
+      this._open());
+  }
+  createTransport(e) {
+    const t = Object.assign({}, this.opts.query);
+    ((t.EIO = protocol$1), (t.transport = e), this.id && (t.sid = this.id));
+    const r = Object.assign(
+      {},
+      this.opts,
+      {
+        query: t,
+        socket: this,
+        hostname: this.hostname,
+        secure: this.secure,
+        port: this.port,
+      },
+      this.opts.transportOptions[e],
+    );
+    return new this._transportsByName[e](r);
+  }
+  _open() {
+    if (this.transports.length === 0) {
+      this.setTimeoutFn(() => {
+        this.emitReserved("error", "No transports available");
+      }, 0);
+      return;
+    }
+    const e =
+      this.opts.rememberUpgrade &&
+      SocketWithoutUpgrade.priorWebsocketSuccess &&
+      this.transports.indexOf("websocket") !== -1
+        ? "websocket"
+        : this.transports[0];
+    this.readyState = "opening";
+    const t = this.createTransport(e);
+    (t.open(), this.setTransport(t));
+  }
+  setTransport(e) {
+    (this.transport && this.transport.removeAllListeners(),
+      (this.transport = e),
+      e
+        .on("drain", this._onDrain.bind(this))
+        .on("packet", this._onPacket.bind(this))
+        .on("error", this._onError.bind(this))
+        .on("close", (t) => this._onClose("transport close", t)));
+  }
+  onOpen() {
+    ((this.readyState = "open"),
+      (SocketWithoutUpgrade.priorWebsocketSuccess =
+        this.transport.name === "websocket"),
+      this.emitReserved("open"),
+      this.flush());
+  }
+  _onPacket(e) {
+    if (
+      this.readyState === "opening" ||
+      this.readyState === "open" ||
+      this.readyState === "closing"
+    )
+      switch (
+        (this.emitReserved("packet", e), this.emitReserved("heartbeat"), e.type)
+      ) {
+        case "open":
+          this.onHandshake(JSON.parse(e.data));
+          break;
+        case "ping":
+          (this._sendPacket("pong"),
+            this.emitReserved("ping"),
+            this.emitReserved("pong"),
+            this._resetPingTimeout());
+          break;
+        case "error":
+          const t = new Error("server error");
+          ((t.code = e.data), this._onError(t));
+          break;
+        case "message":
+          (this.emitReserved("data", e.data),
+            this.emitReserved("message", e.data));
+          break;
+      }
+  }
+  onHandshake(e) {
+    (this.emitReserved("handshake", e),
+      (this.id = e.sid),
+      (this.transport.query.sid = e.sid),
+      (this._pingInterval = e.pingInterval),
+      (this._pingTimeout = e.pingTimeout),
+      (this._maxPayload = e.maxPayload),
+      this.onOpen(),
+      this.readyState !== "closed" && this._resetPingTimeout());
+  }
+  _resetPingTimeout() {
+    this.clearTimeoutFn(this._pingTimeoutTimer);
+    const e = this._pingInterval + this._pingTimeout;
+    ((this._pingTimeoutTime = Date.now() + e),
+      (this._pingTimeoutTimer = this.setTimeoutFn(() => {
+        this._onClose("ping timeout");
+      }, e)),
+      this.opts.autoUnref && this._pingTimeoutTimer.unref());
+  }
+  _onDrain() {
+    (this.writeBuffer.splice(0, this._prevBufferLen),
+      (this._prevBufferLen = 0),
+      this.writeBuffer.length === 0
+        ? this.emitReserved("drain")
+        : this.flush());
+  }
+  flush() {
+    if (
+      this.readyState !== "closed" &&
+      this.transport.writable &&
+      !this.upgrading &&
+      this.writeBuffer.length
+    ) {
+      const e = this._getWritablePackets();
+      (this.transport.send(e),
+        (this._prevBufferLen = e.length),
+        this.emitReserved("flush"));
+    }
+  }
+  _getWritablePackets() {
+    if (
+      !(
+        this._maxPayload &&
+        this.transport.name === "polling" &&
+        this.writeBuffer.length > 1
+      )
+    )
+      return this.writeBuffer;
+    let t = 1;
+    for (let r = 0; r < this.writeBuffer.length; r++) {
+      const i = this.writeBuffer[r].data;
+      if ((i && (t += byteLength(i)), r > 0 && t > this._maxPayload))
+        return this.writeBuffer.slice(0, r);
+      t += 2;
+    }
+    return this.writeBuffer;
+  }
+  _hasPingExpired() {
+    if (!this._pingTimeoutTime) return !0;
+    const e = Date.now() > this._pingTimeoutTime;
+    return (
+      e &&
+        ((this._pingTimeoutTime = 0),
+        nextTick(() => {
+          this._onClose("ping timeout");
+        }, this.setTimeoutFn)),
+      e
+    );
+  }
+  write(e, t, r) {
+    return (this._sendPacket("message", e, t, r), this);
+  }
+  send(e, t, r) {
+    return (this._sendPacket("message", e, t, r), this);
+  }
+  _sendPacket(e, t, r, i) {
+    if (
+      (typeof t == "function" && ((i = t), (t = void 0)),
+      typeof r == "function" && ((i = r), (r = null)),
+      this.readyState === "closing" || this.readyState === "closed")
+    )
+      return;
+    ((r = r || {}), (r.compress = r.compress !== !1));
+    const n = { type: e, data: t, options: r };
+    (this.emitReserved("packetCreate", n),
+      this.writeBuffer.push(n),
+      i && this.once("flush", i),
+      this.flush());
+  }
+  close() {
+    const e = () => {
+        (this._onClose("forced close"), this.transport.close());
+      },
+      t = () => {
+        (this.off("upgrade", t), this.off("upgradeError", t), e());
+      },
+      r = () => {
+        (this.once("upgrade", t), this.once("upgradeError", t));
+      };
+    return (
+      (this.readyState === "opening" || this.readyState === "open") &&
+        ((this.readyState = "closing"),
+        this.writeBuffer.length
+          ? this.once("drain", () => {
+              this.upgrading ? r() : e();
+            })
+          : this.upgrading
+            ? r()
+            : e()),
+      this
+    );
+  }
+  _onError(e) {
+    if (
+      ((SocketWithoutUpgrade.priorWebsocketSuccess = !1),
+      this.opts.tryAllTransports &&
+        this.transports.length > 1 &&
+        this.readyState === "opening")
+    )
+      return (this.transports.shift(), this._open());
+    (this.emitReserved("error", e), this._onClose("transport error", e));
+  }
+  _onClose(e, t) {
+    if (
+      this.readyState === "opening" ||
+      this.readyState === "open" ||
+      this.readyState === "closing"
+    ) {
+      if (
+        (this.clearTimeoutFn(this._pingTimeoutTimer),
+        this.transport.removeAllListeners("close"),
+        this.transport.close(),
+        this.transport.removeAllListeners(),
+        withEventListeners &&
+          (this._beforeunloadEventListener &&
+            removeEventListener(
+              "beforeunload",
+              this._beforeunloadEventListener,
+              !1,
+            ),
+          this._offlineEventListener))
+      ) {
+        const r = OFFLINE_EVENT_LISTENERS.indexOf(this._offlineEventListener);
+        r !== -1 && OFFLINE_EVENT_LISTENERS.splice(r, 1);
+      }
+      ((this.readyState = "closed"),
+        (this.id = null),
+        this.emitReserved("close", e, t),
+        (this.writeBuffer = []),
+        (this._prevBufferLen = 0));
+    }
+  }
+}
+SocketWithoutUpgrade.protocol = protocol$1;
+class SocketWithUpgrade extends SocketWithoutUpgrade {
+  constructor() {
+    (super(...arguments), (this._upgrades = []));
+  }
+  onOpen() {
+    if ((super.onOpen(), this.readyState === "open" && this.opts.upgrade))
+      for (let e = 0; e < this._upgrades.length; e++)
+        this._probe(this._upgrades[e]);
+  }
+  _probe(e) {
+    let t = this.createTransport(e),
+      r = !1;
+    SocketWithoutUpgrade.priorWebsocketSuccess = !1;
+    const i = () => {
+      r ||
+        (t.send([{ type: "ping", data: "probe" }]),
+        t.once("packet", (d) => {
+          if (!r)
+            if (d.type === "pong" && d.data === "probe") {
+              if (
+                ((this.upgrading = !0), this.emitReserved("upgrading", t), !t)
+              )
+                return;
+              ((SocketWithoutUpgrade.priorWebsocketSuccess =
+                t.name === "websocket"),
+                this.transport.pause(() => {
+                  r ||
+                    (this.readyState !== "closed" &&
+                      (u(),
+                      this.setTransport(t),
+                      t.send([{ type: "upgrade" }]),
+                      this.emitReserved("upgrade", t),
+                      (t = null),
+                      (this.upgrading = !1),
+                      this.flush()));
+                }));
+            } else {
+              const h = new Error("probe error");
+              ((h.transport = t.name), this.emitReserved("upgradeError", h));
+            }
+        }));
+    };
+    function n() {
+      r || ((r = !0), u(), t.close(), (t = null));
+    }
+    const c = (d) => {
+      const h = new Error("probe error: " + d);
+      ((h.transport = t.name), n(), this.emitReserved("upgradeError", h));
+    };
+    function o() {
+      c("transport closed");
+    }
+    function a() {
+      c("socket closed");
+    }
+    function l(d) {
+      t && d.name !== t.name && n();
+    }
+    const u = () => {
+      (t.removeListener("open", i),
+        t.removeListener("error", c),
+        t.removeListener("close", o),
+        this.off("close", a),
+        this.off("upgrading", l));
+    };
+    (t.once("open", i),
+      t.once("error", c),
+      t.once("close", o),
+      this.once("close", a),
+      this.once("upgrading", l),
+      this._upgrades.indexOf("webtransport") !== -1 && e !== "webtransport"
+        ? this.setTimeoutFn(() => {
+            r || t.open();
+          }, 200)
+        : t.open());
+  }
+  onHandshake(e) {
+    ((this._upgrades = this._filterUpgrades(e.upgrades)), super.onHandshake(e));
+  }
+  _filterUpgrades(e) {
+    const t = [];
+    for (let r = 0; r < e.length; r++)
+      ~this.transports.indexOf(e[r]) && t.push(e[r]);
+    return t;
+  }
+}
+let Socket$1 = class extends SocketWithUpgrade {
+  constructor(e, t = {}) {
+    const r = typeof e == "object" ? e : t;
+    ((!r.transports || (r.transports && typeof r.transports[0] == "string")) &&
+      (r.transports = (r.transports || ["polling", "websocket", "webtransport"])
+        .map((i) => transports[i])
+        .filter((i) => !!i)),
+      super(e, r));
+  }
+};
+function url(s, e = "", t) {
+  let r = s;
+  ((t = t || (typeof location != "undefined" && location)),
+    s == null && (s = t.protocol + "//" + t.host),
+    typeof s == "string" &&
+      (s.charAt(0) === "/" &&
+        (s.charAt(1) === "/" ? (s = t.protocol + s) : (s = t.host + s)),
+      /^(https?|wss?):\/\//.test(s) ||
+        (typeof t != "undefined"
+          ? (s = t.protocol + "//" + s)
+          : (s = "https://" + s)),
+      (r = parse(s))),
+    r.port ||
+      (/^(http|ws)$/.test(r.protocol)
+        ? (r.port = "80")
+        : /^(http|ws)s$/.test(r.protocol) && (r.port = "443")),
+    (r.path = r.path || "/"));
+  const n = r.host.indexOf(":") !== -1 ? "[" + r.host + "]" : r.host;
+  return (
+    (r.id = r.protocol + "://" + n + ":" + r.port + e),
+    (r.href =
+      r.protocol + "://" + n + (t && t.port === r.port ? "" : ":" + r.port)),
+    r
+  );
+}
+const withNativeArrayBuffer = typeof ArrayBuffer == "function",
+  isView = (s) =>
+    typeof ArrayBuffer.isView == "function"
+      ? ArrayBuffer.isView(s)
+      : s.buffer instanceof ArrayBuffer,
+  toString = Object.prototype.toString,
+  withNativeBlob =
+    typeof Blob == "function" ||
+    (typeof Blob != "undefined" &&
+      toString.call(Blob) === "[object BlobConstructor]"),
+  withNativeFile =
+    typeof File == "function" ||
+    (typeof File != "undefined" &&
+      toString.call(File) === "[object FileConstructor]");
+function isBinary(s) {
+  return (
+    (withNativeArrayBuffer && (s instanceof ArrayBuffer || isView(s))) ||
+    (withNativeBlob && s instanceof Blob) ||
+    (withNativeFile && s instanceof File)
+  );
+}
+function hasBinary(s, e) {
+  if (!s || typeof s != "object") return !1;
+  if (Array.isArray(s)) {
+    for (let t = 0, r = s.length; t < r; t++) if (hasBinary(s[t])) return !0;
+    return !1;
+  }
+  if (isBinary(s)) return !0;
+  if (s.toJSON && typeof s.toJSON == "function" && arguments.length === 1)
+    return hasBinary(s.toJSON(), !0);
+  for (const t in s)
+    if (Object.prototype.hasOwnProperty.call(s, t) && hasBinary(s[t]))
+      return !0;
+  return !1;
+}
+function deconstructPacket(s) {
+  const e = [],
+    t = s.data,
+    r = s;
+  return (
+    (r.data = _deconstructPacket(t, e)),
+    (r.attachments = e.length),
+    { packet: r, buffers: e }
+  );
+}
+function _deconstructPacket(s, e) {
+  if (!s) return s;
+  if (isBinary(s)) {
+    const t = { _placeholder: !0, num: e.length };
+    return (e.push(s), t);
+  } else if (Array.isArray(s)) {
+    const t = new Array(s.length);
+    for (let r = 0; r < s.length; r++) t[r] = _deconstructPacket(s[r], e);
+    return t;
+  } else if (typeof s == "object" && !(s instanceof Date)) {
+    const t = {};
+    for (const r in s)
+      Object.prototype.hasOwnProperty.call(s, r) &&
+        (t[r] = _deconstructPacket(s[r], e));
+    return t;
+  }
+  return s;
+}
+function reconstructPacket(s, e) {
+  return ((s.data = _reconstructPacket(s.data, e)), delete s.attachments, s);
+}
+function _reconstructPacket(s, e) {
+  if (!s) return s;
+  if (s && s._placeholder === !0) {
+    if (typeof s.num == "number" && s.num >= 0 && s.num < e.length)
+      return e[s.num];
+    throw new Error("illegal attachments");
+  } else if (Array.isArray(s))
+    for (let t = 0; t < s.length; t++) s[t] = _reconstructPacket(s[t], e);
+  else if (typeof s == "object")
+    for (const t in s)
+      Object.prototype.hasOwnProperty.call(s, t) &&
+        (s[t] = _reconstructPacket(s[t], e));
+  return s;
+}
+const RESERVED_EVENTS$1 = [
+    "connect",
+    "connect_error",
+    "disconnect",
+    "disconnecting",
+    "newListener",
+    "removeListener",
+  ],
+  protocol = 5;
+var PacketType;
+(function (s) {
+  ((s[(s.CONNECT = 0)] = "CONNECT"),
+    (s[(s.DISCONNECT = 1)] = "DISCONNECT"),
+    (s[(s.EVENT = 2)] = "EVENT"),
+    (s[(s.ACK = 3)] = "ACK"),
+    (s[(s.CONNECT_ERROR = 4)] = "CONNECT_ERROR"),
+    (s[(s.BINARY_EVENT = 5)] = "BINARY_EVENT"),
+    (s[(s.BINARY_ACK = 6)] = "BINARY_ACK"));
+})(PacketType || (PacketType = {}));
+class Encoder {
+  constructor(e) {
+    this.replacer = e;
+  }
+  encode(e) {
+    return (e.type === PacketType.EVENT || e.type === PacketType.ACK) &&
+      hasBinary(e)
+      ? this.encodeAsBinary({
+          type:
+            e.type === PacketType.EVENT
+              ? PacketType.BINARY_EVENT
+              : PacketType.BINARY_ACK,
+          nsp: e.nsp,
+          data: e.data,
+          id: e.id,
+        })
+      : [this.encodeAsString(e)];
+  }
+  encodeAsString(e) {
+    let t = "" + e.type;
+    return (
+      (e.type === PacketType.BINARY_EVENT ||
+        e.type === PacketType.BINARY_ACK) &&
+        (t += e.attachments + "-"),
+      e.nsp && e.nsp !== "/" && (t += e.nsp + ","),
+      e.id != null && (t += e.id),
+      e.data != null && (t += JSON.stringify(e.data, this.replacer)),
+      t
+    );
+  }
+  encodeAsBinary(e) {
+    const t = deconstructPacket(e),
+      r = this.encodeAsString(t.packet),
+      i = t.buffers;
+    return (i.unshift(r), i);
+  }
+}
+function isObject(s) {
+  return Object.prototype.toString.call(s) === "[object Object]";
+}
+class Decoder extends Emitter {
+  constructor(e) {
+    (super(), (this.reviver = e));
+  }
+  add(e) {
+    let t;
+    if (typeof e == "string") {
+      if (this.reconstructor)
+        throw new Error("got plaintext data when reconstructing a packet");
+      t = this.decodeString(e);
+      const r = t.type === PacketType.BINARY_EVENT;
+      r || t.type === PacketType.BINARY_ACK
+        ? ((t.type = r ? PacketType.EVENT : PacketType.ACK),
+          (this.reconstructor = new BinaryReconstructor(t)),
+          t.attachments === 0 && super.emitReserved("decoded", t))
+        : super.emitReserved("decoded", t);
+    } else if (isBinary(e) || e.base64)
+      if (this.reconstructor)
+        ((t = this.reconstructor.takeBinaryData(e)),
+          t && ((this.reconstructor = null), super.emitReserved("decoded", t)));
+      else throw new Error("got binary data when not reconstructing a packet");
+    else throw new Error("Unknown type: " + e);
+  }
+  decodeString(e) {
+    let t = 0;
+    const r = { type: Number(e.charAt(0)) };
+    if (PacketType[r.type] === void 0)
+      throw new Error("unknown packet type " + r.type);
+    if (
+      r.type === PacketType.BINARY_EVENT ||
+      r.type === PacketType.BINARY_ACK
+    ) {
+      const n = t + 1;
+      for (; e.charAt(++t) !== "-" && t != e.length; );
+      const c = e.substring(n, t);
+      if (c != Number(c) || e.charAt(t) !== "-")
+        throw new Error("Illegal attachments");
+      r.attachments = Number(c);
+    }
+    if (e.charAt(t + 1) === "/") {
+      const n = t + 1;
+      for (; ++t && !(e.charAt(t) === "," || t === e.length); );
+      r.nsp = e.substring(n, t);
+    } else r.nsp = "/";
+    const i = e.charAt(t + 1);
+    if (i !== "" && Number(i) == i) {
+      const n = t + 1;
+      for (; ++t; ) {
+        const c = e.charAt(t);
+        if (c == null || Number(c) != c) {
+          --t;
+          break;
+        }
+        if (t === e.length) break;
+      }
+      r.id = Number(e.substring(n, t + 1));
+    }
+    if (e.charAt(++t)) {
+      const n = this.tryParse(e.substr(t));
+      if (Decoder.isPayloadValid(r.type, n)) r.data = n;
+      else throw new Error("invalid payload");
+    }
+    return r;
+  }
+  tryParse(e) {
+    try {
+      return JSON.parse(e, this.reviver);
+    } catch (t) {
+      return !1;
+    }
+  }
+  static isPayloadValid(e, t) {
+    switch (e) {
+      case PacketType.CONNECT:
+        return isObject(t);
+      case PacketType.DISCONNECT:
+        return t === void 0;
+      case PacketType.CONNECT_ERROR:
+        return typeof t == "string" || isObject(t);
+      case PacketType.EVENT:
+      case PacketType.BINARY_EVENT:
+        return (
+          Array.isArray(t) &&
+          (typeof t[0] == "number" ||
+            (typeof t[0] == "string" && RESERVED_EVENTS$1.indexOf(t[0]) === -1))
+        );
+      case PacketType.ACK:
+      case PacketType.BINARY_ACK:
+        return Array.isArray(t);
+    }
+  }
+  destroy() {
+    this.reconstructor &&
+      (this.reconstructor.finishedReconstruction(),
+      (this.reconstructor = null));
+  }
+}
+class BinaryReconstructor {
+  constructor(e) {
+    ((this.packet = e), (this.buffers = []), (this.reconPack = e));
+  }
+  takeBinaryData(e) {
+    if (
+      (this.buffers.push(e), this.buffers.length === this.reconPack.attachments)
+    ) {
+      const t = reconstructPacket(this.reconPack, this.buffers);
+      return (this.finishedReconstruction(), t);
+    }
+    return null;
+  }
+  finishedReconstruction() {
+    ((this.reconPack = null), (this.buffers = []));
+  }
+}
+const parser = Object.freeze(
+  Object.defineProperty(
+    {
+      __proto__: null,
+      Decoder,
+      Encoder,
+      get PacketType() {
+        return PacketType;
+      },
+      protocol,
+    },
+    Symbol.toStringTag,
+    { value: "Module" },
+  ),
+);
+function on(s, e, t) {
+  return (
+    s.on(e, t),
+    function () {
+      s.off(e, t);
+    }
+  );
+}
+const RESERVED_EVENTS = Object.freeze({
+  connect: 1,
+  connect_error: 1,
+  disconnect: 1,
+  disconnecting: 1,
+  newListener: 1,
+  removeListener: 1,
+});
+class Socket extends Emitter {
+  constructor(e, t, r) {
+    (super(),
+      (this.connected = !1),
+      (this.recovered = !1),
+      (this.receiveBuffer = []),
+      (this.sendBuffer = []),
+      (this._queue = []),
+      (this._queueSeq = 0),
+      (this.ids = 0),
+      (this.acks = {}),
+      (this.flags = {}),
+      (this.io = e),
+      (this.nsp = t),
+      r && r.auth && (this.auth = r.auth),
+      (this._opts = Object.assign({}, r)),
+      this.io._autoConnect && this.open());
+  }
+  get disconnected() {
+    return !this.connected;
+  }
+  subEvents() {
+    if (this.subs) return;
+    const e = this.io;
+    this.subs = [
+      on(e, "open", this.onopen.bind(this)),
+      on(e, "packet", this.onpacket.bind(this)),
+      on(e, "error", this.onerror.bind(this)),
+      on(e, "close", this.onclose.bind(this)),
+    ];
+  }
+  get active() {
+    return !!this.subs;
+  }
+  connect() {
+    return this.connected
+      ? this
+      : (this.subEvents(),
+        this.io._reconnecting || this.io.open(),
+        this.io._readyState === "open" && this.onopen(),
+        this);
+  }
+  open() {
+    return this.connect();
+  }
+  send(...e) {
+    return (e.unshift("message"), this.emit.apply(this, e), this);
+  }
+  emit(e, ...t) {
+    var r, i, n;
+    if (RESERVED_EVENTS.hasOwnProperty(e))
+      throw new Error('"' + e.toString() + '" is a reserved event name');
+    if (
+      (t.unshift(e),
+      this._opts.retries && !this.flags.fromQueue && !this.flags.volatile)
+    )
+      return (this._addToQueue(t), this);
+    const c = { type: PacketType.EVENT, data: t };
+    if (
+      ((c.options = {}),
+      (c.options.compress = this.flags.compress !== !1),
+      typeof t[t.length - 1] == "function")
+    ) {
+      const u = this.ids++,
+        d = t.pop();
+      (this._registerAckCallback(u, d), (c.id = u));
+    }
+    const o =
+        (i =
+          (r = this.io.engine) === null || r === void 0
+            ? void 0
+            : r.transport) === null || i === void 0
+          ? void 0
+          : i.writable,
+      a =
+        this.connected &&
+        !(
+          !((n = this.io.engine) === null || n === void 0) &&
+          n._hasPingExpired()
+        );
+    return (
+      (this.flags.volatile && !o) ||
+        (a
+          ? (this.notifyOutgoingListeners(c), this.packet(c))
+          : this.sendBuffer.push(c)),
+      (this.flags = {}),
+      this
+    );
+  }
+  _registerAckCallback(e, t) {
+    var r;
+    const i =
+      (r = this.flags.timeout) !== null && r !== void 0
+        ? r
+        : this._opts.ackTimeout;
+    if (i === void 0) {
+      this.acks[e] = t;
+      return;
+    }
+    const n = this.io.setTimeoutFn(() => {
+        delete this.acks[e];
+        for (let o = 0; o < this.sendBuffer.length; o++)
+          this.sendBuffer[o].id === e && this.sendBuffer.splice(o, 1);
+        t.call(this, new Error("operation has timed out"));
+      }, i),
+      c = (...o) => {
+        (this.io.clearTimeoutFn(n), t.apply(this, o));
+      };
+    ((c.withError = !0), (this.acks[e] = c));
+  }
+  emitWithAck(e, ...t) {
+    return new Promise((r, i) => {
+      const n = (c, o) => (c ? i(c) : r(o));
+      ((n.withError = !0), t.push(n), this.emit(e, ...t));
+    });
+  }
+  _addToQueue(e) {
+    let t;
+    typeof e[e.length - 1] == "function" && (t = e.pop());
+    const r = {
+      id: this._queueSeq++,
+      tryCount: 0,
+      pending: !1,
+      args: e,
+      flags: Object.assign({ fromQueue: !0 }, this.flags),
+    };
+    (e.push((i, ...n) =>
+      r !== this._queue[0]
+        ? void 0
+        : (i !== null
+            ? r.tryCount > this._opts.retries &&
+              (this._queue.shift(), t && t(i))
+            : (this._queue.shift(), t && t(null, ...n)),
+          (r.pending = !1),
+          this._drainQueue()),
+    ),
+      this._queue.push(r),
+      this._drainQueue());
+  }
+  _drainQueue(e = !1) {
+    if (!this.connected || this._queue.length === 0) return;
+    const t = this._queue[0];
+    (t.pending && !e) ||
+      ((t.pending = !0),
+      t.tryCount++,
+      (this.flags = t.flags),
+      this.emit.apply(this, t.args));
+  }
+  packet(e) {
+    ((e.nsp = this.nsp), this.io._packet(e));
+  }
+  onopen() {
+    typeof this.auth == "function"
+      ? this.auth((e) => {
+          this._sendConnectPacket(e);
+        })
+      : this._sendConnectPacket(this.auth);
+  }
+  _sendConnectPacket(e) {
+    this.packet({
+      type: PacketType.CONNECT,
+      data: this._pid
+        ? Object.assign({ pid: this._pid, offset: this._lastOffset }, e)
+        : e,
+    });
+  }
+  onerror(e) {
+    this.connected || this.emitReserved("connect_error", e);
+  }
+  onclose(e, t) {
+    ((this.connected = !1),
+      delete this.id,
+      this.emitReserved("disconnect", e, t),
+      this._clearAcks());
+  }
+  _clearAcks() {
+    Object.keys(this.acks).forEach((e) => {
+      if (!this.sendBuffer.some((r) => String(r.id) === e)) {
+        const r = this.acks[e];
+        (delete this.acks[e],
+          r.withError &&
+            r.call(this, new Error("socket has been disconnected")));
+      }
+    });
+  }
+  onpacket(e) {
+    if (e.nsp === this.nsp)
+      switch (e.type) {
+        case PacketType.CONNECT:
+          e.data && e.data.sid
+            ? this.onconnect(e.data.sid, e.data.pid)
+            : this.emitReserved(
+                "connect_error",
+                new Error(
+                  "It seems you are trying to reach a Socket.IO server in v2.x with a v3.x client, but they are not compatible (more information here: https://socket.io/docs/v3/migrating-from-2-x-to-3-0/)",
+                ),
+              );
+          break;
+        case PacketType.EVENT:
+        case PacketType.BINARY_EVENT:
+          this.onevent(e);
+          break;
+        case PacketType.ACK:
+        case PacketType.BINARY_ACK:
+          this.onack(e);
+          break;
+        case PacketType.DISCONNECT:
+          this.ondisconnect();
+          break;
+        case PacketType.CONNECT_ERROR:
+          this.destroy();
+          const r = new Error(e.data.message);
+          ((r.data = e.data.data), this.emitReserved("connect_error", r));
+          break;
+      }
+  }
+  onevent(e) {
+    const t = e.data || [];
+    (e.id != null && t.push(this.ack(e.id)),
+      this.connected
+        ? this.emitEvent(t)
+        : this.receiveBuffer.push(Object.freeze(t)));
+  }
+  emitEvent(e) {
+    if (this._anyListeners && this._anyListeners.length) {
+      const t = this._anyListeners.slice();
+      for (const r of t) r.apply(this, e);
+    }
+    (super.emit.apply(this, e),
+      this._pid &&
+        e.length &&
+        typeof e[e.length - 1] == "string" &&
+        (this._lastOffset = e[e.length - 1]));
+  }
+  ack(e) {
+    const t = this;
+    let r = !1;
+    return function (...i) {
+      r || ((r = !0), t.packet({ type: PacketType.ACK, id: e, data: i }));
+    };
+  }
+  onack(e) {
+    const t = this.acks[e.id];
+    typeof t == "function" &&
+      (delete this.acks[e.id],
+      t.withError && e.data.unshift(null),
+      t.apply(this, e.data));
+  }
+  onconnect(e, t) {
+    ((this.id = e),
+      (this.recovered = t && this._pid === t),
+      (this._pid = t),
+      (this.connected = !0),
+      this.emitBuffered(),
+      this.emitReserved("connect"),
+      this._drainQueue(!0));
+  }
+  emitBuffered() {
+    (this.receiveBuffer.forEach((e) => this.emitEvent(e)),
+      (this.receiveBuffer = []),
+      this.sendBuffer.forEach((e) => {
+        (this.notifyOutgoingListeners(e), this.packet(e));
+      }),
+      (this.sendBuffer = []));
+  }
+  ondisconnect() {
+    (this.destroy(), this.onclose("io server disconnect"));
+  }
+  destroy() {
+    (this.subs && (this.subs.forEach((e) => e()), (this.subs = void 0)),
+      this.io._destroy(this));
+  }
+  disconnect() {
+    return (
+      this.connected && this.packet({ type: PacketType.DISCONNECT }),
+      this.destroy(),
+      this.connected && this.onclose("io client disconnect"),
+      this
+    );
+  }
+  close() {
+    return this.disconnect();
+  }
+  compress(e) {
+    return ((this.flags.compress = e), this);
+  }
+  get volatile() {
+    return ((this.flags.volatile = !0), this);
+  }
+  timeout(e) {
+    return ((this.flags.timeout = e), this);
+  }
+  onAny(e) {
+    return (
+      (this._anyListeners = this._anyListeners || []),
+      this._anyListeners.push(e),
+      this
+    );
+  }
+  prependAny(e) {
+    return (
+      (this._anyListeners = this._anyListeners || []),
+      this._anyListeners.unshift(e),
+      this
+    );
+  }
+  offAny(e) {
+    if (!this._anyListeners) return this;
+    if (e) {
+      const t = this._anyListeners;
+      for (let r = 0; r < t.length; r++)
+        if (e === t[r]) return (t.splice(r, 1), this);
+    } else this._anyListeners = [];
+    return this;
+  }
+  listenersAny() {
+    return this._anyListeners || [];
+  }
+  onAnyOutgoing(e) {
+    return (
+      (this._anyOutgoingListeners = this._anyOutgoingListeners || []),
+      this._anyOutgoingListeners.push(e),
+      this
+    );
+  }
+  prependAnyOutgoing(e) {
+    return (
+      (this._anyOutgoingListeners = this._anyOutgoingListeners || []),
+      this._anyOutgoingListeners.unshift(e),
+      this
+    );
+  }
+  offAnyOutgoing(e) {
+    if (!this._anyOutgoingListeners) return this;
+    if (e) {
+      const t = this._anyOutgoingListeners;
+      for (let r = 0; r < t.length; r++)
+        if (e === t[r]) return (t.splice(r, 1), this);
+    } else this._anyOutgoingListeners = [];
+    return this;
+  }
+  listenersAnyOutgoing() {
+    return this._anyOutgoingListeners || [];
+  }
+  notifyOutgoingListeners(e) {
+    if (this._anyOutgoingListeners && this._anyOutgoingListeners.length) {
+      const t = this._anyOutgoingListeners.slice();
+      for (const r of t) r.apply(this, e.data);
+    }
+  }
+}
+function Backoff(s) {
+  ((s = s || {}),
+    (this.ms = s.min || 100),
+    (this.max = s.max || 1e4),
+    (this.factor = s.factor || 2),
+    (this.jitter = s.jitter > 0 && s.jitter <= 1 ? s.jitter : 0),
+    (this.attempts = 0));
+}
+Backoff.prototype.duration = function () {
+  var s = this.ms * Math.pow(this.factor, this.attempts++);
+  if (this.jitter) {
+    var e = Math.random(),
+      t = Math.floor(e * this.jitter * s);
+    s = Math.floor(e * 10) & 1 ? s + t : s - t;
+  }
+  return Math.min(s, this.max) | 0;
+};
+Backoff.prototype.reset = function () {
+  this.attempts = 0;
+};
+Backoff.prototype.setMin = function (s) {
+  this.ms = s;
+};
+Backoff.prototype.setMax = function (s) {
+  this.max = s;
+};
+Backoff.prototype.setJitter = function (s) {
+  this.jitter = s;
+};
+class Manager extends Emitter {
+  constructor(e, t) {
+    var r;
+    (super(),
+      (this.nsps = {}),
+      (this.subs = []),
+      e && typeof e == "object" && ((t = e), (e = void 0)),
+      (t = t || {}),
+      (t.path = t.path || "/socket.io"),
+      (this.opts = t),
+      installTimerFunctions(this, t),
+      this.reconnection(t.reconnection !== !1),
+      this.reconnectionAttempts(t.reconnectionAttempts || 1 / 0),
+      this.reconnectionDelay(t.reconnectionDelay || 1e3),
+      this.reconnectionDelayMax(t.reconnectionDelayMax || 5e3),
+      this.randomizationFactor(
+        (r = t.randomizationFactor) !== null && r !== void 0 ? r : 0.5,
+      ),
+      (this.backoff = new Backoff({
+        min: this.reconnectionDelay(),
+        max: this.reconnectionDelayMax(),
+        jitter: this.randomizationFactor(),
+      })),
+      this.timeout(t.timeout == null ? 2e4 : t.timeout),
+      (this._readyState = "closed"),
+      (this.uri = e));
+    const i = t.parser || parser;
+    ((this.encoder = new i.Encoder()),
+      (this.decoder = new i.Decoder()),
+      (this._autoConnect = t.autoConnect !== !1),
+      this._autoConnect && this.open());
+  }
+  reconnection(e) {
+    return arguments.length
+      ? ((this._reconnection = !!e), e || (this.skipReconnect = !0), this)
+      : this._reconnection;
+  }
+  reconnectionAttempts(e) {
+    return e === void 0
+      ? this._reconnectionAttempts
+      : ((this._reconnectionAttempts = e), this);
+  }
+  reconnectionDelay(e) {
+    var t;
+    return e === void 0
+      ? this._reconnectionDelay
+      : ((this._reconnectionDelay = e),
+        (t = this.backoff) === null || t === void 0 || t.setMin(e),
+        this);
+  }
+  randomizationFactor(e) {
+    var t;
+    return e === void 0
+      ? this._randomizationFactor
+      : ((this._randomizationFactor = e),
+        (t = this.backoff) === null || t === void 0 || t.setJitter(e),
+        this);
+  }
+  reconnectionDelayMax(e) {
+    var t;
+    return e === void 0
+      ? this._reconnectionDelayMax
+      : ((this._reconnectionDelayMax = e),
+        (t = this.backoff) === null || t === void 0 || t.setMax(e),
+        this);
+  }
+  timeout(e) {
+    return arguments.length ? ((this._timeout = e), this) : this._timeout;
+  }
+  maybeReconnectOnOpen() {
+    !this._reconnecting &&
+      this._reconnection &&
+      this.backoff.attempts === 0 &&
+      this.reconnect();
+  }
+  open(e) {
+    if (~this._readyState.indexOf("open")) return this;
+    this.engine = new Socket$1(this.uri, this.opts);
+    const t = this.engine,
+      r = this;
+    ((this._readyState = "opening"), (this.skipReconnect = !1));
+    const i = on(t, "open", function () {
+        (r.onopen(), e && e());
+      }),
+      n = (o) => {
+        (this.cleanup(),
+          (this._readyState = "closed"),
+          this.emitReserved("error", o),
+          e ? e(o) : this.maybeReconnectOnOpen());
+      },
+      c = on(t, "error", n);
+    if (this._timeout !== !1) {
+      const o = this._timeout,
+        a = this.setTimeoutFn(() => {
+          (i(), n(new Error("timeout")), t.close());
+        }, o);
+      (this.opts.autoUnref && a.unref(),
+        this.subs.push(() => {
+          this.clearTimeoutFn(a);
+        }));
+    }
+    return (this.subs.push(i), this.subs.push(c), this);
+  }
+  connect(e) {
+    return this.open(e);
+  }
+  onopen() {
+    (this.cleanup(), (this._readyState = "open"), this.emitReserved("open"));
+    const e = this.engine;
+    this.subs.push(
+      on(e, "ping", this.onping.bind(this)),
+      on(e, "data", this.ondata.bind(this)),
+      on(e, "error", this.onerror.bind(this)),
+      on(e, "close", this.onclose.bind(this)),
+      on(this.decoder, "decoded", this.ondecoded.bind(this)),
+    );
+  }
+  onping() {
+    this.emitReserved("ping");
+  }
+  ondata(e) {
+    try {
+      this.decoder.add(e);
+    } catch (t) {
+      this.onclose("parse error", t);
+    }
+  }
+  ondecoded(e) {
+    nextTick(() => {
+      this.emitReserved("packet", e);
+    }, this.setTimeoutFn);
+  }
+  onerror(e) {
+    this.emitReserved("error", e);
+  }
+  socket(e, t) {
+    let r = this.nsps[e];
+    return (
+      r
+        ? this._autoConnect && !r.active && r.connect()
+        : ((r = new Socket(this, e, t)), (this.nsps[e] = r)),
+      r
+    );
+  }
+  _destroy(e) {
+    const t = Object.keys(this.nsps);
+    for (const r of t) if (this.nsps[r].active) return;
+    this._close();
+  }
+  _packet(e) {
+    const t = this.encoder.encode(e);
+    for (let r = 0; r < t.length; r++) this.engine.write(t[r], e.options);
+  }
+  cleanup() {
+    (this.subs.forEach((e) => e()),
+      (this.subs.length = 0),
+      this.decoder.destroy());
+  }
+  _close() {
+    ((this.skipReconnect = !0),
+      (this._reconnecting = !1),
+      this.onclose("forced close"));
+  }
+  disconnect() {
+    return this._close();
+  }
+  onclose(e, t) {
+    var r;
+    (this.cleanup(),
+      (r = this.engine) === null || r === void 0 || r.close(),
+      this.backoff.reset(),
+      (this._readyState = "closed"),
+      this.emitReserved("close", e, t),
+      this._reconnection && !this.skipReconnect && this.reconnect());
+  }
+  reconnect() {
+    if (this._reconnecting || this.skipReconnect) return this;
+    const e = this;
+    if (this.backoff.attempts >= this._reconnectionAttempts)
+      (this.backoff.reset(),
+        this.emitReserved("reconnect_failed"),
+        (this._reconnecting = !1));
+    else {
+      const t = this.backoff.duration();
+      this._reconnecting = !0;
+      const r = this.setTimeoutFn(() => {
+        e.skipReconnect ||
+          (this.emitReserved("reconnect_attempt", e.backoff.attempts),
+          !e.skipReconnect &&
+            e.open((i) => {
+              i
+                ? ((e._reconnecting = !1),
+                  e.reconnect(),
+                  this.emitReserved("reconnect_error", i))
+                : e.onreconnect();
+            }));
+      }, t);
+      (this.opts.autoUnref && r.unref(),
+        this.subs.push(() => {
+          this.clearTimeoutFn(r);
+        }));
+    }
+  }
+  onreconnect() {
+    const e = this.backoff.attempts;
+    ((this._reconnecting = !1),
+      this.backoff.reset(),
+      this.emitReserved("reconnect", e));
+  }
+}
+const cache = {};
+function lookup(s, e) {
+  (typeof s == "object" && ((e = s), (s = void 0)), (e = e || {}));
+  const t = url(s, e.path || "/socket.io"),
+    r = t.source,
+    i = t.id,
+    n = t.path,
+    c = cache[i] && n in cache[i].nsps,
+    o = e.forceNew || e["force new connection"] || e.multiplex === !1 || c;
+  let a;
+  return (
+    o
+      ? (a = new Manager(r, e))
+      : (cache[i] || (cache[i] = new Manager(r, e)), (a = cache[i])),
+    t.query && !e.query && (e.query = t.queryKey),
+    a.socket(t.path, e)
+  );
+}
+Object.assign(lookup, { Manager, Socket, io: lookup, connect: lookup });
+const API_URL = env.API_BASE_URL.replace("/api/v1", "");
+class WebSocketService {
+  constructor() {
+    x(this, "socket", null);
+    x(this, "token", null);
+    x(this, "isConnecting", !1);
+    x(this, "reconnectAttempts", 0);
+    x(this, "maxReconnectAttempts", 5);
+    x(this, "subscribedFields", new Set());
+    x(this, "eventCallbacks", new Map());
+  }
+  connect(e) {
+    return _(this, null, function* () {
+      var t;
+      if ((t = this.socket) != null && t.connected) {
+        console.log("[WebSocket] Already connected");
+        return;
+      }
+      if (this.isConnecting) {
+        console.log("[WebSocket] Connection already in progress");
+        return;
+      }
+      if (!e) {
+        console.warn("[WebSocket] No authentication token available");
+        return;
+      }
+      ((this.token = e), (this.isConnecting = !0));
+      try {
+        (console.log("[WebSocket] Connecting to", API_URL),
+          (this.socket = lookup(API_URL, {
+            auth: { token: this.token },
+            transports: ["websocket", "polling"],
+            reconnection: !0,
+            reconnectionDelay: 1e3,
+            reconnectionDelayMax: 5e3,
+            reconnectionAttempts: this.maxReconnectAttempts,
+          })),
+          this._setupEventListeners(),
+          (this.isConnecting = !1));
+      } catch (r) {
+        throw (
+          console.error("[WebSocket] Connection failed:", r),
+          (this.isConnecting = !1),
+          r
+        );
+      }
+    });
+  }
+  disconnect() {
+    this.socket &&
+      (console.log("[WebSocket] Disconnecting"),
+      this.socket.disconnect(),
+      (this.socket = null),
+      this.subscribedFields.clear(),
+      this.eventCallbacks.clear());
+  }
+  isConnected() {
+    var e, t;
+    return (t = (e = this.socket) == null ? void 0 : e.connected) != null
+      ? t
+      : !1;
+  }
+  subscribeToField(e) {
+    var t;
+    if (!((t = this.socket) != null && t.connected)) {
+      console.warn("[WebSocket] Not connected, cannot subscribe to field");
+      return;
+    }
+    (console.log("[WebSocket] Subscribing to field:", e),
+      this.socket.emit("subscribe_field", e),
+      this.subscribedFields.add(e));
+  }
+  unsubscribeFromField(e) {
+    var t;
+    (t = this.socket) != null &&
+      t.connected &&
+      (console.log("[WebSocket] Unsubscribing from field:", e),
+      this.socket.emit("unsubscribe_field", e),
+      this.subscribedFields.delete(e));
+  }
+  on(e, t) {
+    (this.eventCallbacks.has(e) || this.eventCallbacks.set(e, new Set()),
+      this.eventCallbacks.get(e).add(t),
+      this.socket && this.socket.on(e, t));
+  }
+  off(e, t) {
+    const r = this.eventCallbacks.get(e);
+    (r && (r.delete(t), r.size === 0 && this.eventCallbacks.delete(e)),
+      this.socket && this.socket.off(e, t));
+  }
+  _resubscribeToFields() {
+    var e;
+    !((e = this.socket) != null && e.connected) ||
+      this.subscribedFields.size === 0 ||
+      (console.log(
+        "[WebSocket] Resubscribing to",
+        this.subscribedFields.size,
+        "fields",
+      ),
+      this.subscribedFields.forEach((t) => {
+        var r;
+        (r = this.socket) == null || r.emit("subscribe_field", t);
+      }));
+  }
+  _reattachEventListeners() {
+    this.socket &&
+      this.eventCallbacks.forEach((e, t) => {
+        e.forEach((r) => {
+          this.socket.on(t, r);
+        });
+      });
+  }
+  _setupEventListeners() {
+    this.socket &&
+      (this.socket.on("connect", () => {
+        var e;
+        (console.log(
+          "[WebSocket] Connected, Socket ID:",
+          (e = this.socket) == null ? void 0 : e.id,
+        ),
+          (this.reconnectAttempts = 0),
+          this._resubscribeToFields(),
+          this._reattachEventListeners(),
+          this._triggerCallbacks("connect", {}));
+      }),
+      this.socket.on("disconnect", (e) => {
+        (console.log("[WebSocket] Disconnected:", e),
+          this._triggerCallbacks("disconnect", { reason: e }));
+      }),
+      this.socket.on("connect_error", (e) => {
+        (console.error("[WebSocket] Connection error:", e.message),
+          this.reconnectAttempts++,
+          this.reconnectAttempts >= this.maxReconnectAttempts &&
+            console.error("[WebSocket] Max reconnect attempts reached"),
+          this._triggerCallbacks("connect_error", { error: e }));
+      }),
+      this.socket.on("health_updated", (e) => {
+        (console.log("[WebSocket] Health updated:", e),
+          this._triggerCallbacks("health_updated", e));
+      }),
+      this.socket.on("health_alert", (e) => {
+        (console.log("[WebSocket] Health alert:", e),
+          this._triggerCallbacks("health_alert", e));
+      }),
+      this.socket.on("recommendations_updated", (e) => {
+        (console.log("[WebSocket] Recommendations updated:", e),
+          this._triggerCallbacks("recommendations_updated", e));
+      }),
+      this.socket.on("recommendation_created", (e) => {
+        (console.log("[WebSocket] Recommendation created:", e),
+          this._triggerCallbacks("recommendation_created", e));
+      }),
+      this.socket.on("yield_prediction_ready", (e) => {
+        (console.log("[WebSocket] Yield prediction ready:", e),
+          this._triggerCallbacks("yield_prediction_ready", e));
+      }),
+      this.socket.on("subscribed", (e) => {
+        (console.log("[WebSocket] Subscribed to field:", e.fieldId),
+          this._triggerCallbacks("subscribed", e));
+      }),
+      this.socket.on("unsubscribed", (e) => {
+        (console.log("[WebSocket] Unsubscribed from field:", e.fieldId),
+          this._triggerCallbacks("unsubscribed", e));
+      }));
+  }
+  _triggerCallbacks(e, t) {
+    const r = this.eventCallbacks.get(e);
+    r &&
+      r.forEach((i) => {
+        try {
+          i(t);
+        } catch (n) {
+          console.error(`[WebSocket] Error in ${e} callback:`, n);
+        }
+      });
+  }
+}
+const websocketService = new WebSocketService(),
+  NotificationsContext = reactExports.createContext(void 0),
+  NotificationsProvider = ({ children: s }) => {
+    const [e, t] = reactExports.useState([]),
+      { showToast: r } = useToast(),
+      i = e.filter((u) => !u.read).length,
+      n = reactExports.useCallback((u) => {
+        const d = g(p({}, u), {
+          id: `notif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        });
+        t((h) => [d, ...h].slice(0, 50));
+      }, []),
+      c = reactExports.useCallback((u) => {
+        t((d) => d.map((h) => (h.id === u ? g(p({}, h), { read: !0 }) : h)));
+      }, []),
+      o = reactExports.useCallback(() => {
+        t((u) => u.map((d) => g(p({}, d), { read: !0 })));
+      }, []),
+      a = reactExports.useCallback(() => {
+        t([]);
+      }, []);
+    reactExports.useEffect(() => {
+      const u = (f) => {
+          var b, w;
+          n({
+            type: "health",
+            title: "Field Health Updated",
+            message: `${f.fieldName}: Health score ${((b = f.health) == null ? void 0 : b.score) || "N/A"} (${((w = f.health) == null ? void 0 : w.status) || "unknown"})`,
+            timestamp: new Date().toISOString(),
+            read: !1,
+            fieldId: f.fieldId,
+            fieldName: f.fieldName,
+          });
+        },
+        d = (f) => {
+          var b;
+          (n({
+            type: "alert",
+            title: `${((b = f.severity) == null ? void 0 : b.toUpperCase()) || "ALERT"}: Field Health Alert`,
+            message: `${f.fieldName}: ${f.message}`,
+            timestamp: new Date().toISOString(),
+            read: !1,
+            fieldId: f.fieldId,
+            fieldName: f.fieldName,
+            priority: f.severity === "critical" ? "high" : "medium",
+          }),
+            f.severity === "critical" &&
+              r({
+                variant: "error",
+                title: "Critical Field Health Alert",
+                description: `${f.fieldName}: ${f.message}`,
+              }));
+        },
+        h = (f) => {
+          var b;
+          n({
+            type: "recommendation",
+            title: "New Recommendations",
+            message: `${f.fieldName}: ${f.message}`,
+            timestamp: new Date().toISOString(),
+            read: !1,
+            fieldId: f.fieldId,
+            fieldName: f.fieldName,
+            priority:
+              (b = f.recommendations) != null &&
+              b.some((w) => w.priority === "critical")
+                ? "high"
+                : "medium",
+          });
+        },
+        m = (f) => {
+          n({
+            type: "yield",
+            title: "Yield Prediction Ready",
+            message: `${f.fieldName}: ${f.message}`,
+            timestamp: new Date().toISOString(),
+            read: !1,
+            fieldId: f.fieldId,
+            fieldName: f.fieldName,
+          });
+        },
+        E = (f) => {
+          f.reason !== "io client disconnect" &&
+            n({
+              type: "system",
+              title: "Connection Lost",
+              message: "Real-time updates temporarily unavailable",
+              timestamp: new Date().toISOString(),
+              read: !1,
+            });
+        },
+        y = () => {
+          n({
+            type: "system",
+            title: "Connected",
+            message: "Real-time updates enabled",
+            timestamp: new Date().toISOString(),
+            read: !1,
+          });
+        };
+      return (
+        websocketService.on("health_updated", u),
+        websocketService.on("health_alert", d),
+        websocketService.on("recommendation_created", h),
+        websocketService.on("yield_prediction_ready", m),
+        websocketService.on("disconnect", E),
+        websocketService.on("connect", y),
+        () => {
+          (websocketService.off("health_updated", u),
+            websocketService.off("health_alert", d),
+            websocketService.off("recommendation_created", h),
+            websocketService.off("yield_prediction_ready", m),
+            websocketService.off("disconnect", E),
+            websocketService.off("connect", y));
+        }
+      );
+    }, [n, r]);
+    const l = {
+      notifications: e,
+      unreadCount: i,
+      addNotification: n,
+      markAsRead: c,
+      markAllAsRead: o,
+      clearAll: a,
+    };
+    return jsxRuntimeExports.jsx(NotificationsContext.Provider, {
+      value: l,
+      children: s,
+    });
+  },
+  UiContext = reactExports.createContext(void 0),
+  UI_STORAGE_KEY = "skycrop_ui_prefs",
+  getDefaultState = () => ({
+    currentFieldId: void 0,
+    defaultHealthIndex: "NDVI",
+    defaultHealthRange: "30d",
+  }),
+  loadInitialState = () => {
+    var s, e;
+    if (typeof window == "undefined") return getDefaultState();
+    try {
+      const t = window.localStorage.getItem(UI_STORAGE_KEY);
+      if (!t) return getDefaultState();
+      const r = JSON.parse(t);
+      return {
+        currentFieldId: r.currentFieldId,
+        defaultHealthIndex: (s = r.defaultHealthIndex) != null ? s : "NDVI",
+        defaultHealthRange: (e = r.defaultHealthRange) != null ? e : "30d",
+      };
+    } catch (t) {
+      return getDefaultState();
+    }
+  },
+  persistState = (s) => {
+    if (typeof window != "undefined")
+      try {
+        window.localStorage.setItem(UI_STORAGE_KEY, JSON.stringify(s));
+      } catch (e) {}
+  },
+  UiProvider = ({ children: s }) => {
+    const [e, t] = reactExports.useState(() => loadInitialState()),
+      r = reactExports.useCallback((o) => {
+        t((a) => {
+          const l = g(p({}, a), { currentFieldId: o });
+          return (persistState(l), l);
+        });
+      }, []),
+      i = reactExports.useCallback((o) => {
+        t((a) => {
+          const l = g(p({}, a), { defaultHealthIndex: o });
+          return (persistState(l), l);
+        });
+      }, []),
+      n = reactExports.useCallback((o) => {
+        t((a) => {
+          const l = g(p({}, a), { defaultHealthRange: o });
+          return (persistState(l), l);
+        });
+      }, []),
+      c = reactExports.useMemo(
+        () => ({
+          state: e,
+          setCurrentField: r,
+          setHealthIndex: i,
+          setHealthRange: n,
+        }),
+        [e, r, i, n],
+      );
+    return jsxRuntimeExports.jsx(UiContext.Provider, { value: c, children: s });
+  },
+  useUiState = () => {
+    const s = reactExports.useContext(UiContext);
+    if (!s) throw new Error("useUiState must be used within a UiProvider");
+    return s;
+  },
+  Modal = ({ isOpen: s, onClose: e, title: t, children: r }) => {
+    const i = reactExports.useRef(null),
+      n = reactExports.useRef(null),
+      c = reactExports.useId();
+    return (
+      reactExports.useEffect(() => {
+        if (!s || typeof document == "undefined") return;
+        n.current = document.activeElement;
+        const o = i.current;
+        (() => {
+          if (!o) return;
+          const u = [
+              "a[href]",
+              "button:not([disabled])",
+              "textarea:not([disabled])",
+              "input:not([disabled])",
+              "select:not([disabled])",
+              '[tabindex]:not([tabindex="-1"])',
+            ].join(", "),
+            d = Array.from(o.querySelectorAll(u)).filter(
+              (h) => !h.hasAttribute("data-focus-guard"),
+            );
+          d.length > 0 ? d[0].focus() : o.focus();
+        })();
+        const l = (u) => {
+          if (u.key === "Escape") {
+            (u.stopPropagation(), e());
+            return;
+          }
+          if (u.key !== "Tab" || !o) return;
+          const d = [
+              "a[href]",
+              "button:not([disabled])",
+              "textarea:not([disabled])",
+              "input:not([disabled])",
+              "select:not([disabled])",
+              '[tabindex]:not([tabindex="-1"])',
+            ].join(", "),
+            h = Array.from(o.querySelectorAll(d)).filter(
+              (f) => !f.hasAttribute("data-focus-guard"),
+            );
+          if (h.length === 0) return;
+          const m = h[0],
+            E = h[h.length - 1],
+            y = document.activeElement;
+          u.shiftKey
+            ? (!y || y === m) && (u.preventDefault(), E.focus())
+            : (!y || y === E) && (u.preventDefault(), m.focus());
+        };
+        return (
+          document.addEventListener("keydown", l),
+          () => {
+            (document.removeEventListener("keydown", l),
+              n.current && n.current.focus && n.current.focus());
+          }
+        );
+      }, [s, e]),
+      !s || typeof document == "undefined"
+        ? null
+        : ReactDOM.createPortal(
+            jsxRuntimeExports.jsx("div", {
+              className:
+                "fixed inset-0 z-40 flex items-center justify-center bg-black/40 px-4 py-6",
+              onClick: e,
+              children: jsxRuntimeExports.jsxs("div", {
+                ref: i,
+                role: "dialog",
+                "aria-modal": "true",
+                "aria-labelledby": t ? c : void 0,
+                className: clsx(
+                  "w-full max-w-lg rounded-lg bg-white shadow-xl outline-none",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2",
+                ),
+                tabIndex: -1,
+                onClick: (o) => o.stopPropagation(),
+                children: [
+                  t &&
+                    jsxRuntimeExports.jsxs("header", {
+                      className:
+                        "flex items-center justify-between border-b border-gray-100 px-4 py-3",
+                      children: [
+                        jsxRuntimeExports.jsx("h2", {
+                          id: c,
+                          className: "text-sm font-semibold text-gray-900",
+                          children: t,
+                        }),
+                        jsxRuntimeExports.jsx("button", {
+                          type: "button",
+                          onClick: e,
+                          className:
+                            "inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2",
+                          "aria-label": "Close dialog",
+                          children: "×",
+                        }),
+                      ],
+                    }),
+                  jsxRuntimeExports.jsx("div", {
+                    className: "px-4 py-4 text-sm text-gray-800",
+                    children: r,
+                  }),
+                ],
+              }),
+            }),
+            document.body,
+          )
+    );
+  };
+export {
+  ApiError as A,
+  Button as B,
+  Card as C,
+  ErrorState as E,
+  FieldBoundaryLayer as F,
+  LoadingState as L,
+  Modal as M,
+  NotificationBell as N,
+  PageContainer as P,
+  ToastProvider as T,
+  UiProvider as U,
+  adminKeys as a,
+  useUiState as b,
+  configureAuthHandlers as c,
+  dashboardKeys as d,
+  useOnlineStatus as e,
+  fieldKeys as f,
+  useMapCenter as g,
+  httpClient as h,
+  BaseMap as i,
+  MapControls as j,
+  calculatePolygonCenter as k,
+  calculatePolygonArea as l,
+  healthKeys as m,
+  normalizeApiError as n,
+  useBreadcrumbs as o,
+  Breadcrumbs as p,
+  FieldMapView as q,
+  recommendationKeys as r,
+  setAuthTokens as s,
+  NotificationCenter as t,
+  useToast as u,
+  PageLoader as v,
+  weatherKeys as w,
+  NotificationsProvider as x,
+  yieldKeys as y,
+  notificationService as z,
+};

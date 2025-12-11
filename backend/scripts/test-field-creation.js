@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 'use strict';
 
 /**
@@ -15,14 +16,16 @@ const testField = {
   name: 'Geometry Test Field',
   boundary: {
     type: 'Polygon',
-    coordinates: [[
-      [79.8612, 6.9271], // bottom-left
-      [79.8622, 6.9271], // bottom-right
-      [79.8622, 6.9281], // top-right
-      [79.8612, 6.9281], // top-left
-      [79.8612, 6.9271]  // close the ring
-    ]]
-  }
+    coordinates: [
+      [
+        [79.8612, 6.9271], // bottom-left
+        [79.8622, 6.9271], // bottom-right
+        [79.8622, 6.9281], // top-right
+        [79.8612, 6.9281], // top-left
+        [79.8612, 6.9271], // close the ring
+      ],
+    ],
+  },
 };
 
 async function testFieldCreation() {
@@ -34,34 +37,38 @@ async function testFieldCreation() {
     const timestamp = Date.now();
     const testUser = await User.create({
       email: `test-field-creation-${timestamp}@example.com`,
-      password_hash: null, // OAuth user
+      passwordhash: null, // OAuth user
       name: 'Test User',
       role: 'farmer',
-      auth_provider: 'google',
-      email_verified: true,
+      authprovider: 'google',
+      emailverified: true,
       status: 'active',
     });
-    const testUserId = testUser.user_id;
+    const testUserId = testUser.userid;
     console.log('✅ Test user created:', testUserId);
 
     const fieldService = getFieldService();
 
     console.log('📝 Creating test field...');
-    const createdField = await fieldService.createWithBoundary(testUserId, testField.name, testField.boundary);
+    const createdField = await fieldService.createWithBoundary(
+      testUserId,
+      testField.name,
+      testField.boundary
+    );
 
     console.log('✅ Field created successfully!');
     console.log('📊 Field details:');
-    console.log(`   - ID: ${createdField.field_id}`);
+    console.log(`   - ID: ${createdField.fieldid}`);
     console.log(`   - Name: ${createdField.name}`);
-    console.log(`   - Area: ${createdField.area_sqm} sqm`);
+    console.log(`   - Area: ${createdField.areasqm} sqm`);
     console.log(`   - Center: ${JSON.stringify(createdField.center)}`);
     console.log(`   - Boundary type: ${createdField.boundary.type}`);
 
     // Verify the area is reasonable (should be around 10,000 sqm for 100m x 100m)
-    if (createdField.area_sqm > 5000 && createdField.area_sqm < 15000) {
+    if (createdField.areasqm > 5000 && createdField.areasqm < 15000) {
       console.log('✅ Area calculation looks correct');
     } else {
-      console.warn(`⚠️  Area seems off: ${createdField.area_sqm} sqm`);
+      console.warn(`⚠️  Area seems off: ${createdField.areasqm} sqm`);
     }
 
     // Verify center is a point
@@ -80,7 +87,7 @@ async function testFieldCreation() {
 
     // Clean up - delete the test field and user
     console.log('🧹 Cleaning up test field...');
-    await fieldService.delete(testUserId, createdField.field_id);
+    await fieldService.delete(testUserId, createdField.fieldid);
     console.log('✅ Test field deleted');
 
     console.log('🧹 Cleaning up test user...');
@@ -88,7 +95,6 @@ async function testFieldCreation() {
     console.log('✅ Test user deleted');
 
     console.log('🎉 All geometry processing tests passed!');
-
   } catch (error) {
     console.error('❌ Field creation test failed:', error.message);
     console.error('Stack:', error.stack);
@@ -103,7 +109,7 @@ if (require.main === module) {
       console.log('✅ Test completed successfully');
       process.exit(0);
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('❌ Test failed:', error);
       process.exit(1);
     });

@@ -17,32 +17,27 @@ module.exports = {
     const correlationId = req.headers['x-request-id'] || null;
     try {
       const input = req.body || {};
-      const {
-        result,
-        cacheHit,
-        downstreamStatus,
-        modelVersion,
-        latency_ms,
-      } = await mlGateway.yieldPredict(input, correlationId);
+      const { result, cacheHit, downstreamStatus, modelVersion, latencyms } =
+        await mlGateway.yieldPredict(input, correlationId);
 
       const totalLatency = Date.now() - started;
       logger.info('ml.yieldPredict', {
         route: '/api/v1/ml/yield/predict',
         method: 'POST',
-        correlation_id: correlationId,
-        latency_ms: totalLatency,
-        cache_hit: cacheHit,
-        downstream_status: downstreamStatus,
-        model_version: modelVersion || null,
+        correlationid: correlationId,
+        latencyms: totalLatency,
+        cachehit: cacheHit,
+        downstreamstatus: downstreamStatus,
+        modelversion: modelVersion || null,
       });
 
-      return res.status(200).json({
+      return res.status(200)on({
         success: true,
         data: result.data,
         meta: {
-          correlation_id: correlationId,
-          latency_ms: totalLatency,
-          cache_hit: cacheHit,
+          correlationid: correlationId,
+          latencyms: totalLatency,
+          cachehit: cacheHit,
         },
       });
     } catch (err) {
@@ -55,32 +50,27 @@ module.exports = {
     const correlationId = req.headers['x-request-id'] || null;
     try {
       const input = req.body || {};
-      const {
-        result,
-        cacheHit,
-        downstreamStatus,
-        modelVersion,
-        latency_ms,
-      } = await mlGateway.predict(input, correlationId);
+      const { result, cacheHit, downstreamStatus, modelVersion, latencyms } =
+        await mlGateway.predict(input, correlationId);
 
       const totalLatency = Date.now() - started;
       logger.info('ml.predict', {
         route: '/api/v1/ml/segmentation/predict',
         method: 'POST',
-        correlation_id: correlationId,
-        latency_ms: totalLatency,
-        cache_hit: cacheHit,
-        downstream_status: downstreamStatus,
-        model_version: modelVersion || null,
+        correlationid: correlationId,
+        latencyms: totalLatency,
+        cachehit: cacheHit,
+        downstreamstatus: downstreamStatus,
+        modelversion: modelVersion || null,
       });
 
-      return res.status(200).json({
+      return res.status(200)on({
         success: true,
         data: result.data,
         meta: {
-          correlation_id: correlationId,
-          latency_ms: totalLatency,
-          cache_hit: cacheHit,
+          correlationid: correlationId,
+          latencyms: totalLatency,
+          cachehit: cacheHit,
         },
       });
     } catch (err) {

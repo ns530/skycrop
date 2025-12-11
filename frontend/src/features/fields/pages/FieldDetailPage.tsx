@@ -1,20 +1,30 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
-import { useUiState } from '../../../shared/context/UiContext';
-import { useOnlineStatus } from '../../../shared/hooks/useOnlineStatus';
-import { useToast } from '../../../shared/hooks/useToast';
-import { Button } from '../../../shared/ui/Button';
-import { Card } from '../../../shared/ui/Card';
-import { ErrorState } from '../../../shared/ui/ErrorState';
-import { LoadingState } from '../../../shared/ui/LoadingState';
-import { Modal } from '../../../shared/ui/Modal';
-import { YieldEntryForm, type YieldEntryValues } from '../../yield/components/YieldEntryForm';
-import { YieldHistoryCard } from '../../yield/components/YieldHistoryCard';
-import { YieldTrendChart } from '../../yield/components/YieldTrendChart';
-import { useYieldRecords, useSubmitYield } from '../../yield/hooks/useYieldData';
-import { FieldForm, type FieldFormValues } from '../components/FieldForm';
-import { useFieldDetail, useUpdateField, useDeleteField } from '../hooks/useFields';
+import { useUiState } from "../../../shared/context/UiContext";
+import { useOnlineStatus } from "../../../shared/hooks/useOnlineStatus";
+import { useToast } from "../../../shared/hooks/useToast";
+import { Button } from "../../../shared/ui/Button";
+import { Card } from "../../../shared/ui/Card";
+import { ErrorState } from "../../../shared/ui/ErrorState";
+import { LoadingState } from "../../../shared/ui/LoadingState";
+import { Modal } from "../../../shared/ui/Modal";
+import {
+  YieldEntryForm,
+  type YieldEntryValues,
+} from "../../yield/components/YieldEntryForm";
+import { YieldHistoryCard } from "../../yield/components/YieldHistoryCard";
+import { YieldTrendChart } from "../../yield/components/YieldTrendChart";
+import {
+  useYieldRecords,
+  useSubmitYield,
+} from "../../yield/hooks/useYieldData";
+import { FieldForm, type FieldFormValues } from "../components/FieldForm";
+import {
+  useFieldDetail,
+  useUpdateField,
+  useDeleteField,
+} from "../hooks/useFields";
 
 /**
  * FieldDetailPage
@@ -36,7 +46,7 @@ export const FieldDetailPage: React.FC = () => {
   } = useUiState();
   const { isOnline } = useOnlineStatus();
 
-  const effectiveFieldId = fieldId ?? '';
+  const effectiveFieldId = fieldId ?? "";
 
   useEffect(() => {
     if (fieldId) {
@@ -44,13 +54,23 @@ export const FieldDetailPage: React.FC = () => {
     }
   }, [fieldId, setCurrentField]);
 
-  const { data: field, isLoading, isError, error, refetch, isFetching } = useFieldDetail(effectiveFieldId);
-  const { mutateAsync: updateField, isPending: isUpdating } = useUpdateField(effectiveFieldId);
+  const {
+    data: field,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isFetching,
+  } = useFieldDetail(effectiveFieldId);
+  const { mutateAsync: updateField, isPending: isUpdating } =
+    useUpdateField(effectiveFieldId);
   const { mutateAsync: deleteField, isPending: isDeleting } = useDeleteField();
-  
+
   // Yield data management
-  const { data: yieldRecords, isLoading: isLoadingYield } = useYieldRecords(effectiveFieldId);
-  const { mutateAsync: submitYield, isPending: isSubmittingYield } = useSubmitYield();
+  const { data: yieldRecords, isLoading: isLoadingYield } =
+    useYieldRecords(effectiveFieldId);
+  const { mutateAsync: submitYield, isPending: isSubmittingYield } =
+    useSubmitYield();
 
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -65,16 +85,17 @@ export const FieldDetailPage: React.FC = () => {
       });
       setIsEditing(false);
       showToast({
-        title: 'Field updated',
-        description: 'Your field details were saved successfully.',
-        variant: 'success',
+        title: "Field updated",
+        description: "Your field details were saved successfully.",
+        variant: "success",
       });
     } catch (err) {
-      const message = (err as Error)?.message ?? 'Failed to update field details.';
+      const message =
+        (err as Error)?.message ?? "Failed to update field details.";
       showToast({
-        title: 'Could not update field',
+        title: "Could not update field",
         description: message,
-        variant: 'error',
+        variant: "error",
       });
     }
   };
@@ -89,22 +110,25 @@ export const FieldDetailPage: React.FC = () => {
         setCurrentField(undefined);
       }
       showToast({
-        title: 'Field deleted',
-        description: 'The field has been deleted. Historical analytics may still be available separately.',
-        variant: 'success',
+        title: "Field deleted",
+        description:
+          "The field has been deleted. Historical analytics may still be available separately.",
+        variant: "success",
       });
-      navigate('/fields');
+      navigate("/fields");
     } catch (err) {
-      const message = (err as Error)?.message ?? 'Failed to delete field.';
+      const message = (err as Error)?.message ?? "Failed to delete field.";
       showToast({
-        title: 'Could not delete field',
+        title: "Could not delete field",
         description: message,
-        variant: 'error',
+        variant: "error",
       });
     }
   };
 
-  const handleNavigateTo = (suffix: 'health' | 'recommendations' | 'weather') => {
+  const handleNavigateTo = (
+    suffix: "health" | "recommendations" | "weather",
+  ) => {
     if (!field) return;
     setCurrentField(field.id);
     navigate(`/fields/${field.id}/${suffix}`);
@@ -121,19 +145,19 @@ export const FieldDetailPage: React.FC = () => {
         totalYieldKg: values.totalYieldKg,
         notes: values.notes,
       });
-      
+
       setIsYieldEntryOpen(false);
       showToast({
-        title: 'Yield data saved',
-        description: 'Your harvest yield has been recorded successfully.',
-        variant: 'success',
+        title: "Yield data saved",
+        description: "Your harvest yield has been recorded successfully.",
+        variant: "success",
       });
     } catch (err) {
-      const message = (err as Error)?.message ?? 'Failed to save yield data.';
+      const message = (err as Error)?.message ?? "Failed to save yield data.";
       showToast({
-        title: 'Could not save yield data',
+        title: "Could not save yield data",
         description: message,
-        variant: 'error',
+        variant: "error",
       });
     }
   };
@@ -142,14 +166,22 @@ export const FieldDetailPage: React.FC = () => {
     return (
       <section aria-labelledby="field-detail-heading" className="space-y-4">
         <header className="space-y-1">
-          <h1 id="field-detail-heading" className="text-lg font-semibold text-gray-900">
+          <h1
+            id="field-detail-heading"
+            className="text-lg font-semibold text-gray-900"
+          >
             Field not found
           </h1>
           <p className="text-sm text-gray-600">
-            The requested field could not be identified from the URL. Please return to your fields list and try again.
+            The requested field could not be identified from the URL. Please
+            return to your fields list and try again.
           </p>
         </header>
-        <Button size="sm" variant="secondary" onClick={() => navigate('/fields')}>
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={() => navigate("/fields")}
+        >
           Back to fields
         </Button>
       </section>
@@ -160,10 +192,15 @@ export const FieldDetailPage: React.FC = () => {
     return (
       <section aria-labelledby="field-detail-heading" className="space-y-4">
         <header className="space-y-1">
-          <h1 id="field-detail-heading" className="text-lg font-semibold text-gray-900">
+          <h1
+            id="field-detail-heading"
+            className="text-lg font-semibold text-gray-900"
+          >
             Loading field…
           </h1>
-          <p className="text-sm text-gray-600">Fetching the latest details for your field.</p>
+          <p className="text-sm text-gray-600">
+            Fetching the latest details for your field.
+          </p>
         </header>
         <LoadingState message="Loading field summary…" />
       </section>
@@ -174,20 +211,30 @@ export const FieldDetailPage: React.FC = () => {
     return (
       <section aria-labelledby="field-detail-heading" className="space-y-4">
         <header className="space-y-1">
-          <h1 id="field-detail-heading" className="text-lg font-semibold text-gray-900">
+          <h1
+            id="field-detail-heading"
+            className="text-lg font-semibold text-gray-900"
+          >
             Unable to load field
           </h1>
         </header>
         <div className="flex flex-col gap-3">
           <ErrorState
             title="Unable to load field"
-            message={error?.message ?? 'Something went wrong while loading this field. Please try again.'}
+            message={
+              error?.message ??
+              "Something went wrong while loading this field. Please try again."
+            }
           />
           <div className="flex flex-wrap gap-2">
             <Button size="sm" variant="secondary" onClick={() => refetch()}>
               Retry
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => navigate('/fields')}>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => navigate("/fields")}
+            >
               Back to fields
             </Button>
           </div>
@@ -213,21 +260,32 @@ export const FieldDetailPage: React.FC = () => {
     <section aria-labelledby="field-detail-heading" className="space-y-4">
       <header className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 id="field-detail-heading" className="text-lg font-semibold text-gray-900">
+          <h1
+            id="field-detail-heading"
+            className="text-lg font-semibold text-gray-900"
+          >
             {field.name}
           </h1>
           <p className="text-sm text-gray-600">
-            Detailed view for this field. Use the actions below to edit details, manage its boundary, or explore health,
-            recommendations, and weather insights.
+            Detailed view for this field. Use the actions below to edit details,
+            manage its boundary, or explore health, recommendations, and weather
+            insights.
           </p>
           <div className="mt-2 flex flex-wrap gap-3 text-xs text-gray-500">
             <span>Area: {field.areaHa.toFixed(2)} ha</span>
-            <span>Status: {field.status ?? '—'}</span>
-            <span>Created: {new Date(field.createdAt).toLocaleDateString()}</span>
-            <span>Updated: {new Date(field.updatedAt).toLocaleDateString()}</span>
+            <span>Status: {field.status ?? "—"}</span>
+            <span>
+              Created: {new Date(field.createdAt).toLocaleDateString()}
+            </span>
+            <span>
+              Updated: {new Date(field.updatedAt).toLocaleDateString()}
+            </span>
             {!isOnline && (
               <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700">
-                <span className="h-2 w-2 rounded-full bg-amber-500" aria-hidden="true" />
+                <span
+                  className="h-2 w-2 rounded-full bg-amber-500"
+                  aria-hidden="true"
+                />
                 Offline – showing last loaded data
               </span>
             )}
@@ -240,8 +298,12 @@ export const FieldDetailPage: React.FC = () => {
           </div>
         </div>
         <div className="flex flex-wrap gap-2 mt-2 sm:mt-0">
-          <Button size="sm" variant="secondary" onClick={() => setIsEditing((prev) => !prev)}>
-            {isEditing ? 'Cancel editing' : 'Edit details'}
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => setIsEditing((prev) => !prev)}
+          >
+            {isEditing ? "Cancel editing" : "Edit details"}
           </Button>
           <Button
             size="sm"
@@ -250,7 +312,12 @@ export const FieldDetailPage: React.FC = () => {
           >
             Edit boundary
           </Button>
-          <Button size="sm" variant="destructive" onClick={() => setIsDeleteOpen(true)} disabled={isDeleting}>
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={() => setIsDeleteOpen(true)}
+            disabled={isDeleting}
+          >
             Delete field
           </Button>
         </div>
@@ -259,8 +326,9 @@ export const FieldDetailPage: React.FC = () => {
       <Card title="Summary">
         <div className="space-y-3">
           <p className="text-sm text-gray-700">
-            This summary shows key information about your field. Boundary visualizations and health overlays will appear
-            on the map in map-first views.
+            This summary shows key information about your field. Boundary
+            visualizations and health overlays will appear on the map in
+            map-first views.
           </p>
           <dl className="grid grid-cols-1 gap-3 text-xs text-gray-600 sm:grid-cols-2">
             <div>
@@ -269,7 +337,7 @@ export const FieldDetailPage: React.FC = () => {
             </div>
             <div>
               <dt className="font-medium text-gray-900">Status</dt>
-              <dd>{field.status ?? 'Not specified'}</dd>
+              <dd>{field.status ?? "Not specified"}</dd>
             </div>
             <div>
               <dt className="font-medium text-gray-900">Created</dt>
@@ -285,13 +353,25 @@ export const FieldDetailPage: React.FC = () => {
 
       <Card title="Quick actions">
         <div className="flex flex-wrap gap-2">
-          <Button size="sm" variant="primary" onClick={() => handleNavigateTo('health')}>
+          <Button
+            size="sm"
+            variant="primary"
+            onClick={() => handleNavigateTo("health")}
+          >
             View health
           </Button>
-          <Button size="sm" variant="secondary" onClick={() => handleNavigateTo('recommendations')}>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => handleNavigateTo("recommendations")}
+          >
             View recommendations
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => handleNavigateTo('weather')}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => handleNavigateTo("weather")}
+          >
             View weather
           </Button>
         </div>
@@ -302,11 +382,12 @@ export const FieldDetailPage: React.FC = () => {
         {!isYieldEntryOpen ? (
           <div className="space-y-3">
             <p className="text-sm text-gray-600">
-              After each harvest, record your actual yield to help improve future predictions and track your field's performance over time.
+              After each harvest, record your actual yield to help improve
+              future predictions and track your field's performance over time.
             </p>
-            <Button 
-              size="sm" 
-              variant="primary" 
+            <Button
+              size="sm"
+              variant="primary"
               onClick={() => setIsYieldEntryOpen(true)}
               className="w-full sm:w-auto"
             >
@@ -327,10 +408,7 @@ export const FieldDetailPage: React.FC = () => {
 
       {/* Yield Trend Chart */}
       {yieldRecords && yieldRecords.length > 1 && (
-        <YieldTrendChart
-          records={yieldRecords}
-          showPredictions
-        />
+        <YieldTrendChart records={yieldRecords} showPredictions />
       )}
 
       {/* Yield History Table */}
@@ -351,13 +429,19 @@ export const FieldDetailPage: React.FC = () => {
         />
       )}
 
-      <Card title={isEditing ? 'Edit field details' : 'Details form'}>
+      <Card title={isEditing ? "Edit field details" : "Details form"}>
         {isEditing ? (
-          <FieldForm mode="edit" initialValue={initialFormValues} onSubmit={handleEditSubmit} isSubmitting={isUpdating} />
+          <FieldForm
+            mode="edit"
+            initialValue={initialFormValues}
+            onSubmit={handleEditSubmit}
+            isSubmitting={isUpdating}
+          />
         ) : (
           <p className="text-sm text-gray-600">
-            Use the Edit details button above to update the name or notes for this field. Additional metadata such
-            as crop type can be incorporated as the backend schema evolves.
+            Use the Edit details button above to update the name or notes for
+            this field. Additional metadata such as crop type can be
+            incorporated as the backend schema evolves.
           </p>
         )}
       </Card>
@@ -369,19 +453,31 @@ export const FieldDetailPage: React.FC = () => {
       >
         <div className="space-y-3 text-sm text-gray-800">
           <p>
-            You are about to delete the field{' '}
-            <span className="font-semibold">"{field.name}"</span>. This action cannot be undone.
+            You are about to delete the field{" "}
+            <span className="font-semibold">"{field.name}"</span>. This action
+            cannot be undone.
           </p>
           <p className="text-xs text-gray-600">
-            Historical analytics or exported data that referenced this field may remain available separately, but the
-            field will no longer appear in your active list.
+            Historical analytics or exported data that referenced this field may
+            remain available separately, but the field will no longer appear in
+            your active list.
           </p>
           <div className="mt-4 flex flex-wrap justify-end gap-2">
-            <Button size="sm" variant="secondary" onClick={() => setIsDeleteOpen(false)} disabled={isDeleting}>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => setIsDeleteOpen(false)}
+              disabled={isDeleting}
+            >
               Cancel
             </Button>
-            <Button size="sm" variant="destructive" onClick={handleDelete} disabled={isDeleting}>
-              {isDeleting ? 'Deleting…' : 'Delete field'}
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Deleting…" : "Delete field"}
             </Button>
           </div>
         </div>

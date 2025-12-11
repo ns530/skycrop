@@ -20,20 +20,20 @@ class RecommendationEngineService {
 
   /**
    * Generate recommendations for a field
-   * @param {string} fieldId - Field UUID
-   * @param {string} userId - User UUID (for verification)
+   * @param {string} field_id - Field UUID
+   * @param {string} user_id - User UUID (for verification)
    * @returns {Object} Generated recommendations with priorities
    */
-  async generateRecommendations(fieldId, userId) {
+  async generateRecommendations(field_id, user_id) {
     // 1. Verify field exists and user owns it
-    const field = await this.Field.findByPk(fieldId);
+    const field = await this.Field.findByPk(field_id);
     if (!field) {
       const error = new Error('Field not found');
       error.statusCode = 404;
       throw error;
     }
 
-    if (field.user_id !== userId) {
+    if (field.user_id !== user_id) {
       const error = new Error('Unauthorized access to field');
       error.statusCode = 403;
       throw error;
@@ -46,7 +46,7 @@ class RecommendationEngineService {
     const startDateStr = startDate.toISOString().split('T')[0];
 
     const health = await this.healthMonitoringService.analyzeFieldHealth(
-      fieldId,
+      field_id,
       startDateStr,
       endDate
     );
@@ -57,7 +57,7 @@ class RecommendationEngineService {
       const lat = field.center.coordinates[1]; // latitude
       const lon = field.center.coordinates[0]; // longitude
       const weatherResponse = await this.weatherService.getForecastByCoords(lat, lon);
-      weatherData = this._normalizeWeatherData(weatherResponse.data);
+      weatherData = this.normalizeWeatherData(weatherResponse.data);
     } catch (error) {
       // Weather service unavailable - continue without weather data
       weatherData = null;
@@ -68,58 +68,54 @@ class RecommendationEngineService {
     const recommendations = [];
 
     // Rule 1: Fertilizer Recommendation
-    const fertilizerRec = this._evaluateFertilizerNeed(health);
+    const fertilizerRec = this.evaluateFertilizerNeed(health);
     if (fertilizerRec) recommendations.push(fertilizerRec);
 
     // Rule 2: Irrigation Recommendation
-    const irrigationRec = this._evaluateIrrigationNeed(health, weather);
+    const irrigationRec = this.evaluateIrrigationNeed(health, weather);
     if (irrigationRec) recommendations.push(irrigationRec);
 
     // Rule 3: Pest/Disease Alert
-    const pestRec = this._evaluatePestDiseaseRisk(health, weather);
+    const pestRec = this.evaluatePestDiseaseRisk(health, weather);
     if (pestRec) recommendations.push(pestRec);
 
     // Rule 4: General Health Improvement
-    const generalRec = this._evaluateGeneralHealth(health);
+    const generalRec = this.evaluateGeneralHealth(health);
     if (generalRec) recommendations.push(generalRec);
 
     // Rule 5: Water Stress Alert
-    const waterStressRec = this._evaluateWaterStress(health);
+    const waterStressRec = this.evaluateWaterStress(health);
     if (waterStressRec) recommendations.push(waterStressRec);
 
     // 5. Sort by urgency (highest first)
     recommendations.sort((a, b) => b.urgency - a.urgency);
 
     // 6. Save recommendations to database
-    const savedRecommendations = await this._saveRecommendations(
-      fieldId,
-      userId,
-      recommendations
-    );
+    const savedRecommendations = await this.saveRecommendations(field_id, user_id, recommendations);
 
     // 7. Build response
     const response = {
-      fieldId,
+      field_id,
       fieldName: field.name,
       generatedAt: new Date().toISOString(),
       healthSummary: {
         currentScore: health.currentHealth?.score || null,
-        status: health.currentHealth?.status || 'no_data',
+        status: health.currentHealth?.status || 'nodata',
         trend: health.trend?.direction || 'unknown',
       },
       recommendations: savedRecommendations,
       totalCount: savedRecommendations.length,
-      criticalCount: savedRecommendations.filter((r) => r.priority === 'critical').length,
-      highCount: savedRecommendations.filter((r) => r.priority === 'high').length,
+      criticalCount: savedRecommendations.filter(r => r.priority === 'critical').length,
+      highCount: savedRecommendations.filter(r => r.priority === 'high').length,
     };
 
     // 8. Emit real-time update to WebSocket subscribers
     try {
-      const criticalRecs = savedRecommendations.filter((r) => r.priority === 'critical');
-      const highRecs = savedRecommendations.filter((r) => r.priority === 'high');
+      const criticalRecs = savedRecommendations.filter(r => r.priority === 'critical');
+      const highRecs = savedRecommendations.filter(r => r.priority === 'high');
 
-      emitToField(fieldId, 'recommendations_updated', {
-        fieldId,
+      emitToField(field_id, 'recommendationsupdated', {
+        field_id,
         fieldName: field.name,
         totalCount: savedRecommendations.length,
         criticalCount: criticalRecs.length,
@@ -129,14 +125,15 @@ class RecommendationEngineService {
 
       // If critical or high priority recommendations exist, notify user
       if (criticalRecs.length > 0 || highRecs.length > 0) {
-        emitToUser(userId, 'recommendation_created', {
-          fieldId,
+        emitToUser(user_id, 'recommendationcreated', {
+          field_id,
           fieldName: field.name,
-          message: criticalRecs.length > 0
-            ? `${criticalRecs.length} critical recommendation(s) require immediate action`
-            : `${highRecs.length} high priority recommendation(s) generated`,
+          message:
+            criticalRecs.length > 0
+              ? `${criticalRecs.length} critical recommendation(s) require immediate action`
+              : `${highRecs.length} high priority recommendation(s) generated`,
           recommendations: [...criticalRecs, ...highRecs.slice(0, 3)].map(r => ({
-            id: r.recommendation_id,
+            id: r.recommendationid,
             type: r.type,
             priority: r.priority,
             title: r.title,
@@ -157,7 +154,7 @@ class RecommendationEngineService {
    * Rule 1: Evaluate fertilizer need based on NDVI
    * @private
    */
-  _evaluateFertilizerNeed(health) {
+  evaluateFertilizerNeed(health) {
     if (!health.currentHealth) return null;
 
     const { ndvi } = health.currentHealth;
@@ -181,7 +178,7 @@ class RecommendationEngineService {
         estimatedCost: 2500, // LKR
         expectedBenefit: '+15% yield increase',
         timing: 'Within 3 days',
-        validUntil: this._addDays(new Date(), 7),
+        validUntil: this.addDays(new Date(), 7),
       };
     }
 
@@ -202,7 +199,7 @@ class RecommendationEngineService {
         estimatedCost: 1800,
         expectedBenefit: '+8% yield increase',
         timing: 'Within 7 days',
-        validUntil: this._addDays(new Date(), 14),
+        validUntil: this.addDays(new Date(), 14),
       };
     }
 
@@ -213,15 +210,15 @@ class RecommendationEngineService {
    * Rule 2: Evaluate irrigation need based on NDWI and rainfall
    * @private
    */
-  _evaluateIrrigationNeed(health, weather) {
+  evaluateIrrigationNeed(health, weather) {
     if (!health.currentHealth || !weather || weather.length === 0) return null;
 
     const { ndwi } = health.currentHealth;
-    
+
     // Calculate expected rainfall in next 7 days
     const rainfallNext7Days = weather
       .slice(0, 7)
-      .reduce((sum, day) => sum + (day.rainfall_amount || 0), 0);
+      .reduce((sum, day) => sum + (day.rainfallamount || 0), 0);
 
     // Critical: Low water content + no rain expected
     if (ndwi < 0.2 && rainfallNext7Days < 10) {
@@ -241,7 +238,7 @@ class RecommendationEngineService {
         estimatedCost: 1500,
         expectedBenefit: 'Prevent crop stress and yield loss',
         timing: 'Immediate (today)',
-        validUntil: this._addDays(new Date(), 2),
+        validUntil: this.addDays(new Date(), 2),
       };
     }
 
@@ -262,7 +259,7 @@ class RecommendationEngineService {
         estimatedCost: 1200,
         expectedBenefit: 'Maintain optimal growth conditions',
         timing: 'Within 2-3 days',
-        validUntil: this._addDays(new Date(), 5),
+        validUntil: this.addDays(new Date(), 5),
       };
     }
 
@@ -273,23 +270,21 @@ class RecommendationEngineService {
    * Rule 3: Evaluate pest/disease risk based on weather conditions
    * @private
    */
-  _evaluatePestDiseaseRisk(health, weather) {
+  evaluatePestDiseaseRisk(health, weather) {
     if (!weather || weather.length === 0) return null;
 
     // Check for high humidity days (>80%)
-    const highHumidityDays = weather
-      .slice(0, 7)
-      .filter((d) => d.humidity > 80).length;
+    const highHumidityDays = weather.slice(0, 7).filter(d => d.humidity > 80).length;
 
     // Calculate average temperature
-    const avgTemp = weather
-      .slice(0, 7)
-      .reduce((sum, d) => sum + (d.temp_max + d.temp_min) / 2, 0) / Math.min(weather.length, 7);
+    const avgTemp =
+      weather.slice(0, 7).reduce((sum, d) => sum + (d.tempmax + d.tempmin) / 2, 0) /
+      Math.min(weather.length, 7);
 
     // High risk: High humidity + high temperature = Blast disease risk
     if (highHumidityDays >= 3 && avgTemp > 28) {
       return {
-        type: 'pest_control',
+        type: 'pestcontrol',
         priority: 'high',
         urgency: 80,
         title: 'High risk of blast disease',
@@ -305,14 +300,14 @@ class RecommendationEngineService {
         estimatedCost: 3000,
         expectedBenefit: 'Prevent potential 20-40% yield loss',
         timing: 'Within 1-2 days',
-        validUntil: this._addDays(new Date(), 10),
+        validUntil: this.addDays(new Date(), 10),
       };
     }
 
     // Moderate risk: Extended high humidity
     if (highHumidityDays >= 4) {
       return {
-        type: 'pest_control',
+        type: 'pestcontrol',
         priority: 'medium',
         urgency: 65,
         title: 'Monitor for fungal diseases',
@@ -327,7 +322,7 @@ class RecommendationEngineService {
         estimatedCost: 500,
         expectedBenefit: 'Early disease detection and prevention',
         timing: 'Within 3-5 days',
-        validUntil: this._addDays(new Date(), 7),
+        validUntil: this.addDays(new Date(), 7),
       };
     }
 
@@ -338,7 +333,7 @@ class RecommendationEngineService {
    * Rule 4: Evaluate general health status
    * @private
    */
-  _evaluateGeneralHealth(health) {
+  evaluateGeneralHealth(health) {
     if (!health.currentHealth) return null;
 
     const { score, status } = health.currentHealth;
@@ -346,7 +341,7 @@ class RecommendationEngineService {
     // Poor health = Field inspection needed
     if (status === 'poor' || score < 40) {
       return {
-        type: 'field_inspection',
+        type: 'fieldinspection',
         priority: 'high',
         urgency: 70,
         title: 'Schedule comprehensive field inspection',
@@ -362,7 +357,7 @@ class RecommendationEngineService {
         estimatedCost: 1000,
         expectedBenefit: 'Identify and address root causes',
         timing: 'Within 2 days',
-        validUntil: this._addDays(new Date(), 5),
+        validUntil: this.addDays(new Date(), 5),
       };
     }
 
@@ -384,7 +379,7 @@ class RecommendationEngineService {
         estimatedCost: 0,
         expectedBenefit: 'Early problem detection',
         timing: 'Ongoing',
-        validUntil: this._addDays(new Date(), 14),
+        validUntil: this.addDays(new Date(), 14),
       };
     }
 
@@ -395,7 +390,7 @@ class RecommendationEngineService {
    * Rule 5: Evaluate water stress from NDVI/NDWI combination
    * @private
    */
-  _evaluateWaterStress(health) {
+  evaluateWaterStress(health) {
     if (!health.currentHealth) return null;
 
     const { ndvi, ndwi } = health.currentHealth;
@@ -403,7 +398,7 @@ class RecommendationEngineService {
     // Combined indicator: Moderate NDVI but low NDWI = Water stress
     if (ndvi >= 0.5 && ndvi < 0.65 && ndwi < 0.25) {
       return {
-        type: 'water_management',
+        type: 'watermanagement',
         priority: 'high',
         urgency: 78,
         title: 'Water stress detected despite green vegetation',
@@ -418,7 +413,7 @@ class RecommendationEngineService {
         estimatedCost: 800,
         expectedBenefit: 'Prevent yield loss from hidden water stress',
         timing: 'Within 2 days',
-        validUntil: this._addDays(new Date(), 5),
+        validUntil: this.addDays(new Date(), 5),
       };
     }
 
@@ -429,43 +424,43 @@ class RecommendationEngineService {
    * Save recommendations to database
    * @private
    */
-  async _saveRecommendations(fieldId, userId, recommendations) {
+  async saveRecommendations(field_id, user_id, recommendations) {
     const savedRecs = [];
 
     for (const rec of recommendations) {
       const saved = await this.Recommendation.create({
-        field_id: fieldId,
-        user_id: userId,
+        field_id: field_id,
+        user_id: user_id,
         type: rec.type,
         priority: rec.priority,
         title: rec.title,
         description: rec.description,
         reason: rec.reason,
-        action_steps: JSON.stringify(rec.actionSteps),
-        estimated_cost: rec.estimatedCost,
-        expected_benefit: rec.expectedBenefit,
+        actionsteps: JSON.stringify(rec.actionSteps),
+        estimatedcost: rec.estimatedCost,
+        expectedbenefit: rec.expectedBenefit,
         timing: rec.timing,
-        urgency_score: rec.urgency,
-        valid_until: rec.validUntil,
+        urgencyscore: rec.urgency,
+        validuntil: rec.validUntil,
         status: 'pending',
-        generated_at: new Date(),
+        generatedat: new Date(),
       });
 
       savedRecs.push({
-        recommendationId: saved.recommendation_id,
+        recommendationId: saved.recommendationid,
         type: saved.type,
         priority: saved.priority,
-        urgency: saved.urgency_score,
+        urgency: saved.urgencyscore,
         title: saved.title,
         description: saved.description,
         reason: saved.reason,
-        actionSteps: JSON.parse(saved.action_steps),
-        estimatedCost: saved.estimated_cost,
-        expectedBenefit: saved.expected_benefit,
+        actionSteps: JSON.parse(saved.actionsteps),
+        estimatedCost: saved.estimatedcost,
+        expectedBenefit: saved.expectedbenefit,
         timing: saved.timing,
-        validUntil: saved.valid_until,
+        validUntil: saved.validuntil,
         status: saved.status,
-        generatedAt: saved.generated_at,
+        generatedAt: saved.generatedat,
       });
     }
 
@@ -476,7 +471,7 @@ class RecommendationEngineService {
    * Helper: Add days to date
    * @private
    */
-  _addDays(date, days) {
+  addDays(date, days) {
     const result = new Date(date);
     result.setDate(result.getDate() + days);
     return result;
@@ -486,22 +481,21 @@ class RecommendationEngineService {
    * Normalize weather data from weather service to expected format
    * @private
    */
-  _normalizeWeatherData(weatherResponse) {
+  normalizeWeatherData(weatherResponse) {
     if (!weatherResponse || !weatherResponse.days || !Array.isArray(weatherResponse.days)) {
       return null;
     }
 
     // Transform weather service format to recommendation engine format
-    return weatherResponse.days.map((day) => ({
+    return weatherResponse.days.map(day => ({
       date: day.date,
-      rainfall_amount: day.rain_mm || 0,
+      rainfallamount: day.rain_mm || 0,
       humidity: day.humidity || 70, // Default if not provided
-      temp_max: day.tmax || 30,
-      temp_min: day.tmin || 22,
+      tempmax: day.tmax || 30,
+      tempmin: day.tmin || 22,
       wind_speed: day.wind || 0,
     }));
   }
 }
 
 module.exports = RecommendationEngineService;
-

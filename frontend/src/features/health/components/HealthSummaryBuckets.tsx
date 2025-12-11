@@ -1,22 +1,22 @@
-import React from 'react';
+import React from "react";
 
-import type { HealthSummaryBucket } from '../api/healthApi';
+import type { HealthSummaryBucket } from "../api/healthApi";
 
 export interface HealthSummaryBucketsProps {
   buckets: HealthSummaryBucket[];
 }
 
-const getBucketColorClass = (label: HealthSummaryBucket['label']) => {
+const getBucketColorClass = (label: HealthSummaryBucket["label"]) => {
   switch (label) {
-    case 'Excellent':
-    case 'Good':
-      return 'bg-status-excellent';
-    case 'Fair':
-      return 'bg-status-fair';
-    case 'Poor':
-      return 'bg-status-poor';
+    case "Excellent":
+    case "Good":
+      return "bg-status-excellent";
+    case "Fair":
+      return "bg-status-fair";
+    case "Poor":
+      return "bg-status-poor";
     default:
-      return 'bg-gray-200';
+      return "bg-gray-200";
   }
 };
 
@@ -26,7 +26,9 @@ const getBucketColorClass = (label: HealthSummaryBucket['label']) => {
  * Accessible visualization of how much of the field area falls into each
  * health bucket (Excellent/Good/Fair/Poor).
  */
-export const HealthSummaryBuckets: React.FC<HealthSummaryBucketsProps> = ({ buckets }) => {
+export const HealthSummaryBuckets: React.FC<HealthSummaryBucketsProps> = ({
+  buckets,
+}) => {
   if (!buckets || buckets.length === 0) {
     return (
       <p className="text-sm text-gray-600">
@@ -35,7 +37,9 @@ export const HealthSummaryBuckets: React.FC<HealthSummaryBucketsProps> = ({ buck
     );
   }
 
-  const total = buckets.reduce<number>((sum, bucket) => sum + bucket.percentageArea, 0) || 1;
+  const total =
+    buckets.reduce<number>((sum, bucket) => sum + bucket.percentageArea, 0) ||
+    1;
 
   return (
     <div className="space-y-3" aria-label="Field area by health status">
@@ -67,7 +71,10 @@ export const HealthSummaryBuckets: React.FC<HealthSummaryBucketsProps> = ({ buck
         aria-label="Health bucket legend"
       >
         {buckets.map((bucket) => (
-          <li key={bucket.label} className="flex items-center justify-between gap-3">
+          <li
+            key={bucket.label}
+            className="flex items-center justify-between gap-3"
+          >
             <div className="flex items-center gap-2">
               <span
                 className={`inline-flex h-2.5 w-2.5 rounded-full ${getBucketColorClass(bucket.label)}`}

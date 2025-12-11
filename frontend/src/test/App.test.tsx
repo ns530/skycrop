@@ -1,15 +1,15 @@
-import { render, screen } from '@testing-library/react';
-import React from 'react';
+import { render, screen } from "@testing-library/react";
+import React from "react";
 
-import { App } from '../app/App';
-import { AppProviders } from '../app/providers/AppProviders';
+import { App } from "../app/App";
+import { AppProviders } from "../app/providers/AppProviders";
 
-describe('App', () => {
-  it('renders without crashing and shows farmer dashboard heading after auth (stub)', () => {
+describe("App", () => {
+  it("renders without crashing and shows farmer dashboard heading after auth (stub)", () => {
     render(
       <AppProviders>
         <App />
-      </AppProviders>
+      </AppProviders>,
     );
 
     // We do not assert on specific routes here because RequireAuth currently

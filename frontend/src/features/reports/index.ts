@@ -1,8 +1,7 @@
 // Pages
-export * from './pages';
+export * from "./pages";
 
 // Components
-export * from './components';
+export * from "./components";
 
 // Utils are exported from shared/utils
-

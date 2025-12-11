@@ -1,9 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 
-import type { ApiError } from '../../../shared/api';
-import { dashboardKeys } from '../../../shared/query/queryKeys';
-import type { DashboardMetrics } from '../api/dashboardApi';
-import { getDashboardMetrics } from '../api/dashboardApi';
+import type { ApiError } from "../../../shared/api";
+import { dashboardKeys } from "../../../shared/query/queryKeys";
+import type { DashboardMetrics } from "../api/dashboardApi";
+import { getDashboardMetrics } from "../api/dashboardApi";
 
 /**
  * useDashboard

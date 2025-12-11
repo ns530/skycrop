@@ -1,10 +1,15 @@
-import { httpClient, normalizeApiError, type PaginatedResponse, type ListParams } from '../../../shared/api';
+import {
+  httpClient,
+  normalizeApiError,
+  type PaginatedResponse,
+  type ListParams,
+} from "../../../shared/api";
 
 // --------------------
 // Types
 // --------------------
 
-export type AdminUserStatus = 'active' | 'disabled';
+export type AdminUserStatus = "active" | "disabled";
 
 export interface AdminUserSummary {
   id: string;
@@ -15,7 +20,7 @@ export interface AdminUserSummary {
   lastActiveAt?: string;
 }
 
-export type AdminContentStatus = 'draft' | 'published';
+export type AdminContentStatus = "draft" | "published";
 
 export interface AdminContentItem {
   id: string;
@@ -26,7 +31,7 @@ export interface AdminContentItem {
   publishedAt?: string;
 }
 
-export type ServiceStatusLevel = 'up' | 'degraded' | 'down';
+export type ServiceStatusLevel = "up" | "degraded" | "down";
 
 export interface SystemStatus {
   mlService: ServiceStatusLevel;
@@ -101,20 +106,22 @@ interface BackendSystemStatusEnvelope {
 // Config (paths)
 // --------------------
 
-const ADMIN_USERS_PATH = '/admin/users';
-const ADMIN_CONTENT_PATH = '/admin/content';
-const ADMIN_SYSTEM_STATUS_PATH = '/admin/system-status';
+const ADMIN_USERS_PATH = "/admin/users";
+const ADMIN_CONTENT_PATH = "/admin/content";
+const ADMIN_SYSTEM_STATUS_PATH = "/admin/system-status";
 
 // --------------------
 // Mappers
 // --------------------
 
-const mapListParamsToQuery = (params?: ListParams): Record<string, unknown> | undefined => {
+const mapListParamsToQuery = (
+  params?: ListParams,
+): Record<string, unknown> | undefined => {
   if (!params) return undefined;
 
   const query: Record<string, unknown> = {};
-  if (typeof params.page === 'number') query.page = params.page;
-  if (typeof params.pageSize === 'number') query.pageSize = params.pageSize;
+  if (typeof params.page === "number") query.page = params.page;
+  if (typeof params.pageSize === "number") query.pageSize = params.pageSize;
   if (params.search) query.search = params.search;
   if (params.sort) query.sort = params.sort;
   if (params.order) query.order = params.order;
@@ -127,7 +134,7 @@ const mapBackendUser = (user: BackendAdminUser): AdminUserSummary => ({
   name: user.name,
   email: user.email,
   role: user.role,
-  status: (user.status as AdminUserStatus) ?? 'active',
+  status: (user.status as AdminUserStatus) ?? "active",
   lastActiveAt: user.last_active_at ?? undefined,
 });
 
@@ -136,11 +143,13 @@ const mapBackendContent = (item: BackendAdminContent): AdminContentItem => ({
   title: item.title,
   summary: item.summary,
   body: item.body,
-  status: (item.status as AdminContentStatus) ?? 'draft',
+  status: (item.status as AdminContentStatus) ?? "draft",
   publishedAt: item.published_at ?? undefined,
 });
 
-const mapSystemStatus = (payload: BackendSystemStatusEnvelope['data']): SystemStatus => ({
+const mapSystemStatus = (
+  payload: BackendSystemStatusEnvelope["data"],
+): SystemStatus => ({
   mlService: payload.ml_service as ServiceStatusLevel,
   api: payload.api as ServiceStatusLevel,
   satelliteIngest: payload.satellite_ingest as ServiceStatusLevel,
@@ -155,11 +164,16 @@ const mapSystemStatus = (payload: BackendSystemStatusEnvelope['data']): SystemSt
  *
  * GET /api/v1/admin/users
  */
-export const listUsers = async (params?: ListParams): Promise<PaginatedResponse<AdminUserSummary>> => {
+export const listUsers = async (
+  params?: ListParams,
+): Promise<PaginatedResponse<AdminUserSummary>> => {
   try {
-    const res = await httpClient.get<BackendAdminUserListEnvelope>(ADMIN_USERS_PATH, {
-      params: mapListParamsToQuery(params),
-    });
+    const res = await httpClient.get<BackendAdminUserListEnvelope>(
+      ADMIN_USERS_PATH,
+      {
+        params: mapListParamsToQuery(params),
+      },
+    );
 
     const { data, pagination, meta } = res.data;
 
@@ -182,9 +196,15 @@ export const listUsers = async (params?: ListParams): Promise<PaginatedResponse<
  *
  * PATCH /api/v1/admin/users/{id}/status
  */
-export const updateUserStatus = async (id: string, status: AdminUserStatus): Promise<AdminUserSummary> => {
+export const updateUserStatus = async (
+  id: string,
+  status: AdminUserStatus,
+): Promise<AdminUserSummary> => {
   try {
-    const res = await httpClient.patch<BackendAdminUserSingleEnvelope>(`${ADMIN_USERS_PATH}/${id}/status`, { status });
+    const res = await httpClient.patch<BackendAdminUserSingleEnvelope>(
+      `${ADMIN_USERS_PATH}/${id}/status`,
+      { status },
+    );
     return mapBackendUser(res.data.data);
   } catch (error) {
     throw normalizeApiError(error);
@@ -196,11 +216,16 @@ export const updateUserStatus = async (id: string, status: AdminUserStatus): Pro
  *
  * GET /api/v1/admin/content
  */
-export const listContent = async (params?: ListParams): Promise<PaginatedResponse<AdminContentItem>> => {
+export const listContent = async (
+  params?: ListParams,
+): Promise<PaginatedResponse<AdminContentItem>> => {
   try {
-    const res = await httpClient.get<BackendAdminContentListEnvelope>(ADMIN_CONTENT_PATH, {
-      params: mapListParamsToQuery(params),
-    });
+    const res = await httpClient.get<BackendAdminContentListEnvelope>(
+      ADMIN_CONTENT_PATH,
+      {
+        params: mapListParamsToQuery(params),
+      },
+    );
 
     const { data, pagination, meta } = res.data;
 
@@ -225,7 +250,7 @@ export const listContent = async (params?: ListParams): Promise<PaginatedRespons
  * PUT  /api/v1/admin/content/{id}
  */
 export const createOrUpdateContent = async (
-  item: Partial<AdminContentItem> & { id?: string }
+  item: Partial<AdminContentItem> & { id?: string },
 ): Promise<AdminContentItem> => {
   try {
     const payload = {
@@ -237,10 +262,12 @@ export const createOrUpdateContent = async (
     };
 
     const hasId = Boolean(item.id);
-    const method = hasId ? 'put' : 'post';
+    const method = hasId ? "put" : "post";
     const url = hasId ? `${ADMIN_CONTENT_PATH}/${item.id}` : ADMIN_CONTENT_PATH;
 
-    const res = await httpClient[method as 'post' | 'put']<BackendAdminContentSingleEnvelope>(url, payload);
+    const res = await httpClient[
+      method as "post" | "put"
+    ]<BackendAdminContentSingleEnvelope>(url, payload);
     return mapBackendContent(res.data.data);
   } catch (error) {
     throw normalizeApiError(error);
@@ -254,7 +281,9 @@ export const createOrUpdateContent = async (
  */
 export const getSystemStatus = async (): Promise<SystemStatus> => {
   try {
-    const res = await httpClient.get<BackendSystemStatusEnvelope>(ADMIN_SYSTEM_STATUS_PATH);
+    const res = await httpClient.get<BackendSystemStatusEnvelope>(
+      ADMIN_SYSTEM_STATUS_PATH,
+    );
     return mapSystemStatus(res.data.data);
   } catch (error) {
     throw normalizeApiError(error);

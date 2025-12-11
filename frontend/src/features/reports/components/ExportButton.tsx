@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
-import { useToast } from '../../../shared/hooks/useToast';
-import { Button } from '../../../shared/ui/Button';
+import { useToast } from "../../../shared/hooks/useToast";
+import { Button } from "../../../shared/ui/Button";
 
 interface ExportButtonProps {
   onExport: () => Promise<void> | void;
   label?: string;
-  variant?: 'primary' | 'secondary';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: "primary" | "secondary";
+  size?: "sm" | "md" | "lg";
   className?: string;
 }
 
@@ -17,9 +17,9 @@ interface ExportButtonProps {
  */
 export const ExportButton: React.FC<ExportButtonProps> = ({
   onExport,
-  label = 'Export',
-  variant = 'secondary',
-  size = 'md',
+  label = "Export",
+  variant = "secondary",
+  size = "md",
   className,
 }) => {
   const { showToast } = useToast();
@@ -30,16 +30,17 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
     try {
       await onExport();
       showToast({
-        variant: 'success',
-        title: 'Export successful',
-        description: 'Your data has been exported successfully.',
+        variant: "success",
+        title: "Export successful",
+        description: "Your data has been exported successfully.",
       });
     } catch (error) {
-      console.error('Export error:', error);
+      console.error("Export error:", error);
       showToast({
-        variant: 'error',
-        title: 'Export failed',
-        description: 'An error occurred while exporting data. Please try again.',
+        variant: "error",
+        title: "Export failed",
+        description:
+          "An error occurred while exporting data. Please try again.",
       });
     } finally {
       setIsExporting(false);
@@ -102,4 +103,3 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
 };
 
 export default ExportButton;
-

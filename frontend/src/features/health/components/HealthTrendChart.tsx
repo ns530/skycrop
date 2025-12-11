@@ -3,7 +3,7 @@
  * Interactive chart showing NDVI/health index trends over time
  */
 
-import React from 'react';
+import React from "react";
 import {
   LineChart,
   Line,
@@ -14,10 +14,10 @@ import {
   Legend,
   ResponsiveContainer,
   ReferenceLine,
-} from 'recharts';
+} from "recharts";
 
-import { Card } from '../../../shared/ui/Card';
-import type { FieldHealthTimeSeries } from '../api/healthApi';
+import { Card } from "../../../shared/ui/Card";
+import type { FieldHealthTimeSeries } from "../api/healthApi";
 
 interface HealthTrendChartProps {
   series: FieldHealthTimeSeries | null;
@@ -28,7 +28,15 @@ interface HealthTrendChartProps {
 /**
  * Custom tooltip for chart
  */
-const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) => {
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: any[];
+  label?: string;
+}) => {
   if (!active || !payload || !payload.length) return null;
 
   const data = payload[0];
@@ -48,13 +56,13 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
         </p>
         <span
           className={`px-2 py-0.5 rounded text-xs font-medium ${
-            status === 'excellent'
-              ? 'bg-green-100 text-green-800'
-              : status === 'good'
-              ? 'bg-blue-100 text-blue-800'
-              : status === 'fair'
-              ? 'bg-yellow-100 text-yellow-800'
-              : 'bg-red-100 text-red-800'
+            status === "excellent"
+              ? "bg-green-100 text-green-800"
+              : status === "good"
+                ? "bg-blue-100 text-blue-800"
+                : status === "fair"
+                  ? "bg-yellow-100 text-yellow-800"
+                  : "bg-red-100 text-red-800"
           }`}
         >
           {status}
@@ -67,33 +75,35 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
 /**
  * Determine health status from NDVI value
  */
-const getHealthStatus = (ndvi: number): 'excellent' | 'good' | 'fair' | 'poor' => {
-  if (ndvi >= 0.7) return 'excellent';
-  if (ndvi >= 0.6) return 'good';
-  if (ndvi >= 0.4) return 'fair';
-  return 'poor';
+const getHealthStatus = (
+  ndvi: number,
+): "excellent" | "good" | "fair" | "poor" => {
+  if (ndvi >= 0.7) return "excellent";
+  if (ndvi >= 0.6) return "good";
+  if (ndvi >= 0.4) return "fair";
+  return "poor";
 };
 
 /**
  * Get color based on NDVI value
  */
 const getLineColor = (ndvi: number): string => {
-  if (ndvi >= 0.7) return '#059669'; // Dark Green
-  if (ndvi >= 0.6) return '#10B981'; // Green
-  if (ndvi >= 0.4) return '#F59E0B'; // Yellow
-  return '#EF4444'; // Red
+  if (ndvi >= 0.7) return "#059669"; // Dark Green
+  if (ndvi >= 0.6) return "#10B981"; // Green
+  if (ndvi >= 0.4) return "#F59E0B"; // Yellow
+  return "#EF4444"; // Red
 };
 
 /**
  * HealthTrendChart
- * 
+ *
  * Shows NDVI/health index trends over time
  * - Interactive line chart
  * - Color-coded by health status
  * - Hover tooltips with details
  * - Reference lines for thresholds
  * - Mobile-responsive
- * 
+ *
  * @example
  * ```tsx
  * <HealthTrendChart
@@ -104,7 +114,7 @@ const getLineColor = (ndvi: number): string => {
  */
 export const HealthTrendChart: React.FC<HealthTrendChartProps> = ({
   series,
-  title = 'Health Index Trend',
+  title = "Health Index Trend",
   height = 300,
 }) => {
   // No data state
@@ -124,9 +134,9 @@ export const HealthTrendChart: React.FC<HealthTrendChartProps> = ({
 
   // Prepare chart data
   const chartData = series.points.map((point) => ({
-    date: new Date(point.date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
+    date: new Date(point.date).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
     }),
     value: point.value,
     color: getLineColor(point.value),
@@ -150,7 +160,10 @@ export const HealthTrendChart: React.FC<HealthTrendChartProps> = ({
       <div className="grid grid-cols-4 gap-4 mb-4 pb-4 border-b">
         <div className="text-center">
           <p className="text-xs text-gray-500 mb-1">Latest</p>
-          <p className="text-lg font-semibold" style={{ color: getLineColor(latestValue) }}>
+          <p
+            className="text-lg font-semibold"
+            style={{ color: getLineColor(latestValue) }}
+          >
             {latestValue.toFixed(3)}
           </p>
         </div>
@@ -170,16 +183,21 @@ export const HealthTrendChart: React.FC<HealthTrendChartProps> = ({
           <p className="text-xs text-gray-500 mb-1">Trend</p>
           <p
             className={`text-lg font-semibold ${
-              trend > 0 ? 'text-green-600' : trend < 0 ? 'text-red-600' : 'text-gray-600'
+              trend > 0
+                ? "text-green-600"
+                : trend < 0
+                  ? "text-red-600"
+                  : "text-gray-600"
             }`}
           >
-            {trend > 0 ? '↑' : trend < 0 ? '↓' : '→'} {Math.abs(trend).toFixed(1)}%
+            {trend > 0 ? "↑" : trend < 0 ? "↓" : "→"}{" "}
+            {Math.abs(trend).toFixed(1)}%
           </p>
         </div>
       </div>
 
       {/* Chart */}
-      <div style={{ width: '100%', height }}>
+      <div style={{ width: "100%", height }}>
         <ResponsiveContainer>
           <LineChart
             data={chartData}
@@ -188,18 +206,18 @@ export const HealthTrendChart: React.FC<HealthTrendChartProps> = ({
             <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
             <XAxis
               dataKey="date"
-              tick={{ fontSize: 12, fill: '#6B7280' }}
-              tickLine={{ stroke: '#E5E7EB' }}
+              tick={{ fontSize: 12, fill: "#6B7280" }}
+              tickLine={{ stroke: "#E5E7EB" }}
             />
             <YAxis
               domain={[0, 1]}
-              tick={{ fontSize: 12, fill: '#6B7280' }}
-              tickLine={{ stroke: '#E5E7EB' }}
+              tick={{ fontSize: 12, fill: "#6B7280" }}
+              tickLine={{ stroke: "#E5E7EB" }}
               label={{
                 value: series.indexType.toUpperCase(),
                 angle: -90,
-                position: 'insideLeft',
-                style: { fontSize: 12, fill: '#6B7280' },
+                position: "insideLeft",
+                style: { fontSize: 12, fill: "#6B7280" },
               }}
             />
             <Tooltip content={<CustomTooltip />} />
@@ -229,21 +247,9 @@ export const HealthTrendChart: React.FC<HealthTrendChartProps> = ({
             />
 
             {/* Reference lines for thresholds */}
-            <ReferenceLine
-              y={0.7}
-              stroke="#059669"
-              strokeDasharray="3 3"
-            />
-            <ReferenceLine
-              y={0.6}
-              stroke="#10B981"
-              strokeDasharray="3 3"
-            />
-            <ReferenceLine
-              y={0.4}
-              stroke="#F59E0B"
-              strokeDasharray="3 3"
-            />
+            <ReferenceLine y={0.7} stroke="#059669" strokeDasharray="3 3" />
+            <ReferenceLine y={0.6} stroke="#10B981" strokeDasharray="3 3" />
+            <ReferenceLine y={0.4} stroke="#F59E0B" strokeDasharray="3 3" />
 
             {/* Main line with gradient color */}
             <Line
@@ -251,7 +257,7 @@ export const HealthTrendChart: React.FC<HealthTrendChartProps> = ({
               dataKey="value"
               stroke="#3B82F6"
               strokeWidth={3}
-              dot={{ r: 4, fill: '#3B82F6', strokeWidth: 2, stroke: '#fff' }}
+              dot={{ r: 4, fill: "#3B82F6", strokeWidth: 2, stroke: "#fff" }}
               activeDot={{ r: 6, strokeWidth: 2 }}
             />
           </LineChart>
@@ -261,7 +267,8 @@ export const HealthTrendChart: React.FC<HealthTrendChartProps> = ({
       {/* Footer Info */}
       <div className="mt-4 pt-4 border-t">
         <p className="text-xs text-gray-500">
-          💡 <strong>Tip:</strong> Higher values indicate healthier vegetation. Monitor trends to catch issues early.
+          💡 <strong>Tip:</strong> Higher values indicate healthier vegetation.
+          Monitor trends to catch issues early.
         </p>
       </div>
     </Card>
@@ -269,4 +276,3 @@ export const HealthTrendChart: React.FC<HealthTrendChartProps> = ({
 };
 
 export default HealthTrendChart;
-

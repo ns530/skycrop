@@ -3,11 +3,17 @@
  * Review and confirm AI-detected field boundary
  */
 
-import React from 'react';
+import React from "react";
 
-import { BaseMap, FieldBoundaryLayer, MapControls, calculatePolygonCenter, type FieldWithBoundary } from '../../../shared/components/Map';
-import type { FieldGeometry } from '../../../shared/types/geojson';
-import { Button } from '../../../shared/ui/Button';
+import {
+  BaseMap,
+  FieldBoundaryLayer,
+  MapControls,
+  calculatePolygonCenter,
+  type FieldWithBoundary,
+} from "../../../shared/components/Map";
+import type { FieldGeometry } from "../../../shared/types/geojson";
+import { Button } from "../../../shared/ui/Button";
 
 interface BoundaryConfirmationProps {
   boundary: FieldGeometry;
@@ -19,7 +25,7 @@ interface BoundaryConfirmationProps {
 
 /**
  * BoundaryConfirmation
- * 
+ *
  * Shows the AI-detected boundary on map and allows user to:
  * 1. Confirm and proceed to naming field
  * 2. Adjust manually (future: boundary editor)
@@ -37,11 +43,11 @@ export const BoundaryConfirmation: React.FC<BoundaryConfirmationProps> = ({
 
   // Convert to FieldWithBoundary format for rendering
   const fieldForDisplay: FieldWithBoundary = {
-    id: 'temp-preview',
-    name: 'Preview',
+    id: "temp-preview",
+    name: "Preview",
     boundary,
     area,
-    healthStatus: 'good', // Show as green to indicate success
+    healthStatus: "good", // Show as green to indicate success
   };
 
   return (
@@ -86,7 +92,10 @@ export const BoundaryConfirmation: React.FC<BoundaryConfirmationProps> = ({
               <p className="text-xs text-gray-500 mb-1">Confidence</p>
               <div className="flex items-center gap-1">
                 <div className="w-24 bg-gray-200 rounded-full h-2">
-                  <div className="bg-green-600 h-2 rounded-full" style={{ width: '85%' }} />
+                  <div
+                    className="bg-green-600 h-2 rounded-full"
+                    style={{ width: "85%" }}
+                  />
                 </div>
                 <span className="text-xs font-medium text-gray-700">85%</span>
               </div>
@@ -107,11 +116,7 @@ export const BoundaryConfirmation: React.FC<BoundaryConfirmationProps> = ({
       <footer className="bg-white border-t shadow-lg">
         <div className="p-4 space-y-3">
           {/* Primary Action */}
-          <Button
-            onClick={onConfirm}
-            className="w-full"
-            size="lg"
-          >
+          <Button onClick={onConfirm} className="w-full" size="lg">
             ✓ Confirm Boundary & Continue
           </Button>
 
@@ -126,11 +131,7 @@ export const BoundaryConfirmation: React.FC<BoundaryConfirmationProps> = ({
             >
               ✏️ Adjust Manually
             </Button>
-            <Button
-              onClick={onCancel}
-              variant="secondary"
-              size="md"
-            >
+            <Button onClick={onCancel} variant="secondary" size="md">
               ↺ Start Over
             </Button>
           </div>
@@ -150,4 +151,3 @@ export const BoundaryConfirmation: React.FC<BoundaryConfirmationProps> = ({
 };
 
 export default BoundaryConfirmation;
-

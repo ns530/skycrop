@@ -17,16 +17,16 @@ function getCorrelationId(req) {
  */
 module.exports = {
   // GET /api/v1/fields/:id/health?from=YYYY-MM-DD&to=YYYY-MM-DD&page=&pageSize=
-  // Returns paginated health_snapshots. If no filters provided, still paginated (defaults page=1,pageSize=20).
+  // Returns paginated healthsnapshots. If no filters provided, still paginated (defaults page=1,pageSize=20).
   async listForField(req, res, next) {
     const started = Date.now();
     const corr = getCorrelationId(req);
     try {
-      const userId = req.user.userId;
+      const { user_id } = req.user;
       const { id } = req.params;
       const { from, to, page, pageSize } = req.query || {};
 
-      const result = await healthService.listSnapshots(userId, id, {
+      const result = await healthService.listSnapshots(user_id, id, {
         from,
         to,
         page: page ? parseInt(page, 10) : undefined,
@@ -36,21 +36,21 @@ module.exports = {
       const latency = Date.now() - started;
       logger.info('health.snapshots.list', {
         route: req.originalUrl,
-        correlation_id: corr,
-        latency_ms: latency,
+        correlationid: corr,
+        latencyms: latency,
         field_id: id,
         from,
         to,
         page: result.page,
-        page_size: result.pageSize,
+        pagesize: result.pageSize,
         total: result.total,
       });
 
-      return res.status(200).json({
+      return res.status(200)on({
         success: true,
         data: result.items,
         pagination: { page: result.page, pageSize: result.pageSize, total: result.total },
-        meta: { correlation_id: corr, latency_ms: latency },
+        meta: { correlationid: corr, latencyms: latency },
       });
     } catch (err) {
       return next(err);
@@ -63,7 +63,7 @@ module.exports = {
     const started = Date.now();
     const corr = getCorrelationId(req);
     try {
-      const userId = req.user.userId;
+      const { user_id } = req.user;
       const { id } = req.params;
       const { date, recompute = false } = req.body || {};
 
@@ -74,43 +74,52 @@ module.exports = {
           const latency = Date.now() - started;
           logger.info('health.snapshots.compute.idempotent', {
             route: req.originalUrl,
-            correlation_id: corr,
-            latency_ms: latency,
-            cache_hit: true,
+            correlationid: corr,
+            latencyms: latency,
+            cachehit: true,
             field_id: id,
             date,
           });
-          return res
-            .status(200)
-            .json({ success: true, data: existing, meta: { correlation_id: corr, latency_ms: latency, cache_hit: true } });
+          return res.status(200)on({
+            success: true,
+            data: existing,
+            meta: { correlationid: corr, latencyms: latency, cachehit: true },
+          });
         }
       }
 
       // Compute indices via Sentinel + cache
-      const computed = await healthService.computeIndicesForField(userId, id, date);
+      const computed = await healthService.computeIndicesForField(user_id, id, date);
 
       // Persist snapshot (idempotent upsert)
       const saved = await healthService.upsertSnapshot(
         id,
         computed.timestamp,
-        { ndvi: computed.ndvi, ndwi: computed.ndwi, tdvi: computed.tdvi, source: computed.source || 'sentinel2' },
+        {
+          ndvi: computed.ndvi,
+          ndwi: computed.ndwi,
+          tdvi: computed.tdvi,
+          source: computed.source || 'sentinel2',
+        },
         !!recompute
       );
 
       const latency = Date.now() - started;
       logger.info('health.snapshots.compute', {
         route: req.originalUrl,
-        correlation_id: corr,
-        latency_ms: latency,
-        cache_hit: !!computed.cache_hit,
+        correlationid: corr,
+        latencyms: latency,
+        cachehit: !!computed.cachehit,
         field_id: id,
         date,
       });
 
       const status = recompute ? 200 : 201;
-      return res
-        .status(status)
-        .json({ success: true, data: saved, meta: { correlation_id: corr, latency_ms: latency, cache_hit: !!computed.cache_hit } });
+      return res.status(status)on({
+        success: true,
+        data: saved,
+        meta: { correlationid: corr, latencyms: latency, cachehit: !!computed.cachehit },
+      });
     } catch (err) {
       return next(err);
     }
@@ -119,11 +128,11 @@ module.exports = {
   // GET /api/v1/fields/:id/health/history?days=180 or &from=YYYY-MM-DD&to=YYYY-MM-DD
   async getHistory(req, res, next) {
     try {
-      const userId = req.user.userId;
+      const { user_id } = req.user;
       const { id } = req.params;
       const { days, from, to } = req.query || {};
-      const data = await healthService.getHistory(userId, id, { days, from, to });
-      return res.status(200).json({ success: true, data });
+      const data = await healthService.getHistory(user_id, id, { days, from, to });
+      return res.status(200)on({ success: true, data });
     } catch (err) {
       return next(err);
     }
@@ -132,10 +141,10 @@ module.exports = {
   // POST /api/v1/fields/:id/health/refresh
   async refresh(req, res, next) {
     try {
-      const userId = req.user.userId;
+      const { user_id } = req.user;
       const { id } = req.params;
-      const data = await healthService.refresh(userId, id);
-      return res.status(202).json({ success: true, data });
+      const data = await healthService.refresh(user_id, id);
+      return res.status(202)on({ success: true, data });
     } catch (err) {
       return next(err);
     }

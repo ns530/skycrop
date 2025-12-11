@@ -1,4 +1,4 @@
-import { useAuth, type AuthContextValue } from '../context/AuthContext';
+import { useAuth, type AuthContextValue } from "../context/AuthContext";
 
 /**
  * useAuthSession

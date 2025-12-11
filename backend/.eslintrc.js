@@ -25,7 +25,7 @@ module.exports = {
   },
   rules: {
     'prettier/prettier': 'error',
-    'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    'no-console': process.env.NODEENV === 'production' ? 'warn' : 'off',
     'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
     'class-methods-use-this': 'off',
     'consistent-return': 'off',
@@ -35,10 +35,5 @@ module.exports = {
       { devDependencies: ['**/tests/**', '**/*.test.js', '**/jest.config.js'] },
     ],
   },
-  ignorePatterns: [
-    'node_modules/',
-    'coverage/',
-    'dist/',
-    '*.log',
-  ],
+  ignorePatterns: ['nodemodules/', 'coverage/', 'dist/', '*.log'],
 };

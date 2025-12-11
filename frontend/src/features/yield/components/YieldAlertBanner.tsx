@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 
-export type YieldAlertSeverity = 'critical' | 'warning' | 'info';
+export type YieldAlertSeverity = "critical" | "warning" | "info";
 
 export interface YieldAlert {
   id: string;
@@ -22,40 +22,44 @@ const severityRank: Record<YieldAlertSeverity, number> = {
   info: 1,
 };
 
-const getBannerClasses = (severity: YieldAlertSeverity): { container: string; icon: string } => {
+const getBannerClasses = (
+  severity: YieldAlertSeverity,
+): { container: string; icon: string } => {
   switch (severity) {
-    case 'critical':
+    case "critical":
       return {
-        container: 'border-red-300 bg-red-50 text-red-900',
-        icon: 'text-red-600',
+        container: "border-red-300 bg-red-50 text-red-900",
+        icon: "text-red-600",
       };
-    case 'warning':
+    case "warning":
       return {
-        container: 'border-amber-300 bg-amber-50 text-amber-900',
-        icon: 'text-amber-600',
+        container: "border-amber-300 bg-amber-50 text-amber-900",
+        icon: "text-amber-600",
       };
-    case 'info':
+    case "info":
     default:
       return {
-        container: 'border-sky-300 bg-sky-50 text-sky-900',
-        icon: 'text-sky-600',
+        container: "border-sky-300 bg-sky-50 text-sky-900",
+        icon: "text-sky-600",
       };
   }
 };
 
 const getSeverityLabel = (severity: YieldAlertSeverity): string => {
   switch (severity) {
-    case 'critical':
-      return 'Critical yield alert';
-    case 'warning':
-      return 'Yield warning';
-    case 'info':
+    case "critical":
+      return "Critical yield alert";
+    case "warning":
+      return "Yield warning";
+    case "info":
     default:
-      return 'Yield information';
+      return "Yield information";
   }
 };
 
-export const YieldAlertBanner: React.FC<YieldAlertBannerProps> = ({ alerts }) => {
+export const YieldAlertBanner: React.FC<YieldAlertBannerProps> = ({
+  alerts,
+}) => {
   if (!alerts || alerts.length === 0) {
     return null;
   }
@@ -88,11 +92,16 @@ export const YieldAlertBanner: React.FC<YieldAlertBannerProps> = ({ alerts }) =>
             {primary.description}
           </p>
         )}
-        {(primary.threshold !== undefined || primary.predicted !== undefined) && (
+        {(primary.threshold !== undefined ||
+          primary.predicted !== undefined) && (
           <p className="text-[11px] sm:text-xs opacity-80">
-            {primary.predicted !== undefined && `Predicted: ${primary.predicted.toLocaleString()} kg/ha`}
-            {primary.threshold !== undefined && primary.predicted !== undefined && ' | '}
-            {primary.threshold !== undefined && `Threshold: ${primary.threshold.toLocaleString()} kg/ha`}
+            {primary.predicted !== undefined &&
+              `Predicted: ${primary.predicted.toLocaleString()} kg/ha`}
+            {primary.threshold !== undefined &&
+              primary.predicted !== undefined &&
+              " | "}
+            {primary.threshold !== undefined &&
+              `Threshold: ${primary.threshold.toLocaleString()} kg/ha`}
           </p>
         )}
       </div>

@@ -1,5 +1,5 @@
-import { httpClient, normalizeApiError } from '../../../shared/api';
-import type { FieldGeometry } from '../../../shared/types/geojson';
+import { httpClient, normalizeApiError } from "../../../shared/api";
+import type { FieldGeometry } from "../../../shared/types/geojson";
 
 // --------------------
 // Segmentation
@@ -30,7 +30,7 @@ export interface SegmentationPredictPayload {
    * - "mask_url": URL to a static mask (default)
    * - "inline": base64-encoded payload
    */
-  return?: 'mask_url' | 'inline';
+  return?: "mask_url" | "inline";
 }
 
 export interface SegmentationResult {
@@ -50,7 +50,7 @@ export interface SegmentationResult {
   /**
    * Format of the mask (e.g. "geojson" or "png").
    */
-  maskFormat?: 'geojson' | 'png' | string;
+  maskFormat?: "geojson" | "png" | string;
   /**
    * Optional parsed geometry when backend/ML returns GeoJSON.
    */
@@ -109,7 +109,9 @@ export interface YieldPredictPayloadMatrix {
   modelVersion?: string;
 }
 
-export type YieldPredictPayload = YieldPredictPayloadFeatures | YieldPredictPayloadMatrix;
+export type YieldPredictPayload =
+  | YieldPredictPayloadFeatures
+  | YieldPredictPayloadMatrix;
 
 export interface YieldPrediction {
   fieldId?: string;
@@ -154,7 +156,7 @@ interface BackendYieldPredictEnvelope {
 // Disaster analysis
 // --------------------
 
-export type DisasterEventType = 'flood' | 'drought' | 'stress' | 'auto';
+export type DisasterEventType = "flood" | "drought" | "stress" | "auto";
 
 export interface DisasterIndexSample {
   fieldId: string;
@@ -164,7 +166,7 @@ export interface DisasterIndexSample {
   tdvi: number;
 }
 
-export type DisasterReturnMode = 'summary' | 'geojson' | 'both';
+export type DisasterReturnMode = "summary" | "geojson" | "both";
 
 export interface DisasterAnalyzePayload {
   indices: DisasterIndexSample[];
@@ -178,7 +180,7 @@ export interface DisasterAnalyzePayload {
 export interface DisasterAnalysisItem {
   fieldId: string;
   event: DisasterEventType;
-  severity: 'low' | 'medium' | 'high' | string;
+  severity: "low" | "medium" | "high" | string;
   metrics: {
     ndviDrop?: number;
     ndwiDrop?: number;
@@ -250,7 +252,9 @@ interface BackendDisasterAnalyzeEnvelope {
 // Helpers
 // --------------------
 
-const mapMaskResponse = (payload: BackendMLMaskEnvelope['data']): SegmentationResult => ({
+const mapMaskResponse = (
+  payload: BackendMLMaskEnvelope["data"],
+): SegmentationResult => ({
   requestId: payload.request_id,
   model: {
     name: payload.model.name,
@@ -258,7 +262,7 @@ const mapMaskResponse = (payload: BackendMLMaskEnvelope['data']): SegmentationRe
   },
   maskUrl: payload.mask_url,
   maskBase64: payload.mask_base64,
-  maskFormat: payload.mask_format as SegmentationResult['maskFormat'],
+  maskFormat: payload.mask_format as SegmentationResult["maskFormat"],
   geometry: payload.geometry,
   metrics: payload.metrics
     ? {
@@ -271,7 +275,9 @@ const mapMaskResponse = (payload: BackendMLMaskEnvelope['data']): SegmentationRe
   warnings: payload.warnings,
 });
 
-const mapYieldResponse = (payload: BackendYieldPredictEnvelope['data']): YieldPredictResult => ({
+const mapYieldResponse = (
+  payload: BackendYieldPredictEnvelope["data"],
+): YieldPredictResult => ({
   requestId: payload.request_id,
   model: {
     name: payload.model.name,
@@ -290,12 +296,14 @@ const mapYieldResponse = (payload: BackendYieldPredictEnvelope['data']): YieldPr
   warnings: payload.warnings,
 });
 
-const mapDisasterResponse = (payload: BackendDisasterAnalyzeEnvelope['data']): DisasterAnalyzeResult => ({
+const mapDisasterResponse = (
+  payload: BackendDisasterAnalyzeEnvelope["data"],
+): DisasterAnalyzeResult => ({
   requestId: payload.request_id,
   analysis: payload.analysis.map((item) => ({
     fieldId: item.field_id,
     event: item.event,
-    severity: item.severity as DisasterAnalysisItem['severity'],
+    severity: item.severity as DisasterAnalysisItem["severity"],
     metrics: {
       ndviDrop: item.metrics.ndvi_drop,
       ndwiDrop: item.metrics.ndwi_drop,
@@ -329,7 +337,9 @@ const mapDisasterResponse = (payload: BackendDisasterAnalyzeEnvelope['data']): D
  *
  * POST /api/v1/ml/segmentation/predict
  */
-export const predictSegmentation = async (payload: SegmentationPredictPayload): Promise<SegmentationResult> => {
+export const predictSegmentation = async (
+  payload: SegmentationPredictPayload,
+): Promise<SegmentationResult> => {
   try {
     const body: Record<string, unknown> = {
       date: payload.date,
@@ -345,7 +355,10 @@ export const predictSegmentation = async (payload: SegmentationPredictPayload): 
       body.field_id = payload.fieldId;
     }
 
-    const res = await httpClient.post<BackendMLMaskEnvelope>('/ml/segmentation/predict', body);
+    const res = await httpClient.post<BackendMLMaskEnvelope>(
+      "/ml/segmentation/predict",
+      body,
+    );
     return mapMaskResponse(res.data.data);
   } catch (error) {
     throw normalizeApiError(error);
@@ -357,11 +370,13 @@ export const predictSegmentation = async (payload: SegmentationPredictPayload): 
  *
  * POST /api/v1/ml/yield/predict
  */
-export const predictYield = async (payload: YieldPredictPayload): Promise<YieldPredictResult> => {
+export const predictYield = async (
+  payload: YieldPredictPayload,
+): Promise<YieldPredictResult> => {
   try {
     const body: Record<string, unknown> = {};
 
-    if ('features' in payload) {
+    if ("features" in payload) {
       body.features = payload.features.map((row) => ({
         field_id: row.fieldId,
         season: row.season,
@@ -374,7 +389,10 @@ export const predictYield = async (payload: YieldPredictPayload): Promise<YieldP
       if (payload.modelVersion) body.model_version = payload.modelVersion;
     }
 
-    const res = await httpClient.post<BackendYieldPredictEnvelope>('/ml/yield/predict', body);
+    const res = await httpClient.post<BackendYieldPredictEnvelope>(
+      "/ml/yield/predict",
+      body,
+    );
     return mapYieldResponse(res.data.data);
   } catch (error) {
     throw normalizeApiError(error);
@@ -386,7 +404,9 @@ export const predictYield = async (payload: YieldPredictPayload): Promise<YieldP
  *
  * POST /api/v1/ml/disaster/analyze
  */
-export const analyzeDisaster = async (payload: DisasterAnalyzePayload): Promise<DisasterAnalyzeResult> => {
+export const analyzeDisaster = async (
+  payload: DisasterAnalyzePayload,
+): Promise<DisasterAnalyzeResult> => {
   try {
     const body: Record<string, unknown> = {
       indices: payload.indices.map((s) => ({
@@ -403,7 +423,10 @@ export const analyzeDisaster = async (payload: DisasterAnalyzePayload): Promise<
       return: payload.return,
     };
 
-    const res = await httpClient.post<BackendDisasterAnalyzeEnvelope>('/ml/disaster/analyze', body);
+    const res = await httpClient.post<BackendDisasterAnalyzeEnvelope>(
+      "/ml/disaster/analyze",
+      body,
+    );
     return mapDisasterResponse(res.data.data);
   } catch (error) {
     throw normalizeApiError(error);

@@ -10,7 +10,7 @@ const { sequelize } = require('../config/database.config');
 const FieldShare = sequelize.define(
   'FieldShare',
   {
-    share_id: {
+    shareid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
@@ -24,7 +24,7 @@ const FieldShare = sequelize.define(
       },
       onDelete: 'CASCADE',
     },
-    owner_id: {
+    ownerid: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -33,7 +33,7 @@ const FieldShare = sequelize.define(
       },
       onDelete: 'CASCADE',
     },
-    shared_with_user_id: {
+    sharedwithuser_id: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -42,32 +42,31 @@ const FieldShare = sequelize.define(
       },
       onDelete: 'CASCADE',
     },
-    permission_level: {
+    permissionlevel: {
       type: DataTypes.ENUM('view', 'edit'),
       allowNull: false,
       defaultValue: 'view',
     },
-    shared_at: {
+    sharedat: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
-    expires_at: {
+    expiresat: {
       type: DataTypes.DATE,
       allowNull: true,
     },
   },
   {
-    tableName: 'field_shares',
+    tableName: 'fieldshares',
     timestamps: false,
     indexes: [
       { fields: ['field_id'] },
-      { fields: ['owner_id'] },
-      { fields: ['shared_with_user_id'] },
-      { unique: true, fields: ['field_id', 'shared_with_user_id'] }, // Prevent duplicate shares
+      { fields: ['ownerid'] },
+      { fields: ['sharedwithuser_id'] },
+      { unique: true, fields: ['field_id', 'sharedwithuser_id'] }, // Prevent duplicate shares
     ],
   }
 );
 
 module.exports = FieldShare;
-

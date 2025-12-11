@@ -1,5 +1,3 @@
-'use strict';
-
 // Mock all dependencies
 jest.mock('dotenv');
 jest.mock('http');
@@ -26,7 +24,7 @@ const { initializeWebSocket } = require('../../src/websocket/server');
 // Mock server instance
 const mockServer = {
   listen: jest.fn(),
-  close: jest.fn((callback) => {
+  close: jest.fn(callback => {
     if (callback) callback();
   }),
   on: jest.fn(),
@@ -124,7 +122,10 @@ describe('Server', () => {
 
       shutdownHandler();
 
-      expect(logger.warn).toHaveBeenCalledWith('[%s] received. Shutting down gracefully...', 'SIGTERM');
+      expect(logger.warn).toHaveBeenCalledWith(
+        '[%s] received. Shutting down gracefully...',
+        'SIGTERM'
+      );
     });
 
     test('closes WebSocket and logs', () => {

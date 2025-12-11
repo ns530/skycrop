@@ -4,11 +4,11 @@
  * Central entry point for all background jobs
  */
 
-import jobScheduler from './jobScheduler.js';
-import healthMonitoringJob from './healthMonitoringJob.js';
-import recommendationsJob from './recommendationsJob.js';
-import weatherForecastJob from './weatherForecastJob.js';
-import logger from '../config/logger.config.js';
+import jobScheduler from './jobScheduler';
+import healthMonitoringJob from './healthMonitoringJob';
+import recommendationsJob from './recommendationsJob';
+import weatherForecastJob from './weatherForecastJob';
+import logger from '../config/logger.config';
 
 /**
  * Initialize all scheduled jobs
@@ -70,7 +70,6 @@ function initializeJobs() {
     // jobScheduler.registerJob('yield-prediction-update', '0 8 */10 * *', yieldPredictionJob.run, { ... });
 
     logger.info('All scheduled jobs registered successfully');
-
   } catch (error) {
     logger.error('Error initializing scheduled jobs:', error);
     throw error;
@@ -97,7 +96,7 @@ function stopJobs() {
 
 /**
  * Get job statistics
- * 
+ *
  * @returns {Array} Array of job statistics
  */
 function getJobsStatus() {
@@ -106,7 +105,7 @@ function getJobsStatus() {
 
 /**
  * Manually trigger a job (for admin API or testing)
- * 
+ *
  * @param {string} jobName - Job name
  * @returns {Promise} Job execution promise
  */
@@ -134,4 +133,3 @@ export default {
   triggerJob,
   jobScheduler,
 };
-

@@ -1,3 +1,2 @@
-export { ReportBuilderPage } from './ReportBuilderPage';
-export { default as ReportBuilderPageDefault } from './ReportBuilderPage';
-
+export { ReportBuilderPage } from "./ReportBuilderPage";
+export { default as ReportBuilderPageDefault } from "./ReportBuilderPage";

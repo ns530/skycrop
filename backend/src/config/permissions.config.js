@@ -13,7 +13,7 @@ const PERMISSIONS = {
   manager: [
     'fields.create',
     'fields.read',
-    'fields.read_all', // Can read all fields in organization
+    'fields.readall', // Can read all fields in organization
     'fields.update',
     'fields.delete',
     'health.read',
@@ -36,20 +36,20 @@ const PERMISSIONS = {
   // Farmer: Own fields only, basic analytics
   farmer: [
     'fields.create',
-    'fields.read_own', // Can only read own fields
-    'fields.update_own',
-    'fields.delete_own',
-    'health.read_own',
-    'health.compute_own',
-    'recommendations.read_own',
-    'recommendations.generate_own',
-    'recommendations.update_own',
-    'yield.read_own',
-    'yield.predict_own',
-    'yield.create_own',
-    'analytics.read_own',
-    'dashboard.read_own',
-    'notifications.read_own',
+    'fields.readown', // Can only read own fields
+    'fields.updateown',
+    'fields.deleteown',
+    'health.readown',
+    'health.computeown',
+    'recommendations.readown',
+    'recommendations.generateown',
+    'recommendations.updateown',
+    'yield.readown',
+    'yield.predictown',
+    'yield.createown',
+    'analytics.readown',
+    'dashboard.readown',
+    'notifications.readown',
   ],
 
   // Viewer: Read-only access
@@ -105,16 +105,16 @@ function canAccessResource(role, resource, action, isOwner = false) {
 
   // Build permission string
   const fullPermission = `${resource}.${action}`;
-  const ownPermission = `${resource}.${action}_own`;
-  const allPermission = `${resource}.${action}_all`;
+  const ownPermission = `${resource}.${action}own`;
+  const allPermission = `${resource}.${action}all`;
 
   // Check full permission (e.g., 'fields.read')
   if (hasPermission(role, fullPermission)) return true;
 
-  // Check "all" permission (e.g., 'fields.read_all')
+  // Check "all" permission (e.g., 'fields.readall')
   if (hasPermission(role, allPermission)) return true;
 
-  // Check "own" permission if user is owner (e.g., 'fields.read_own')
+  // Check "own" permission if user is owner (e.g., 'fields.readown')
   if (isOwner && hasPermission(role, ownPermission)) return true;
 
   return false;
@@ -193,4 +193,3 @@ module.exports = {
   getRoleHierarchy,
   canManageUser,
 };
-

@@ -3,34 +3,34 @@ import { check, sleep } from 'k6';
 import { Rate, Trend } from 'k6/metrics';
 
 // Custom metrics
-const registrationSuccessRate = new Rate('registration_success');
-const registrationDuration = new Trend('registration_duration');
+const registrationSuccessRate = new Rate('registrationsuccess');
+const registrationDuration = new Trend('registrationduration');
 
 // Test configuration
 export const options = {
   scenarios: {
-    user_registration_peak: {
+    userregistrationpeak: {
       executor: 'ramping-vus',
       stages: [
-        { duration: '1m', target: 10 },   // Warm up
-        { duration: '2m', target: 50 },   // Ramp up to moderate load
-        { duration: '3m', target: 100 },  // Peak load - 100 concurrent registrations
-        { duration: '2m', target: 50 },   // Ramp down
-        { duration: '1m', target: 0 },    // Cool down
+        { duration: '1m', target: 10 }, // Warm up
+        { duration: '2m', target: 50 }, // Ramp up to moderate load
+        { duration: '3m', target: 100 }, // Peak load - 100 concurrent registrations
+        { duration: '2m', target: 50 }, // Ramp down
+        { duration: '1m', target: 0 }, // Cool down
       ],
-      tags: { test_type: 'registration_peak' },
+      tags: { testtype: 'registrationpeak' },
     },
   },
   thresholds: {
-    http_req_duration: ['p(95)<2000'], // 95% of requests should be below 2s
-    http_req_failed: ['rate<0.1'],     // Error rate should be below 10%
-    registration_success: ['rate>0.95'], // 95% registration success rate
-    registration_duration: ['p(95)<3000'], // 95% of registrations under 3s
+    httpreqduration: ['p(95)<2000'], // 95% of requests should be below 2s
+    httpreqfailed: ['rate<0.1'], // Error rate should be below 10%
+    registrationsuccess: ['rate>0.95'], // 95% registration success rate
+    registrationduration: ['p(95)<3000'], // 95% of registrations under 3s
   },
 };
 
 // Base URL from environment
-const BASE_URL = __ENV.BASE_URL || 'http://localhost:3000/api/v1';
+const BASEURL = ENV.BASEURL || 'http://localhost:3000/api/v1';
 
 // Test data generation
 function generateUserData() {
@@ -48,7 +48,7 @@ function generateUserData() {
 // Setup function - runs before the test
 export function setup() {
   // Verify API is accessible
-  const response = http.get(`${BASE_URL}/health`);
+  const response = http.get(`${BASEURL}/health`);
   if (response.status !== 200) {
     console.error('API health check failed');
     return;
@@ -78,7 +78,7 @@ export default function (data) {
   const startTime = new Date().getTime();
 
   // Register user
-  const registerResponse = http.post(`${BASE_URL}/auth/register`, payload, params);
+  const registerResponse = http.post(`${BASEURL}/auth/register`, payload, params);
 
   const endTime = new Date().getTime();
   const duration = endTime - startTime;
@@ -88,10 +88,10 @@ export default function (data) {
 
   // Check registration success
   const registrationSuccess = check(registerResponse, {
-    'registration status is 201': (r) => r.status === 201,
-    'registration response has user data': (r) => r.json().hasOwnProperty('user'),
-    'registration response has token': (r) => r.json().hasOwnProperty('token'),
-    'registration completes within 3 seconds': (r) => r.timings.duration < 3000,
+    'registration status is 201': r => r.status === 201,
+    'registration response has user data': r => ron().hasOwnProperty('user'),
+    'registration response has token': r => ron().hasOwnProperty('token'),
+    'registration completes within 3 seconds': r => r.timings.duration < 3000,
   });
 
   registrationSuccessRate.add(registrationSuccess);

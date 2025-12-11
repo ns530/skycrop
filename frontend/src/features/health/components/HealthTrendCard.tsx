@@ -1,26 +1,32 @@
-import React from 'react';
+import React from "react";
 
-import { Card } from '../../../shared/ui/Card';
-import type { FieldHealthTimeSeries } from '../api/healthApi';
+import { Card } from "../../../shared/ui/Card";
+import type { FieldHealthTimeSeries } from "../api/healthApi";
 
 export interface HealthTrendCardProps {
   series: FieldHealthTimeSeries | null;
 }
 
-const computeTrendLabel = (values: number[]): 'Improving' | 'Declining' | 'Stable' => {
-  if (!values.length) return 'Stable';
+const computeTrendLabel = (
+  values: number[],
+): "Improving" | "Declining" | "Stable" => {
+  if (!values.length) return "Stable";
   const first = values[0];
   const last = values[values.length - 1];
   const delta = last - first;
   const threshold = 0.02;
-  if (delta > threshold) return 'Improving';
-  if (delta < -threshold) return 'Declining';
-  return 'Stable';
+  if (delta > threshold) return "Improving";
+  if (delta < -threshold) return "Declining";
+  return "Stable";
 };
 
-const buildSparklinePath = (values: number[], width = 120, height = 32): string => {
+const buildSparklinePath = (
+  values: number[],
+  width = 120,
+  height = 32,
+): string => {
   if (!values.length) {
-    return '';
+    return "";
   }
 
   const min = Math.min(...values);
@@ -36,7 +42,7 @@ const buildSparklinePath = (values: number[], width = 120, height = 32): string 
     return `${x},${y}`;
   });
 
-  return points.join(' ');
+  return points.join(" ");
 };
 
 /**
@@ -49,13 +55,16 @@ const buildSparklinePath = (values: number[], width = 120, height = 32): string 
  * - Trend direction (Improving / Declining / Stable)
  */
 export const HealthTrendCard: React.FC<HealthTrendCardProps> = ({ series }) => {
-  const hasSeries = Boolean(series && series.points && series.points.length > 0);
+  const hasSeries = Boolean(
+    series && series.points && series.points.length > 0,
+  );
 
   if (!hasSeries) {
     return (
       <Card title="Health trend">
         <p className="text-sm text-gray-600">
-          Not enough data is available yet to show a trend for this index and date range.
+          Not enough data is available yet to show a trend for this index and
+          date range.
         </p>
       </Card>
     );

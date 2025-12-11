@@ -1,21 +1,19 @@
-'use strict';
-
 const request = require('supertest');
 
 // Mock auth middleware - must be before app import
 jest.mock('../../src/api/middleware/auth.middleware', () => ({
-  authMiddleware: (req, _res, next) => {
-    req.user = { userId: 'user-1' };
+  authMiddleware: (req, res, next) => {
+    req.user = { user_id: 'user-1' };
     next();
   },
-  requireRole: () => (_req, _res, next) => next(),
-  requireAnyRole: () => (_req, _res, next) => next(),
+  requireRole: () => (req, res, next) => next(),
+  requireAnyRole: () => (req, res, next) => next(),
 }));
 
 // Mock rate limiter
 jest.mock('../../src/api/middleware/rateLimit.middleware', () => ({
-  apiLimiter: (_req, _res, next) => next(),
-  authLimiter: (_req, _res, next) => next(),
+  apiLimiter: (req, res, next) => next(),
+  authLimiter: (req, res, next) => next(),
 }));
 
 // Create mock service instance
@@ -41,73 +39,69 @@ jest.mock('../../src/models/field.model', () => ({
   findByPk: jest.fn(),
 }));
 jest.mock('../../src/models/actualYield.model', () => ({}));
-jest.mock('../../src/models/yield_prediction.model', () => ({}));
+jest.mock('../../src/models/yieldprediction.model', () => ({}));
 
 const app = require('../../src/app');
 
 describe('Yield Prediction API Integration Tests', () => {
-  const mockUserId = 'user-1';
-  const mockFieldId = 'test-field-1';
+  const mockuser_id = 'user-1';
+  const mockfield_id = 'test-field-1';
 
   beforeAll(() => {
     process.env.NODE_ENV = 'test';
-    process.env.JWT_SECRET = 'test-secret';
+    process.env.JWTSECRET = 'test-secret';
   });
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('POST /api/v1/fields/:fieldId/yield/predict', () => {
+  describe('POST /api/v1/fields/:field_id/yield/predict', () => {
     it('should generate yield prediction successfully', async () => {
       mockYieldService.predictYield.mockResolvedValue({
-        prediction_id: 'pred-1',
-        field_id: mockFieldId,
-        field_name: 'Test Field',
-        field_area_ha: 2.5,
-        prediction_date: '2024-01-15',
-        predicted_yield_per_ha: 4800,
-        predicted_total_yield: 12000,
-        confidence_interval: {
+        predictionid: 'pred-1',
+        field_id: mockfield_id,
+        fieldname: 'Test Field',
+        fieldareaha: 2.5,
+        predictiondate: '2024-01-15',
+        predictedyieldperha: 4800,
+        predictedtotalyield: 12000,
+        confidenceinterval: {
           lower: 4200,
           upper: 5400,
         },
-        expected_revenue: 960000,
-        harvest_date_estimate: '2024-05-15',
-        model_version: '1.0.0',
-        features_used: {
-          ndvi_avg: 0.65,
-          rainfall_mm: 120,
-          temp_avg: 28,
+        expectedrevenue: 960000,
+        harvestdateestimate: '2024-05-15',
+        modelversion: '1.0.0',
+        featuresused: {
+          ndviavg: 0.65,
+          rainfallmm: 120,
+          tempavg: 28,
         },
-        ml_response: 'fresh',
+        mlresponse: 'fresh',
       });
 
       const response = await request(app)
-        .post(`/api/v1/fields/${mockFieldId}/yield/predict`)
+        .post(`/api/v1/fields/${mockfield_id}/yield/predict`)
         .send({
-          planting_date: '2024-01-15',
-          crop_variety: 'BG 300',
-          price_per_kg: 80,
+          plantingdate: '2024-01-15',
+          cropvariety: 'BG 300',
+          priceperkg: 80,
         })
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data.prediction_id).toBe('pred-1');
-      expect(response.body.data.predicted_yield_per_ha).toBe(4800);
-      expect(response.body.data.confidence_interval).toEqual({
+      expect(response.body.data.predictionid).toBe('pred-1');
+      expect(response.body.data.predictedyieldperha).toBe(4800);
+      expect(response.body.data.confidenceinterval).toEqual({
         lower: 4200,
         upper: 5400,
       });
-      expect(mockYieldService.predictYield).toHaveBeenCalledWith(
-        mockUserId,
-        mockFieldId,
-        {
-          planting_date: '2024-01-15',
-          crop_variety: 'BG 300',
-          price_per_kg: 80,
-        }
-      );
+      expect(mockYieldService.predictYield).toHaveBeenCalledWith(mockuser_id, mockfield_id, {
+        plantingdate: '2024-01-15',
+        cropvariety: 'BG 300',
+        priceperkg: 80,
+      });
     });
 
     it('should handle field not found error', async () => {
@@ -125,9 +119,9 @@ describe('Yield Prediction API Integration Tests', () => {
 
     it('should validate request body', async () => {
       const response = await request(app)
-        .post(`/api/v1/fields/${mockFieldId}/yield/predict`)
+        .post(`/api/v1/fields/${mockfield_id}/yield/predict`)
         .send({
-          planting_date: 'invalid-date',
+          plantingdate: 'invalid-date',
         })
         .expect(400);
 
@@ -136,26 +130,26 @@ describe('Yield Prediction API Integration Tests', () => {
 
     it('should work without optional parameters', async () => {
       mockYieldService.predictYield.mockResolvedValue({
-        prediction_id: 'pred-1',
-        field_id: mockFieldId,
-        field_name: 'Test Field',
-        predicted_yield_per_ha: 4500,
-        predicted_total_yield: 11250,
-        confidence_interval: { lower: 4000, upper: 5000 },
-        expected_revenue: 900000,
-        harvest_date_estimate: '2024-05-15',
-        model_version: '1.0.0',
-        features_used: {},
-        ml_response: 'fresh',
+        predictionid: 'pred-1',
+        field_id: mockfield_id,
+        fieldname: 'Test Field',
+        predictedyieldperha: 4500,
+        predictedtotalyield: 11250,
+        confidenceinterval: { lower: 4000, upper: 5000 },
+        expectedrevenue: 900000,
+        harvestdateestimate: '2024-05-15',
+        modelversion: '1.0.0',
+        featuresused: {},
+        mlresponse: 'fresh',
       });
 
       const response = await request(app)
-        .post(`/api/v1/fields/${mockFieldId}/yield/predict`)
+        .post(`/api/v1/fields/${mockfield_id}/yield/predict`)
         .send({})
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data.prediction_id).toBe('pred-1');
+      expect(response.body.data.predictionid).toBe('pred-1');
     });
 
     it('should handle ML service errors gracefully', async () => {
@@ -164,7 +158,7 @@ describe('Yield Prediction API Integration Tests', () => {
       mockYieldService.predictYield.mockRejectedValue(error);
 
       const response = await request(app)
-        .post(`/api/v1/fields/${mockFieldId}/yield/predict`)
+        .post(`/api/v1/fields/${mockfield_id}/yield/predict`)
         .send({})
         .expect(502);
 
@@ -172,52 +166,52 @@ describe('Yield Prediction API Integration Tests', () => {
     });
   });
 
-  describe('GET /api/v1/fields/:fieldId/yield/predictions', () => {
+  describe('GET /api/v1/fields/:field_id/yield/predictions', () => {
     it('should retrieve predictions successfully', async () => {
       mockYieldService.getPredictions.mockResolvedValue({
         predictions: [
           {
-            prediction_id: 'pred-1',
-            field_id: mockFieldId,
-            prediction_date: '2024-01-15',
-            predicted_yield_per_ha: 4800,
-            predicted_total_yield: 12000,
-            confidence_interval: { lower: 4200, upper: 5400 },
-            expected_revenue: 960000,
-            harvest_date_estimate: '2024-05-15',
-            model_version: '1.0.0',
-            actual_yield: null,
-            accuracy_mape: null,
-            created_at: new Date(),
+            predictionid: 'pred-1',
+            field_id: mockfield_id,
+            predictiondate: '2024-01-15',
+            predictedyieldperha: 4800,
+            predictedtotalyield: 12000,
+            confidenceinterval: { lower: 4200, upper: 5400 },
+            expectedrevenue: 960000,
+            harvestdateestimate: '2024-05-15',
+            modelversion: '1.0.0',
+            actualyield: null,
+            accuracymape: null,
+            createdat: new Date(),
           },
           {
-            prediction_id: 'pred-2',
-            field_id: mockFieldId,
-            prediction_date: '2024-01-10',
-            predicted_yield_per_ha: 4600,
-            predicted_total_yield: 11500,
-            confidence_interval: { lower: 4100, upper: 5100 },
-            expected_revenue: 920000,
-            harvest_date_estimate: '2024-05-10',
-            model_version: '1.0.0',
-            actual_yield: null,
-            accuracy_mape: null,
-            created_at: new Date(),
+            predictionid: 'pred-2',
+            field_id: mockfield_id,
+            predictiondate: '2024-01-10',
+            predictedyieldperha: 4600,
+            predictedtotalyield: 11500,
+            confidenceinterval: { lower: 4100, upper: 5100 },
+            expectedrevenue: 920000,
+            harvestdateestimate: '2024-05-10',
+            modelversion: '1.0.0',
+            actualyield: null,
+            accuracymape: null,
+            createdat: new Date(),
           },
         ],
         cacheHit: false,
       });
 
       const response = await request(app)
-        .get(`/api/v1/fields/${mockFieldId}/yield/predictions`)
+        .get(`/api/v1/fields/${mockfield_id}/yield/predictions`)
         .expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.data).toBeInstanceOf(Array);
       expect(response.body.data).toHaveLength(2);
-      expect(response.body.data[0].prediction_id).toBe('pred-1');
+      expect(response.body.data[0].predictionid).toBe('pred-1');
       expect(response.body.meta.count).toBe(2);
-      expect(response.body.meta.cache_hit).toBe(false);
+      expect(response.body.meta.cachehit).toBe(false);
     });
 
     it('should return empty array when no predictions exist', async () => {
@@ -227,7 +221,7 @@ describe('Yield Prediction API Integration Tests', () => {
       });
 
       const response = await request(app)
-        .get(`/api/v1/fields/${mockFieldId}/yield/predictions`)
+        .get(`/api/v1/fields/${mockfield_id}/yield/predictions`)
         .expect(200);
 
       expect(response.body.success).toBe(true);
@@ -254,24 +248,20 @@ describe('Yield Prediction API Integration Tests', () => {
       });
 
       const response = await request(app)
-        .get(`/api/v1/fields/${mockFieldId}/yield/predictions`)
-        .query({ limit: 5, sort: 'predicted_yield_per_ha', order: 'asc' })
+        .get(`/api/v1/fields/${mockfield_id}/yield/predictions`)
+        .query({ limit: 5, sort: 'predictedyieldperha', order: 'asc' })
         .expect(200);
 
-      expect(mockYieldService.getPredictions).toHaveBeenCalledWith(
-        mockUserId,
-        mockFieldId,
-        {
-          limit: '5',
-          sort: 'predicted_yield_per_ha',
-          order: 'asc',
-        }
-      );
+      expect(mockYieldService.getPredictions).toHaveBeenCalledWith(mockuser_id, mockfield_id, {
+        limit: '5',
+        sort: 'predictedyieldperha',
+        order: 'asc',
+      });
     });
 
     it('should validate query parameters', async () => {
       const response = await request(app)
-        .get(`/api/v1/fields/${mockFieldId}/yield/predictions`)
+        .get(`/api/v1/fields/${mockfield_id}/yield/predictions`)
         .query({ limit: 'invalid' })
         .expect(400);
 
@@ -285,7 +275,7 @@ describe('Yield Prediction API Integration Tests', () => {
       });
 
       const response = await request(app)
-        .get(`/api/v1/fields/${mockFieldId}/yield/predictions`)
+        .get(`/api/v1/fields/${mockfield_id}/yield/predictions`)
         .query({ limit: 200 })
         .expect(400);
 
@@ -296,30 +286,29 @@ describe('Yield Prediction API Integration Tests', () => {
       mockYieldService.getPredictions.mockResolvedValue({
         predictions: [
           {
-            prediction_id: 'pred-1',
-            field_id: mockFieldId,
-            prediction_date: '2024-01-15',
-            predicted_yield_per_ha: 4800,
-            predicted_total_yield: 12000,
-            confidence_interval: { lower: 4200, upper: 5400 },
-            expected_revenue: 960000,
-            harvest_date_estimate: '2024-05-15',
-            model_version: '1.0.0',
-            actual_yield: null,
-            accuracy_mape: null,
-            created_at: new Date(),
+            predictionid: 'pred-1',
+            field_id: mockfield_id,
+            predictiondate: '2024-01-15',
+            predictedyieldperha: 4800,
+            predictedtotalyield: 12000,
+            confidenceinterval: { lower: 4200, upper: 5400 },
+            expectedrevenue: 960000,
+            harvestdateestimate: '2024-05-15',
+            modelversion: '1.0.0',
+            actualyield: null,
+            accuracymape: null,
+            createdat: new Date(),
           },
         ],
         cacheHit: true,
       });
 
       const response = await request(app)
-        .get(`/api/v1/fields/${mockFieldId}/yield/predictions`)
+        .get(`/api/v1/fields/${mockfield_id}/yield/predictions`)
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.meta.cache_hit).toBe(true);
+      expect(response.body.meta.cachehit).toBe(true);
     });
   });
 });
-

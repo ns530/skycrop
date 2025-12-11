@@ -1,11 +1,19 @@
-import { httpClient, normalizeApiError, type PaginatedResponse, type ListParams } from '../../../shared/api';
-import type { FieldGeometry, GeoJSONPoint } from '../../../shared/types/geojson';
+import {
+  httpClient,
+  normalizeApiError,
+  type PaginatedResponse,
+  type ListParams,
+} from "../../../shared/api";
+import type {
+  FieldGeometry,
+  GeoJSONPoint,
+} from "../../../shared/types/geojson";
 
 /**
  * Field status values as exposed by the backend schema, with a string
  * fallback to be forward-compatible with new statuses.
  */
-export type FieldStatus = 'active' | 'archived' | 'deleted' | string;
+export type FieldStatus = "active" | "archived" | "deleted" | string;
 
 export interface FieldSummary {
   id: string;
@@ -32,7 +40,7 @@ export interface FieldSummary {
  */
 export interface FieldDetail extends FieldSummary {
   geometry: FieldGeometry;
-  latestHealthStatus?: 'excellent' | 'good' | 'fair' | 'poor';
+  latestHealthStatus?: "excellent" | "good" | "fair" | "poor";
   latestHealthIndex?: number | null;
   latestRecommendationSummary?: string | null;
 }
@@ -123,8 +131,13 @@ interface BackendDetectBoundaryResponse {
 // --------------------
 
 const mapBackendFieldToDetail = (field: BackendField): FieldDetail => {
-  const coords = field.center?.coordinates as GeoJSONPoint['coordinates'] | undefined;
-  const [lon, lat] = Array.isArray(coords) && coords.length >= 2 ? [coords[0], coords[1]] : [undefined, undefined];
+  const coords = field.center?.coordinates as
+    | GeoJSONPoint["coordinates"]
+    | undefined;
+  const [lon, lat] =
+    Array.isArray(coords) && coords.length >= 2
+      ? [coords[0], coords[1]]
+      : [undefined, undefined];
 
   return {
     id: field.field_id,
@@ -134,7 +147,7 @@ const mapBackendFieldToDetail = (field: BackendField): FieldDetail => {
     updatedAt: field.updated_at,
     status: field.status,
     centroidLatLon:
-      typeof lat === 'number' && typeof lon === 'number'
+      typeof lat === "number" && typeof lon === "number"
         ? {
             lat,
             lon,
@@ -152,16 +165,24 @@ const mapBackendFieldToDetail = (field: BackendField): FieldDetail => {
 const mapBackendFieldToSummary = (field: BackendField): FieldSummary => {
   const detail = mapBackendFieldToDetail(field);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { geometry, latestHealthStatus, latestHealthIndex, latestRecommendationSummary, ...summary } = detail;
+  const {
+    geometry,
+    latestHealthStatus,
+    latestHealthIndex,
+    latestRecommendationSummary,
+    ...summary
+  } = detail;
   return summary;
 };
 
-const mapListParamsToQuery = (params?: ListParams): Record<string, unknown> | undefined => {
+const mapListParamsToQuery = (
+  params?: ListParams,
+): Record<string, unknown> | undefined => {
   if (!params) return undefined;
 
   const query: Record<string, unknown> = {};
-  if (typeof params.page === 'number') query.page = params.page;
-  if (typeof params.pageSize === 'number') query.page_size = params.pageSize;
+  if (typeof params.page === "number") query.page = params.page;
+  if (typeof params.pageSize === "number") query.page_size = params.pageSize;
   if (params.search) query.search = params.search;
   if (params.sort) query.sort = params.sort;
   if (params.order) query.order = params.order;
@@ -178,9 +199,11 @@ const mapListParamsToQuery = (params?: ListParams): Record<string, unknown> | un
  *
  * GET /api/v1/fields
  */
-export const listFields = async (params?: ListParams): Promise<PaginatedResponse<FieldSummary>> => {
+export const listFields = async (
+  params?: ListParams,
+): Promise<PaginatedResponse<FieldSummary>> => {
   try {
-    const res = await httpClient.get<BackendFieldListResponse>('/fields', {
+    const res = await httpClient.get<BackendFieldListResponse>("/fields", {
       params: mapListParamsToQuery(params),
     });
 
@@ -207,7 +230,9 @@ export const listFields = async (params?: ListParams): Promise<PaginatedResponse
  */
 export const getFieldById = async (fieldId: string): Promise<FieldDetail> => {
   try {
-    const res = await httpClient.get<BackendFieldSingleResponse>(`/fields/${fieldId}`);
+    const res = await httpClient.get<BackendFieldSingleResponse>(
+      `/fields/${fieldId}`,
+    );
     return mapBackendFieldToDetail(res.data.data);
   } catch (error) {
     throw normalizeApiError(error);
@@ -219,7 +244,9 @@ export const getFieldById = async (fieldId: string): Promise<FieldDetail> => {
  *
  * POST /api/v1/fields
  */
-export const createField = async (payload: CreateFieldPayload): Promise<FieldDetail> => {
+export const createField = async (
+  payload: CreateFieldPayload,
+): Promise<FieldDetail> => {
   try {
     const body = {
       name: payload.name,
@@ -229,7 +256,10 @@ export const createField = async (payload: CreateFieldPayload): Promise<FieldDet
       notes: payload.notes,
     };
 
-    const res = await httpClient.post<BackendCreateFieldResponse>('/fields', body);
+    const res = await httpClient.post<BackendCreateFieldResponse>(
+      "/fields",
+      body,
+    );
     return mapBackendFieldToDetail(res.data.data);
   } catch (error) {
     throw normalizeApiError(error);
@@ -241,7 +271,10 @@ export const createField = async (payload: CreateFieldPayload): Promise<FieldDet
  *
  * PATCH /api/v1/fields/{id}
  */
-export const updateField = async (fieldId: string, payload: UpdateFieldPayload): Promise<FieldDetail> => {
+export const updateField = async (
+  fieldId: string,
+  payload: UpdateFieldPayload,
+): Promise<FieldDetail> => {
   try {
     const body: Record<string, unknown> = {};
     if (payload.name !== undefined) body.name = payload.name;
@@ -250,7 +283,10 @@ export const updateField = async (fieldId: string, payload: UpdateFieldPayload):
     if (payload.notes !== undefined) body.notes = payload.notes;
     if (payload.geometry !== undefined) body.boundary = payload.geometry;
 
-    const res = await httpClient.patch<BackendFieldSingleResponse>(`/fields/${fieldId}`, body);
+    const res = await httpClient.patch<BackendFieldSingleResponse>(
+      `/fields/${fieldId}`,
+      body,
+    );
     return mapBackendFieldToDetail(res.data.data);
   } catch (error) {
     throw normalizeApiError(error);
@@ -277,10 +313,13 @@ export const deleteField = async (fieldId: string): Promise<void> => {
  */
 export const detectFieldBoundary = async (
   fieldId: string,
-  payload: DetectBoundaryPayload
+  payload: DetectBoundaryPayload,
 ): Promise<FieldGeometry> => {
   try {
-    const res = await httpClient.post<BackendDetectBoundaryResponse>(`/fields/${fieldId}/detect-boundary`, payload);
+    const res = await httpClient.post<BackendDetectBoundaryResponse>(
+      `/fields/${fieldId}/detect-boundary`,
+      payload,
+    );
     return res.data.data;
   } catch (error) {
     throw normalizeApiError(error);

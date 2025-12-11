@@ -1,14 +1,14 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 
-import type { ApiError } from '../../../shared/api';
-import { yieldKeys } from '../../../shared/query/queryKeys';
+import type { ApiError } from "../../../shared/api";
+import { yieldKeys } from "../../../shared/query/queryKeys";
 import {
   getYieldForecast,
   getYieldHistory,
   type YieldForecastRequest,
   type YieldForecastResponse,
   type YieldPrediction,
-} from '../api/yieldApi';
+} from "../api/yieldApi";
 
 /**
  * useYieldForecast

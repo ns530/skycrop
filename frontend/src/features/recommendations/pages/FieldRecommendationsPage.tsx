@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
-import { useUiState } from '../../../shared/context/UiContext';
-import { useOnlineStatus } from '../../../shared/hooks/useOnlineStatus';
-import { useToast } from '../../../shared/hooks/useToast';
-import { Button } from '../../../shared/ui/Button';
-import { Card } from '../../../shared/ui/Card';
-import { ErrorState } from '../../../shared/ui/ErrorState';
-import { LoadingState } from '../../../shared/ui/LoadingState';
-import { useFieldDetail } from '../../fields/hooks/useFields';
-import { RecommendationsList } from '../components/RecommendationsList';
-import { useRecommendations, useApplyRecommendation } from '../hooks';
+import { useUiState } from "../../../shared/context/UiContext";
+import { useOnlineStatus } from "../../../shared/hooks/useOnlineStatus";
+import { useToast } from "../../../shared/hooks/useToast";
+import { Button } from "../../../shared/ui/Button";
+import { Card } from "../../../shared/ui/Card";
+import { ErrorState } from "../../../shared/ui/ErrorState";
+import { LoadingState } from "../../../shared/ui/LoadingState";
+import { useFieldDetail } from "../../fields/hooks/useFields";
+import { RecommendationsList } from "../components/RecommendationsList";
+import { useRecommendations, useApplyRecommendation } from "../hooks";
 
 /**
  * FieldRecommendationsPage
@@ -30,7 +30,7 @@ export const FieldRecommendationsPage: React.FC = () => {
   } = useUiState();
   const { isOnline } = useOnlineStatus();
 
-  const effectiveFieldId = fieldId ?? currentFieldId ?? '';
+  const effectiveFieldId = fieldId ?? currentFieldId ?? "";
 
   // Sync current field into global UI context
   useEffect(() => {
@@ -64,19 +64,19 @@ export const FieldRecommendationsPage: React.FC = () => {
   const handleRetryRecommendations = () => {
     void refetchRecommendations();
     showToast({
-      title: 'Retrying recommendations',
-      description: 'Attempting to reload recommendations for this field.',
-      variant: 'default',
+      title: "Retrying recommendations",
+      description: "Attempting to reload recommendations for this field.",
+      variant: "default",
     });
   };
 
   const handleApplyRecommendation = (id: string) => {
     if (!effectiveFieldId) {
       showToast({
-        title: 'No field selected',
+        title: "No field selected",
         description:
-          'Unable to apply this recommendation because the field could not be determined.',
-        variant: 'error',
+          "Unable to apply this recommendation because the field could not be determined.",
+        variant: "error",
       });
       return;
     }
@@ -88,23 +88,21 @@ export const FieldRecommendationsPage: React.FC = () => {
       { id, fieldId: effectiveFieldId, payload: { appliedAt } },
       {
         onSuccess: () => {
-          const rec = (recommendations ?? []).find(
-            (item) => item.id === id,
-          );
-          const recTitle = rec?.title ?? 'Recommendation';
+          const rec = (recommendations ?? []).find((item) => item.id === id);
+          const recTitle = rec?.title ?? "Recommendation";
           showToast({
-            title: 'Recommendation applied',
+            title: "Recommendation applied",
             description: `"${recTitle}" was marked as applied.`,
-            variant: 'success',
+            variant: "success",
           });
         },
         onError: (err) => {
           const message =
-            (err as Error)?.message ?? 'Failed to apply recommendation.';
+            (err as Error)?.message ?? "Failed to apply recommendation.";
           showToast({
-            title: 'Could not apply recommendation',
+            title: "Could not apply recommendation",
             description: message,
-            variant: 'error',
+            variant: "error",
           });
         },
         onSettled: () => {
@@ -135,7 +133,7 @@ export const FieldRecommendationsPage: React.FC = () => {
         <Button
           size="sm"
           variant="secondary"
-          onClick={() => navigate('/fields')}
+          onClick={() => navigate("/fields")}
         >
           Back to fields
         </Button>
@@ -163,9 +161,7 @@ export const FieldRecommendationsPage: React.FC = () => {
         <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-500">
           {field && !isFieldLoading && !isFieldError && (
             <>
-              <span className="font-medium text-gray-700">
-                {field.name}
-              </span>
+              <span className="font-medium text-gray-700">{field.name}</span>
               <span>Area: {field.areaHa.toFixed(2)} ha</span>
             </>
           )}
@@ -180,8 +176,8 @@ export const FieldRecommendationsPage: React.FC = () => {
             aria-hidden="true"
           />
           {hasRecommendations
-            ? 'You are offline. Showing the last loaded recommendations.'
-            : 'You are offline and have no cached recommendations yet.'}
+            ? "You are offline. Showing the last loaded recommendations."
+            : "You are offline and have no cached recommendations yet."}
         </p>
       )}
 
@@ -194,7 +190,7 @@ export const FieldRecommendationsPage: React.FC = () => {
           title="Unable to load recommendations"
           message={
             recommendationsError?.message ??
-            'Something went wrong while loading recommendations for this field.'
+            "Something went wrong while loading recommendations for this field."
           }
           onRetry={handleRetryRecommendations}
         />

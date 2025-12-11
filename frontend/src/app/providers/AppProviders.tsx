@@ -1,10 +1,10 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import React, { PropsWithChildren, useMemo } from 'react';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import React, { PropsWithChildren, useMemo } from "react";
 
-import { AuthProvider } from '../../features/auth/context/AuthContext';
-import { NotificationsProvider } from '../../shared/context/NotificationsContext';
-import { UiProvider } from '../../shared/context/UiContext';
-import { ToastProvider } from '../../shared/ui/Toast';
+import { AuthProvider } from "../../features/auth/context/AuthContext";
+import { NotificationsProvider } from "../../shared/context/NotificationsContext";
+import { UiProvider } from "../../shared/context/UiContext";
+import { ToastProvider } from "../../shared/ui/Toast";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -15,13 +15,15 @@ const queryClient = new QueryClient({
   },
 });
 
-type ThemeMode = 'light';
+type ThemeMode = "light";
 
 interface ThemeContextValue {
   mode: ThemeMode;
 }
 
-const ThemeContext = React.createContext<ThemeContextValue | undefined>(undefined);
+const ThemeContext = React.createContext<ThemeContextValue | undefined>(
+  undefined,
+);
 
 /**
  * ThemeProvider
@@ -32,18 +34,20 @@ const ThemeContext = React.createContext<ThemeContextValue | undefined>(undefine
 export const ThemeProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const value = useMemo<ThemeContextValue>(
     () => ({
-      mode: 'light',
+      mode: "light",
     }),
-    []
+    [],
   );
 
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+  );
 };
 
 export const useTheme = (): ThemeContextValue => {
   const ctx = React.useContext(ThemeContext);
   if (!ctx) {
-    throw new Error('useTheme must be used within a ThemeProvider');
+    throw new Error("useTheme must be used within a ThemeProvider");
   }
   return ctx;
 };
@@ -64,9 +68,7 @@ export const AppProviders: React.FC<PropsWithChildren> = ({ children }) => {
         <ToastProvider>
           <AuthProvider>
             <UiProvider>
-              <NotificationsProvider>
-                {children}
-              </NotificationsProvider>
+              <NotificationsProvider>{children}</NotificationsProvider>
             </UiProvider>
           </AuthProvider>
         </ToastProvider>

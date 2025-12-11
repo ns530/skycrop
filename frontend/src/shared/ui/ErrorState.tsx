@@ -1,8 +1,8 @@
-import clsx from 'clsx';
-import React from 'react';
+import clsx from "clsx";
+import React from "react";
 
-import { Button } from './Button';
-import { Card } from './Card';
+import { Button } from "./Button";
+import { Card } from "./Card";
 
 export interface ErrorStateProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
@@ -58,21 +58,21 @@ const ErrorIcon: React.FC = () => (
  * - Compact: inline row variant suitable for table rows or small sections
  */
 export const ErrorState: React.FC<ErrorStateProps> = ({
-  title = 'Something went wrong',
+  title = "Something went wrong",
   message,
   onRetry,
-  retryLabel = 'Retry',
+  retryLabel = "Retry",
   compact,
   className,
   ...rest
 }) => {
-  const descriptionId = message ? 'error-state-description' : undefined;
+  const descriptionId = message ? "error-state-description" : undefined;
 
   if (compact) {
     return (
       <div
         className={clsx(
-          'inline-flex items-center gap-2 text-sm text-red-700',
+          "inline-flex items-center gap-2 text-sm text-red-700",
           className,
         )}
         role="alert"
@@ -107,7 +107,10 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
 
   return (
     <Card
-      className={clsx('flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between', className)}
+      className={clsx(
+        "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between",
+        className,
+      )}
     >
       <div
         className="flex items-start gap-3 text-sm text-gray-800"

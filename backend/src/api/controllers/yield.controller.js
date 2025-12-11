@@ -11,7 +11,7 @@ const yieldService = getYieldService();
  */
 module.exports = {
   /**
-   * POST /api/v1/fields/:fieldId/yield
+   * POST /api/v1/fields/:field_id/yield
    * Create a new yield entry for a field
    */
   async create(req, res, next) {
@@ -19,27 +19,27 @@ module.exports = {
     const correlationId = req.headers['x-request-id'] || null;
 
     try {
-      const userId = req.user.userId;
-      const { fieldId } = req.params;
+      const { user_id } = req.user;
+      const { field_id } = req.params;
       const yieldData = req.body;
 
-      const result = await yieldService.create(userId, fieldId, yieldData);
+      const result = await yieldService.create(user_id, field_id, yieldData);
 
       const latency = Date.now() - started;
       logger.info('yields.create', {
-        route: `/api/v1/fields/${fieldId}/yield`,
+        route: `/api/v1/fields/${field_id}/yield`,
         method: 'POST',
-        user_id: userId,
-        field_id: fieldId,
-        yield_id: result.yield_id,
-        correlation_id: correlationId,
-        latency_ms: latency,
+        user_id: user_id,
+        field_id: field_id,
+        yieldid: result.yieldid,
+        correlationid: correlationId,
+        latencyms: latency,
       });
 
-      return res.status(201).json({
+      return res.status(201)on({
         success: true,
         data: result,
-        meta: { correlation_id: correlationId, latency_ms: latency },
+        meta: { correlationid: correlationId, latencyms: latency },
       });
     } catch (err) {
       return next(err);
@@ -47,7 +47,7 @@ module.exports = {
   },
 
   /**
-   * GET /api/v1/fields/:fieldId/yield
+   * GET /api/v1/fields/:field_id/yield
    * Get all yield entries for a field (with pagination)
    */
   async listByField(req, res, next) {
@@ -55,39 +55,39 @@ module.exports = {
     const correlationId = req.headers['x-request-id'] || null;
 
     try {
-      const userId = req.user.userId;
-      const { fieldId } = req.params;
+      const { user_id } = req.user;
+      const { field_id } = req.params;
       const options = req.query || {};
 
-      const result = await yieldService.listByField(userId, fieldId, options);
+      const result = await yieldService.listByField(user_id, field_id, options);
 
       const latency = Date.now() - started;
       logger.info('yields.listByField', {
-        route: `/api/v1/fields/${fieldId}/yield`,
+        route: `/api/v1/fields/${field_id}/yield`,
         method: 'GET',
-        user_id: userId,
-        field_id: fieldId,
+        user_id: user_id,
+        field_id: field_id,
         page: result.page,
-        page_size: result.pageSize,
+        pagesize: result.pageSize,
         total: result.total,
-        cache_hit: result.cacheHit,
-        correlation_id: correlationId,
-        latency_ms: latency,
+        cachehit: result.cacheHit,
+        correlationid: correlationId,
+        latencyms: latency,
       });
 
-      return res.status(200).json({
+      return res.status(200)on({
         success: true,
         data: result.items,
         pagination: {
           page: result.page,
-          page_size: result.pageSize,
+          pagesize: result.pageSize,
           total: result.total,
-          total_pages: result.totalPages,
+          totalpages: result.totalPages,
         },
         meta: {
-          correlation_id: correlationId,
-          latency_ms: latency,
-          cache_hit: result.cacheHit,
+          correlationid: correlationId,
+          latencyms: latency,
+          cachehit: result.cacheHit,
         },
       });
     } catch (err) {
@@ -96,7 +96,7 @@ module.exports = {
   },
 
   /**
-   * GET /api/v1/fields/:fieldId/yield/statistics
+   * GET /api/v1/fields/:field_id/yield/statistics
    * Get yield statistics for a field
    */
   async getStatistics(req, res, next) {
@@ -104,25 +104,25 @@ module.exports = {
     const correlationId = req.headers['x-request-id'] || null;
 
     try {
-      const userId = req.user.userId;
-      const { fieldId } = req.params;
+      const { user_id } = req.user;
+      const { field_id } = req.params;
 
-      const result = await yieldService.getStatistics(userId, fieldId);
+      const result = await yieldService.getStatistics(user_id, field_id);
 
       const latency = Date.now() - started;
       logger.info('yields.getStatistics', {
-        route: `/api/v1/fields/${fieldId}/yield/statistics`,
+        route: `/api/v1/fields/${field_id}/yield/statistics`,
         method: 'GET',
-        user_id: userId,
-        field_id: fieldId,
-        correlation_id: correlationId,
-        latency_ms: latency,
+        user_id: user_id,
+        field_id: field_id,
+        correlationid: correlationId,
+        latencyms: latency,
       });
 
-      return res.status(200).json({
+      return res.status(200)on({
         success: true,
         data: result,
-        meta: { correlation_id: correlationId, latency_ms: latency },
+        meta: { correlationid: correlationId, latencyms: latency },
       });
     } catch (err) {
       return next(err);
@@ -138,25 +138,25 @@ module.exports = {
     const correlationId = req.headers['x-request-id'] || null;
 
     try {
-      const userId = req.user.userId;
+      const { user_id } = req.user;
       const { yieldId } = req.params;
 
-      const result = await yieldService.getById(userId, yieldId);
+      const result = await yieldService.getById(user_id, yieldId);
 
       const latency = Date.now() - started;
       logger.info('yields.getById', {
         route: `/api/v1/yield/${yieldId}`,
         method: 'GET',
-        user_id: userId,
-        yield_id: yieldId,
-        correlation_id: correlationId,
-        latency_ms: latency,
+        user_id: user_id,
+        yieldid: yieldId,
+        correlationid: correlationId,
+        latencyms: latency,
       });
 
-      return res.status(200).json({
+      return res.status(200)on({
         success: true,
         data: result,
-        meta: { correlation_id: correlationId, latency_ms: latency },
+        meta: { correlationid: correlationId, latencyms: latency },
       });
     } catch (err) {
       return next(err);
@@ -172,26 +172,26 @@ module.exports = {
     const correlationId = req.headers['x-request-id'] || null;
 
     try {
-      const userId = req.user.userId;
+      const { user_id } = req.user;
       const { yieldId } = req.params;
       const updates = req.body;
 
-      const result = await yieldService.update(userId, yieldId, updates);
+      const result = await yieldService.update(user_id, yieldId, updates);
 
       const latency = Date.now() - started;
       logger.info('yields.update', {
         route: `/api/v1/yield/${yieldId}`,
         method: 'PATCH',
-        user_id: userId,
-        yield_id: yieldId,
-        correlation_id: correlationId,
-        latency_ms: latency,
+        user_id: user_id,
+        yieldid: yieldId,
+        correlationid: correlationId,
+        latencyms: latency,
       });
 
-      return res.status(200).json({
+      return res.status(200)on({
         success: true,
         data: result,
-        meta: { correlation_id: correlationId, latency_ms: latency },
+        meta: { correlationid: correlationId, latencyms: latency },
       });
     } catch (err) {
       return next(err);
@@ -207,25 +207,25 @@ module.exports = {
     const correlationId = req.headers['x-request-id'] || null;
 
     try {
-      const userId = req.user.userId;
+      const { user_id } = req.user;
       const { yieldId } = req.params;
 
-      await yieldService.remove(userId, yieldId);
+      await yieldService.remove(user_id, yieldId);
 
       const latency = Date.now() - started;
       logger.info('yields.remove', {
         route: `/api/v1/yield/${yieldId}`,
         method: 'DELETE',
-        user_id: userId,
-        yield_id: yieldId,
-        correlation_id: correlationId,
-        latency_ms: latency,
+        user_id: user_id,
+        yieldid: yieldId,
+        correlationid: correlationId,
+        latencyms: latency,
       });
 
-      return res.status(200).json({
+      return res.status(200)on({
         success: true,
         message: 'Yield entry deleted successfully',
-        meta: { correlation_id: correlationId, latency_ms: latency },
+        meta: { correlationid: correlationId, latencyms: latency },
       });
     } catch (err) {
       return next(err);
@@ -233,7 +233,7 @@ module.exports = {
   },
 
   /**
-   * POST /api/v1/fields/:fieldId/yield/predict
+   * POST /api/v1/fields/:field_id/yield/predict
    * Generate yield prediction for a field
    */
   async predictYield(req, res, next) {
@@ -241,28 +241,28 @@ module.exports = {
     const correlationId = req.headers['x-request-id'] || null;
 
     try {
-      const userId = req.user.userId;
-      const { fieldId } = req.params;
+      const { user_id } = req.user;
+      const { field_id } = req.params;
       const predictionOptions = req.body || {};
 
-      const result = await yieldService.predictYield(userId, fieldId, predictionOptions);
+      const result = await yieldService.predictYield(user_id, field_id, predictionOptions);
 
       const latency = Date.now() - started;
       logger.info('yields.predict', {
-        route: `/api/v1/fields/${fieldId}/yield/predict`,
+        route: `/api/v1/fields/${field_id}/yield/predict`,
         method: 'POST',
-        user_id: userId,
-        field_id: fieldId,
-        prediction_id: result.prediction_id,
-        predicted_yield: result.predicted_yield_per_ha,
-        correlation_id: correlationId,
-        latency_ms: latency,
+        user_id: user_id,
+        field_id: field_id,
+        predictionid: result.predictionid,
+        predictedyield: result.predictedyieldperha,
+        correlationid: correlationId,
+        latencyms: latency,
       });
 
-      return res.status(200).json({
+      return res.status(200)on({
         success: true,
         data: result,
-        meta: { correlation_id: correlationId, latency_ms: latency },
+        meta: { correlationid: correlationId, latencyms: latency },
       });
     } catch (err) {
       return next(err);
@@ -270,7 +270,7 @@ module.exports = {
   },
 
   /**
-   * GET /api/v1/fields/:fieldId/yield/predictions
+   * GET /api/v1/fields/:field_id/yield/predictions
    * Get all yield predictions for a field
    */
   async getPredictions(req, res, next) {
@@ -278,31 +278,31 @@ module.exports = {
     const correlationId = req.headers['x-request-id'] || null;
 
     try {
-      const userId = req.user.userId;
-      const { fieldId } = req.params;
+      const { user_id } = req.user;
+      const { field_id } = req.params;
       const options = req.query || {};
 
-      const result = await yieldService.getPredictions(userId, fieldId, options);
+      const result = await yieldService.getPredictions(user_id, field_id, options);
 
       const latency = Date.now() - started;
       logger.info('yields.getPredictions', {
-        route: `/api/v1/fields/${fieldId}/yield/predictions`,
+        route: `/api/v1/fields/${field_id}/yield/predictions`,
         method: 'GET',
-        user_id: userId,
-        field_id: fieldId,
+        user_id: user_id,
+        field_id: field_id,
         count: result.predictions.length,
-        cache_hit: result.cacheHit,
-        correlation_id: correlationId,
-        latency_ms: latency,
+        cachehit: result.cacheHit,
+        correlationid: correlationId,
+        latencyms: latency,
       });
 
-      return res.status(200).json({
+      return res.status(200)on({
         success: true,
         data: result.predictions,
         meta: {
-          correlation_id: correlationId,
-          latency_ms: latency,
-          cache_hit: result.cacheHit,
+          correlationid: correlationId,
+          latencyms: latency,
+          cachehit: result.cacheHit,
           count: result.predictions.length,
         },
       });
@@ -311,4 +311,3 @@ module.exports = {
     }
   },
 };
-

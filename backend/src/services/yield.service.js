@@ -3,13 +3,9 @@
 const { sequelize } = require('../config/database.config');
 const ActualYield = require('../models/actualYield.model');
 const Field = require('../models/field.model');
-const YieldPrediction = require('../models/yield_prediction.model');
+const YieldPrediction = require('../models/yieldprediction.model');
 const { getRedisClient, initRedis } = require('../config/redis.config');
-const {
-  ValidationError,
-  NotFoundError,
-  ConflictError,
-} = require('../errors/custom-errors');
+const { ValidationError, NotFoundError, ConflictError } = require('../errors/custom-errors');
 const { emitToField, emitToUser } = require('../websocket/server');
 
 /**
@@ -17,7 +13,7 @@ const { emitToField, emitToUser } = require('../websocket/server');
  * Business logic for actual yield data management
  */
 
-const YIELD_CACHE_TTL_SEC = parseInt(process.env.YIELD_CACHE_TTL_SEC || '600', 10); // 10 minutes
+const YIELDCACHETTLSEC = parseInt(process.env.YIELDCACHETTLSEC || '600', 10); // 10 minutes
 
 /**
  * Redis helpers
@@ -74,101 +70,103 @@ async function redisDelPattern(pattern) {
 
 /**
  * Create a new actual yield entry
- * @param {string} userId - User ID
- * @param {string} fieldId - Field ID
- * @param {object} yieldData - Yield data (actual_yield_per_ha, total_yield_kg, harvest_date, etc.)
+ * @param {string} user_id - User ID
+ * @param {string} field_id - Field ID
+ * @param {object} yieldData - Yield data (actualyieldperha, totalyieldkg, harvestdate, etc.)
  * @returns {Promise<object>} Created yield entry
  */
-async function create(userId, fieldId, yieldData) {
+async function create(user_id, field_id, yieldData) {
   // Validate field exists and belongs to user
   const field = await Field.findOne({
-    where: { field_id: fieldId, user_id: userId, status: 'active' },
+    where: { field_id: field_id, user_id: user_id, status: 'active' },
   });
 
   if (!field) {
-    throw new NotFoundError('Field not found or does not belong to user', { field_id: fieldId });
+    throw new NotFoundError('Field not found or does not belong to user', { field_id: field_id });
   }
 
   // Validate required fields
-  if (!yieldData.actual_yield_per_ha || !yieldData.total_yield_kg || !yieldData.harvest_date) {
-    throw new ValidationError('Missing required fields: actual_yield_per_ha, total_yield_kg, harvest_date');
+  if (!yieldData.actualyieldperha || !yieldData.totalyieldkg || !yieldData.harvestdate) {
+    throw new ValidationError(
+      'Missing required fields: actualyieldperha, totalyieldkg, harvestdate'
+    );
   }
 
   // Validate harvest date is not in the future
-  const harvestDate = new Date(yieldData.harvest_date);
+  const harvestDate = new Date(yieldData.harvestdate);
   if (harvestDate > new Date()) {
     throw new ValidationError('Harvest date cannot be in the future');
   }
 
   // Check for duplicate (same field, same harvest date)
   const existing = await ActualYield.findOne({
-    where: { field_id: fieldId, harvest_date: yieldData.harvest_date },
+    where: { field_id: field_id, harvestdate: yieldData.harvestdate },
   });
 
   if (existing) {
     throw new ConflictError('Yield entry already exists for this field on this date', {
-      field_id: fieldId,
-      harvest_date: yieldData.harvest_date,
-      existing_id: existing.yield_id,
+      field_id: field_id,
+      harvestdate: yieldData.harvestdate,
+      existingid: existing.yieldid,
     });
   }
 
-  // If prediction_id provided, fetch prediction data
-  let predictedYieldPerHa = yieldData.predicted_yield_per_ha;
-  if (yieldData.prediction_id && !predictedYieldPerHa) {
-    const prediction = await YieldPrediction.findByPk(yieldData.prediction_id);
-    if (prediction && prediction.field_id === fieldId) {
-      predictedYieldPerHa = prediction.predicted_yield_per_ha;
+  // If predictionid provided, fetch prediction data
+  let predictedYieldPerHa = yieldData.predictedyieldperha;
+  if (yieldData.predictionid && !predictedYieldPerHa) {
+    const prediction = await YieldPrediction.findByPk(yieldData.predictionid);
+    if (prediction && prediction.field_id === field_id) {
+      predictedYieldPerHa = prediction.predictedyieldperha;
     }
   }
 
   // Create yield entry
   const yieldEntry = await ActualYield.create({
-    field_id: fieldId,
-    user_id: userId,
-    actual_yield_per_ha: yieldData.actual_yield_per_ha,
-    total_yield_kg: yieldData.total_yield_kg,
-    harvest_date: yieldData.harvest_date,
-    prediction_id: yieldData.prediction_id || null,
-    predicted_yield_per_ha: predictedYieldPerHa || null,
+    field_id: field_id,
+    user_id: user_id,
+    actualyieldperha: yieldData.actualyieldperha,
+    totalyieldkg: yieldData.totalyieldkg,
+    harvestdate: yieldData.harvestdate,
+    predictionid: yieldData.predictionid || null,
+    predictedyieldperha: predictedYieldPerHa || null,
     notes: yieldData.notes || null,
-    crop_variety: yieldData.crop_variety || null,
+    cropvariety: yieldData.cropvariety || null,
     season: yieldData.season || null,
-    // accuracy_mape will be auto-calculated by DB trigger
+    // accuracymape will be auto-calculated by DB trigger
   });
 
   // Invalidate cache
-  await redisDelPattern(`yields:field:${fieldId}:*`);
-  await redisDelPattern(`yields:user:${userId}:*`);
+  await redisDelPattern(`yields:field:${field_id}:*`);
+  await redisDelPattern(`yields:user:${user_id}:*`);
 
   return yieldEntry.toJSON();
 }
 
 /**
  * Get yield entries for a field
- * @param {string} userId - User ID
- * @param {string} fieldId - Field ID
- * @param {object} options - Query options (page, page_size, sort, order)
+ * @param {string} user_id - User ID
+ * @param {string} field_id - Field ID
+ * @param {object} options - Query options (page, pagesize, sort, order)
  * @returns {Promise<object>} Yield entries with pagination
  */
-async function listByField(userId, fieldId, options = {}) {
+async function listByField(user_id, field_id, options = {}) {
   // Validate field exists and belongs to user
   const field = await Field.findOne({
-    where: { field_id: fieldId, user_id: userId, status: 'active' },
+    where: { field_id: field_id, user_id: user_id, status: 'active' },
   });
 
   if (!field) {
-    throw new NotFoundError('Field not found or does not belong to user', { field_id: fieldId });
+    throw new NotFoundError('Field not found or does not belong to user', { field_id: field_id });
   }
 
   const page = Math.max(1, parseInt(options.page, 10) || 1);
-  const pageSize = Math.min(100, Math.max(1, parseInt(options.page_size, 10) || 20));
+  const pageSize = Math.min(100, Math.max(1, parseInt(options.pagesize, 10) || 20));
   const offset = (page - 1) * pageSize;
-  const sortBy = options.sort || 'harvest_date';
+  const sortBy = options.sort || 'harvestdate';
   const sortOrder = (options.order || 'desc').toUpperCase();
 
   // Check cache
-  const cacheKey = `yields:field:${fieldId}:page:${page}:size:${pageSize}:sort:${sortBy}:${sortOrder}`;
+  const cacheKey = `yields:field:${field_id}:page:${page}:size:${pageSize}:sort:${sortBy}:${sortOrder}`;
   const cached = await redisGetJSON(cacheKey);
   if (cached) {
     return { ...cached, cacheHit: true };
@@ -176,23 +174,23 @@ async function listByField(userId, fieldId, options = {}) {
 
   // Query database
   const { count, rows } = await ActualYield.findAndCountAll({
-    where: { field_id: fieldId },
+    where: { field_id: field_id },
     order: [[sortBy, sortOrder]],
     limit: pageSize,
     offset,
     attributes: [
-      'yield_id',
+      'yieldid',
       'field_id',
-      'actual_yield_per_ha',
-      'total_yield_kg',
-      'harvest_date',
-      'predicted_yield_per_ha',
-      'accuracy_mape',
+      'actualyieldperha',
+      'totalyieldkg',
+      'harvestdate',
+      'predictedyieldperha',
+      'accuracymape',
       'notes',
-      'crop_variety',
+      'cropvariety',
       'season',
-      'created_at',
-      'updated_at',
+      'createdat',
+      'updatedat',
     ],
   });
 
@@ -205,31 +203,31 @@ async function listByField(userId, fieldId, options = {}) {
   };
 
   // Cache result
-  await redisSetJSON(cacheKey, result, YIELD_CACHE_TTL_SEC);
+  await redisSetJSON(cacheKey, result, YIELDCACHETTLSEC);
 
   return { ...result, cacheHit: false };
 }
 
 /**
  * Get a single yield entry by ID
- * @param {string} userId - User ID
+ * @param {string} user_id - User ID
  * @param {string} yieldId - Yield ID
  * @returns {Promise<object>} Yield entry
  */
-async function getById(userId, yieldId) {
+async function getById(user_id, yieldId) {
   const yieldEntry = await ActualYield.findOne({
-    where: { yield_id: yieldId, user_id: userId },
+    where: { yieldid: yieldId, user_id: user_id },
     include: [
       {
         model: Field,
         as: 'field',
-        attributes: ['field_id', 'name', 'area', 'area_sqm'],
+        attributes: ['field_id', 'name', 'area', 'areasqm'],
       },
     ],
   });
 
   if (!yieldEntry) {
-    throw new NotFoundError('Yield entry not found', { yield_id: yieldId });
+    throw new NotFoundError('Yield entry not found', { yieldid: yieldId });
   }
 
   return yieldEntry.toJSON();
@@ -237,34 +235,34 @@ async function getById(userId, yieldId) {
 
 /**
  * Update a yield entry
- * @param {string} userId - User ID
+ * @param {string} user_id - User ID
  * @param {string} yieldId - Yield ID
  * @param {object} updates - Fields to update
  * @returns {Promise<object>} Updated yield entry
  */
-async function update(userId, yieldId, updates) {
+async function update(user_id, yieldId, updates) {
   const yieldEntry = await ActualYield.findOne({
-    where: { yield_id: yieldId, user_id: userId },
+    where: { yieldid: yieldId, user_id: user_id },
   });
 
   if (!yieldEntry) {
-    throw new NotFoundError('Yield entry not found', { yield_id: yieldId });
+    throw new NotFoundError('Yield entry not found', { yieldid: yieldId });
   }
 
   // Validate harvest date if being updated
-  if (updates.harvest_date) {
-    const harvestDate = new Date(updates.harvest_date);
+  if (updates.harvestdate) {
+    const harvestDate = new Date(updates.harvestdate);
     if (harvestDate > new Date()) {
       throw new ValidationError('Harvest date cannot be in the future');
     }
 
     // Check for duplicate if harvest date is changing
-    if (updates.harvest_date !== yieldEntry.harvest_date) {
+    if (updates.harvestdate !== yieldEntry.harvestdate) {
       const existing = await ActualYield.findOne({
         where: {
           field_id: yieldEntry.field_id,
-          harvest_date: updates.harvest_date,
-          yield_id: { [sequelize.Op.ne]: yieldId },
+          harvestdate: updates.harvestdate,
+          yieldid: { [sequelize.Op.ne]: yieldId },
         },
       });
 
@@ -276,12 +274,12 @@ async function update(userId, yieldId, updates) {
 
   // Update allowed fields
   const allowedUpdates = [
-    'actual_yield_per_ha',
-    'total_yield_kg',
-    'harvest_date',
-    'predicted_yield_per_ha',
+    'actualyieldperha',
+    'totalyieldkg',
+    'harvestdate',
+    'predictedyieldperha',
     'notes',
-    'crop_variety',
+    'cropvariety',
     'season',
   ];
 
@@ -295,102 +293,104 @@ async function update(userId, yieldId, updates) {
 
   // Invalidate cache
   await redisDelPattern(`yields:field:${yieldEntry.field_id}:*`);
-  await redisDelPattern(`yields:user:${userId}:*`);
+  await redisDelPattern(`yields:user:${user_id}:*`);
 
   return yieldEntry.toJSON();
 }
 
 /**
  * Delete a yield entry
- * @param {string} userId - User ID
+ * @param {string} user_id - User ID
  * @param {string} yieldId - Yield ID
  * @returns {Promise<boolean>} Success
  */
-async function remove(userId, yieldId) {
+async function remove(user_id, yieldId) {
   const yieldEntry = await ActualYield.findOne({
-    where: { yield_id: yieldId, user_id: userId },
+    where: { yieldid: yieldId, user_id: user_id },
   });
 
   if (!yieldEntry) {
-    throw new NotFoundError('Yield entry not found', { yield_id: yieldId });
+    throw new NotFoundError('Yield entry not found', { yieldid: yieldId });
   }
 
-  const fieldId = yieldEntry.field_id;
+  const field_id = yieldEntry.field_id;
 
   await yieldEntry.destroy();
 
   // Invalidate cache
-  await redisDelPattern(`yields:field:${fieldId}:*`);
-  await redisDelPattern(`yields:user:${userId}:*`);
+  await redisDelPattern(`yields:field:${field_id}:*`);
+  await redisDelPattern(`yields:user:${user_id}:*`);
 
   return true;
 }
 
 /**
  * Get statistics for a field's yields
- * @param {string} userId - User ID
- * @param {string} fieldId - Field ID
- * @returns {Promise<object>} Statistics (avg, min, max, total_entries, etc.)
+ * @param {string} user_id - User ID
+ * @param {string} field_id - Field ID
+ * @returns {Promise<object>} Statistics (avg, min, max, totalentries, etc.)
  */
-async function getStatistics(userId, fieldId) {
+async function getStatistics(user_id, field_id) {
   // Validate field exists and belongs to user
   const field = await Field.findOne({
-    where: { field_id: fieldId, user_id: userId, status: 'active' },
+    where: { field_id: field_id, user_id: user_id, status: 'active' },
   });
 
   if (!field) {
-    throw new NotFoundError('Field not found or does not belong to user', { field_id: fieldId });
+    throw new NotFoundError('Field not found or does not belong to user', { field_id: field_id });
   }
 
   const [result] = await sequelize.query(
     `
     SELECT
-      COUNT(*)::integer AS total_entries,
-      COALESCE(AVG(actual_yield_per_ha), 0)::numeric(10,2) AS avg_yield_per_ha,
-      COALESCE(MIN(actual_yield_per_ha), 0)::numeric(10,2) AS min_yield_per_ha,
-      COALESCE(MAX(actual_yield_per_ha), 0)::numeric(10,2) AS max_yield_per_ha,
-      COALESCE(AVG(accuracy_mape), 0)::numeric(5,2) AS avg_accuracy_mape,
-      MIN(harvest_date) AS first_harvest,
-      MAX(harvest_date) AS latest_harvest
-    FROM actual_yields
+      COUNT(*)::integer AS totalentries,
+      COALESCE(AVG(actualyieldperha), 0)::numeric(10,2) AS avgyieldperha,
+      COALESCE(MIN(actualyieldperha), 0)::numeric(10,2) AS minyieldperha,
+      COALESCE(MAX(actualyieldperha), 0)::numeric(10,2) AS maxyieldperha,
+      COALESCE(AVG(accuracymape), 0)::numeric(5,2) AS avgaccuracymape,
+      MIN(harvestdate) AS firstharvest,
+      MAX(harvestdate) AS latestharvest
+    FROM actualyields
     WHERE field_id = :field_id
     `,
     {
-      replacements: { field_id: fieldId },
+      replacements: { field_id: field_id },
       type: sequelize.QueryTypes.SELECT,
     }
   );
 
-  return result || {
-    total_entries: 0,
-    avg_yield_per_ha: 0,
-    min_yield_per_ha: 0,
-    max_yield_per_ha: 0,
-    avg_accuracy_mape: 0,
-    first_harvest: null,
-    latest_harvest: null,
-  };
+  return (
+    result || {
+      totalentries: 0,
+      avgyieldperha: 0,
+      minyieldperha: 0,
+      maxyieldperha: 0,
+      avgaccuracymape: 0,
+      firstharvest: null,
+      latestharvest: null,
+    }
+  );
 }
 
 /**
  * Predict yield for a field
- * @param {string} userId - User ID
- * @param {string} fieldId - Field ID
- * @param {object} predictionOptions - Options (planting_date, variety, soil_type, etc.)
+ * @param {string} user_id - User ID
+ * @param {string} field_id - Field ID
+ * @param {object} predictionOptions - Options (plantingdate, variety, soiltype, etc.)
  * @returns {Promise<object>} Prediction result
  */
-async function predictYield(userId, fieldId, predictionOptions = {}) {
+async function predictYield(user_id, field_id, predictionOptions = {}) {
   const { getMLGatewayService } = require('./mlGateway.service');
   const HealthRepository = require('../repositories/health.repository');
   const { getWeatherService } = require('./weather.service');
 
   // Validate field exists and belongs to user
   const field = await Field.findOne({
-    where: { field_id: fieldId, user_id: userId, status: 'active' },
+    where: { field_id: field_id, user_id: user_id, status: 'active' },
   });
 
   if (!field) {
-    throw new NotFoundError('Field not found or does not belong to user', { field_id: fieldId });
+    throw new NotFoundError('Field not found or does not belong to user', { field_id: field_id });
   }
 
   // 1. Get NDVI history (last 90 days)
@@ -400,25 +400,35 @@ async function predictYield(userId, fieldId, predictionOptions = {}) {
   startDate.setDate(startDate.getDate() - 90);
   const startDateStr = startDate.toISOString().split('T')[0];
 
-  const healthRecords = await healthRepository.findByFieldAndDateRange(fieldId, startDateStr, endDate);
+  const healthRecords = await healthRepository.findByFieldAndDateRange(
+    field_id,
+    startDateStr,
+    endDate
+  );
 
   // Calculate NDVI statistics
-  const ndviValues = healthRecords.map(r => parseFloat(r.ndvi_mean)).filter(v => !isNaN(v));
-  const ndviAvg = ndviValues.length > 0 ? ndviValues.reduce((a, b) => a + b, 0) / ndviValues.length : 0.6;
+  const ndviValues = healthRecords.map(r => parseFloat(r.ndvimean)).filter(v => !isNaN(v));
+  const ndviAvg =
+    ndviValues.length > 0 ? ndviValues.reduce((a, b) => a + b, 0) / ndviValues.length : 0.6;
   const ndviMax = ndviValues.length > 0 ? Math.max(...ndviValues) : 0.7;
   const ndviMin = ndviValues.length > 0 ? Math.min(...ndviValues) : 0.5;
-  const ndviStd = ndviValues.length > 1 ? Math.sqrt(ndviValues.reduce((sum, val) => sum + Math.pow(val - ndviAvg, 2), 0) / ndviValues.length) : 0.1;
+  const ndviStd =
+    ndviValues.length > 1
+      ? Math.sqrt(
+          ndviValues.reduce((sum, val) => sum + (val - ndviAvg) ** 2, 0) / ndviValues.length
+        )
+      : 0.1;
 
   // 2. Get weather data (rainfall, temperature)
   let rainfallTotal = 150; // Default mm
   let tempAvg = 28; // Default °C
-  let humidity = 75; // Default %
+  const humidity = 75; // Default %
 
   try {
     const weatherService = getWeatherService();
     const weatherResponse = await weatherService.getForecastByCoords(
       field.center.coordinates[1], // latitude
-      field.center.coordinates[0]  // longitude
+      field.center.coordinates[0] // longitude
     );
 
     if (weatherResponse.data && weatherResponse.data.totals) {
@@ -426,7 +436,9 @@ async function predictYield(userId, fieldId, predictionOptions = {}) {
     }
 
     if (weatherResponse.data && weatherResponse.data.days && weatherResponse.data.days.length > 0) {
-      const temps = weatherResponse.data.days.map(d => (d.tmax + d.tmin) / 2).filter(t => !isNaN(t));
+      const temps = weatherResponse.data.days
+        .map(d => (d.tmax + d.tmin) / 2)
+        .filter(t => !isNaN(t));
       tempAvg = temps.length > 0 ? temps.reduce((a, b) => a + b, 0) / temps.length : tempAvg;
     }
   } catch (error) {
@@ -436,20 +448,22 @@ async function predictYield(userId, fieldId, predictionOptions = {}) {
 
   // 3. Build feature vector for ML model
   const areaHa = parseFloat(field.area) || 1.0;
-  
+
   // Feature vector (must match trained model):
-  // [ndvi_avg, ndvi_max, ndvi_min, ndvi_std, rainfall_mm, temp_avg, humidity, area_ha]
-  const features = [{
-    field_id: fieldId,
-    ndvi_avg: ndviAvg,
-    ndvi_max: ndviMax,
-    ndvi_min: ndviMin,
-    ndvi_std: ndviStd,
-    rainfall_mm: rainfallTotal,
-    temp_avg: tempAvg,
-    humidity: humidity,
-    area_ha: areaHa,
-  }];
+  // [ndviavg, ndvimax, ndvimin, ndvistd, rainfallmm, tempavg, humidity, areaha]
+  const features = [
+    {
+      field_id: field_id,
+      ndviavg: ndviAvg,
+      ndvimax: ndviMax,
+      ndvimin: ndviMin,
+      ndvistd: ndviStd,
+      rainfallmm: rainfallTotal,
+      tempavg: tempAvg,
+      humidity,
+      areaha: areaHa,
+    },
+  ];
 
   // 4. Call ML service
   const mlGateway = getMLGatewayService();
@@ -457,77 +471,85 @@ async function predictYield(userId, fieldId, predictionOptions = {}) {
 
   // 5. Extract prediction
   const prediction = mlResponse.result.data.predictions[0] || {};
-  const predictedYieldPerHa = parseFloat(prediction.predicted_yield || prediction.predicted_yield_per_ha || 4500);
-  const confidenceLower = parseFloat(prediction.confidence_interval?.lower || predictedYieldPerHa * 0.85);
-  const confidenceUpper = parseFloat(prediction.confidence_interval?.upper || predictedYieldPerHa * 1.15);
+  const predictedYieldPerHa = parseFloat(
+    prediction.predictedyield || prediction.predictedyieldperha || 4500
+  );
+  const confidenceLower = parseFloat(
+    prediction.confidenceinterval?.lower || predictedYieldPerHa * 0.85
+  );
+  const confidenceUpper = parseFloat(
+    prediction.confidenceinterval?.upper || predictedYieldPerHa * 1.15
+  );
 
   // 6. Calculate derived values
   const predictedTotalYield = predictedYieldPerHa * areaHa;
-  const pricePerKg = parseFloat(predictionOptions.price_per_kg || 80); // LKR per kg
+  const pricePerKg = parseFloat(predictionOptions.priceperkg || 80); // LKR per kg
   const expectedRevenue = predictedTotalYield * pricePerKg;
 
   // Estimate harvest date (4 months from planting date or now)
-  const plantingDate = predictionOptions.planting_date ? new Date(predictionOptions.planting_date) : new Date();
+  const plantingDate = predictionOptions.plantingdate
+    ? new Date(predictionOptions.plantingdate)
+    : new Date();
   const harvestDate = new Date(plantingDate);
   harvestDate.setMonth(harvestDate.getMonth() + 4); // Typical 4-month growing season for rice
   const harvestDateStr = harvestDate.toISOString().split('T')[0];
 
   // 7. Save prediction to database
   const savedPrediction = await YieldPrediction.create({
-    field_id: fieldId,
-    prediction_date: new Date().toISOString().split('T')[0],
-    predicted_yield_per_ha: predictedYieldPerHa,
-    predicted_total_yield: predictedTotalYield,
-    confidence_lower: confidenceLower,
-    confidence_upper: confidenceUpper,
-    expected_revenue: expectedRevenue,
-    harvest_date_estimate: harvestDateStr,
-    model_version: mlResponse.result.data.model?.version || '1.0.0',
-    features_used: features[0],
+    field_id: field_id,
+    predictiondate: new Date().toISOString().split('T')[0],
+    predictedyieldperha: predictedYieldPerHa,
+    predictedtotalyield: predictedTotalYield,
+    confidencelower: confidenceLower,
+    confidenceupper: confidenceUpper,
+    expectedrevenue: expectedRevenue,
+    harvestdateestimate: harvestDateStr,
+    modelversion: mlResponse.result.data.model?.version || '1.0.0',
+    featuresused: features[0],
   });
 
   // Invalidate cache
-  await redisDelPattern(`yields:field:${fieldId}:*`);
-  await redisDelPattern(`yields:user:${userId}:*`);
+  await redisDelPattern(`yields:field:${field_id}:*`);
+  await redisDelPattern(`yields:user:${user_id}:*`);
 
   // Build response
   const response = {
-    prediction_id: savedPrediction.prediction_id,
-    field_id: fieldId,
-    field_name: field.name,
-    field_area_ha: areaHa,
-    prediction_date: savedPrediction.prediction_date,
-    predicted_yield_per_ha: parseFloat(savedPrediction.predicted_yield_per_ha),
-    predicted_total_yield: parseFloat(savedPrediction.predicted_total_yield),
-    confidence_interval: {
-      lower: parseFloat(savedPrediction.confidence_lower),
-      upper: parseFloat(savedPrediction.confidence_upper),
+    predictionid: savedPrediction.predictionid,
+    field_id: field_id,
+    fieldname: field.name,
+    fieldareaha: areaHa,
+    predictiondate: savedPrediction.predictiondate,
+    predictedyieldperha: parseFloat(savedPrediction.predictedyieldperha),
+    predictedtotalyield: parseFloat(savedPrediction.predictedtotalyield),
+    confidenceinterval: {
+      lower: parseFloat(savedPrediction.confidencelower),
+      upper: parseFloat(savedPrediction.confidenceupper),
     },
-    expected_revenue: parseFloat(savedPrediction.expected_revenue),
-    harvest_date_estimate: savedPrediction.harvest_date_estimate,
-    model_version: savedPrediction.model_version,
-    features_used: savedPrediction.features_used,
-    ml_response: mlResponse.cacheHit ? 'cached' : 'fresh',
+    expectedrevenue: parseFloat(savedPrediction.expectedrevenue),
+    harvestdateestimate: savedPrediction.harvestdateestimate,
+    modelversion: savedPrediction.modelversion,
+    featuresused: savedPrediction.featuresused,
+    mlresponse: mlResponse.cacheHit ? 'cached' : 'fresh',
   };
 
   // Emit real-time update to WebSocket subscribers
   try {
-    emitToField(fieldId, 'yield_prediction_ready', {
-      fieldId,
+    emitToField(field_id, 'yieldpredictionready', {
+      field_id,
       fieldName: field.name,
-      predictionId: savedPrediction.prediction_id,
-      predictedYieldPerHa: parseFloat(savedPrediction.predicted_yield_per_ha),
-      predictedTotalYield: parseFloat(savedPrediction.predicted_total_yield),
-      expectedRevenue: parseFloat(savedPrediction.expected_revenue),
-      harvestDateEstimate: savedPrediction.harvest_date_estimate,
+      predictionId: savedPrediction.predictionid,
+      predictedYieldPerHa: parseFloat(savedPrediction.predictedyieldperha),
+      predictedTotalYield: parseFloat(savedPrediction.predictedtotalyield),
+      expectedRevenue: parseFloat(savedPrediction.expectedrevenue),
+      harvestDateEstimate: savedPrediction.harvestdateestimate,
       timestamp: Date.now(),
     });
 
-    emitToUser(userId, 'yield_prediction_ready', {
-      fieldId,
+    emitToUser(user_id, 'yieldpredictionready', {
+      field_id,
       fieldName: field.name,
-      message: `Yield prediction ready: ${parseFloat(savedPrediction.predicted_total_yield).toFixed(0)} kg total (${parseFloat(savedPrediction.predicted_yield_per_ha).toFixed(0)} kg/ha)`,
-      expectedRevenue: parseFloat(savedPrediction.expected_revenue),
+      message: `Yield prediction ready: ${parseFloat(savedPrediction.predictedtotalyield).toFixed(0)} kg total (${parseFloat(savedPrediction.predictedyieldperha).toFixed(0)} kg/ha)`,
+      expectedRevenue: parseFloat(savedPrediction.expectedrevenue),
       timestamp: Date.now(),
     });
   } catch (error) {
@@ -540,27 +562,27 @@ async function predictYield(userId, fieldId, predictionOptions = {}) {
 
 /**
  * Get predictions for a field
- * @param {string} userId - User ID
- * @param {string} fieldId - Field ID
+ * @param {string} user_id - User ID
+ * @param {string} field_id - Field ID
  * @param {object} options - Query options (limit, sort, order)
  * @returns {Promise<Array>} List of predictions
  */
-async function getPredictions(userId, fieldId, options = {}) {
+async function getPredictions(user_id, field_id, options = {}) {
   // Validate field exists and belongs to user
   const field = await Field.findOne({
-    where: { field_id: fieldId, user_id: userId, status: 'active' },
+    where: { field_id: field_id, user_id: user_id, status: 'active' },
   });
 
   if (!field) {
-    throw new NotFoundError('Field not found or does not belong to user', { field_id: fieldId });
+    throw new NotFoundError('Field not found or does not belong to user', { field_id: field_id });
   }
 
   const limit = Math.min(100, Math.max(1, parseInt(options.limit, 10) || 10));
-  const sortBy = options.sort || 'prediction_date';
+  const sortBy = options.sort || 'predictiondate';
   const sortOrder = (options.order || 'desc').toUpperCase();
 
   // Check cache
-  const cacheKey = `yields:predictions:field:${fieldId}:limit:${limit}:sort:${sortBy}:${sortOrder}`;
+  const cacheKey = `yields:predictions:field:${field_id}:limit:${limit}:sort:${sortBy}:${sortOrder}`;
   const cached = await redisGetJSON(cacheKey);
   if (cached) {
     return { predictions: cached, cacheHit: true };
@@ -568,46 +590,46 @@ async function getPredictions(userId, fieldId, options = {}) {
 
   // Query database
   const predictions = await YieldPrediction.findAll({
-    where: { field_id: fieldId },
+    where: { field_id: field_id },
     order: [[sortBy, sortOrder]],
     limit,
     attributes: [
-      'prediction_id',
+      'predictionid',
       'field_id',
-      'prediction_date',
-      'predicted_yield_per_ha',
-      'predicted_total_yield',
-      'confidence_lower',
-      'confidence_upper',
-      'expected_revenue',
-      'harvest_date_estimate',
-      'model_version',
-      'actual_yield',
-      'accuracy_mape',
-      'created_at',
+      'predictiondate',
+      'predictedyieldperha',
+      'predictedtotalyield',
+      'confidencelower',
+      'confidenceupper',
+      'expectedrevenue',
+      'harvestdateestimate',
+      'modelversion',
+      'actualyield',
+      'accuracymape',
+      'createdat',
     ],
   });
 
   const result = predictions.map(p => ({
-    prediction_id: p.prediction_id,
+    predictionid: p.predictionid,
     field_id: p.field_id,
-    prediction_date: p.prediction_date,
-    predicted_yield_per_ha: parseFloat(p.predicted_yield_per_ha),
-    predicted_total_yield: parseFloat(p.predicted_total_yield),
-    confidence_interval: {
-      lower: parseFloat(p.confidence_lower),
-      upper: parseFloat(p.confidence_upper),
+    predictiondate: p.predictiondate,
+    predictedyieldperha: parseFloat(p.predictedyieldperha),
+    predictedtotalyield: parseFloat(p.predictedtotalyield),
+    confidenceinterval: {
+      lower: parseFloat(p.confidencelower),
+      upper: parseFloat(p.confidenceupper),
     },
-    expected_revenue: parseFloat(p.expected_revenue),
-    harvest_date_estimate: p.harvest_date_estimate,
-    model_version: p.model_version,
-    actual_yield: p.actual_yield ? parseFloat(p.actual_yield) : null,
-    accuracy_mape: p.accuracy_mape ? parseFloat(p.accuracy_mape) : null,
-    created_at: p.created_at,
+    expectedrevenue: parseFloat(p.expectedrevenue),
+    harvestdateestimate: p.harvestdateestimate,
+    modelversion: p.modelversion,
+    actualyield: p.actualyield ? parseFloat(p.actualyield) : null,
+    accuracymape: p.accuracymape ? parseFloat(p.accuracymape) : null,
+    createdat: p.createdat,
   }));
 
   // Cache result
-  await redisSetJSON(cacheKey, result, YIELD_CACHE_TTL_SEC);
+  await redisSetJSON(cacheKey, result, YIELDCACHETTLSEC);
 
   return { predictions: result, cacheHit: false };
 }
@@ -629,4 +651,3 @@ function getYieldService() {
 }
 
 module.exports = { getYieldService };
-

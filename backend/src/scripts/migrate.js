@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 'use strict';
 
 /**
@@ -13,13 +14,13 @@ const path = require('path');
 const { Pool } = require('pg');
 
 const {
-  DATABASE_URL,
-  DATABASE_PRIVATE_URL, // Railway internal connection (no SSL needed)
+  DATABASEURL,
+  DATABASEPRIVATEURL, // Railway internal connection (no SSL needed)
   NODE_ENV = 'development',
 } = process.env;
 
 // Prefer private URL for internal connections (no SSL needed)
-const DB_CONNECTION_STRING = DATABASE_PRIVATE_URL || DATABASE_URL;
+const DBCONNECTIONSTRING = DATABASEPRIVATEURL || DATABASEURL;
 
 // Retry helper with exponential backoff
 async function retryWithBackoff(fn, maxRetries = 5, initialDelay = 1000) {
@@ -27,40 +28,48 @@ async function retryWithBackoff(fn, maxRetries = 5, initialDelay = 1000) {
     try {
       return await fn();
     } catch (error) {
-      const isConnectionError = error.code === 'ECONNRESET' || 
-                                error.code === 'ECONNREFUSED' ||
-                                error.message?.includes('Connection terminated') ||
-                                error.message?.includes('Connection closed');
-      
+      const isConnectionError =
+        error.code === 'ECONNRESET' ||
+        error.code === 'ECONNREFUSED' ||
+        error.message?.includes('Connection terminated') ||
+        error.message?.includes('Connection closed');
+
       if (!isConnectionError || attempt === maxRetries) {
         throw error;
       }
-      
-      const delay = initialDelay * Math.pow(2, attempt - 1);
-      console.log(`⚠️  Connection error (attempt ${attempt}/${maxRetries}), retrying in ${delay}ms...`);
+
+      const delay = initialDelay * 2 ** (attempt - 1);
+      console.log(
+        `⚠️  Connection error (attempt ${attempt}/${maxRetries}), retrying in ${delay}ms...`
+      );
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
 }
 
 async function runMigrations() {
-  if (!DB_CONNECTION_STRING) {
-    console.error('❌ DATABASE_URL or DATABASE_PRIVATE_URL not set. Cannot run migrations.');
+  if (!DBCONNECTIONSTRING) {
+    console.error('❌ DATABASEURL or DATABASEPRIVATEURL not set. Cannot run migrations.');
     process.exit(1);
   }
 
   // Determine SSL requirement based on connection string
   // Railway internal connections (.railway.internal) don't need SSL
   // External connections (rlwy.net, railway.app, gondola.proxy) need SSL with rejectUnauthorized: false
-  const isInternal = DB_CONNECTION_STRING.includes('.railway.internal') || DB_CONNECTION_STRING.includes('postgis.railway.internal');
-  const isExternal = DB_CONNECTION_STRING.includes('rlwy.net') || DB_CONNECTION_STRING.includes('railway.app') || DB_CONNECTION_STRING.includes('gondola.proxy');
+  const isInternal =
+    DBCONNECTIONSTRING.includes('.railway.internal') ||
+    DBCONNECTIONSTRING.includes('postgis.railway.internal');
+  const isExternal =
+    DBCONNECTIONSTRING.includes('rlwy.net') ||
+    DBCONNECTIONSTRING.includes('railway.app') ||
+    DBCONNECTIONSTRING.includes('gondola.proxy');
 
   // Use private URL (internal) - no SSL needed
   // If using external URL, use SSL with rejectUnauthorized: false
-  let sslConfig = isExternal ? { rejectUnauthorized: false } : false;
+  const sslConfig = isExternal ? { rejectUnauthorized: false } : false;
 
   const pool = new Pool({
-    connectionString: DB_CONNECTION_STRING,
+    connectionString: DBCONNECTIONSTRING,
     ssl: sslConfig,
     // Connection pool settings for resilience
     max: 5,
@@ -70,12 +79,7 @@ async function runMigrations() {
     // Retry connection on failure
     retry: {
       max: 3,
-      match: [
-        /ECONNRESET/,
-        /ECONNREFUSED/,
-        /Connection terminated/,
-        /SSL connection/,
-      ],
+      match: [/ECONNRESET/, /ECONNREFUSED/, /Connection terminated/, /SSL connection/],
     },
   });
 
@@ -90,9 +94,9 @@ async function runMigrations() {
     console.log('🔍 Checking PostGIS availability...');
     try {
       const postgisResult = await retryWithBackoff(async () => {
-        return await pool.query('SELECT PostGIS_version()');
+        return await pool.query('SELECT PostGISversion()');
       });
-      console.log('✅ PostGIS available:', postgisResult.rows[0].postgis_version);
+      console.log('✅ PostGIS available:', postgisResult.rows[0].postgisversion);
     } catch (postgisErr) {
       console.error('❌ PostGIS not available:', postgisErr.message);
       console.log('⚠️  Attempting to enable PostGIS...');
@@ -108,8 +112,8 @@ async function runMigrations() {
     }
 
     // Read init.sql first
-    const initSqlPath = path.join(__dirname, '../../database/init.sql');
-    
+    const initSqlPath = path.join(dirname, '../../database/init.sql');
+
     if (!fs.existsSync(initSqlPath)) {
       console.error(`❌ Migration file not found: ${initSqlPath}`);
       process.exit(1);
@@ -125,18 +129,19 @@ async function runMigrations() {
     console.log('✅ init.sql completed');
 
     // Run migration files in order
-    const migrationsDir = path.join(__dirname, '../../database/migrations');
+    const migrationsDir = path.join(dirname, '../../database/migrations');
     if (fs.existsSync(migrationsDir)) {
-      const migrationFiles = fs.readdirSync(migrationsDir)
+      const migrationFiles = fs
+        .readdirSync(migrationsDir)
         .filter(file => file.endsWith('.sql'))
         .sort(); // Run in alphabetical order
 
       console.log(`📋 Found ${migrationFiles.length} migration files...`);
-      
+
       for (const file of migrationFiles) {
         const migrationPath = path.join(migrationsDir, file);
         console.log(`🚀 Running migration: ${file}...`);
-        
+
         try {
           const migrationSql = fs.readFileSync(migrationPath, 'utf8');
           await retryWithBackoff(async () => {
@@ -145,10 +150,10 @@ async function runMigrations() {
           console.log(`✅ ${file} completed`);
         } catch (error) {
           // If error is about already existing, that's okay (idempotent)
-          if (error.message && (
-            error.message.includes('already exists') ||
-            error.message.includes('duplicate')
-          )) {
+          if (
+            error.message &&
+            (error.message.includes('already exists') || error.message.includes('duplicate'))
+          ) {
             console.log(`ℹ️  ${file} - objects already exist (skipping)`);
           } else {
             throw error;
@@ -160,18 +165,18 @@ async function runMigrations() {
     console.log('✅ Migrations completed successfully');
     console.log('');
     console.log('📊 Checking tables...');
-    
+
     const result = await pool.query(`
-      SELECT table_name 
-      FROM information_schema.tables 
-      WHERE table_schema = 'public' 
-      AND table_type = 'BASE TABLE'
-      ORDER BY table_name;
+      SELECT tablename 
+      FROM informationschema.tables 
+      WHERE tableschema = 'public' 
+      AND tabletype = 'BASE TABLE'
+      ORDER BY tablename;
     `);
 
     console.log(`✅ Found ${result.rows.length} tables:`);
-    result.rows.forEach((row) => {
-      console.log(`   - ${row.table_name}`);
+    result.rows.forEach(row => {
+      console.log(`   - ${row.tablename}`);
     });
 
     // Verify critical triggers exist
@@ -180,24 +185,24 @@ async function runMigrations() {
     try {
       const triggerResult = await pool.query(`
         SELECT
-          tgname as trigger_name,
-          tgrelid::regclass as table_name,
-          proname as function_name
-        FROM pg_trigger t
-        JOIN pg_proc p ON t.tgfoid = p.oid
-        WHERE tgname IN ('trg_fields_compute', 'trg_actual_yields_accuracy')
+          tgname as triggername,
+          tgrelid::regclass as tablename,
+          proname as functionname
+        FROM pgtrigger t
+        JOIN pgproc p ON t.tgfoid = p.oid
+        WHERE tgname IN ('trgfieldscompute', 'trgactualyieldsaccuracy')
         ORDER BY tgname;
       `);
 
       if (triggerResult.rows.length >= 2) {
         console.log('✅ Critical triggers verified:');
-        triggerResult.rows.forEach((row) => {
-          console.log(`   - ${row.trigger_name} on ${row.table_name} -> ${row.function_name}`);
+        triggerResult.rows.forEach(row => {
+          console.log(`   - ${row.triggername} on ${row.tablename} -> ${row.functionname}`);
         });
       } else {
         console.warn('⚠️  Some triggers may be missing. Found:', triggerResult.rows.length);
-        triggerResult.rows.forEach((row) => {
-          console.log(`   - ${row.trigger_name}`);
+        triggerResult.rows.forEach(row => {
+          console.log(`   - ${row.triggername}`);
         });
       }
     } catch (triggerErr) {
@@ -206,7 +211,6 @@ async function runMigrations() {
 
     console.log('');
     console.log('🎉 Database is ready!');
-    
   } catch (error) {
     // Check if error is because tables already exist
     if (error.message && error.message.includes('already exists')) {
@@ -216,11 +220,11 @@ async function runMigrations() {
       console.error('❌ Migration failed:', error.message);
       console.error(error);
       // Only exit if called directly (not as a module)
-      // When called from server.js, let it handle the error
+      // When called from server, let it handle the error
       if (require.main === module) {
         process.exit(1);
       } else {
-        // Re-throw so server.js can handle it gracefully
+        // Re-throw so server can handle it gracefully
         throw error;
       }
     }
@@ -235,11 +239,10 @@ if (require.main === module) {
     .then(() => {
       process.exit(0);
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('Fatal error:', error);
       process.exit(1);
     });
 }
 
 module.exports = { runMigrations };
-

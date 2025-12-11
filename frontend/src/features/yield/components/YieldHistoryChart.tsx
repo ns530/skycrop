@@ -1,9 +1,9 @@
-import React from 'react';
+import React from "react";
 
-import { Card } from '../../../shared/ui/Card';
-import { ErrorState } from '../../../shared/ui/ErrorState';
-import { LoadingState } from '../../../shared/ui/LoadingState';
-import { useYieldHistory } from '../hooks';
+import { Card } from "../../../shared/ui/Card";
+import { ErrorState } from "../../../shared/ui/ErrorState";
+import { LoadingState } from "../../../shared/ui/LoadingState";
+import { useYieldHistory } from "../hooks";
 
 export interface YieldHistoryChartProps {
   fieldId: string;
@@ -11,7 +11,7 @@ export interface YieldHistoryChartProps {
 }
 
 const formatNumber = (num: number): string => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(num);
@@ -60,36 +60,43 @@ export const YieldHistoryChart: React.FC<YieldHistoryChartProps> = ({
   const chartHeight = height - padding * 2;
 
   // Data processing
-  const yields = history.map(h => h.yield_kg_per_ha);
+  const yields = history.map((h) => h.yield_kg_per_ha);
   const minYield = Math.min(...yields);
   const maxYield = Math.max(...yields);
   const range = maxYield - minYield || 1;
 
   // Scale functions
-  const xScale = (index: number) => padding + (index / (history.length - 1)) * chartWidth;
-  const yScale = (value: number) => height - padding - ((value - minYield) / range) * chartHeight;
+  const xScale = (index: number) =>
+    padding + (index / (history.length - 1)) * chartWidth;
+  const yScale = (value: number) =>
+    height - padding - ((value - minYield) / range) * chartHeight;
 
   // Generate path for predicted yields
   const predictedPath = history
-    .map((point, index) => `${index === 0 ? 'M' : 'L'} ${xScale(index)} ${yScale(point.yield_kg_per_ha)}`)
-    .join(' ');
+    .map(
+      (point, index) =>
+        `${index === 0 ? "M" : "L"} ${xScale(index)} ${yScale(point.yield_kg_per_ha)}`,
+    )
+    .join(" ");
 
   // Generate confidence band (simplified)
-  const confidenceBand = history.flatMap((point, index) => {
-    const lower = point.confidence_lower ?? point.yield_kg_per_ha * 0.9;
-    const upper = point.confidence_upper ?? point.yield_kg_per_ha * 1.1;
-    const x = xScale(index);
-    const yLower = yScale(lower);
-    const yUpper = yScale(upper);
+  const confidenceBand = history
+    .flatMap((point, index) => {
+      const lower = point.confidence_lower ?? point.yield_kg_per_ha * 0.9;
+      const upper = point.confidence_upper ?? point.yield_kg_per_ha * 1.1;
+      const x = xScale(index);
+      const yLower = yScale(lower);
+      const yUpper = yScale(upper);
 
-    if (index === 0) {
-      return [`M ${x} ${yUpper}`, `L ${x} ${yLower}`];
-    } else if (index === history.length - 1) {
-      return [`L ${x} ${yUpper}`, `L ${x} ${yLower}`, 'Z'];
-    } else {
-      return [`L ${x} ${yUpper}`, `L ${x} ${yLower}`];
-    }
-  }).join(' ');
+      if (index === 0) {
+        return [`M ${x} ${yUpper}`, `L ${x} ${yLower}`];
+      } else if (index === history.length - 1) {
+        return [`L ${x} ${yUpper}`, `L ${x} ${yLower}`, "Z"];
+      } else {
+        return [`L ${x} ${yUpper}`, `L ${x} ${yLower}`];
+      }
+    })
+    .join(" ");
 
   return (
     <Card title="Yield History & Predictions" className={className}>
@@ -97,8 +104,18 @@ export const YieldHistoryChart: React.FC<YieldHistoryChartProps> = ({
         <svg width={width} height={height} className="w-full h-auto">
           {/* Grid lines */}
           <defs>
-            <pattern id="grid" width="40" height="20" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 20" fill="none" stroke="#f3f4f6" strokeWidth="1"/>
+            <pattern
+              id="grid"
+              width="40"
+              height="20"
+              patternUnits="userSpaceOnUse"
+            >
+              <path
+                d="M 40 0 L 0 0 0 20"
+                fill="none"
+                stroke="#f3f4f6"
+                strokeWidth="1"
+              />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#grid)" />
@@ -212,14 +229,13 @@ export const YieldHistoryChart: React.FC<YieldHistoryChartProps> = ({
           </div>
           <div>
             <div className="font-semibold text-gray-900">
-              {formatNumber(yields.reduce((a, b) => a + b, 0) / yields.length)} kg/ha
+              {formatNumber(yields.reduce((a, b) => a + b, 0) / yields.length)}{" "}
+              kg/ha
             </div>
             <div className="text-gray-600">Average</div>
           </div>
           <div>
-            <div className="font-semibold text-gray-900">
-              {history.length}
-            </div>
+            <div className="font-semibold text-gray-900">{history.length}</div>
             <div className="text-gray-600">Data points</div>
           </div>
         </div>

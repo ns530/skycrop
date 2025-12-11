@@ -1,11 +1,11 @@
-import React, { FormEvent, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import React, { FormEvent, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
-import { ApiError } from '../../../shared/api/httpClient';
-import { useToast } from '../../../shared/hooks/useToast';
-import { Button } from '../../../shared/ui/Button';
-import { Card } from '../../../shared/ui/Card';
-import { useAuth } from '../context/AuthContext';
+import { ApiError } from "../../../shared/api/httpClient";
+import { useToast } from "../../../shared/hooks/useToast";
+import { Button } from "../../../shared/ui/Button";
+import { Card } from "../../../shared/ui/Card";
+import { useAuth } from "../context/AuthContext";
 
 /**
  * LoginPage
@@ -19,32 +19,34 @@ export const LoginPage: React.FC = () => {
   const { loginWithEmail, startGoogleOAuth } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
-  const location = useLocation() as unknown as { state?: { from?: string } } & Location;
+  const location = useLocation() as unknown as {
+    state?: { from?: string };
+  } & Location;
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const redirectTarget = location.state?.from || '/dashboard';
+  const redirectTarget = location.state?.from || "/dashboard";
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
 
     if (!email.trim() || !password.trim()) {
       showToast({
-        variant: 'error',
-        title: 'Missing details',
-        description: 'Please enter both your email and password.',
+        variant: "error",
+        title: "Missing details",
+        description: "Please enter both your email and password.",
       });
       return;
     }
 
-    if (!email.includes('@')) {
+    if (!email.includes("@")) {
       showToast({
-        variant: 'error',
-        title: 'Invalid email',
-        description: 'Please enter a valid email address.',
+        variant: "error",
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
       });
       return;
     }
@@ -60,9 +62,9 @@ export const LoginPage: React.FC = () => {
     } catch (error) {
       const apiError = error as ApiError;
       showToast({
-        variant: 'error',
-        title: 'Sign in failed',
-        description: apiError?.message || 'Unable to sign you in right now.',
+        variant: "error",
+        title: "Sign in failed",
+        description: apiError?.message || "Unable to sign you in right now.",
       });
     } finally {
       setIsSubmitting(false);
@@ -80,14 +82,23 @@ export const LoginPage: React.FC = () => {
           Sign in
         </h1>
         <p className="text-sm text-gray-600">
-          Access your SkyCrop dashboard to monitor fields, health, and recommendations.
+          Access your SkyCrop dashboard to monitor fields, health, and
+          recommendations.
         </p>
       </header>
 
       <Card>
-        <form className="space-y-4" aria-label="Login form" onSubmit={handleSubmit} noValidate>
+        <form
+          className="space-y-4"
+          aria-label="Login form"
+          onSubmit={handleSubmit}
+          noValidate
+        >
           <div className="space-y-1">
-            <label htmlFor="email" className="block text-xs font-medium text-gray-700">
+            <label
+              htmlFor="email"
+              className="block text-xs font-medium text-gray-700"
+            >
               Email
             </label>
             <input
@@ -104,7 +115,10 @@ export const LoginPage: React.FC = () => {
           </div>
 
           <div className="space-y-1">
-            <label htmlFor="password" className="block text-xs font-medium text-gray-700">
+            <label
+              htmlFor="password"
+              className="block text-xs font-medium text-gray-700"
+            >
               Password
             </label>
             <input
@@ -147,7 +161,7 @@ export const LoginPage: React.FC = () => {
             className="mt-2 w-full"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Signing in…' : 'Continue'}
+            {isSubmitting ? "Signing in…" : "Continue"}
           </Button>
 
           <div className="relative my-4">
@@ -172,7 +186,7 @@ export const LoginPage: React.FC = () => {
       </Card>
 
       <p className="text-xs text-gray-600">
-        New to SkyCrop?{' '}
+        New to SkyCrop?{" "}
         <Link
           to="/auth/register"
           className="font-medium text-brand-blue hover:text-blue-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 rounded-sm px-0.5"

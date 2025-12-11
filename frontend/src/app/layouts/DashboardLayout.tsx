@@ -1,11 +1,11 @@
-import React from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
- 
-import { useAuth } from '../../features/auth/context/AuthContext';
-import { useBreadcrumbs, Breadcrumbs } from '../../shared/hooks/useBreadcrumbs';
-import { Button } from '../../shared/ui/Button';
-import { PageContainer } from '../../shared/ui/layout/PageContainer';
- 
+import React from "react";
+import { NavLink, Outlet } from "react-router-dom";
+
+import { useAuth } from "../../features/auth/context/AuthContext";
+import { useBreadcrumbs, Breadcrumbs } from "../../shared/hooks/useBreadcrumbs";
+import { Button } from "../../shared/ui/Button";
+import { PageContainer } from "../../shared/ui/layout/PageContainer";
+
 /**
  * DashboardLayout
  *
@@ -15,18 +15,18 @@ import { PageContainer } from '../../shared/ui/layout/PageContainer';
 export const DashboardLayout: React.FC = () => {
   const breadcrumbs = useBreadcrumbs();
   const { hasRole } = useAuth();
- 
+
   const sidebarLinkBase =
-    'flex h-10 items-center rounded-md px-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-gray-50';
- 
+    "flex h-10 items-center rounded-md px-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-gray-50";
+
   const sidebarNavLinkClass = ({ isActive }: { isActive: boolean }) =>
     [
       sidebarLinkBase,
       isActive
-        ? 'bg-gray-100 text-gray-900 font-semibold'
-        : 'text-gray-700 hover:bg-gray-50',
-    ].join(' ');
- 
+        ? "bg-gray-100 text-gray-900 font-semibold"
+        : "text-gray-700 hover:bg-gray-50",
+    ].join(" ");
+
   return (
     <div className="min-h-[70vh] bg-gray-100 text-gray-900">
       <PageContainer fullWidth className="flex gap-6 py-4">
@@ -51,13 +51,13 @@ export const DashboardLayout: React.FC = () => {
             <NavLink to="/news" className={sidebarNavLinkClass}>
               News
             </NavLink>
-            {hasRole('admin') && (
+            {hasRole("admin") && (
               <NavLink to="/admin" className={sidebarNavLinkClass}>
                 Admin
               </NavLink>
             )}
           </nav>
- 
+
           <span className="mt-4 px-1 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
             Insights
           </span>
@@ -78,14 +78,14 @@ export const DashboardLayout: React.FC = () => {
             </button>
           </div>
         </aside>
- 
+
         {/* Main content */}
         <div className="flex-1 flex flex-col">
           {/* Breadcrumbs above page title */}
           <div className="mb-3">
             <Breadcrumbs items={breadcrumbs} />
           </div>
- 
+
           <header className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
@@ -102,7 +102,7 @@ export const DashboardLayout: React.FC = () => {
               </Button>
             </div>
           </header>
- 
+
           <section
             aria-label="Dashboard content"
             className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
@@ -114,5 +114,5 @@ export const DashboardLayout: React.FC = () => {
     </div>
   );
 };
- 
+
 export default DashboardLayout;

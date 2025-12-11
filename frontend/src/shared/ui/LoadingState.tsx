@@ -1,7 +1,7 @@
-import clsx from 'clsx';
-import React from 'react';
+import clsx from "clsx";
+import React from "react";
 
-import { Card } from './Card';
+import { Card } from "./Card";
 
 export interface LoadingStateProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
@@ -35,19 +35,19 @@ const Spinner: React.FC = () => (
  * - Compact: inline row (spinner + text) without Card wrapper
  */
 export const LoadingState: React.FC<LoadingStateProps> = ({
-  message = 'Loading…',
+  message = "Loading…",
   description,
   compact,
   className,
   ...rest
 }) => {
-  const descriptionId = description ? 'loading-description' : undefined;
+  const descriptionId = description ? "loading-description" : undefined;
 
   if (compact) {
     return (
       <div
         className={clsx(
-          'inline-flex items-center gap-2 text-sm text-gray-600',
+          "inline-flex items-center gap-2 text-sm text-gray-600",
           className,
         )}
         role="status"
@@ -70,7 +70,7 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   }
 
   return (
-    <Card className={clsx('flex items-center justify-center', className)}>
+    <Card className={clsx("flex items-center justify-center", className)}>
       <div
         className="flex items-center gap-3 text-sm text-gray-700"
         role="status"

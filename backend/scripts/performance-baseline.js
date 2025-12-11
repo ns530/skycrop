@@ -10,461 +10,480 @@ const axios = require('axios');
 const os = require('os');
 const { sequelize } = require('../src/config/database.config');
 
-const BASE_URL = process.env.BACKEND_URL || 'http://localhost:3000';
-const API_BASE = `${BASE_URL}/api/v1`;
+const BASEURL = process.env.BACKENDURL || 'http://localhost:3000';
+const APIBASE = `${BASEURL}/api/v1`;
 
 // Performance thresholds from test plans
 const THRESHOLDS = {
-    api: {
-        authentication: 1000,      // <1 second
-        field_operations: 2000,    // <2 seconds
-        health_data: 3000,         // <3 seconds
-        image_processing: 60000,   // <60 seconds
-        general: 2000              // <2 seconds general API
-    },
-    database: {
-        simple_query: 100,         // <100ms
-        complex_query: 500,        // <500ms
-        connection: 1000           // <1 second
-    },
-    system: {
-        memory_usage_percent: 80,  // <80%
-        cpu_load: 1.0,             // <100% normalized
-        disk_usage_percent: 85     // <85%
-    }
+  api: {
+    authentication: 1000, // <1 second
+    fieldoperations: 2000, // <2 seconds
+    healthdata: 3000, // <3 seconds
+    imageprocessing: 60000, // <60 seconds
+    general: 2000, // <2 seconds general API
+  },
+  database: {
+    simplequery: 100, // <100ms
+    complexquery: 500, // <500ms
+    connection: 1000, // <1 second
+  },
+  system: {
+    memoryusagepercent: 80, // <80%
+    cpuload: 1.0, // <100% normalized
+    diskusagepercent: 85, // <85%
+  },
 };
 
 class PerformanceBaselineTester {
-    constructor() {
-        this.results = {
-            timestamp: new Date().toISOString(),
-            status: 'unknown',
-            benchmarks: {},
-            metrics: {},
-            comparisons: {},
-            summary: {}
-        };
-        this.authToken = null;
-        this.testUser = {
-            email: `perf-test-${Date.now()}@example.com`,
-            password: 'PerfTest123!',
-            firstName: 'Perf',
-            lastName: 'Test'
-        };
-        this.testField = null;
+  constructor() {
+    this.results = {
+      timestamp: new Date().toISOString(),
+      status: 'unknown',
+      benchmarks: {},
+      metrics: {},
+      comparisons: {},
+      summary: {},
+    };
+    this.authToken = null;
+    this.testUser = {
+      email: `perf-test-${Date.now()}@example.com`,
+      password: 'PerfTest123!',
+      firstName: 'Perf',
+      lastName: 'Test',
+    };
+    this.testField = null;
+  }
+
+  async run() {
+    console.log('📊 Running SkyCrop Performance Baseline Tests...');
+
+    try {
+      // Setup test data
+      await this.setupTestData();
+
+      // Run performance tests
+      await this.testAPIPerformance();
+      await this.testDatabasePerformance();
+      await this.testSystemPerformance();
+
+      // Compare against thresholds
+      this.compareAgainstThresholds();
+
+      // Calculate overall status
+      this.calculateOverallStatus();
+
+      // Output results
+      console.log(JSON.stringify(this.results, null, 2));
+    } catch (error) {
+      this.results.status = 'error';
+      this.results.error = error.message;
+      console.error('Performance baseline test failed:', error.message);
+      console.log(JSON.stringify(this.results, null, 2));
+      process.exit(1);
+    } finally {
+      await this.cleanupTestData();
     }
+  }
 
-    async run() {
-        console.log('📊 Running SkyCrop Performance Baseline Tests...');
+  async setupTestData() {
+    console.log('Setting up test data...');
 
-        try {
-            // Setup test data
-            await this.setupTestData();
+    // Create test user
+    const registerResponse = await axios.post(`${APIBASE}/auth/register`, this.testUser, {
+      timeout: 10000,
+    });
 
-            // Run performance tests
-            await this.testAPIPerformance();
-            await this.testDatabasePerformance();
-            await this.testSystemPerformance();
+    // Login to get token
+    const loginResponse = await axios.post(
+      `${APIBASE}/auth/login`,
+      {
+        email: this.testUser.email,
+        password: this.testUser.password,
+      },
+      {
+        timeout: 10000,
+      }
+    );
 
-            // Compare against thresholds
-            this.compareAgainstThresholds();
+    this.authToken = loginResponse.data.token;
 
-            // Calculate overall status
-            this.calculateOverallStatus();
+    // Create test field
+    const fieldData = {
+      name: 'Performance Test Field',
+      boundary: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [80.123, 6.123],
+            [80.456, 6.123],
+            [80.456, 6.456],
+            [80.123, 6.456],
+            [80.123, 6.123],
+          ],
+        ],
+      },
+      area: 25.5,
+      cropType: 'paddy',
+    };
 
-            // Output results
-            console.log(JSON.stringify(this.results, null, 2));
+    const fieldResponse = await axios.post(`${APIBASE}/fields`, fieldData, {
+      headers: { Authorization: `Bearer ${this.authToken}` },
+      timeout: 10000,
+    });
 
-        } catch (error) {
-            this.results.status = 'error';
-            this.results.error = error.message;
-            console.error('Performance baseline test failed:', error.message);
-            console.log(JSON.stringify(this.results, null, 2));
-            process.exit(1);
-        } finally {
-            await this.cleanupTestData();
-        }
-    }
+    this.testField = fieldResponse.data.field;
+  }
 
-    async setupTestData() {
-        console.log('Setting up test data...');
+  async testAPIPerformance() {
+    console.log('Testing API performance...');
 
-        // Create test user
-        const registerResponse = await axios.post(`${API_BASE}/auth/register`, this.testUser, {
-            timeout: 10000
-        });
+    const apiMetrics = {};
 
-        // Login to get token
-        const loginResponse = await axios.post(`${API_BASE}/auth/login`, {
-            email: this.testUser.email,
-            password: this.testUser.password
-        }, {
-            timeout: 10000
-        });
+    // Authentication endpoints
+    apiMetrics.authregister = await this.measureAPIEndpoint('POST', `${APIBASE}/auth/register`, {
+      email: `temp-${Date.now()}@example.com`,
+      password: 'TempPass123!',
+      firstName: 'Temp',
+      lastName: 'User',
+    });
 
-        this.authToken = loginResponse.data.token;
+    apiMetrics.authlogin = await this.measureAPIEndpoint('POST', `${APIBASE}/auth/login`, {
+      email: this.testUser.email,
+      password: this.testUser.password,
+    });
 
-        // Create test field
-        const fieldData = {
-            name: 'Performance Test Field',
-            boundary: {
-                type: 'Polygon',
-                coordinates: [[
-                    [80.123, 6.123],
-                    [80.456, 6.123],
-                    [80.456, 6.456],
-                    [80.123, 6.456],
-                    [80.123, 6.123]
-                ]]
-            },
-            area: 25.5,
-            cropType: 'paddy'
-        };
+    // Field operations
+    apiMetrics.fieldcreate = await this.measureAPIEndpoint(
+      'POST',
+      `${APIBASE}/fields`,
+      {
+        name: 'Temp Field',
+        boundary: {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [80.1, 6.1],
+              [80.2, 6.1],
+              [80.2, 6.2],
+              [80.1, 6.2],
+              [80.1, 6.1],
+            ],
+          ],
+        },
+        area: 10.0,
+        cropType: 'paddy',
+      },
+      { Authorization: `Bearer ${this.authToken}` }
+    );
 
-        const fieldResponse = await axios.post(`${API_BASE}/fields`, fieldData, {
-            headers: { 'Authorization': `Bearer ${this.authToken}` },
-            timeout: 10000
-        });
+    apiMetrics.fieldget = await this.measureAPIEndpoint(
+      'GET',
+      `${APIBASE}/fields/${this.testField.id}`,
+      null,
+      { Authorization: `Bearer ${this.authToken}` }
+    );
 
-        this.testField = fieldResponse.data.field;
-    }
+    apiMetrics.fieldlist = await this.measureAPIEndpoint('GET', `${APIBASE}/fields`, null, {
+      Authorization: `Bearer ${this.authToken}`,
+    });
 
-    async testAPIPerformance() {
-        console.log('Testing API performance...');
+    // Health data operations
+    apiMetrics.healthhistory = await this.measureAPIEndpoint(
+      'GET',
+      `${APIBASE}/fields/${this.testField.id}/health/history?start=2024-01-01&end=2024-12-31`,
+      null,
+      { Authorization: `Bearer ${this.authToken}` }
+    );
 
-        const apiMetrics = {};
+    // Recommendation operations
+    apiMetrics.recommendationsget = await this.measureAPIEndpoint(
+      'GET',
+      `${APIBASE}/fields/${this.testField.id}/recommendations`,
+      null,
+      { Authorization: `Bearer ${this.authToken}` }
+    );
 
-        // Authentication endpoints
-        apiMetrics.auth_register = await this.measureAPIEndpoint(
-            'POST', `${API_BASE}/auth/register`,
-            {
-                email: `temp-${Date.now()}@example.com`,
-                password: 'TempPass123!',
-                firstName: 'Temp',
-                lastName: 'User'
-            }
-        );
+    this.results.metrics.api = apiMetrics;
+  }
 
-        apiMetrics.auth_login = await this.measureAPIEndpoint(
-            'POST', `${API_BASE}/auth/login`,
-            { email: this.testUser.email, password: this.testUser.password }
-        );
+  async testDatabasePerformance() {
+    console.log('Testing database performance...');
 
-        // Field operations
-        apiMetrics.field_create = await this.measureAPIEndpoint(
-            'POST', `${API_BASE}/fields`,
-            {
-                name: 'Temp Field',
-                boundary: {
-                    type: 'Polygon',
-                    coordinates: [[[80.1, 6.1], [80.2, 6.1], [80.2, 6.2], [80.1, 6.2], [80.1, 6.1]]]
-                },
-                area: 10.0,
-                cropType: 'paddy'
-            },
-            { 'Authorization': `Bearer ${this.authToken}` }
-        );
+    const dbMetrics = {};
 
-        apiMetrics.field_get = await this.measureAPIEndpoint(
-            'GET', `${API_BASE}/fields/${this.testField.id}`,
-            null,
-            { 'Authorization': `Bearer ${this.authToken}` }
-        );
+    // Simple query performance
+    dbMetrics.simplequery = await this.measureDatabaseQuery('SELECT COUNT(*) as count FROM users');
 
-        apiMetrics.field_list = await this.measureAPIEndpoint(
-            'GET', `${API_BASE}/fields`,
-            null,
-            { 'Authorization': `Bearer ${this.authToken}` }
-        );
-
-        // Health data operations
-        apiMetrics.health_history = await this.measureAPIEndpoint(
-            'GET', `${API_BASE}/fields/${this.testField.id}/health/history?start=2024-01-01&end=2024-12-31`,
-            null,
-            { 'Authorization': `Bearer ${this.authToken}` }
-        );
-
-        // Recommendation operations
-        apiMetrics.recommendations_get = await this.measureAPIEndpoint(
-            'GET', `${API_BASE}/fields/${this.testField.id}/recommendations`,
-            null,
-            { 'Authorization': `Bearer ${this.authToken}` }
-        );
-
-        this.results.metrics.api = apiMetrics;
-    }
-
-    async testDatabasePerformance() {
-        console.log('Testing database performance...');
-
-        const dbMetrics = {};
-
-        // Simple query performance
-        dbMetrics.simple_query = await this.measureDatabaseQuery(
-            'SELECT COUNT(*) as count FROM users'
-        );
-
-        // Complex query with joins
-        dbMetrics.complex_query = await this.measureDatabaseQuery(`
+    // Complex query with joins
+    dbMetrics.complexquery = await this.measureDatabaseQuery(`
             SELECT f.id, f.name, f.area, u.email
             FROM fields f
-            LEFT JOIN users u ON f.user_id = u.id
+            LEFT JOIN users u ON f.userid = u.id
             WHERE f.area > 0
-            ORDER BY f.created_at DESC
+            ORDER BY f.createdat DESC
             LIMIT 10
         `);
 
-        // Spatial query (if PostGIS available)
-        try {
-            dbMetrics.spatial_query = await this.measureDatabaseQuery(`
-                SELECT id, name, ST_Area(ST_Transform(boundary, 3857)) as area_m2
+    // Spatial query (if PostGIS available)
+    try {
+      dbMetrics.spatialquery = await this.measureDatabaseQuery(`
+                SELECT id, name, STArea(STTransform(boundary, 3857)) as aream2
                 FROM fields
                 WHERE boundary IS NOT NULL
                 LIMIT 5
             `);
-        } catch (error) {
-            dbMetrics.spatial_query = {
-                duration_ms: null,
-                error: 'PostGIS not available or query failed'
-            };
-        }
-
-        // Connection time
-        const connStart = Date.now();
-        const testConn = await sequelize.authenticate();
-        const connTime = Date.now() - connStart;
-
-        dbMetrics.connection = {
-            duration_ms: connTime,
-            success: true
-        };
-
-        this.results.metrics.database = dbMetrics;
+    } catch (error) {
+      dbMetrics.spatialquery = {
+        durationms: null,
+        error: 'PostGIS not available or query failed',
+      };
     }
 
-    async testSystemPerformance() {
-        console.log('Testing system performance...');
+    // Connection time
+    const connStart = Date.now();
+    const testConn = await sequelize.authenticate();
+    const connTime = Date.now() - connStart;
 
-        const systemMetrics = {};
+    dbMetrics.connection = {
+      durationms: connTime,
+      success: true,
+    };
 
-        // Memory usage
-        const memUsage = process.memoryUsage();
-        systemMetrics.memory = {
-            rss: memUsage.rss,
-            heap_used: memUsage.heapUsed,
-            heap_total: memUsage.heapTotal,
-            external: memUsage.external,
-            usage_percent: (memUsage.heapUsed / memUsage.heapTotal * 100).toFixed(2)
-        };
+    this.results.metrics.database = dbMetrics;
+  }
 
-        // CPU usage (simplified)
-        const cpus = os.cpus();
-        const totalIdle = cpus.reduce((acc, cpu) => acc + cpu.times.idle, 0);
-        const totalTick = cpus.reduce((acc, cpu) => acc + Object.values(cpu.times).reduce((a, b) => a + b), 0);
-        const idle = totalIdle / cpus.length;
-        const total = totalTick / cpus.length;
+  async testSystemPerformance() {
+    console.log('Testing system performance...');
 
-        systemMetrics.cpu = {
-            cores: cpus.length,
-            load_average: os.loadavg(),
-            normalized_load: (os.loadavg()[0] / cpus.length).toFixed(2)
-        };
+    const systemMetrics = {};
 
-        // Disk usage (simplified check)
-        try {
-            const fs = require('fs').promises;
-            const stats = await fs.statvfs('/');
-            const totalSpace = stats.blocks * stats.f_bsize;
-            const freeSpace = stats.bavail * stats.f_bsize;
-            const usedPercent = ((totalSpace - freeSpace) / totalSpace * 100).toFixed(2);
+    // Memory usage
+    const memUsage = process.memoryUsage();
+    systemMetrics.memory = {
+      rss: memUsage.rss,
+      heapused: memUsage.heapUsed,
+      heaptotal: memUsage.heapTotal,
+      external: memUsage.external,
+      usagepercent: ((memUsage.heapUsed / memUsage.heapTotal) * 100).toFixed(2),
+    };
 
-            systemMetrics.disk = {
-                total_gb: (totalSpace / (1024 * 1024 * 1024)).toFixed(2),
-                free_gb: (freeSpace / (1024 * 1024 * 1024)).toFixed(2),
-                used_percent: usedPercent
-            };
-        } catch (error) {
-            systemMetrics.disk = {
-                error: 'Cannot determine disk usage'
-            };
-        }
+    // CPU usage (simplified)
+    const cpus = os.cpus();
+    const totalIdle = cpus.reduce((acc, cpu) => acc + cpu.times.idle, 0);
+    const totalTick = cpus.reduce(
+      (acc, cpu) => acc + Object.values(cpu.times).reduce((a, b) => a + b),
+      0
+    );
+    const idle = totalIdle / cpus.length;
+    const total = totalTick / cpus.length;
 
-        this.results.metrics.system = systemMetrics;
+    systemMetrics.cpu = {
+      cores: cpus.length,
+      loadaverage: os.loadavg(),
+      normalizedload: (os.loadavg()[0] / cpus.length).toFixed(2),
+    };
+
+    // Disk usage (simplified check)
+    try {
+      const fs = require('fs').promises;
+      const stats = await fs.statvfs('/');
+      const totalSpace = stats.blocks * stats.fbsize;
+      const freeSpace = stats.bavail * stats.fbsize;
+      const usedPercent = (((totalSpace - freeSpace) / totalSpace) * 100).toFixed(2);
+
+      systemMetrics.disk = {
+        totalgb: (totalSpace / (1024 * 1024 * 1024)).toFixed(2),
+        freegb: (freeSpace / (1024 * 1024 * 1024)).toFixed(2),
+        usedpercent: usedPercent,
+      };
+    } catch (error) {
+      systemMetrics.disk = {
+        error: 'Cannot determine disk usage',
+      };
     }
 
-    async measureAPIEndpoint(method, url, data = null, headers = {}) {
-        const startTime = Date.now();
+    this.results.metrics.system = systemMetrics;
+  }
 
-        try {
-            const config = {
-                method,
-                url,
-                timeout: 30000,
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...headers
-                }
-            };
+  async measureAPIEndpoint(method, url, data = null, headers = {}) {
+    const startTime = Date.now();
 
-            if (data) {
-                config.data = data;
-            }
+    try {
+      const config = {
+        method,
+        url,
+        timeout: 30000,
+        headers: {
+          'Content-Type': 'application/json',
+          ...headers,
+        },
+      };
 
-            const response = await axios(config);
-            const duration = Date.now() - startTime;
+      if (data) {
+        config.data = data;
+      }
 
-            return {
-                duration_ms: duration,
-                status_code: response.status,
-                success: true
-            };
-        } catch (error) {
-            const duration = Date.now() - startTime;
+      const response = await axios(config);
+      const duration = Date.now() - startTime;
 
-            return {
-                duration_ms: duration,
-                status_code: error.response?.status || null,
-                success: false,
-                error: error.message
-            };
-        }
+      return {
+        durationms: duration,
+        statuscode: response.status,
+        success: true,
+      };
+    } catch (error) {
+      const duration = Date.now() - startTime;
+
+      return {
+        durationms: duration,
+        statuscode: error.response?.status || null,
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+
+  async measureDatabaseQuery(query) {
+    const startTime = Date.now();
+
+    try {
+      const [results] = await sequelize.query(query, {
+        type: sequelize.QueryTypes.SELECT,
+      });
+      const duration = Date.now() - startTime;
+
+      return {
+        durationms: duration,
+        success: true,
+        rowcount: Array.isArray(results) ? results.length : 1,
+      };
+    } catch (error) {
+      const duration = Date.now() - startTime;
+
+      return {
+        durationms: duration,
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+
+  compareAgainstThresholds() {
+    const comparisons = {};
+
+    // API comparisons
+    comparisons.api = {};
+    for (const [endpoint, metrics] of Object.entries(this.results.metrics.api || {})) {
+      let threshold = THRESHOLDS.api.general;
+
+      if (endpoint.includes('auth')) threshold = THRESHOLDS.api.authentication;
+      else if (endpoint.includes('field')) threshold = THRESHOLDS.api.fieldoperations;
+      else if (endpoint.includes('health')) threshold = THRESHOLDS.api.healthdata;
+
+      comparisons.api[endpoint] = {
+        actualms: metrics.durationms,
+        thresholdms: threshold,
+        withinthreshold: metrics.durationms <= threshold,
+        differencems: metrics.durationms - threshold,
+      };
     }
 
-    async measureDatabaseQuery(query) {
-        const startTime = Date.now();
+    // Database comparisons
+    comparisons.database = {};
+    for (const [query, metrics] of Object.entries(this.results.metrics.database || {})) {
+      let threshold = THRESHOLDS.database.simplequery;
 
-        try {
-            const [results] = await sequelize.query(query, {
-                type: sequelize.QueryTypes.SELECT
-            });
-            const duration = Date.now() - startTime;
+      if (query === 'complexquery') threshold = THRESHOLDS.database.complexquery;
+      else if (query === 'connection') threshold = THRESHOLDS.database.connection;
 
-            return {
-                duration_ms: duration,
-                success: true,
-                row_count: Array.isArray(results) ? results.length : 1
-            };
-        } catch (error) {
-            const duration = Date.now() - startTime;
-
-            return {
-                duration_ms: duration,
-                success: false,
-                error: error.message
-            };
-        }
+      comparisons.database[query] = {
+        actualms: metrics.durationms,
+        thresholdms: threshold,
+        withinthreshold: metrics.durationms ? metrics.durationms <= threshold : null,
+        differencems: metrics.durationms ? metrics.durationms - threshold : null,
+      };
     }
 
-    compareAgainstThresholds() {
-        const comparisons = {};
+    // System comparisons
+    comparisons.system = {};
+    const sysMetrics = this.results.metrics.system || {};
 
-        // API comparisons
-        comparisons.api = {};
-        for (const [endpoint, metrics] of Object.entries(this.results.metrics.api || {})) {
-            let threshold = THRESHOLDS.api.general;
-
-            if (endpoint.includes('auth')) threshold = THRESHOLDS.api.authentication;
-            else if (endpoint.includes('field')) threshold = THRESHOLDS.api.field_operations;
-            else if (endpoint.includes('health')) threshold = THRESHOLDS.api.health_data;
-
-            comparisons.api[endpoint] = {
-                actual_ms: metrics.duration_ms,
-                threshold_ms: threshold,
-                within_threshold: metrics.duration_ms <= threshold,
-                difference_ms: metrics.duration_ms - threshold
-            };
-        }
-
-        // Database comparisons
-        comparisons.database = {};
-        for (const [query, metrics] of Object.entries(this.results.metrics.database || {})) {
-            let threshold = THRESHOLDS.database.simple_query;
-
-            if (query === 'complex_query') threshold = THRESHOLDS.database.complex_query;
-            else if (query === 'connection') threshold = THRESHOLDS.database.connection;
-
-            comparisons.database[query] = {
-                actual_ms: metrics.duration_ms,
-                threshold_ms: threshold,
-                within_threshold: metrics.duration_ms ? metrics.duration_ms <= threshold : null,
-                difference_ms: metrics.duration_ms ? metrics.duration_ms - threshold : null
-            };
-        }
-
-        // System comparisons
-        comparisons.system = {};
-        const sysMetrics = this.results.metrics.system || {};
-
-        if (sysMetrics.memory) {
-            comparisons.system.memory = {
-                actual_percent: parseFloat(sysMetrics.memory.usage_percent),
-                threshold_percent: THRESHOLDS.system.memory_usage_percent,
-                within_threshold: parseFloat(sysMetrics.memory.usage_percent) <= THRESHOLDS.system.memory_usage_percent
-            };
-        }
-
-        if (sysMetrics.cpu) {
-            comparisons.system.cpu = {
-                actual_load: parseFloat(sysMetrics.cpu.normalized_load),
-                threshold_load: THRESHOLDS.system.cpu_load,
-                within_threshold: parseFloat(sysMetrics.cpu.normalized_load) <= THRESHOLDS.system.cpu_load
-            };
-        }
-
-        if (sysMetrics.disk) {
-            comparisons.system.disk = {
-                actual_percent: parseFloat(sysMetrics.disk.used_percent),
-                threshold_percent: THRESHOLDS.system.disk_usage_percent,
-                within_threshold: parseFloat(sysMetrics.disk.used_percent) <= THRESHOLDS.system.disk_usage_percent
-            };
-        }
-
-        this.results.comparisons = comparisons;
+    if (sysMetrics.memory) {
+      comparisons.system.memory = {
+        actualpercent: parseFloat(sysMetrics.memory.usagepercent),
+        thresholdpercent: THRESHOLDS.system.memoryusagepercent,
+        withinthreshold:
+          parseFloat(sysMetrics.memory.usagepercent) <= THRESHOLDS.system.memoryusagepercent,
+      };
     }
 
-    calculateOverallStatus() {
-        const allComparisons = Object.values(this.results.comparisons)
-            .flatMap(cat => Object.values(cat))
-            .filter(comp => comp.within_threshold !== null);
-
-        const failedComparisons = allComparisons.filter(comp => comp.within_threshold === false);
-
-        if (failedComparisons.length === 0) {
-            this.results.status = 'within_thresholds';
-        } else {
-            this.results.status = 'thresholds_exceeded';
-        }
-
-        this.results.summary = {
-            total_measurements: allComparisons.length,
-            within_thresholds: allComparisons.filter(c => c.within_threshold).length,
-            exceeded_thresholds: failedComparisons.length,
-            success_rate: allComparisons.length > 0 ?
-                ((allComparisons.filter(c => c.within_threshold).length / allComparisons.length) * 100).toFixed(1) : 0
-        };
+    if (sysMetrics.cpu) {
+      comparisons.system.cpu = {
+        actualload: parseFloat(sysMetrics.cpu.normalizedload),
+        thresholdload: THRESHOLDS.system.cpuload,
+        withinthreshold: parseFloat(sysMetrics.cpu.normalizedload) <= THRESHOLDS.system.cpuload,
+      };
     }
 
-    async cleanupTestData() {
-        try {
-            if (this.testUser.email) {
-                await sequelize.query(
-                    'DELETE FROM users WHERE email = ?',
-                    { replacements: [this.testUser.email] }
-                );
-            }
-        } catch (error) {
-            console.warn('Cleanup failed:', error.message);
-        }
+    if (sysMetrics.disk) {
+      comparisons.system.disk = {
+        actualpercent: parseFloat(sysMetrics.disk.usedpercent),
+        thresholdpercent: THRESHOLDS.system.diskusagepercent,
+        withinthreshold:
+          parseFloat(sysMetrics.disk.usedpercent) <= THRESHOLDS.system.diskusagepercent,
+      };
     }
+
+    this.results.comparisons = comparisons;
+  }
+
+  calculateOverallStatus() {
+    const allComparisons = Object.values(this.results.comparisons)
+      .flatMap(cat => Object.values(cat))
+      .filter(comp => comp.withinthreshold !== null);
+
+    const failedComparisons = allComparisons.filter(comp => comp.withinthreshold === false);
+
+    if (failedComparisons.length === 0) {
+      this.results.status = 'withinthresholds';
+    } else {
+      this.results.status = 'thresholdsexceeded';
+    }
+
+    this.results.summary = {
+      totalmeasurements: allComparisons.length,
+      withinthresholds: allComparisons.filter(c => c.withinthreshold).length,
+      exceededthresholds: failedComparisons.length,
+      successrate:
+        allComparisons.length > 0
+          ? (
+              (allComparisons.filter(c => c.withinthreshold).length / allComparisons.length) *
+              100
+            ).toFixed(1)
+          : 0,
+    };
+  }
+
+  async cleanupTestData() {
+    try {
+      if (this.testUser.email) {
+        await sequelize.query('DELETE FROM users WHERE email = ?', {
+          replacements: [this.testUser.email],
+        });
+      }
+    } catch (error) {
+      console.warn('Cleanup failed:', error.message);
+    }
+  }
 }
 
 // Run the performance baseline test
 if (require.main === module) {
-    const tester = new PerformanceBaselineTester();
-    tester.run().catch(error => {
-        console.error('Performance baseline test script failed:', error);
-        process.exit(1);
-    });
+  const tester = new PerformanceBaselineTester();
+  tester.run().catch(error => {
+    console.error('Performance baseline test script failed:', error);
+    process.exit(1);
+  });
 }
 
 module.exports = PerformanceBaselineTester;

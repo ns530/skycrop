@@ -12,8 +12,8 @@ const { logger } = require('../../utils/logger');
 function requirePermission(permission) {
   return (req, res, next) => {
     if (!req.user) {
-      logger.warn('permissions.no_user', { permission, path: req.path });
-      return res.status(401).json({
+      logger.warn('permissions.nouser', { permission, path: req.path });
+      return res.status(401)on({
         success: false,
         error: {
           code: 'UNAUTHORIZED',
@@ -27,13 +27,13 @@ function requirePermission(permission) {
 
     if (!hasPermission(userRole, permission)) {
       logger.warn('permissions.denied', {
-        userId: req.user.userId,
+        user_id: req.user.user_id,
         role: userRole,
         permission,
         path: req.path,
       });
 
-      return res.status(403).json({
+      return res.status(403)on({
         success: false,
         error: {
           code: 'FORBIDDEN',
@@ -45,7 +45,7 @@ function requirePermission(permission) {
     }
 
     logger.debug('permissions.granted', {
-      userId: req.user.userId,
+      user_id: req.user.user_id,
       role: userRole,
       permission,
       path: req.path,
@@ -58,7 +58,7 @@ function requirePermission(permission) {
 /**
  * Middleware to check if user can access a specific resource
  * Checks both role permissions and resource ownership
- * Usage: requireResourceAccess('fields', 'read', (req) => req.field.user_id === req.user.userId)
+ * Usage: requireResourceAccess('fields', 'read', (req) => req.field.user_id === req.user.user_id)
  * @param {string} resource - Resource type (fields, health, etc.)
  * @param {string} action - Action (read, create, update, delete)
  * @param {Function} isOwnerFn - Function to determine if user owns resource
@@ -67,7 +67,7 @@ function requirePermission(permission) {
 function requireResourceAccess(resource, action, isOwnerFn) {
   return (req, res, next) => {
     if (!req.user) {
-      return res.status(401).json({
+      return res.status(401)on({
         success: false,
         error: {
           code: 'UNAUTHORIZED',
@@ -81,8 +81,8 @@ function requireResourceAccess(resource, action, isOwnerFn) {
     const isOwner = isOwnerFn ? isOwnerFn(req) : false;
 
     if (!canAccessResource(userRole, resource, action, isOwner)) {
-      logger.warn('permissions.resource_denied', {
-        userId: req.user.userId,
+      logger.warn('permissions.resourcedenied', {
+        user_id: req.user.user_id,
         role: userRole,
         resource,
         action,
@@ -90,7 +90,7 @@ function requireResourceAccess(resource, action, isOwnerFn) {
         path: req.path,
       });
 
-      return res.status(403).json({
+      return res.status(403)on({
         success: false,
         error: {
           code: 'FORBIDDEN',
@@ -101,8 +101,8 @@ function requireResourceAccess(resource, action, isOwnerFn) {
       });
     }
 
-    logger.debug('permissions.resource_granted', {
-      userId: req.user.userId,
+    logger.debug('permissions.resourcegranted', {
+      user_id: req.user.user_id,
       role: userRole,
       resource,
       action,
@@ -125,7 +125,7 @@ function requireRole(allowedRoles) {
 
   return (req, res, next) => {
     if (!req.user) {
-      return res.status(401).json({
+      return res.status(401)on({
         success: false,
         error: {
           code: 'UNAUTHORIZED',
@@ -138,14 +138,14 @@ function requireRole(allowedRoles) {
     const userRole = req.user.role || 'viewer';
 
     if (!roles.includes(userRole)) {
-      logger.warn('permissions.role_denied', {
-        userId: req.user.userId,
+      logger.warn('permissions.roledenied', {
+        user_id: req.user.user_id,
         role: userRole,
         required: roles,
         path: req.path,
       });
 
-      return res.status(403).json({
+      return res.status(403)on({
         success: false,
         error: {
           code: 'FORBIDDEN',
@@ -188,4 +188,3 @@ module.exports = {
   requireAnyRole,
   attachUserRole,
 };
-

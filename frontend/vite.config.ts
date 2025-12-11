@@ -1,20 +1,20 @@
-import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
 
 export default defineConfig({
   plugins: [react()],
-  base: '/',
+  base: "/",
   server: {
     port: 5173,
     open: true,
     proxy: {
-      '/api': {
-        target: 'http://localhost:4000',
+      "/api": {
+        target: "http://localhost:4000",
         changeOrigin: true,
         secure: false,
       },
-      '/ml': {
-        target: 'http://localhost:8000',
+      "/ml": {
+        target: "http://localhost:8000",
         changeOrigin: true,
         secure: false,
       },
@@ -22,69 +22,73 @@ export default defineConfig({
   },
   build: {
     sourcemap: false, // Disable source maps in production for smaller bundles
-    target: 'es2015',
-    minify: 'esbuild',
+    target: "es2015",
+    minify: "esbuild",
     cssMinify: true,
     rollupOptions: {
       output: {
         manualChunks: (id) => {
           // Vendor chunks - npm packages
-          if (id.includes('node_modules')) {
+          if (id.includes("node_modules")) {
             // React is now in shared chunk
-            if (id.includes('react-router')) {
-              return 'router-vendor';
+            if (id.includes("react-router")) {
+              return "router-vendor";
             }
-            if (id.includes('@tanstack/react-query')) {
-              return 'query-vendor';
+            if (id.includes("@tanstack/react-query")) {
+              return "query-vendor";
             }
-            if (id.includes('leaflet') || id.includes('react-leaflet')) {
-              return 'map-vendor';
+            if (id.includes("leaflet") || id.includes("react-leaflet")) {
+              return "map-vendor";
             }
-            if (id.includes('axios')) {
-              return 'http-vendor';
+            if (id.includes("axios")) {
+              return "http-vendor";
             }
-            if (id.includes('recharts')) {
-              return 'chart-vendor';
+            if (id.includes("recharts")) {
+              return "chart-vendor";
             }
             // Don't create a common vendor chunk to avoid loading issues
             return undefined;
           }
 
           // Route-based code splitting for features
-          if (id.includes('/features/auth/')) {
-            return 'feature-auth';
+          if (id.includes("/features/auth/")) {
+            return "feature-auth";
           }
-          if (id.includes('/features/fields/')) {
-            return 'feature-fields';
+          if (id.includes("/features/fields/")) {
+            return "feature-fields";
           }
-          if (id.includes('/features/health/')) {
-            return 'feature-health';
+          if (id.includes("/features/health/")) {
+            return "feature-health";
           }
-          if (id.includes('/features/recommendations/')) {
-            return 'feature-recommendations';
+          if (id.includes("/features/recommendations/")) {
+            return "feature-recommendations";
           }
-          if (id.includes('/features/weather/')) {
-            return 'feature-weather';
+          if (id.includes("/features/weather/")) {
+            return "feature-weather";
           }
-          if (id.includes('/features/yield/')) {
-            return 'feature-yield';
+          if (id.includes("/features/yield/")) {
+            return "feature-yield";
           }
-          if (id.includes('/features/admin/')) {
-            return 'feature-admin';
+          if (id.includes("/features/admin/")) {
+            return "feature-admin";
           }
-          if (id.includes('/features/news/')) {
-            return 'feature-news';
+          if (id.includes("/features/news/")) {
+            return "feature-news";
           }
 
           // Shared components in separate chunk with React
-          if (id.includes('/shared/') || id.includes('react') || id.includes('react-dom')) {
-            return 'shared';
+          if (
+            id.includes("/shared/") ||
+            id.includes("react") ||
+            id.includes("react-dom")
+          ) {
+            return "shared";
           }
         },
         // Optimize chunk naming
-        chunkFileNames: 'assets/[name]-[hash].js',
-        entryFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]',
+        chunkFileNames: "assets/[name]-[hash].js",
+        entryFileNames: "assets/[name]-[hash].js",
+        assetFileNames: "assets/[name]-[hash].[ext]",
       },
     },
     // Increase chunk size warning limit for maps

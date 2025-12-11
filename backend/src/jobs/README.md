@@ -46,11 +46,11 @@ src/jobs/
 
 ## 📅 Job Schedules
 
-| Job | Schedule | Cron Expression | Frequency |
-|-----|----------|-----------------|-----------|
-| Health Monitoring | Daily 6:00 AM | `0 6 * * *` | 24 hours |
-| Recommendations | Weekly (Sunday 7:00 AM) | `0 7 */7 * *` | 7 days |
-| Weather Forecast | Every 6 hours | `0 */6 * * *` | 6 hours |
+| Job               | Schedule                | Cron Expression | Frequency |
+| ----------------- | ----------------------- | --------------- | --------- |
+| Health Monitoring | Daily 6:00 AM           | `0 6 * * *`     | 24 hours  |
+| Recommendations   | Weekly (Sunday 7:00 AM) | `0 7 */7 * *`   | 7 days    |
+| Weather Forecast  | Every 6 hours           | `0 */6 * * *`   | 6 hours   |
 
 All times are in **Asia/Colombo** timezone (UTC+5:30).
 
@@ -81,10 +81,10 @@ Jobs can be configured in their respective files:
 // healthMonitoringJob.js
 module.exports = {
   runHealthMonitoring,
-  schedule: '0 6 * * *',       // Cron expression
+  schedule: '0 6 * * *', // Cron expression
   description: 'Update crop health data',
-  enabled: true,                // Enable/disable
-  critical: true,               // Send alerts on failure
+  enabled: true, // Enable/disable
+  critical: true, // Send alerts on failure
 };
 ```
 
@@ -100,9 +100,9 @@ const { initializeJobs, startJobs } = require('./jobs');
 
 async function start() {
   // ... database initialization ...
-  
-  initializeJobs();  // Register all jobs
-  startJobs();       // Start cron schedules
+
+  initializeJobs(); // Register all jobs
+  startJobs(); // Start cron schedules
 }
 ```
 
@@ -114,7 +114,7 @@ Jobs stop gracefully on server shutdown:
 const { stopJobs } = require('./jobs');
 
 process.on('SIGTERM', () => {
-  stopJobs();  // Stop all scheduled jobs
+  stopJobs(); // Stop all scheduled jobs
   // ... other cleanup ...
 });
 ```
@@ -174,7 +174,7 @@ Response:
           "successRate": "100.0%"
         },
         "lastError": null
-      },
+      }
       // ... other jobs
     ]
   }
@@ -267,7 +267,7 @@ const { runHealthMonitoring } = require('./jobs/healthMonitoringJob');
 describe('Health Monitoring Job', () => {
   it('should update health for all active fields', async () => {
     const result = await runHealthMonitoring();
-    
+
     expect(result.success).toBeGreaterThan(0);
     expect(result.failed).toBe(0);
   });
@@ -294,10 +294,10 @@ const logger = require('../config/logger.config');
 
 async function runMyNewJob() {
   logger.info('Starting my new job...');
-  
+
   try {
     // Job logic here
-    
+
     logger.info('My new job completed');
     return { success: true };
   } catch (error) {
@@ -308,7 +308,7 @@ async function runMyNewJob() {
 
 module.exports = {
   runMyNewJob,
-  schedule: '0 0 * * *',       // Daily at midnight
+  schedule: '0 0 * * *', // Daily at midnight
   description: 'My new job description',
   enabled: true,
   critical: false,
@@ -323,19 +323,14 @@ const myNewJob = require('./myNewJob');
 
 function initializeJobs() {
   // ... existing jobs ...
-  
+
   if (myNewJob.enabled) {
-    jobScheduler.registerJob(
-      'my-new-job',
-      myNewJob.schedule,
-      myNewJob.runMyNewJob,
-      {
-        enabled: true,
-        critical: myNewJob.critical,
-        timezone: 'Asia/Colombo',
-        runOnStart: false,
-      }
-    );
+    jobScheduler.registerJob('my-new-job', myNewJob.schedule, myNewJob.runMyNewJob, {
+      enabled: true,
+      critical: myNewJob.critical,
+      timezone: 'Asia/Colombo',
+      runOnStart: false,
+    });
   }
 }
 ```
@@ -369,6 +364,7 @@ async function triggerJob(jobName) {
 ### Job Not Running
 
 1. Check job is enabled:
+
 ```bash
 curl -H "Authorization: Bearer <token>" \
   http://localhost:4000/api/v1/admin/jobs
@@ -377,6 +373,7 @@ curl -H "Authorization: Bearer <token>" \
 2. Check server logs for errors during initialization
 
 3. Verify cron expression is valid:
+
 ```javascript
 const cron = require('node-cron');
 console.log(cron.validate('0 6 * * *')); // true
@@ -385,6 +382,7 @@ console.log(cron.validate('0 6 * * *')); // true
 ### Job Failing
 
 1. Check job statistics for last error:
+
 ```bash
 curl -H "Authorization: Bearer <token>" \
   http://localhost:4000/api/v1/admin/jobs/health-monitoring
@@ -393,6 +391,7 @@ curl -H "Authorization: Bearer <token>" \
 2. Review server logs for detailed error stack traces
 
 3. Manually trigger with verbose logging:
+
 ```bash
 LOG_LEVEL=debug npm start
 ```
@@ -415,4 +414,3 @@ LOG_LEVEL=debug npm start
 **Last Updated:** November 21, 2025  
 **Version:** 1.0.0  
 **Maintainer:** SkyCrop Backend Team
-

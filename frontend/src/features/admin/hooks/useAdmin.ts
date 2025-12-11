@@ -1,7 +1,11 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { ApiError, ListParams, PaginatedResponse } from '../../../shared/api';
-import { adminKeys } from '../../../shared/query/queryKeys';
+import type {
+  ApiError,
+  ListParams,
+  PaginatedResponse,
+} from "../../../shared/api";
+import { adminKeys } from "../../../shared/query/queryKeys";
 import {
   listUsers,
   updateUserStatus,
@@ -12,7 +16,7 @@ import {
   type AdminContentItem,
   type SystemStatus,
   type AdminUserStatus,
-} from '../api/adminApi';
+} from "../api/adminApi";
 
 /**
  * useAdminUsers
@@ -40,10 +44,11 @@ export const useUpdateUserStatus = () => {
   const queryClient = useQueryClient();
 
   return useMutation<AdminUserSummary, ApiError, UpdateUserStatusVariables>({
-    mutationFn: ({ id, status }: UpdateUserStatusVariables) => updateUserStatus(id, status),
+    mutationFn: ({ id, status }: UpdateUserStatusVariables) =>
+      updateUserStatus(id, status),
     onSuccess: () => {
       // Invalidate all admin user lists (any params)
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      void queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
     },
   });
 };
@@ -71,10 +76,11 @@ export const useUpsertAdminContent = () => {
   const queryClient = useQueryClient();
 
   return useMutation<AdminContentItem, ApiError, UpsertAdminContentVariables>({
-    mutationFn: (item: UpsertAdminContentVariables) => createOrUpdateContent(item),
+    mutationFn: (item: UpsertAdminContentVariables) =>
+      createOrUpdateContent(item),
     onSuccess: () => {
       // Invalidate all admin content lists (any params)
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'content'] });
+      void queryClient.invalidateQueries({ queryKey: ["admin", "content"] });
     },
   });
 };

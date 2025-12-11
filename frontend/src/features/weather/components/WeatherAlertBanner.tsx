@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 
-import type { WeatherAlert, WeatherAlertSeverity } from '../api/weatherApi';
+import type { WeatherAlert, WeatherAlertSeverity } from "../api/weatherApi";
 
 export interface WeatherAlertBannerProps {
   alerts: WeatherAlert[];
@@ -12,28 +12,32 @@ const severityRank: Record<WeatherAlertSeverity, number> = {
   info: 1,
 };
 
-const getBannerClasses = (severity: WeatherAlertSeverity): { container: string; icon: string } => {
+const getBannerClasses = (
+  severity: WeatherAlertSeverity,
+): { container: string; icon: string } => {
   switch (severity) {
-    case 'severe':
+    case "severe":
       return {
-        container: 'border-red-300 bg-red-50 text-red-900',
-        icon: 'text-red-600',
+        container: "border-red-300 bg-red-50 text-red-900",
+        icon: "text-red-600",
       };
-    case 'warning':
+    case "warning":
       return {
-        container: 'border-amber-300 bg-amber-50 text-amber-900',
-        icon: 'text-amber-600',
+        container: "border-amber-300 bg-amber-50 text-amber-900",
+        icon: "text-amber-600",
       };
-    case 'info':
+    case "info":
     default:
       return {
-        container: 'border-sky-300 bg-sky-50 text-sky-900',
-        icon: 'text-sky-600',
+        container: "border-sky-300 bg-sky-50 text-sky-900",
+        icon: "text-sky-600",
       };
   }
 };
 
-export const WeatherAlertBanner: React.FC<WeatherAlertBannerProps> = ({ alerts }) => {
+export const WeatherAlertBanner: React.FC<WeatherAlertBannerProps> = ({
+  alerts,
+}) => {
   if (!alerts || alerts.length === 0) {
     return null;
   }
@@ -51,15 +55,15 @@ export const WeatherAlertBanner: React.FC<WeatherAlertBannerProps> = ({ alerts }
   const timeRange =
     !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime())
       ? `${start.toLocaleString(undefined, {
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
         })} \u2192 ${end.toLocaleString(undefined, {
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
         })}`
       : undefined;
 
@@ -76,11 +80,11 @@ export const WeatherAlertBanner: React.FC<WeatherAlertBannerProps> = ({ alerts }
       </div>
       <div className="flex-1 space-y-0.5">
         <p className="text-xs font-semibold uppercase tracking-wide">
-          {primary.severity === 'severe'
-            ? 'Severe weather alert'
-            : primary.severity === 'warning'
-            ? 'Weather warning'
-            : 'Weather information'}
+          {primary.severity === "severe"
+            ? "Severe weather alert"
+            : primary.severity === "warning"
+              ? "Weather warning"
+              : "Weather information"}
         </p>
         <p className="font-medium">{primary.title}</p>
         {primary.description && (
@@ -89,9 +93,7 @@ export const WeatherAlertBanner: React.FC<WeatherAlertBannerProps> = ({ alerts }
           </p>
         )}
         {timeRange && (
-          <p className="text-[11px] sm:text-xs opacity-80">
-            {timeRange}
-          </p>
+          <p className="text-[11px] sm:text-xs opacity-80">{timeRange}</p>
         )}
       </div>
       {extraCount > 0 && (

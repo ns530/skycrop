@@ -2,7 +2,7 @@
  * Tests for GeoJSON utility functions
  */
 
-import type { FieldBoundary } from '../types/map.types';
+import type { FieldBoundary } from "../types/map.types";
 
 import {
   calculatePolygonCenter,
@@ -10,12 +10,12 @@ import {
   normalizeGeoJson,
   isValidPolygon,
   calculatePolygonArea,
-} from './geoJsonUtils';
+} from "./geoJsonUtils";
 
-describe('geoJsonUtils', () => {
+describe("geoJsonUtils", () => {
   // Sample polygon representing a small field in Sri Lanka
   const samplePolygon: FieldBoundary = {
-    type: 'Polygon',
+    type: "Polygon",
     coordinates: [
       [
         [80.0, 7.0],
@@ -28,7 +28,7 @@ describe('geoJsonUtils', () => {
   };
 
   const sampleMultiPolygon: FieldBoundary = {
-    type: 'MultiPolygon',
+    type: "MultiPolygon",
     coordinates: [
       [
         [
@@ -42,24 +42,24 @@ describe('geoJsonUtils', () => {
     ],
   };
 
-  describe('calculatePolygonCenter', () => {
-    it('calculates correct center point for Polygon', () => {
+  describe("calculatePolygonCenter", () => {
+    it("calculates correct center point for Polygon", () => {
       const center = calculatePolygonCenter(samplePolygon);
 
       expect(center.lat).toBeCloseTo(7.05, 1);
       expect(center.lng).toBeCloseTo(80.05, 1);
     });
 
-    it('calculates correct center point for MultiPolygon', () => {
+    it("calculates correct center point for MultiPolygon", () => {
       const center = calculatePolygonCenter(sampleMultiPolygon);
 
       expect(center.lat).toBeCloseTo(7.025, 2);
       expect(center.lng).toBeCloseTo(80.025, 2);
     });
 
-    it('returns default Sri Lanka center for empty polygon', () => {
+    it("returns default Sri Lanka center for empty polygon", () => {
       const emptyPolygon: FieldBoundary = {
-        type: 'Polygon',
+        type: "Polygon",
         coordinates: [[]],
       };
 
@@ -70,24 +70,24 @@ describe('geoJsonUtils', () => {
     });
   });
 
-  describe('calculateBounds', () => {
-    it('calculates correct bounding box for Polygon', () => {
+  describe("calculateBounds", () => {
+    it("calculates correct bounding box for Polygon", () => {
       const bounds = calculateBounds(samplePolygon);
 
       expect(bounds.northEast).toEqual({ lat: 7.1, lng: 80.1 });
       expect(bounds.southWest).toEqual({ lat: 7.0, lng: 80.0 });
     });
 
-    it('calculates correct bounding box for MultiPolygon', () => {
+    it("calculates correct bounding box for MultiPolygon", () => {
       const bounds = calculateBounds(sampleMultiPolygon);
 
       expect(bounds.northEast).toEqual({ lat: 7.05, lng: 80.05 });
       expect(bounds.southWest).toEqual({ lat: 7.0, lng: 80.0 });
     });
 
-    it('returns default bounds for empty polygon', () => {
+    it("returns default bounds for empty polygon", () => {
       const emptyPolygon: FieldBoundary = {
-        type: 'Polygon',
+        type: "Polygon",
         coordinates: [[]],
       };
 
@@ -98,22 +98,22 @@ describe('geoJsonUtils', () => {
     });
   });
 
-  describe('normalizeGeoJson', () => {
-    it('returns Polygon as-is when already normalized', () => {
+  describe("normalizeGeoJson", () => {
+    it("returns Polygon as-is when already normalized", () => {
       const result = normalizeGeoJson(samplePolygon);
 
       expect(result).toEqual(samplePolygon);
     });
 
-    it('returns MultiPolygon as-is when already normalized', () => {
+    it("returns MultiPolygon as-is when already normalized", () => {
       const result = normalizeGeoJson(sampleMultiPolygon);
 
       expect(result).toEqual(sampleMultiPolygon);
     });
 
-    it('extracts geometry from Feature wrapper', () => {
+    it("extracts geometry from Feature wrapper", () => {
       const feature = {
-        type: 'Feature',
+        type: "Feature",
         properties: {},
         geometry: samplePolygon,
       };
@@ -123,32 +123,37 @@ describe('geoJsonUtils', () => {
       expect(result).toEqual(samplePolygon);
     });
 
-    it('throws error for null input', () => {
-      expect(() => normalizeGeoJson(null)).toThrow('GeoJSON cannot be null or undefined');
+    it("throws error for null input", () => {
+      expect(() => normalizeGeoJson(null)).toThrow(
+        "GeoJSON cannot be null or undefined",
+      );
     });
 
-    it('throws error for invalid format', () => {
+    it("throws error for invalid format", () => {
       const invalid = {
-        type: 'LineString',
-        coordinates: [[80.0, 7.0], [80.1, 7.1]],
+        type: "LineString",
+        coordinates: [
+          [80.0, 7.0],
+          [80.1, 7.1],
+        ],
       };
 
-      expect(() => normalizeGeoJson(invalid)).toThrow('Invalid GeoJSON format');
+      expect(() => normalizeGeoJson(invalid)).toThrow("Invalid GeoJSON format");
     });
   });
 
-  describe('isValidPolygon', () => {
-    it('returns true for valid Polygon', () => {
+  describe("isValidPolygon", () => {
+    it("returns true for valid Polygon", () => {
       expect(isValidPolygon(samplePolygon)).toBe(true);
     });
 
-    it('returns true for valid MultiPolygon', () => {
+    it("returns true for valid MultiPolygon", () => {
       expect(isValidPolygon(sampleMultiPolygon)).toBe(true);
     });
 
-    it('returns false for polygon with too few points', () => {
+    it("returns false for polygon with too few points", () => {
       const invalidPolygon: FieldBoundary = {
-        type: 'Polygon',
+        type: "Polygon",
         coordinates: [
           [
             [80.0, 7.0],
@@ -161,9 +166,9 @@ describe('geoJsonUtils', () => {
       expect(isValidPolygon(invalidPolygon)).toBe(false);
     });
 
-    it('returns false for unclosed polygon', () => {
+    it("returns false for unclosed polygon", () => {
       const unclosedPolygon: FieldBoundary = {
-        type: 'Polygon',
+        type: "Polygon",
         coordinates: [
           [
             [80.0, 7.0],
@@ -178,9 +183,9 @@ describe('geoJsonUtils', () => {
       expect(isValidPolygon(unclosedPolygon)).toBe(false);
     });
 
-    it('returns false for empty coordinates', () => {
+    it("returns false for empty coordinates", () => {
       const emptyPolygon: FieldBoundary = {
-        type: 'Polygon',
+        type: "Polygon",
         coordinates: [],
       };
 
@@ -188,8 +193,8 @@ describe('geoJsonUtils', () => {
     });
   });
 
-  describe('calculatePolygonArea', () => {
-    it('calculates approximate area in hectares for Polygon', () => {
+  describe("calculatePolygonArea", () => {
+    it("calculates approximate area in hectares for Polygon", () => {
       const area = calculatePolygonArea(samplePolygon);
 
       // Expected area: 0.01 degree² (0.1 × 0.1) × 111.32² km²/degree² × cos(7°) × 100 ha/km²
@@ -198,7 +203,7 @@ describe('geoJsonUtils', () => {
       expect(area).toBeLessThan(15000);
     });
 
-    it('calculates approximate area for MultiPolygon', () => {
+    it("calculates approximate area for MultiPolygon", () => {
       const area = calculatePolygonArea(sampleMultiPolygon);
 
       // Smaller area (0.05 × 0.05 degrees = 0.0025 degree²)
@@ -207,9 +212,9 @@ describe('geoJsonUtils', () => {
       expect(area).toBeLessThan(4000);
     });
 
-    it('returns 0 for polygon with too few points', () => {
+    it("returns 0 for polygon with too few points", () => {
       const invalidPolygon: FieldBoundary = {
-        type: 'Polygon',
+        type: "Polygon",
         coordinates: [
           [
             [80.0, 7.0],
@@ -222,9 +227,9 @@ describe('geoJsonUtils', () => {
       expect(area).toBe(0);
     });
 
-    it('returns 0 for empty polygon', () => {
+    it("returns 0 for empty polygon", () => {
       const emptyPolygon: FieldBoundary = {
-        type: 'Polygon',
+        type: "Polygon",
         coordinates: [[]],
       };
 
@@ -233,4 +238,3 @@ describe('geoJsonUtils', () => {
     });
   });
 });
-

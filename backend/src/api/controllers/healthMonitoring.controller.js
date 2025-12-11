@@ -12,29 +12,29 @@ class HealthMonitoringController {
   }
 
   /**
-   * GET /api/v1/fields/:fieldId/health/history
+   * GET /api/v1/fields/:field_id/health/history
    * Get field health history and analysis
    */
   async getFieldHealthHistory(req, res, next) {
     try {
-      const { fieldId } = req.params;
+      const { field_id } = req.params;
       const { startDate, endDate, period } = req.query;
-      const userId = req.user.userId;
+      const { user_id } = req.user;
 
       // 1. Verify field ownership
-      const field = await this.Field.findByPk(fieldId);
+      const field = await this.Field.findByPk(field_id);
       if (!field) {
-        return res.status(404).json({
+        return res.status(404)on({
           success: false,
           error: {
-            code: 'FIELD_NOT_FOUND',
+            code: 'FIELDNOTFOUND',
             message: 'Field not found',
           },
         });
       }
 
-      if (field.user_id !== userId) {
-        return res.status(403).json({
+      if (field.user_id !== user_id) {
+        return res.status(403)on({
           success: false,
           error: {
             code: 'FORBIDDEN',
@@ -49,14 +49,13 @@ class HealthMonitoringController {
 
       if (period) {
         end = new Date().toISOString().split('T')[0]; // Today
-        const periodDays = this._parsePeriod(period);
+        const periodDays = this.parsePeriod(period);
         if (!periodDays) {
-          return res.status(400).json({
+          return res.status(400)on({
             success: false,
             error: {
-              code: 'INVALID_PERIOD',
-              message:
-                'Invalid period format. Use 7d, 30d, 60d, 90d, or 365d',
+              code: 'INVALIDPERIOD',
+              message: 'Invalid period format. Use 7d, 30d, 60d, 90d, or 365d',
             },
           });
         }
@@ -67,25 +66,20 @@ class HealthMonitoringController {
 
       // 3. Validate required parameters
       if (!start || !end) {
-        return res.status(400).json({
+        return res.status(400)on({
           success: false,
           error: {
-            code: 'MISSING_PARAMETERS',
-            message:
-              'Either (startDate and endDate) or period parameter is required',
+            code: 'MISSINGPARAMETERS',
+            message: 'Either (startDate and endDate) or period parameter is required',
           },
         });
       }
 
       // 4. Call service to analyze health
-      const analysis = await this.healthMonitoringService.analyzeFieldHealth(
-        fieldId,
-        start,
-        end
-      );
+      const analysis = await this.healthMonitoringService.analyzeFieldHealth(field_id, start, end);
 
       // 5. Return response
-      return res.status(200).json({
+      return res.status(200)on({
         success: true,
         data: analysis,
         meta: {
@@ -96,7 +90,7 @@ class HealthMonitoringController {
     } catch (error) {
       // Handle known errors
       if (error.statusCode) {
-        return res.status(error.statusCode).json({
+        return res.status(error.statusCode)on({
           success: false,
           error: {
             code: error.message.toUpperCase().replace(/ /g, '_'),
@@ -114,7 +108,7 @@ class HealthMonitoringController {
    * Parse period string to days
    * @private
    */
-  _parsePeriod(period) {
+  parsePeriod(period) {
     const match = period.match(/^(\d+)d$/);
     if (!match) return null;
 
@@ -128,4 +122,3 @@ class HealthMonitoringController {
 }
 
 module.exports = HealthMonitoringController;
-

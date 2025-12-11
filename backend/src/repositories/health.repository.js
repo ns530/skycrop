@@ -1,7 +1,7 @@
 'use strict';
 
-const HealthRecord = require('../models/health.model');
 const Sequelize = require('sequelize');
+const HealthRecord = require('../models/health.model');
 
 /**
  * Repository for health record data access
@@ -9,32 +9,32 @@ const Sequelize = require('sequelize');
 class HealthRepository {
   /**
    * Find health records by field ID and date range
-   * @param {string} fieldId - Field UUID
+   * @param {string} field_id - Field UUID
    * @param {string} startDate - Start date (YYYY-MM-DD)
    * @param {string} endDate - End date (YYYY-MM-DD)
    * @returns {Promise<Array<HealthRecord>>}
    */
-  async findByFieldAndDateRange(fieldId, startDate, endDate) {
+  async findByFieldAndDateRange(field_id, startDate, endDate) {
     return await HealthRecord.findAll({
       where: {
-        field_id: fieldId,
-        measurement_date: {
+        field_id: field_id,
+        measurementdate: {
           [Sequelize.Op.between]: [startDate, endDate],
         },
       },
-      order: [['measurement_date', 'ASC']],
+      order: [['measurementdate', 'ASC']],
     });
   }
 
   /**
    * Find latest health record for a field
-   * @param {string} fieldId - Field UUID
+   * @param {string} field_id - Field UUID
    * @returns {Promise<HealthRecord|null>}
    */
-  async findLatestByField(fieldId) {
+  async findLatestByField(field_id) {
     return await HealthRecord.findOne({
-      where: { field_id: fieldId },
-      order: [['measurement_date', 'DESC']],
+      where: { field_id: field_id },
+      order: [['measurementdate', 'DESC']],
     });
   }
 
@@ -73,7 +73,7 @@ class HealthRepository {
   async deleteBeforeDate(beforeDate) {
     return await HealthRecord.destroy({
       where: {
-        measurement_date: {
+        measurementdate: {
           [Sequelize.Op.lt]: beforeDate,
         },
       },
@@ -82,4 +82,3 @@ class HealthRepository {
 }
 
 module.exports = HealthRepository;
-

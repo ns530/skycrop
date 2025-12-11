@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 export interface ConfidenceIntervalProps {
   confidenceLower: number;
@@ -6,7 +6,7 @@ export interface ConfidenceIntervalProps {
 }
 
 const formatNumber = (num: number): string => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 1,
   }).format(num);

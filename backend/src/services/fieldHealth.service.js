@@ -19,14 +19,14 @@ const { logger } = require('../utils/logger');
  *   updatedAt: ISOString
  * }
  *
- * - Uses latest health_records metrics if available
+ * - Uses latest healthrecords metrics if available
  * - Optionally enriches with 7-day weather outlook (if configured)
  * - Caches summary in Redis (TTL 3600s)
  */
 class FieldHealthService {
   constructor() {
     this.redis = null;
-    this.TTL_SECONDS = Number(process.env.FIELD_HEALTH_TTL_SECONDS || 3600);
+    this.TTLSECONDS = Number(process.env.FIELDHEALTHTTLSECONDS || 3600);
   }
 
   async init() {
@@ -36,91 +36,96 @@ class FieldHealthService {
     return this;
   }
 
-  _cacheKey(fieldId) {
-    return `field:health:${fieldId}`;
+  cacheKey(field_id) {
+    return `field:health:${field_id}`;
   }
 
-  async _assertOwnership(userId, fieldId) {
-    if (!userId) throw new ValidationError('userId is required');
-    if (!fieldId) throw new ValidationError('fieldId is required');
+  async assertOwnership(user_id, field_id) {
+    if (!user_id) throw new ValidationError('user_id is required');
+    if (!field_id) throw new ValidationError('field_id is required');
     const field = await Field.findOne({
-      where: { user_id: userId, field_id: fieldId, status: { [Sequelize.Op.ne]: 'deleted' } },
+      where: { user_id: user_id, field_id: field_id, status: { [Sequelize.Op.ne]: 'deleted' } },
     });
     if (!field) throw new NotFoundError('Field not found');
     return field;
   }
 
-  _statusFromScore(score) {
+  statusFromScore(score) {
     if (score >= 70) return 'good';
     if (score >= 40) return 'moderate';
     return 'poor';
   }
 
-  _scoreFromRecord(rec) {
-    // Base score from health_status if present
+  scoreFromRecord(rec) {
+    // Base score from healthstatus if present
     const baseByStatus = {
       excellent: 90,
       good: 75,
       fair: 55,
       poor: 35,
     };
-    let score = typeof baseByStatus[rec.health_status] === 'number' ? baseByStatus[rec.health_status] : 50;
+    let score =
+      typeof baseByStatus[rec.healthstatus] === 'number' ? baseByStatus[rec.healthstatus] : 50;
 
     // Adjustments using NDVI/NDWI means (simple heuristic)
-    if (typeof rec.ndvi_mean === 'number') {
+    if (typeof rec.ndvimean === 'number') {
       // NDVI mean roughly -1..1; map boosts within reasonable band
-      score += Math.max(-10, Math.min(10, (rec.ndvi_mean - 0.3) * 40)); // center around 0.3 threshold
+      score += Math.max(-10, Math.min(10, (rec.ndvimean - 0.3) * 40)); // center around 0.3 threshold
     }
-    if (typeof rec.ndwi_mean === 'number') {
+    if (typeof rec.ndwimean === 'number') {
       // Too low water reduces; too high may reduce (waterlogging)
-      const waterAdj = (rec.ndwi_mean - 0.2) * 20;
+      const waterAdj = (rec.ndwimean - 0.2) * 20;
       score += Math.max(-8, Math.min(6, waterAdj));
     }
-    if (typeof rec.cloud_cover === 'number') {
+    if (typeof rec.cloudcover === 'number') {
       // High cloud cover reduces confidence slightly
-      score -= Math.min(5, Math.max(0, (rec.cloud_cover - 20) / 5));
+      score -= Math.min(5, Math.max(0, (rec.cloudcover - 20) / 5));
     }
 
     // Clamp 0..100
     return Math.max(0, Math.min(100, Math.round(score)));
   }
 
-  _signalsFromRecord(rec) {
+  signalsFromRecord(rec) {
     const s = [];
-    if (typeof rec.ndvi_mean === 'number') {
-      s.push({ key: 'ndvi_mean', label: 'NDVI Mean', value: rec.ndvi_mean, weight: 0.4 });
+    if (typeof rec.ndvimean === 'number') {
+      s.push({ key: 'ndvimean', label: 'NDVI Mean', value: rec.ndvimean, weight: 0.4 });
     }
-    if (typeof rec.ndwi_mean === 'number') {
-      s.push({ key: 'ndwi_mean', label: 'NDWI Mean', value: rec.ndwi_mean, weight: 0.3 });
+    if (typeof rec.ndwimean === 'number') {
+      s.push({ key: 'ndwimean', label: 'NDWI Mean', value: rec.ndwimean, weight: 0.3 });
     }
-    if (typeof rec.tdvi_mean === 'number') {
-      s.push({ key: 'tdvi_mean', label: 'TDVI Mean', value: rec.tdvi_mean, weight: 0.2 });
+    if (typeof rec.tdvimean === 'number') {
+      s.push({ key: 'tdvimean', label: 'TDVI Mean', value: rec.tdvimean, weight: 0.2 });
     }
-    if (typeof rec.cloud_cover === 'number') {
-      s.push({ key: 'cloud', label: 'Cloud Cover (%)', value: rec.cloud_cover, weight: 0.1 });
+    if (typeof rec.cloudcover === 'number') {
+      s.push({ key: 'cloud', label: 'Cloud Cover (%)', value: rec.cloudcover, weight: 0.1 });
     }
     return s;
   }
 
-  _adviceFromSignals(rec, forecast) {
+  adviceFromSignals(rec, forecast) {
     const tips = [];
 
     // NDVI-based advice
-    if (typeof rec.ndvi_mean === 'number') {
-      if (rec.ndvi_mean < 0.25) tips.push('Vegetation index is low. Inspect for nutrient deficiencies or pests.');
-      else if (rec.ndvi_mean < 0.35) tips.push('Vegetation index is moderate. Monitor growth and consider light fertilization.');
+    if (typeof rec.ndvimean === 'number') {
+      if (rec.ndvimean < 0.25)
+        tips.push('Vegetation index is low. Inspect for nutrient deficiencies or pests.');
+      else if (rec.ndvimean < 0.35)
+        tips.push('Vegetation index is moderate. Monitor growth and consider light fertilization.');
       else tips.push('Vegetation index is healthy. Keep current management practices.');
     }
 
     // NDWI-based advice
-    if (typeof rec.ndwi_mean === 'number') {
-      if (rec.ndwi_mean < 0.05) tips.push('Field moisture appears low. Consider irrigation if feasible.');
-      else if (rec.ndwi_mean > 0.35) tips.push('Field moisture is high. Avoid over-irrigation and check drainage.');
+    if (typeof rec.ndwimean === 'number') {
+      if (rec.ndwimean < 0.05)
+        tips.push('Field moisture appears low. Consider irrigation if feasible.');
+      else if (rec.ndwimean > 0.35)
+        tips.push('Field moisture is high. Avoid over-irrigation and check drainage.');
     }
 
     // Weather-based advice (rain coming soon)
     if (forecast && Array.isArray(forecast.daily) && forecast.daily.length > 0) {
-      const nextRain = forecast.daily.find((d) => (d?.pop || 0) >= 0.6 || (d?.rain || 0) >= 5);
+      const nextRain = forecast.daily.find(d => (d?.pop || 0) >= 0.6 || (d?.rain || 0) >= 5);
       if (nextRain) {
         tips.push('Significant rain expected soon. Plan irrigation and fertilizer accordingly.');
       }
@@ -129,20 +134,20 @@ class FieldHealthService {
     return tips;
   }
 
-  async _getLatestRecord(fieldId) {
+  async getLatestRecord(field_id) {
     return HealthRecord.findOne({
-      where: { field_id: fieldId },
-      order: [['measurement_date', 'DESC']],
+      where: { field_id: field_id },
+      order: [['measurementdate', 'DESC']],
     });
   }
 
-  async _maybeGetForecast(userId, fieldId) {
+  async maybeGetForecast(user_id, field_id) {
     try {
       // If weather service is configured, include a lightweight forecast
       const weatherSvc = getWeatherService();
-      const result = await weatherSvc.getForecastByField(userId, fieldId);
+      const result = await weatherSvc.getForecastByField(user_id, field_id);
       return result?.data || null;
-    } catch (_e) {
+    } catch (e) {
       return null;
     }
   }
@@ -150,48 +155,50 @@ class FieldHealthService {
   /**
    * Compute or fetch cached field health summary.
    */
-  async getFieldHealth(fieldId, userId) {
+  async getFieldHealth(field_id, user_id) {
     await this.init();
-    const field = await this._assertOwnership(userId, fieldId);
+    const field = await this.assertOwnership(user_id, field_id);
 
-    const cacheKey = this._cacheKey(field.field_id);
+    const cacheKey = this.cacheKey(field.field_id);
     const cached = await this.redis.get(cacheKey);
     if (cached) {
       const parsed = JSON.parse(cached);
-      logger.info('cache.hit', { key: 'field:health:FIELD_ID' });
+      logger.info('cache.hit', { key: 'field:health:field_id' });
       return parsed;
     }
 
-    logger.info('cache.miss', { key: 'field:health:FIELD_ID' });
+    logger.info('cache.miss', { key: 'field:health:field_id' });
 
     // Fetch latest record; if none, return neutral summary
-    const latest = await this._getLatestRecord(field.field_id);
+    const latest = await this.getLatestRecord(field.field_id);
 
     if (!latest) {
       const empty = {
         id: field.field_id,
         score: 50,
-        status: this._statusFromScore(50),
+        status: this.statusFromScore(50),
         signals: [],
-        advice: ['No satellite-derived health data yet. Schedule a health refresh or try again later.'],
+        advice: [
+          'No satellite-derived health data yet. Schedule a health refresh or try again later.',
+        ],
         updatedAt: new Date().toISOString(),
       };
-      await this.redis.setEx(cacheKey, this.TTL_SECONDS, JSON.stringify(empty));
+      await this.redis.setEx(cacheKey, this.TTLSECONDS, JSON.stringify(empty));
       return empty;
     }
 
-    const forecast = await this._maybeGetForecast(userId, field.field_id);
-    const score = this._scoreFromRecord(latest);
+    const forecast = await this.maybeGetForecast(user_id, field.field_id);
+    const score = this.scoreFromRecord(latest);
     const summary = {
       id: field.field_id,
       score,
-      status: this._statusFromScore(score),
-      signals: this._signalsFromRecord(latest),
-      advice: this._adviceFromSignals(latest, forecast),
+      status: this.statusFromScore(score),
+      signals: this.signalsFromRecord(latest),
+      advice: this.adviceFromSignals(latest, forecast),
       updatedAt: new Date().toISOString(),
     };
 
-    await this.redis.setEx(cacheKey, this.TTL_SECONDS, JSON.stringify(summary));
+    await this.redis.setEx(cacheKey, this.TTLSECONDS, JSON.stringify(summary));
     return summary;
   }
 }

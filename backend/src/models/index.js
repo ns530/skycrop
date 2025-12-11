@@ -12,7 +12,7 @@ const User = require('./user.model');
 const Field = require('./field.model');
 const Health = require('./health.model');
 const Recommendation = require('./recommendation.model');
-const YieldPrediction = require('./yield_prediction.model');
+const YieldPrediction = require('./yieldprediction.model');
 const ActualYield = require('./actualYield.model');
 const FieldShare = require('./fieldShare.model');
 const DeviceToken = require('./deviceToken.model');
@@ -46,4 +46,3 @@ module.exports = {
   FieldShare,
   DeviceToken,
 };
-

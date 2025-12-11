@@ -1,6 +1,6 @@
 /**
  * Jobs Controller - Admin API for Scheduled Jobs Management
- * 
+ *
  * Provides endpoints to monitor and control background jobs
  */
 
@@ -9,13 +9,13 @@ const logger = require('../../config/logger.config');
 
 /**
  * Get status of all scheduled jobs
- * 
+ *
  * @route GET /api/v1/admin/jobs
  */
 const getAllJobsStatus = async (req, res) => {
   try {
     const jobs = getJobsStatus();
-    
+
     const response = {
       success: true,
       data: {
@@ -31,25 +31,28 @@ const getAllJobsStatus = async (req, res) => {
           stats: {
             successCount: job.successCount,
             failureCount: job.failureCount,
-            successRate: job.successCount + job.failureCount > 0
-              ? `${((job.successCount / (job.successCount + job.failureCount)) * 100).toFixed(1)}%`
-              : 'N/A',
+            successRate:
+              job.successCount + job.failureCount > 0
+                ? `${((job.successCount / (job.successCount + job.failureCount)) * 100).toFixed(1)}%`
+                : 'N/A',
           },
-          lastError: job.lastError ? {
-            message: job.lastError.message,
-            timestamp: job.lastError.timestamp,
-          } : null,
+          lastError: job.lastError
+            ? {
+                message: job.lastError.message,
+                timestamp: job.lastError.timestamp,
+              }
+            : null,
         })),
       },
     };
 
-    res.json(response);
+    reson(response);
   } catch (error) {
     logger.error('Error fetching jobs status:', error);
-    res.status(500).json({
+    res.status(500)on({
       success: false,
       error: {
-        code: 'INTERNAL_ERROR',
+        code: 'INTERNALERROR',
         message: 'Failed to fetch jobs status',
       },
     });
@@ -58,7 +61,7 @@ const getAllJobsStatus = async (req, res) => {
 
 /**
  * Get status of a specific job
- * 
+ *
  * @route GET /api/v1/admin/jobs/:jobName
  */
 const getJobStatus = async (req, res) => {
@@ -67,25 +70,25 @@ const getJobStatus = async (req, res) => {
     const job = jobScheduler.getJobStats(jobName);
 
     if (!job) {
-      return res.status(404).json({
+      return res.status(404)on({
         success: false,
         error: {
-          code: 'JOB_NOT_FOUND',
+          code: 'JOBNOTFOUND',
           message: `Job "${jobName}" not found`,
         },
       });
     }
 
-    res.json({
+    reson({
       success: true,
       data: job,
     });
   } catch (error) {
     logger.error('Error fetching job status:', error);
-    res.status(500).json({
+    res.status(500)on({
       success: false,
       error: {
-        code: 'INTERNAL_ERROR',
+        code: 'INTERNALERROR',
         message: 'Failed to fetch job status',
       },
     });
@@ -94,7 +97,7 @@ const getJobStatus = async (req, res) => {
 
 /**
  * Manually trigger a job
- * 
+ *
  * @route POST /api/v1/admin/jobs/:jobName/trigger
  */
 const triggerJobManually = async (req, res) => {
@@ -102,20 +105,20 @@ const triggerJobManually = async (req, res) => {
     const { jobName } = req.params;
 
     logger.info(`Admin manually triggering job: ${jobName}`, {
-      adminId: req.user?.userId,
+      adminId: req.user?.user_id,
     });
 
     // Trigger the job asynchronously
     const resultPromise = triggerJob(jobName);
 
     // Respond immediately that job was triggered
-    res.json({
+    reson({
       success: true,
       message: `Job "${jobName}" triggered successfully`,
       data: {
         jobName,
         triggeredAt: new Date().toISOString(),
-        triggeredBy: req.user?.userId,
+        triggeredBy: req.user?.user_id,
       },
     });
 
@@ -126,24 +129,23 @@ const triggerJobManually = async (req, res) => {
     } catch (jobError) {
       logger.error(`Manually triggered job "${jobName}" failed:`, jobError);
     }
-
   } catch (error) {
     logger.error('Error triggering job:', error);
-    
+
     if (error.message.includes('not found')) {
-      return res.status(404).json({
+      return res.status(404)on({
         success: false,
         error: {
-          code: 'JOB_NOT_FOUND',
+          code: 'JOBNOTFOUND',
           message: error.message,
         },
       });
     }
 
-    res.status(500).json({
+    res.status(500)on({
       success: false,
       error: {
-        code: 'INTERNAL_ERROR',
+        code: 'INTERNALERROR',
         message: 'Failed to trigger job',
       },
     });
@@ -152,7 +154,7 @@ const triggerJobManually = async (req, res) => {
 
 /**
  * Enable a job
- * 
+ *
  * @route POST /api/v1/admin/jobs/:jobName/enable
  */
 const enableJob = async (req, res) => {
@@ -161,29 +163,29 @@ const enableJob = async (req, res) => {
     const success = jobScheduler.startJob(jobName);
 
     if (!success) {
-      return res.status(404).json({
+      return res.status(404)on({
         success: false,
         error: {
-          code: 'JOB_NOT_FOUND',
+          code: 'JOBNOTFOUND',
           message: `Job "${jobName}" not found`,
         },
       });
     }
 
     logger.info(`Job "${jobName}" enabled by admin`, {
-      adminId: req.user?.userId,
+      adminId: req.user?.user_id,
     });
 
-    res.json({
+    reson({
       success: true,
       message: `Job "${jobName}" enabled successfully`,
     });
   } catch (error) {
     logger.error('Error enabling job:', error);
-    res.status(500).json({
+    res.status(500)on({
       success: false,
       error: {
-        code: 'INTERNAL_ERROR',
+        code: 'INTERNALERROR',
         message: 'Failed to enable job',
       },
     });
@@ -192,7 +194,7 @@ const enableJob = async (req, res) => {
 
 /**
  * Disable a job
- * 
+ *
  * @route POST /api/v1/admin/jobs/:jobName/disable
  */
 const disableJob = async (req, res) => {
@@ -201,29 +203,29 @@ const disableJob = async (req, res) => {
     const success = jobScheduler.stopJob(jobName);
 
     if (!success) {
-      return res.status(404).json({
+      return res.status(404)on({
         success: false,
         error: {
-          code: 'JOB_NOT_FOUND',
+          code: 'JOBNOTFOUND',
           message: `Job "${jobName}" not found`,
         },
       });
     }
 
     logger.info(`Job "${jobName}" disabled by admin`, {
-      adminId: req.user?.userId,
+      adminId: req.user?.user_id,
     });
 
-    res.json({
+    reson({
       success: true,
       message: `Job "${jobName}" disabled successfully`,
     });
   } catch (error) {
     logger.error('Error disabling job:', error);
-    res.status(500).json({
+    res.status(500)on({
       success: false,
       error: {
-        code: 'INTERNAL_ERROR',
+        code: 'INTERNALERROR',
         message: 'Failed to disable job',
       },
     });
@@ -237,4 +239,3 @@ module.exports = {
   enableJob,
   disableJob,
 };
-

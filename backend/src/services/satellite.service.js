@@ -16,26 +16,35 @@ const { logger } = require('../utils/logger');
  *
  * Notes:
  * - ETag is SHA1 of image bytes
- * - Cache key: satellite:tile:{z}:{x}:{y}:{date}:{bands}:{cloud_lt}
- * - TTL: SATELLITE_TILE_TTL_SECONDS (default 21600 = 6h)
+ * - Cache key: satellite:tile:{z}:{x}:{y}:{date}:{bands}:{cloudlt}
+ * - TTL: SATELLITETILETTLSECONDS (default 21600 = 6h)
  */
 class SatelliteService {
   constructor() {
     this.redis = null;
 
     // Env config with sane defaults
-    this.SATELLITE_TILE_TTL_SECONDS = parseInt(process.env.SATELLITE_TILE_TTL_SECONDS || '21600', 10); // 6h
-    this.SATELLITE_PREPROCESS_ZOOM = parseInt(process.env.SATELLITE_PREPROCESS_ZOOM || '12', 10);
-    this.SATELLITE_MAX_PREPROCESS_TILES = parseInt(process.env.SATELLITE_MAX_PREPROCESS_TILES || '200', 10);
+    this.SATELLITETILETTLSECONDS = parseInt(
+      process.env.SATELLITETILETTLSECONDS || '21600',
+      10
+    ); // 6h
+    this.SATELLITEPREPROCESSZOOM = parseInt(process.env.SATELLITEPREPROCESSZOOM || '12', 10);
+    this.SATELLITEMAXPREPROCESSTILES = parseInt(
+      process.env.SATELLITEMAXPREPROCESSTILES || '200',
+      10
+    );
 
-    this.SENTINELHUB_BASE_URL = (process.env.SENTINELHUB_BASE_URL || 'https://services.sentinel-hub.com').replace(/\/+$/,'');
-    this.SENTINELHUB_TOKEN_URL = process.env.SENTINELHUB_TOKEN_URL || 'https://services.sentinel-hub.com/oauth/token';
-    this.SENTINELHUB_CLIENT_ID = process.env.SENTINELHUB_CLIENT_ID || '';
-    this.SENTINELHUB_CLIENT_SECRET = process.env.SENTINELHUB_CLIENT_SECRET || '';
+    this.SENTINELHUBBASEURL = (
+      process.env.SENTINELHUBBASEURL || 'https://services.sentinel-hub.com'
+    ).replace(/\/+$/, '');
+    this.SENTINELHUBTOKENURL =
+      process.env.SENTINELHUBTOKENURL || 'https://services.sentinel-hub.com/oauth/token';
+    this.SENTINELHUBCLIENTID = process.env.SENTINELHUBCLIENTID || '';
+    this.SENTINELHUBCLIENTSECRET = process.env.SENTINELHUBCLIENTSECRET || '';
 
-    this._oauthToken = null; // { access_token, expires_at }
-    this._jobs = new Map(); // in-memory job store { job_id: {...} }
-    this._idempotency = new Map(); // in-memory idem store { keyHash: job_id }
+    this.oauthToken = null; // { accesstoken, expiresat }
+    this.jobs = new Map(); // in-memory job store { jobid: {...} }
+    this.idempotency = new Map(); // in-memory idem store { keyHash: jobid }
   }
 
   async init() {
@@ -47,17 +56,17 @@ class SatelliteService {
 
   // -------------- Helpers: caching, ETag, keys
 
-  _tileKey(z, x, y, date, bandsCsv, cloudLt) {
+  tileKey(z, x, y, date, bandsCsv, cloudLt) {
     const bands = bandsCsv || 'RGB';
     const cl = Number.isFinite(Number(cloudLt)) ? Number(cloudLt) : 20;
     return `satellite:tile:${z}:${x}:${y}:${date}:${bands}:${cl}`;
   }
 
-  _sha1(buf) {
+  sha1(buf) {
     return crypto.createHash('sha1').update(buf).digest('hex');
   }
 
-  async _cacheGetTile(key) {
+  async cacheGetTile(key) {
     const raw = await this.redis.get(key);
     if (!raw) return null;
     try {
@@ -68,24 +77,24 @@ class SatelliteService {
         body,
         etag: parsed.etag,
         contentType: parsed.contentType || 'image/png',
-        cached_at: parsed.cached_at,
+        cachedat: parsed.cachedat,
       };
     } catch {
       return null;
     }
   }
 
-  async _cacheSetTile(key, bodyBuf, contentType, etag) {
+  async cacheSetTile(key, bodyBuf, contentType, etag) {
     const payload = {
       data: bodyBuf.toString('base64'),
       etag,
       contentType: contentType || 'image/png',
-      cached_at: new Date().toISOString(),
+      cachedat: new Date().toISOString(),
     };
     if (typeof this.redis.setEx === 'function') {
-      await this.redis.setEx(key, this.SATELLITE_TILE_TTL_SECONDS, JSON.stringify(payload));
+      await this.redis.setEx(key, this.SATELLITETILETTLSECONDS, JSON.stringify(payload));
     } else {
-      await this.redis.setex(key, this.SATELLITE_TILE_TTL_SECONDS, JSON.stringify(payload));
+      await this.redis.setex(key, this.SATELLITETILETTLSECONDS, JSON.stringify(payload));
     }
   }
 
@@ -108,7 +117,7 @@ class SatelliteService {
     ) {
       throw new ValidationError('Invalid tile coordinates', { z, x, y });
     }
-    const n = Math.pow(2, zInt);
+    const n = 2 ** zInt;
     if (xInt < 0 || xInt >= n || yInt < 0 || yInt >= n) {
       throw new ValidationError('Tile coordinates out of range for zoom', { z, x, y });
     }
@@ -116,8 +125,8 @@ class SatelliteService {
     const lon = (xInt / n) * 360 - 180;
     const lon2 = ((xInt + 1) / n) * 360 - 180;
 
-    const lat1 = this._tile2lat(yInt, n); // top
-    const lat2 = this._tile2lat(yInt + 1, n); // bottom
+    const lat1 = this.tile2lat(yInt, n); // top
+    const lat2 = this.tile2lat(yInt + 1, n); // bottom
 
     const minLon = lon;
     const maxLon = lon2;
@@ -127,7 +136,7 @@ class SatelliteService {
     return [minLon, minLat, maxLon, maxLat];
   }
 
-  _tile2lat(y, n) {
+  tile2lat(y, n) {
     const pi = Math.PI;
     const latRad = Math.atan(Math.sinh(pi * (1 - (2 * y) / n)));
     return (latRad * 180) / Math.PI;
@@ -135,34 +144,36 @@ class SatelliteService {
 
   // -------------- OAuth
 
-  async _getOAuthToken() {
-    if (!this.SENTINELHUB_CLIENT_ID || !this.SENTINELHUB_CLIENT_SECRET) {
+  async getOAuthToken() {
+    if (!this.SENTINELHUBCLIENTID || !this.SENTINELHUBCLIENTSECRET) {
       // For Sprint 2 tests, allow proceeding when axios is mocked
-      logger.warn('Sentinel Hub credentials are not configured; proceeding for test/mocked environment');
+      logger.warn(
+        'Sentinel Hub credentials are not configured; proceeding for test/mocked environment'
+      );
     }
     const now = Date.now();
-    if (this._oauthToken && this._oauthToken.expires_at - 30000 > now) {
-      return this._oauthToken.access_token;
+    if (this.oauthToken && this.oauthToken.expiresat - 30000 > now) {
+      return this.oauthToken.accesstoken;
     }
     const form = new URLSearchParams();
-    form.set('grant_type', 'client_credentials');
-    form.set('client_id', this.SENTINELHUB_CLIENT_ID);
-    form.set('client_secret', this.SENTINELHUB_CLIENT_SECRET);
+    form.set('granttype', 'clientcredentials');
+    form.set('clientid', this.SENTINELHUBCLIENTID);
+    form.set('clientsecret', this.SENTINELHUBCLIENTSECRET);
 
-    const resp = await axios.post(this.SENTINELHUB_TOKEN_URL, form.toString(), {
+    const resp = await axios.post(this.SENTINELHUBTOKENURL, form.toString(), {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       timeout: 10000,
-      validateStatus: (s) => s >= 200 && s < 500,
+      validateStatus: s => s >= 200 && s < 500,
     });
     if (resp.status < 200 || resp.status >= 300) {
       const err = new Error(`SentinelHub OAuth error (${resp.status})`);
       err.statusCode = resp.status;
       throw err;
     }
-    const { access_token, expires_in } = resp.data || {};
-    const expires_at = Date.now() + Math.max(30_000, Number(expires_in || 3600) * 1000);
-    this._oauthToken = { access_token, expires_at };
-    return access_token;
+    const { accesstoken, expiresin } = resp.data || {};
+    const expiresat = Date.now() + Math.max(30_000, Number(expiresin || 3600) * 1000);
+    this.oauthToken = { accesstoken, expiresat };
+    return accesstoken;
   }
 
   // -------------- Evalscript / bands mapping
@@ -172,10 +183,11 @@ class SatelliteService {
    * RGB -> B04,B03,B02
    * RED -> B04, GREEN -> B03, BLUE -> B02, NIR -> B08, SWIR -> B11 (example)
    */
-  _buildEvalscript(bandsCsv) {
-    const list = (String(bandsCsv || 'RGB').toUpperCase())
+  buildEvalscript(bandsCsv) {
+    const list = String(bandsCsv || 'RGB')
+      .toUpperCase()
       .split(',')
-      .map((b) => b.trim())
+      .map(b => b.trim())
       .filter(Boolean);
 
     // Default true color if RGB
@@ -204,8 +216,8 @@ class SatelliteService {
       NIR: 'B08',
       SWIR: 'B11',
     };
-    const selected = list.map((b) => map[b] || 'B04');
-    const bandsDecl = selected.map((b) => `"${b}"`).join(', ');
+    const selected = list.map(b => map[b] || 'B04');
+    const bandsDecl = selected.map(b => `"${b}"`).join(', ');
     const bandsCount = selected.length;
 
     return `
@@ -217,14 +229,14 @@ class SatelliteService {
         };
       }
       function evaluatePixel(s) {
-        return [${selected.map((b) => `s.${b}`).join(', ')}];
+        return [${selected.map(b => `s.${b}`).join(', ')}];
       }
     `;
   }
 
   // -------------- Sentinel Hub request
 
-  _buildProcessBody(bbox4326, date, evalscript) {
+  buildProcessBody(bbox4326, date, evalscript) {
     // Minimal Process API body for an image for the given date (time window +/- 1 day)
     const from = `${date}T00:00:00Z`;
     const to = `${date}T23:59:59Z`;
@@ -256,10 +268,10 @@ class SatelliteService {
   }
 
   /**
-   * Fetch tile image bytes for z/x/y/date with bands and cloud_lt (no-op masking for Sprint 2).
+   * Fetch tile image bytes for z/x/y/date with bands and cloudlt (no-op masking for Sprint 2).
    * Applies Redis cache and ETag support (If-None-Match).
    */
-  async getTile({ z, x, y, date, bands = 'RGB', cloud_lt = 20, ifNoneMatch }) {
+  async getTile({ z, x, y, date, bands = 'RGB', cloudlt = 20, ifNoneMatch }) {
     await this.init();
 
     // Validate inputs
@@ -268,32 +280,32 @@ class SatelliteService {
     }
     const bbox = this.tileToBBox(z, x, y);
 
-    const key = this._tileKey(z, x, y, date, String(bands).toUpperCase(), Number(cloud_lt));
-    const cached = await this._cacheGetTile(key);
+    const key = this.tileKey(z, x, y, date, String(bands).toUpperCase(), Number(cloudlt));
+    const cached = await this.cacheGetTile(key);
     if (cached) {
       const headers = {
-        'Cache-Control': `public, max-age=${this.SATELLITE_TILE_TTL_SECONDS}`,
+        'Cache-Control': `public, max-age=${this.SATELLITETILETTLSECONDS}`,
         ETag: cached.etag,
         'Content-Type': cached.contentType,
       };
       if (ifNoneMatch && ifNoneMatch === cached.etag) {
         // 304 Not Modified
-        return { status: 304, headers, body: null, meta: { cache_hit: true, etag: cached.etag } };
+        return { status: 304, headers, body: null, meta: { cachehit: true, etag: cached.etag } };
       }
       return {
         status: 200,
         headers,
         body: cached.body,
-        meta: { cache_hit: true, etag: cached.etag },
+        meta: { cachehit: true, etag: cached.etag },
       };
     }
 
     // Build Sentinel Hub request
-    const evalscript = this._buildEvalscript(bands);
-    const processBody = this._buildProcessBody(bbox, date, evalscript);
+    const evalscript = this.buildEvalscript(bands);
+    const processBody = this.buildProcessBody(bbox, date, evalscript);
 
-    const token = await this._getOAuthToken();
-    const url = `${this.SENTINELHUB_BASE_URL}/api/v1/process`;
+    const token = await this.getOAuthToken();
+    const url = `${this.SENTINELHUBBASEURL}/api/v1/process`;
 
     const start = Date.now();
     const resp = await axios.post(url, processBody, {
@@ -304,14 +316,14 @@ class SatelliteService {
         'Content-Type': 'application/json',
       },
       timeout: 15000,
-      validateStatus: (s) => s >= 200 && s < 500,
+      validateStatus: s => s >= 200 && s < 500,
     });
 
     if (resp.status < 200 || resp.status >= 300) {
       const duration = Date.now() - start;
       logger.error('satellite.tile.error', {
         status: resp.status,
-        duration_ms: duration,
+        durationms: duration,
         route: '/api/v1/satellite/tiles',
       });
       const e = new Error(`Sentinel Hub process error (${resp.status})`);
@@ -320,16 +332,16 @@ class SatelliteService {
     }
 
     const body = Buffer.from(resp.data);
-    const etag = this._sha1(body);
+    const etag = this.sha1(body);
     const contentType = resp.headers['content-type'] || 'image/png';
 
-    await this._cacheSetTile(key, body, contentType, etag);
+    await this.cacheSetTile(key, body, contentType, etag);
 
     const duration = Date.now() - start;
     logger.info('satellite.tile.response', {
       status: 200,
-      duration_ms: duration,
-      cache_hit: false,
+      durationms: duration,
+      cachehit: false,
       etag,
       route: '/api/v1/satellite/tiles',
     });
@@ -337,31 +349,31 @@ class SatelliteService {
     return {
       status: 200,
       headers: {
-        'Cache-Control': `public, max-age=${this.SATELLITE_TILE_TTL_SECONDS}`,
+        'Cache-Control': `public, max-age=${this.SATELLITETILETTLSECONDS}`,
         ETag: etag,
         'Content-Type': contentType,
       },
       body,
-      meta: { cache_hit: false, etag },
+      meta: { cachehit: false, etag },
     };
   }
 
   // -------------- Preprocess job stub
 
-  _uuid() {
+  uuid() {
     return crypto.randomUUID();
   }
 
-  _stableHash(obj) {
+  stableHash(obj) {
     const json = JSON.stringify(obj, Object.keys(obj).sort());
-    return this._sha1(Buffer.from(json));
+    return this.sha1(Buffer.from(json));
   }
 
   /**
    * Queue preprocess job (warming cache for tiles covering bbox at configured zoom).
    * Idempotency: if idempotencyKey provided, ensure same payload returns same job.
    */
-  async queuePreprocess({ bbox, date, bands = ['RGB'], cloud_mask = false }, idempotencyKey) {
+  async queuePreprocess({ bbox, date, bands = ['RGB'], cloudmask = false }, idempotencyKey) {
     await this.init();
 
     // Validate inputs
@@ -390,65 +402,71 @@ class SatelliteService {
     // Idempotency
     let idemKeyHash = null;
     if (idempotencyKey) {
-      idemKeyHash = this._stableHash({ idempotencyKey, bbox, date, bands: bandsCsv, cloud_mask: !!cloud_mask });
+      idemKeyHash = this.stableHash({
+        idempotencyKey,
+        bbox,
+        date,
+        bands: bandsCsv,
+        cloudmask: !!cloudmask,
+      });
       // In-memory map (Sprint 2 acceptable)
-      if (this._idempotency.has(idemKeyHash)) {
-        const existingId = this._idempotency.get(idemKeyHash);
-        const job = this._jobs.get(existingId);
+      if (this.idempotency.has(idemKeyHash)) {
+        const existingId = this.idempotency.get(idemKeyHash);
+        const job = this.jobs.get(existingId);
         if (job) {
-          return { job_id: job.job_id, status: job.status };
+          return { jobid: job.jobid, status: job.status };
         }
       }
     }
 
-    const job_id = this._uuid();
+    const jobid = this.uuid();
     const now = new Date().toISOString();
     const job = {
-      job_id,
+      jobid,
       status: 'queued',
       bbox: [minLon, minLat, maxLon, maxLat],
       date,
-      bands: bandsCsv.split(',').map((b) => b.trim()),
-      cloud_mask: !!cloud_mask,
-      created_at: now,
-      updated_at: now,
+      bands: bandsCsv.split(',').map(b => b.trim()),
+      cloudmask: !!cloudmask,
+      createdat: now,
+      updatedat: now,
     };
-    this._jobs.set(job_id, job);
-    if (idemKeyHash) this._idempotency.set(idemKeyHash, job_id);
+    this.jobs.set(jobid, job);
+    if (idemKeyHash) this.idempotency.set(idemKeyHash, jobid);
 
     // Fire-and-forget worker
     setTimeout(() => {
-      this._runPreprocess(job_id).catch((err) => {
-        const j = this._jobs.get(job_id);
+      this.runPreprocess(jobid).catch(err => {
+        const j = this.jobs.get(jobid);
         if (j) {
           j.status = 'failed';
-          j.updated_at = new Date().toISOString();
+          j.updatedat = new Date().toISOString();
           j.error = err.message;
-          this._jobs.set(job_id, j);
+          this.jobs.set(jobid, j);
         }
       });
     }, 0);
 
-    return { job_id, status: 'queued' };
+    return { jobid, status: 'queued' };
   }
 
-  getJob(job_id) {
-    const j = this._jobs.get(job_id);
+  getJob(jobid) {
+    const j = this.jobs.get(jobid);
     if (!j) return null;
-    return { job_id: j.job_id, status: j.status, updated_at: j.updated_at };
+    return { jobid: j.jobid, status: j.status, updatedat: j.updatedat };
   }
 
   // Worker: warm tiles for bbox at configured zoom
-  async _runPreprocess(job_id) {
-    const job = this._jobs.get(job_id);
+  async runPreprocess(jobid) {
+    const job = this.jobs.get(jobid);
     if (!job) return;
     job.status = 'processing';
-    job.updated_at = new Date().toISOString();
-    this._jobs.set(job_id, job);
+    job.updatedat = new Date().toISOString();
+    this.jobs.set(jobid, job);
 
-    const z = this.SATELLITE_PREPROCESS_ZOOM;
-    const tiles = this._tilesForBBox(job.bbox, z);
-    const limited = tiles.slice(0, this.SATELLITE_MAX_PREPROCESS_TILES);
+    const z = this.SATELLITEPREPROCESSZOOM;
+    const tiles = this.tilesForBBox(job.bbox, z);
+    const limited = tiles.slice(0, this.SATELLITEMAXPREPROCESSTILES);
 
     for (const { x, y } of limited) {
       try {
@@ -459,7 +477,7 @@ class SatelliteService {
           y,
           date: job.date,
           bands: job.bands.join(','),
-          cloud_lt: 20,
+          cloudlt: 20,
           ifNoneMatch: null,
         });
       } catch (err) {
@@ -469,17 +487,17 @@ class SatelliteService {
     }
 
     job.status = 'completed';
-    job.updated_at = new Date().toISOString();
-    this._jobs.set(job_id, job);
+    job.updatedat = new Date().toISOString();
+    this.jobs.set(jobid, job);
   }
 
   // Compute tile indices covering bbox at zoom z
-  _tilesForBBox([minLon, minLat, maxLon, maxLat], z) {
+  tilesForBBox([minLon, minLat, maxLon, maxLat], z) {
     const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
-    const n = Math.pow(2, z);
+    const n = 2 ** z;
 
-    const xtile = (lon) => Math.floor(((lon + 180) / 360) * n);
-    const ytile = (lat) => {
+    const xtile = lon => Math.floor(((lon + 180) / 360) * n);
+    const ytile = lat => {
       const latRad = (lat * Math.PI) / 180;
       return Math.floor(
         ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n

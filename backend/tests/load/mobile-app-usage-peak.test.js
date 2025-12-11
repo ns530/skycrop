@@ -3,34 +3,34 @@ import { check, sleep } from 'k6';
 import { Rate, Trend } from 'k6/metrics';
 
 // Custom metrics
-const mobileSessionSuccessRate = new Rate('mobile_session_success');
-const apiCallDuration = new Trend('api_call_duration');
+const mobileSessionSuccessRate = new Rate('mobilesessionsuccess');
+const apiCallDuration = new Trend('apicallduration');
 
 // Test configuration
 export const options = {
   scenarios: {
-    mobile_app_usage_peak: {
+    mobileappusagepeak: {
       executor: 'ramping-vus',
       stages: [
-        { duration: '1m', target: 20 },   // Warm up
-        { duration: '3m', target: 100 },  // Ramp up to moderate load
-        { duration: '5m', target: 200 },  // Peak load - 200 concurrent mobile sessions
-        { duration: '3m', target: 100 },  // Ramp down
-        { duration: '1m', target: 0 },    // Cool down
+        { duration: '1m', target: 20 }, // Warm up
+        { duration: '3m', target: 100 }, // Ramp up to moderate load
+        { duration: '5m', target: 200 }, // Peak load - 200 concurrent mobile sessions
+        { duration: '3m', target: 100 }, // Ramp down
+        { duration: '1m', target: 0 }, // Cool down
       ],
-      tags: { test_type: 'mobile_app_usage_peak' },
+      tags: { testtype: 'mobileappusagepeak' },
     },
   },
   thresholds: {
-    http_req_duration: ['p(95)<3000'], // 95% of requests should be below 3s
-    http_req_failed: ['rate<0.05'],    // Error rate should be below 5%
-    mobile_session_success: ['rate>0.95'], // 95% session success rate
-    api_call_duration: ['p(95)<5000'], // 95% under 5s
+    httpreqduration: ['p(95)<3000'], // 95% of requests should be below 3s
+    httpreqfailed: ['rate<0.05'], // Error rate should be below 5%
+    mobilesessionsuccess: ['rate>0.95'], // 95% session success rate
+    apicallduration: ['p(95)<5000'], // 95% under 5s
   },
 };
 
 // Base URL from environment
-const BASE_URL = __ENV.BASE_URL || 'http://localhost:3000/api/v1';
+const BASEURL = ENV.BASEURL || 'http://localhost:3000/api/v1';
 
 // Mobile user agents for realistic testing
 const mobileUserAgents = [
@@ -55,51 +55,66 @@ export function setup() {
       name: `Mobile Test User ${i}`,
     };
 
-    const registerResponse = http.post(`${BASE_URL}/auth/register`, JSON.stringify(userData), {
+    const registerResponse = http.post(`${BASEURL}/auth/register`, JSON.stringify(userData), {
       headers: { 'Content-Type': 'application/json' },
     });
 
     if (registerResponse.status === 201) {
-      const loginResponse = http.post(`${BASE_URL}/auth/login`, JSON.stringify({
-        email: userData.email,
-        password: userData.password,
-      }), {
-        headers: { 'Content-Type': 'application/json' },
-      });
+      const loginResponse = http.post(
+        `${BASEURL}/auth/login`,
+        JSON.stringify({
+          email: userData.email,
+          password: userData.password,
+        }),
+        {
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
 
       if (loginResponse.status === 200) {
-        const token = loginResponse.json().token;
+        const token = loginResponseon().token;
         testUsers.push({ email: userData.email, token });
 
         // Create a field for this user
-        const coords = { lat: 7.8731 + (Math.random() - 0.5) * 0.1, lng: 80.7718 + (Math.random() - 0.5) * 0.1 };
+        const coords = {
+          lat: 7.8731 + (Math.random() - 0.5) * 0.1,
+          lng: 80.7718 + (Math.random() - 0.5) * 0.1,
+        };
 
-        const boundaryResponse = http.post(`${BASE_URL}/fields/detect-boundary`, JSON.stringify({
-          latitude: coords.lat,
-          longitude: coords.lng,
-        }), {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          timeout: '70s',
-        });
-
-        if (boundaryResponse.status === 200) {
-          const fieldResponse = http.post(`${BASE_URL}/fields`, JSON.stringify({
-            name: `Mobile Field ${i + 1}`,
-            boundary: boundaryResponse.json().boundary,
-          }), {
+        const boundaryResponse = http.post(
+          `${BASEURL}/fields/detect-boundary`,
+          JSON.stringify({
+            latitude: coords.lat,
+            longitude: coords.lng,
+          }),
+          {
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`,
+              Authorization: `Bearer ${token}`,
             },
-          });
+            timeout: '70s',
+          }
+        );
+
+        if (boundaryResponse.status === 200) {
+          const fieldResponse = http.post(
+            `${BASEURL}/fields`,
+            JSON.stringify({
+              name: `Mobile Field ${i + 1}`,
+              boundary: boundaryResponseon().boundary,
+            }),
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
 
           if (fieldResponse.status === 201) {
             testFields.push({
               userEmail: userData.email,
-              fieldId: fieldResponse.json().field.id,
+              field_id: fieldResponseon().field.id,
               token: token,
             });
           }
@@ -126,13 +141,13 @@ export default function (data) {
   // Select random field and user
   const testField = testFields[Math.floor(Math.random() * testFields.length)];
   const token = testField.token;
-  const fieldId = testField.fieldId;
+  const field_id = testField.field_id;
 
   // Random mobile user agent
   const userAgent = mobileUserAgents[Math.floor(Math.random() * mobileUserAgents.length)];
 
   const baseHeaders = {
-    'Authorization': `Bearer ${token}`,
+    Authorization: `Bearer ${token}`,
     'User-Agent': userAgent,
     'X-Platform': 'mobile',
     'X-App-Version': '1.0.0',
@@ -144,62 +159,72 @@ export default function (data) {
   let sessionSuccess = true;
 
   // 1. Get dashboard (field list)
-  const dashboardResponse = http.get(`${BASE_URL}/fields`, {
+  const dashboardResponse = http.get(`${BASEURL}/fields`, {
     headers: baseHeaders,
   });
 
-  sessionSuccess = sessionSuccess && check(dashboardResponse, {
-    'dashboard status is 200': (r) => r.status === 200,
-    'dashboard has fields array': (r) => Array.isArray(r.json().fields),
-  });
+  sessionSuccess =
+    sessionSuccess &&
+    check(dashboardResponse, {
+      'dashboard status is 200': r => r.status === 200,
+      'dashboard has fields array': r => Array.isArray(ron().fields),
+    });
 
   sleep(Math.random() * 2 + 1); // 1-3 second delay
 
   // 2. Get field details
-  const fieldResponse = http.get(`${BASE_URL}/fields/${fieldId}`, {
+  const fieldResponse = http.get(`${BASEURL}/fields/${field_id}`, {
     headers: baseHeaders,
   });
 
-  sessionSuccess = sessionSuccess && check(fieldResponse, {
-    'field details status is 200': (r) => r.status === 200,
-    'field has health data': (r) => r.json().field.hasOwnProperty('health'),
-  });
+  sessionSuccess =
+    sessionSuccess &&
+    check(fieldResponse, {
+      'field details status is 200': r => r.status === 200,
+      'field has health data': r => ron().field.hasOwnProperty('health'),
+    });
 
   sleep(Math.random() * 1 + 0.5); // 0.5-1.5 second delay
 
   // 3. Get recommendations
-  const recommendationsResponse = http.get(`${BASE_URL}/fields/${fieldId}/recommendations`, {
+  const recommendationsResponse = http.get(`${BASEURL}/fields/${field_id}/recommendations`, {
     headers: baseHeaders,
   });
 
-  sessionSuccess = sessionSuccess && check(recommendationsResponse, {
-    'recommendations status is 200': (r) => r.status === 200,
-  });
+  sessionSuccess =
+    sessionSuccess &&
+    check(recommendationsResponse, {
+      'recommendations status is 200': r => r.status === 200,
+    });
 
   sleep(Math.random() * 1 + 0.5); // 0.5-1.5 second delay
 
   // 4. Get weather forecast (30% of sessions)
   if (Math.random() < 0.3) {
-    const weatherResponse = http.get(`${BASE_URL}/weather/forecast?field_id=${fieldId}`, {
+    const weatherResponse = http.get(`${BASEURL}/weather/forecast?field_id=${field_id}`, {
       headers: baseHeaders,
     });
 
-    sessionSuccess = sessionSuccess && check(weatherResponse, {
-      'weather status is 200': (r) => r.status === 200,
-    });
+    sessionSuccess =
+      sessionSuccess &&
+      check(weatherResponse, {
+        'weather status is 200': r => r.status === 200,
+      });
 
     sleep(Math.random() * 1 + 0.5);
   }
 
   // 5. Get yield prediction (20% of sessions)
   if (Math.random() < 0.2) {
-    const yieldResponse = http.get(`${BASE_URL}/fields/${fieldId}/yield-prediction`, {
+    const yieldResponse = http.get(`${BASEURL}/fields/${field_id}/yield-prediction`, {
       headers: baseHeaders,
     });
 
-    sessionSuccess = sessionSuccess && check(yieldResponse, {
-      'yield prediction status is 200': (r) => r.status === 200,
-    });
+    sessionSuccess =
+      sessionSuccess &&
+      check(yieldResponse, {
+        'yield prediction status is 200': r => r.status === 200,
+      });
 
     sleep(Math.random() * 1 + 0.5);
   }
@@ -213,7 +238,7 @@ export default function (data) {
 
   // Log failures for debugging
   if (!sessionSuccess) {
-    console.log(`Mobile session failed for field ${fieldId}: Incomplete session`);
+    console.log(`Mobile session failed for field ${field_id}: Incomplete session`);
   }
 
   // Random delay between sessions (simulating user think time)

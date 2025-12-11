@@ -1,11 +1,13 @@
-'use strict';
-
 const axios = require('axios');
 
 // In-memory fake Redis
 const store = new Map();
 function matchPattern(key, pattern) {
-  const re = new RegExp('^' + String(pattern).replace(/[.+^${}()|[\\]\\\\]/g, '\\$&').replace(/\\\*/g, '.*') + '$');
+  const re = new RegExp(
+    `^${String(pattern)
+      .replace(/[.+^${}()|[\\]\\\\]/g, '\\$&')
+      .replace(/\\\*/g, '.*')}$`
+  );
   return re.test(key);
 }
 const fakeRedis = {
@@ -13,7 +15,7 @@ const fakeRedis = {
   async get(key) {
     return store.has(key) ? store.get(key) : null;
   },
-  async setEx(key, _ttl, value) {
+  async setEx(key, ttl, value) {
     store.set(key, value);
     return 'OK';
   },
@@ -36,12 +38,12 @@ const fakeRedis = {
     store.set(key, String(next));
     return next;
   },
-  async expire(_key, _ttl) {
+  async expire(key, ttl) {
     return 1;
   },
-  async scan(_cursor, opts = {}) {
+  async scan(cursor, opts = {}) {
     const { MATCH } = opts || {};
-    const keys = Array.from(store.keys()).filter((k) => (!MATCH ? true : matchPattern(k, MATCH)));
+    const keys = Array.from(store.keys()).filter(k => (!MATCH ? true : matchPattern(k, MATCH)));
     return ['0', keys];
   },
 };
@@ -83,8 +85,8 @@ describe('WeatherService branch coverage lift', () => {
       field_id: 'fid-1',
       coord: { lat: 7.21, lon: 80.11 },
       current: { temp: 30 },
-      source: 'openweathermap_onecall',
-      fetched_at: new Date().toISOString(),
+      source: 'openweathermaponecall',
+      fetchedat: new Date().toISOString(),
     };
     await fakeRedis.setEx(cacheKey, 21600, JSON.stringify(cached));
 
@@ -118,7 +120,7 @@ describe('WeatherService branch coverage lift', () => {
 
   test('getCurrentByField: 5xx error retries and ends as SERVICE_UNAVAILABLE 503', async () => {
     // Avoid real timer waits on backoff
-    jest.spyOn(global, 'setTimeout').mockImplementation((fn) => {
+    jest.spyOn(global, 'setTimeout').mockImplementation(fn => {
       // call immediately
       fn();
       return 0;

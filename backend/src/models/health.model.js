@@ -5,29 +5,29 @@ const { sequelize } = require('../config/database.config');
 
 /**
  * HealthRecord Model
- * Mirrors PostgreSQL "health_records" table defined in database/init.sql
+ * Mirrors PostgreSQL "healthrecords" table defined in database/init.sql
  *
  * Columns:
- * - record_id UUID PK
+ * - recordid UUID PK
  * - field_id UUID FK (fields.field_id)
- * - measurement_date DATE
- * - ndvi_* / ndwi_* / tdvi_mean DECIMAL(5,4)
- * - health_status ENUM('excellent','good','fair','poor')
- * - health_score INTEGER (0-100)
+ * - measurementdate DATE
+ * - ndvi_* / ndwi_* / tdvimean DECIMAL(5,4)
+ * - healthstatus ENUM('excellent','good','fair','poor')
+ * - healthscore INTEGER (0-100)
  * - trend ENUM('improving','stable','declining')
- * - satellite_image_id VARCHAR(100)
- * - cloud_cover DECIMAL(5,2)
- * - created_at TIMESTAMP
+ * - satelliteimageid VARCHAR(100)
+ * - cloudcover DECIMAL(5,2)
+ * - createdat TIMESTAMP
  *
  * Constraints/Indexes:
- * - UNIQUE(field_id, measurement_date)
- * - INDEX(field_id, measurement_date DESC)
- * - INDEX(health_status)
+ * - UNIQUE(field_id, measurementdate)
+ * - INDEX(field_id, measurementdate DESC)
+ * - INDEX(healthstatus)
  */
 const HealthRecord = sequelize.define(
   'HealthRecord',
   {
-    record_id: {
+    recordid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
@@ -36,51 +36,51 @@ const HealthRecord = sequelize.define(
       type: DataTypes.UUID,
       allowNull: false,
     },
-    measurement_date: {
+    measurementdate: {
       type: DataTypes.DATEONLY,
       allowNull: false,
     },
-    ndvi_mean: {
+    ndvimean: {
       type: DataTypes.DECIMAL(5, 4),
       allowNull: false,
     },
-    ndvi_min: {
+    ndvimin: {
       type: DataTypes.DECIMAL(5, 4),
       allowNull: false,
     },
-    ndvi_max: {
+    ndvimax: {
       type: DataTypes.DECIMAL(5, 4),
       allowNull: false,
     },
-    ndvi_std: {
+    ndvistd: {
       type: DataTypes.DECIMAL(5, 4),
       allowNull: false,
     },
-    ndwi_mean: {
+    ndwimean: {
       type: DataTypes.DECIMAL(5, 4),
       allowNull: false,
     },
-    ndwi_min: {
+    ndwimin: {
       type: DataTypes.DECIMAL(5, 4),
       allowNull: false,
     },
-    ndwi_max: {
+    ndwimax: {
       type: DataTypes.DECIMAL(5, 4),
       allowNull: false,
     },
-    ndwi_std: {
+    ndwistd: {
       type: DataTypes.DECIMAL(5, 4),
       allowNull: false,
     },
-    tdvi_mean: {
+    tdvimean: {
       type: DataTypes.DECIMAL(5, 4),
       allowNull: false,
     },
-    health_status: {
+    healthstatus: {
       type: DataTypes.ENUM('excellent', 'good', 'fair', 'poor'),
       allowNull: false,
     },
-    health_score: {
+    healthscore: {
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: {
@@ -92,32 +92,32 @@ const HealthRecord = sequelize.define(
       type: DataTypes.ENUM('improving', 'stable', 'declining'),
       allowNull: false,
     },
-    satellite_image_id: {
+    satelliteimageid: {
       type: DataTypes.STRING(100),
       allowNull: false,
     },
-    cloud_cover: {
+    cloudcover: {
       type: DataTypes.DECIMAL(5, 2),
       allowNull: false,
     },
-    created_at: {
+    createdat: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: literal('NOW()'),
     },
   },
   {
-    tableName: 'health_records',
-    timestamps: false, // created_at managed, no updated_at in schema
+    tableName: 'healthrecords',
+    timestamps: false, // createdat managed, no updatedat in schema
     underscored: true,
     freezeTableName: true,
     indexes: [
-      // Uniqueness per (field_id, measurement_date)
-      { unique: true, fields: ['field_id', 'measurement_date'] },
+      // Uniqueness per (field_id, measurementdate)
+      { unique: true, fields: ['field_id', 'measurementdate'] },
       // Fast latest-by-date per field
-      { fields: ['field_id', { name: 'measurement_date', order: 'DESC' }] },
+      { fields: ['field_id', { name: 'measurementdate', order: 'DESC' }] },
       // Filter by status
-      { fields: ['health_status'] },
+      { fields: ['healthstatus'] },
     ],
   }
 );

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 export interface OnlineStatus {
   isOnline: boolean;
@@ -13,7 +13,7 @@ export interface OnlineStatus {
  * - Defaults to "online" during SSR or when the API is unavailable
  */
 const getInitialOnlineStatus = (): boolean => {
-  if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+  if (typeof window === "undefined" || typeof navigator === "undefined") {
     return true;
   }
 
@@ -21,20 +21,22 @@ const getInitialOnlineStatus = (): boolean => {
 };
 
 export const useOnlineStatus = (): OnlineStatus => {
-  const [isOnline, setIsOnline] = useState<boolean>(() => getInitialOnlineStatus());
+  const [isOnline, setIsOnline] = useState<boolean>(() =>
+    getInitialOnlineStatus(),
+  );
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, []);
 

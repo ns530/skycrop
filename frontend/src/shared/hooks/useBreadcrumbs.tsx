@@ -1,7 +1,11 @@
-import React from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import React from "react";
+import { useLocation, Link } from "react-router-dom";
 
-import { allRoutes, findRouteByPath, AppRouteConfig } from '../../config/routes.config';
+import {
+  allRoutes,
+  findRouteByPath,
+  AppRouteConfig,
+} from "../../config/routes.config";
 
 export interface BreadcrumbItem {
   label: string;
@@ -25,22 +29,25 @@ export const useBreadcrumbs = (): BreadcrumbItem[] => {
     const { pathname } = location;
 
     // Special-case root and dashboard mapping
-    if (pathname === '/' || pathname === '/dashboard') {
-      const dashboardRoute = allRoutes.find((r) => r.path === '/dashboard');
+    if (pathname === "/" || pathname === "/dashboard") {
+      const dashboardRoute = allRoutes.find((r) => r.path === "/dashboard");
       return [
         {
-          label: dashboardRoute?.breadcrumbLabel ?? dashboardRoute?.label ?? 'Dashboard',
-          path: '/dashboard',
+          label:
+            dashboardRoute?.breadcrumbLabel ??
+            dashboardRoute?.label ??
+            "Dashboard",
+          path: "/dashboard",
           isCurrent: true,
           route: dashboardRoute,
         },
       ];
     }
 
-    const segments = pathname.split('/').filter(Boolean);
+    const segments = pathname.split("/").filter(Boolean);
     const crumbs: BreadcrumbItem[] = [];
 
-    let currentPath = '';
+    let currentPath = "";
     segments.forEach((segment, index) => {
       currentPath += `/${segment}`;
       const route = findRouteByPath(currentPath);
@@ -48,7 +55,9 @@ export const useBreadcrumbs = (): BreadcrumbItem[] => {
       const labelFromRoute = route?.breadcrumbLabel ?? route?.label;
       const labelFallback =
         // Replace dynamic params like :fieldId with generic labels
-        segment.startsWith(':') ? segment.slice(1) : segment.charAt(0).toUpperCase() + segment.slice(1);
+        segment.startsWith(":")
+          ? segment.slice(1)
+          : segment.charAt(0).toUpperCase() + segment.slice(1);
 
       const isLast = index === segments.length - 1;
 
@@ -85,7 +94,10 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items }) => {
 
           if (isLast) {
             return (
-              <li key={crumb.path} className="flex items-center gap-1 text-gray-900 font-medium">
+              <li
+                key={crumb.path}
+                className="flex items-center gap-1 text-gray-900 font-medium"
+              >
                 {index > 0 && <span aria-hidden="true">/</span>}
                 <span aria-current="page">{crumb.label}</span>
               </li>

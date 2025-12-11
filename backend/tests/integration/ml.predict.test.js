@@ -1,22 +1,20 @@
-'use strict';
-
 const request = require('supertest');
 const axios = require('axios');
 
 // Mock rate limiter to no-op for tests
 jest.mock('../../src/api/middleware/rateLimit.middleware', () => ({
-  apiLimiter: (_req, _res, next) => next(),
-  authLimiter: (_req, _res, next) => next(),
+  apiLimiter: (req, res, next) => next(),
+  authLimiter: (req, res, next) => next(),
 }));
 
 // Mock auth middleware to inject a test user
 jest.mock('../../src/api/middleware/auth.middleware', () => ({
-  authMiddleware: (req, _res, next) => {
-    req.user = { userId: 'user-1' };
+  authMiddleware: (req, res, next) => {
+    req.user = { user_id: 'user-1' };
     next();
   },
-  requireRole: () => (_req, _res, next) => next(),
-  requireAnyRole: () => (_req, _res, next) => next(),
+  requireRole: () => (req, res, next) => next(),
+  requireAnyRole: () => (req, res, next) => next(),
 }));
 
 // In-memory fake Redis
@@ -26,11 +24,11 @@ const fakeRedisClient = {
   async get(key) {
     return redisStore.has(key) ? redisStore.get(key) : null;
   },
-  async setEx(key, _ttl, value) {
+  async setEx(key, ttl, value) {
     redisStore.set(key, value);
     return 'OK';
   },
-  async setex(key, _ttl, value) {
+  async setex(key, ttl, value) {
     redisStore.set(key, value);
     return 'OK';
   },
@@ -42,11 +40,11 @@ jest.mock('../../src/config/redis.config', () => ({
 }));
 
 process.env.NODE_ENV = 'test';
-process.env.JWT_SECRET = 'test-secret';
-process.env.ML_BASE_URL = 'http://ml-service.local:80';
-process.env.ML_INTERNAL_TOKEN = 'test-internal-token';
-process.env.ML_PREDICT_CACHE_TTL_SECONDS = '86400';
-process.env.ML_REQUEST_TIMEOUT_MS = '60000';
+process.env.JWTSECRET = 'test-secret';
+process.env.MLBASEURL = 'http://ml-service.local:80';
+process.env.MLINTERNALTOKEN = 'test-internal-token';
+process.env.MLPREDICTCACHETTLSECONDS = '86400';
+process.env.MLREQUESTTIMEOUTMS = '60000';
 
 const app = require('../../src/app');
 
@@ -56,17 +54,19 @@ describe('POST /api/v1/ml/segmentation/predict', () => {
     jest.clearAllMocks();
   });
 
-  it('happy path (bbox, mask_url): cache miss then hit', async () => {
-    const spy = jest.spyOn(axios, 'post').mockImplementation(async (_url, body) => {
+  it('happy path (bbox, maskurl): cache miss then hit', async () => {
+    const spy = jest.spyOn(axios, 'post').mockImplementation(async (url, body) => {
       return {
         status: 200,
-        headers: { 'x-model-version': body.model_version ? `unet-${body.model_version}` : 'unet-1.0.0' },
+        headers: {
+          'x-model-version': body.modelversion ? `unet-${body.modelversion}` : 'unet-1.0.0',
+        },
         data: {
-          request_id: 'req-abc',
-          model: { name: 'unet', version: body.model_version || '1.0.0' },
-          mask_url: 'http://ml.local/masks/req-abc.geojson',
-          mask_format: 'geojson',
-          metrics: { latency_ms: 100, tile_count: 1, cloud_coverage: 0.0 },
+          requestid: 'req-abc',
+          model: { name: 'unet', version: body.modelversion || '1.0.0' },
+          maskurl: 'http://ml.local/masks/req-abc.geojson',
+          maskformat: 'geojson',
+          metrics: { latencyms: 100, tilecount: 1, cloudcoverage: 0.0 },
           warnings: [],
         },
       };
@@ -75,8 +75,8 @@ describe('POST /api/v1/ml/segmentation/predict', () => {
     const payload = {
       bbox: [80.1, 7.2, 80.12, 7.22],
       date: '2025-10-15',
-      model_version: '1.0.0',
-      return: 'mask_url',
+      modelversion: '1.0.0',
+      return: 'maskurl',
     };
 
     const res1 = await request(app)
@@ -88,11 +88,11 @@ describe('POST /api/v1/ml/segmentation/predict', () => {
 
     expect(res1.body.success).toBe(true);
     expect(res1.body.data).toMatchObject({
-      mask_url: expect.any(String),
-      mask_format: 'geojson',
+      maskurl: expect.any(String),
+      maskformat: 'geojson',
       model: { name: 'unet', version: '1.0.0' },
     });
-    expect(res1.body.meta).toMatchObject({ cache_hit: false, correlation_id: 'req-1' });
+    expect(res1.body.meta).toMatchObject({ cachehit: false, correlationid: 'req-1' });
     expect(spy).toHaveBeenCalledTimes(1);
 
     const res2 = await request(app)
@@ -102,23 +102,25 @@ describe('POST /api/v1/ml/segmentation/predict', () => {
       .send(payload)
       .expect(200);
 
-    expect(res2.body.meta).toMatchObject({ cache_hit: true, correlation_id: 'req-2' });
+    expect(res2.body.meta).toMatchObject({ cachehit: true, correlationid: 'req-2' });
     // downstream axios not called again due to cache
     expect(spy).toHaveBeenCalledTimes(1);
   });
 
-  it('inline return: returns mask_base64 and mask_format=geojson', async () => {
-    jest.spyOn(axios, 'post').mockImplementation(async (_url, body) => {
+  it('inline return: returns maskbase64 and maskformat=geojson', async () => {
+    jest.spyOn(axios, 'post').mockImplementation(async (url, body) => {
       if (body.return === 'inline') {
         return {
           status: 200,
           headers: { 'x-model-version': 'unet-1.0.0' },
           data: {
-            request_id: 'req-inline',
+            requestid: 'req-inline',
             model: { name: 'unet', version: '1.0.0' },
-            mask_base64: Buffer.from(JSON.stringify({ type: 'FeatureCollection', features: [] })).toString('base64'),
-            mask_format: 'geojson',
-            metrics: { latency_ms: 80, tile_count: 1, cloud_coverage: 0.0 },
+            maskbase64: Buffer.from(
+              JSON.stringify({ type: 'FeatureCollection', features: [] })
+            ).toString('base64'),
+            maskformat: 'geojson',
+            metrics: { latencyms: 80, tilecount: 1, cloudcoverage: 0.0 },
             warnings: [],
           },
         };
@@ -126,7 +128,7 @@ describe('POST /api/v1/ml/segmentation/predict', () => {
       return {
         status: 500,
         headers: {},
-        data: { error: { code: 'UPSTREAM_ERROR', message: 'unexpected' } },
+        data: { error: { code: 'UPSTREAMERROR', message: 'unexpected' } },
       };
     });
 
@@ -142,9 +144,9 @@ describe('POST /api/v1/ml/segmentation/predict', () => {
       .expect(200);
 
     expect(res.body.success).toBe(true);
-    expect(res.body.data).toHaveProperty('mask_base64');
-    expect(res.body.data.mask_format).toBe('geojson');
-    expect(res.body.meta).toMatchObject({ correlation_id: 'inline-1' });
+    expect(res.body.data).toHaveProperty('maskbase64');
+    expect(res.body.data.maskformat).toBe('geojson');
+    expect(res.body.meta).toMatchObject({ correlationid: 'inline-1' });
   });
 
   it('validation: both bbox and field_id -> 400', async () => {
@@ -159,7 +161,7 @@ describe('POST /api/v1/ml/segmentation/predict', () => {
       .expect(400);
 
     expect(res.body.success).toBe(false);
-    expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    expect(res.body.error.code).toBe('VALIDATIONERROR');
   });
 
   it('validation: neither bbox nor field_id -> 400', async () => {
@@ -172,7 +174,7 @@ describe('POST /api/v1/ml/segmentation/predict', () => {
       .expect(400);
 
     expect(res.body.success).toBe(false);
-    expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    expect(res.body.error.code).toBe('VALIDATIONERROR');
   });
 
   it('validation: bad bbox ranges -> 400', async () => {
@@ -186,14 +188,16 @@ describe('POST /api/v1/ml/segmentation/predict', () => {
       .expect(400);
 
     expect(res.body.success).toBe(false);
-    expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    expect(res.body.error.code).toBe('VALIDATIONERROR');
   });
 
-  it('downstream error mapping: 400 INVALID_INPUT', async () => {
+  it('downstream error mapping: 400 INVALIDINPUT', async () => {
     jest.spyOn(axios, 'post').mockResolvedValue({
       status: 400,
       headers: {},
-      data: { error: { code: 'INVALID_INPUT', message: 'bbox invalid', details: { bbox: 'min>=max' } } },
+      data: {
+        error: { code: 'INVALIDINPUT', message: 'bbox invalid', details: { bbox: 'min>=max' } },
+      },
     });
 
     const res = await request(app)
@@ -206,14 +210,20 @@ describe('POST /api/v1/ml/segmentation/predict', () => {
       .expect(400);
 
     expect(res.body.success).toBe(false);
-    expect(res.body.error.code).toBe('INVALID_INPUT');
+    expect(res.body.error.code).toBe('INVALIDINPUT');
   });
 
-  it('downstream error mapping: 404 MODEL_NOT_FOUND', async () => {
+  it('downstream error mapping: 404 MODELNOTFOUND', async () => {
     jest.spyOn(axios, 'post').mockResolvedValue({
       status: 404,
       headers: {},
-      data: { error: { code: 'MODEL_NOT_FOUND', message: 'not available', details: { requested: '9.9.9' } } },
+      data: {
+        error: {
+          code: 'MODELNOTFOUND',
+          message: 'not available',
+          details: { requested: '9.9.9' },
+        },
+      },
     });
 
     const res = await request(app)
@@ -222,11 +232,11 @@ describe('POST /api/v1/ml/segmentation/predict', () => {
       .send({
         bbox: [80.1, 7.2, 80.12, 7.22],
         date: '2025-10-10',
-        model_version: '9.9.9',
+        modelversion: '9.9.9',
       })
       .expect(404);
 
-    expect(res.body.error.code).toBe('MODEL_NOT_FOUND');
+    expect(res.body.error.code).toBe('MODELNOTFOUND');
   });
 
   it('downstream error mapping: 504 TIMEOUT', async () => {
@@ -248,11 +258,11 @@ describe('POST /api/v1/ml/segmentation/predict', () => {
     expect(res.body.error.code).toBe('TIMEOUT');
   });
 
-  it('downstream error mapping: 501 NOT_IMPLEMENTED', async () => {
+  it('downstream error mapping: 501 NOTIMPLEMENTED', async () => {
     jest.spyOn(axios, 'post').mockResolvedValue({
       status: 501,
       headers: {},
-      data: { error: { code: 'NOT_IMPLEMENTED', message: 'field_id not supported' } },
+      data: { error: { code: 'NOTIMPLEMENTED', message: 'field_id not supported' } },
     });
 
     const res = await request(app)
@@ -264,19 +274,19 @@ describe('POST /api/v1/ml/segmentation/predict', () => {
       })
       .expect(501);
 
-    expect(res.body.error.code).toBe('NOT_IMPLEMENTED');
+    expect(res.body.error.code).toBe('NOTIMPLEMENTED');
   });
 
-  it('propagates X-Request-Id into meta.correlation_id', async () => {
+  it('propagates X-Request-Id into meta.correlationid', async () => {
     jest.spyOn(axios, 'post').mockResolvedValue({
       status: 200,
       headers: { 'x-model-version': 'unet-1.0.0' },
       data: {
-        request_id: 'req-xyz',
+        requestid: 'req-xyz',
         model: { name: 'unet', version: '1.0.0' },
-        mask_url: 'http://ml.local/masks/req-xyz.geojson',
-        mask_format: 'geojson',
-        metrics: { latency_ms: 50, tile_count: 1, cloud_coverage: 0.0 },
+        maskurl: 'http://ml.local/masks/req-xyz.geojson',
+        maskformat: 'geojson',
+        metrics: { latencyms: 50, tilecount: 1, cloudcoverage: 0.0 },
         warnings: [],
       },
     });
@@ -291,6 +301,6 @@ describe('POST /api/v1/ml/segmentation/predict', () => {
       })
       .expect(200);
 
-    expect(res.body.meta.correlation_id).toBe('corr-xyz');
+    expect(res.body.meta.correlationid).toBe('corr-xyz');
   });
 });

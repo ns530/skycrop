@@ -1,8 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
-import { X, Shield, Check, Minus } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { useQuery } from "@tanstack/react-query";
+import { X, Shield, Check, Minus } from "lucide-react";
+import React, { useEffect, useState } from "react";
 
-import { httpClient } from '../../../shared/api/httpClient';
+import { httpClient } from "../../../shared/api/httpClient";
 
 interface PermissionMatrixModalProps {
   isOpen: boolean;
@@ -33,9 +33,9 @@ export const PermissionMatrixModal: React.FC<PermissionMatrixModalProps> = ({
 }) => {
   // Fetch role hierarchy
   const { data: rolesData, isLoading } = useQuery<{ data: RoleHierarchy }>({
-    queryKey: ['admin', 'roles'],
+    queryKey: ["admin", "roles"],
     queryFn: async () => {
-      const response = await httpClient.get('/admin/users/roles');
+      const response = await httpClient.get("/admin/users/roles");
       return response.data;
     },
     enabled: isOpen,
@@ -46,8 +46,8 @@ export const PermissionMatrixModal: React.FC<PermissionMatrixModalProps> = ({
     const resources = new Set<string>();
     Object.values(roles).forEach((role) => {
       role.permissions.forEach((perm: string) => {
-        if (perm !== '*') {
-          const [resource] = perm.split('.');
+        if (perm !== "*") {
+          const [resource] = perm.split(".");
           resources.add(resource);
         }
       });
@@ -57,9 +57,13 @@ export const PermissionMatrixModal: React.FC<PermissionMatrixModalProps> = ({
   };
 
   // Check if role has permission
-  const hasPermission = (role: RoleInfo, resource: string, action: string): boolean => {
-    if (role.permissions.includes('*')) return true;
-    
+  const hasPermission = (
+    role: RoleInfo,
+    resource: string,
+    action: string,
+  ): boolean => {
+    if (role.permissions.includes("*")) return true;
+
     const fullPermission = `${resource}.${action}`;
     const ownPermission = `${resource}.${action}_own`;
     const allPermission = `${resource}.${action}_all`;
@@ -74,7 +78,11 @@ export const PermissionMatrixModal: React.FC<PermissionMatrixModalProps> = ({
   };
 
   // Get permission icon
-  const getPermissionIcon = (role: RoleInfo, resource: string, action: string) => {
+  const getPermissionIcon = (
+    role: RoleInfo,
+    resource: string,
+    action: string,
+  ) => {
     if (!hasPermission(role, resource, action)) {
       return <Minus className="h-4 w-4 text-gray-300" />;
     }
@@ -85,7 +93,9 @@ export const PermissionMatrixModal: React.FC<PermissionMatrixModalProps> = ({
       return (
         <div className="relative">
           <Check className="h-4 w-4 text-yellow-500" />
-          <span className="absolute -top-1 -right-1 text-xs text-yellow-600 font-bold">*</span>
+          <span className="absolute -top-1 -right-1 text-xs text-yellow-600 font-bold">
+            *
+          </span>
         </div>
       );
     }
@@ -94,7 +104,9 @@ export const PermissionMatrixModal: React.FC<PermissionMatrixModalProps> = ({
   };
 
   const resources = rolesData?.data ? groupPermissions(rolesData.data) : [];
-  const roles = rolesData?.data ? Object.keys(rolesData.data) as Array<keyof RoleHierarchy> : [];
+  const roles = rolesData?.data
+    ? (Object.keys(rolesData.data) as Array<keyof RoleHierarchy>)
+    : [];
 
   if (!isOpen) return null;
 
@@ -128,10 +140,10 @@ export const PermissionMatrixModal: React.FC<PermissionMatrixModalProps> = ({
                 {roles.map((roleKey) => {
                   const role = rolesData.data[roleKey];
                   const colors = {
-                    admin: 'bg-purple-50 border-purple-200 text-purple-800',
-                    manager: 'bg-blue-50 border-blue-200 text-blue-800',
-                    farmer: 'bg-green-50 border-green-200 text-green-800',
-                    viewer: 'bg-gray-50 border-gray-200 text-gray-800',
+                    admin: "bg-purple-50 border-purple-200 text-purple-800",
+                    manager: "bg-blue-50 border-blue-200 text-blue-800",
+                    farmer: "bg-green-50 border-green-200 text-green-800",
+                    viewer: "bg-gray-50 border-gray-200 text-gray-800",
                   };
 
                   return (
@@ -139,7 +151,9 @@ export const PermissionMatrixModal: React.FC<PermissionMatrixModalProps> = ({
                       key={roleKey}
                       className={`border-2 rounded-lg p-4 ${colors[roleKey]}`}
                     >
-                      <h4 className="font-semibold text-sm mb-1">{role.name}</h4>
+                      <h4 className="font-semibold text-sm mb-1">
+                        {role.name}
+                      </h4>
                       <p className="text-xs opacity-80">{role.description}</p>
                     </div>
                   );
@@ -148,7 +162,9 @@ export const PermissionMatrixModal: React.FC<PermissionMatrixModalProps> = ({
 
               {/* Legend */}
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
-                <h4 className="font-semibold text-sm text-gray-700 mb-2">Legend</h4>
+                <h4 className="font-semibold text-sm text-gray-700 mb-2">
+                  Legend
+                </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
                   <div className="flex items-center">
                     <Check className="h-4 w-4 text-green-500 mr-2" />
@@ -157,7 +173,9 @@ export const PermissionMatrixModal: React.FC<PermissionMatrixModalProps> = ({
                   <div className="flex items-center">
                     <div className="relative mr-2">
                       <Check className="h-4 w-4 text-yellow-500" />
-                      <span className="absolute -top-1 -right-1 text-xs text-yellow-600 font-bold">*</span>
+                      <span className="absolute -top-1 -right-1 text-xs text-yellow-600 font-bold">
+                        *
+                      </span>
                     </div>
                     <span className="text-gray-600">Own resources only</span>
                   </div>
@@ -199,10 +217,21 @@ export const PermissionMatrixModal: React.FC<PermissionMatrixModalProps> = ({
                           </td>
                         </tr>
                         {/* Actions */}
-                        {['create', 'read', 'update', 'delete', 'generate', 'predict'].map((action) => {
+                        {[
+                          "create",
+                          "read",
+                          "update",
+                          "delete",
+                          "generate",
+                          "predict",
+                        ].map((action) => {
                           // Check if any role has this action for this resource
                           const hasAction = roles.some((roleKey) =>
-                            hasPermission(rolesData.data[roleKey], resource, action)
+                            hasPermission(
+                              rolesData.data[roleKey],
+                              resource,
+                              action,
+                            ),
                           );
 
                           if (!hasAction) return null;
@@ -210,14 +239,19 @@ export const PermissionMatrixModal: React.FC<PermissionMatrixModalProps> = ({
                           return (
                             <tr key={`${resource}.${action}`}>
                               <td className="px-4 py-2 text-sm text-gray-700 border-r border-gray-200">
-                                {action.charAt(0).toUpperCase() + action.slice(1)}
+                                {action.charAt(0).toUpperCase() +
+                                  action.slice(1)}
                               </td>
                               {roles.map((roleKey) => (
                                 <td
                                   key={roleKey}
                                   className="px-4 py-2 text-center border-gray-200"
                                 >
-                                  {getPermissionIcon(rolesData.data[roleKey], resource, action)}
+                                  {getPermissionIcon(
+                                    rolesData.data[roleKey],
+                                    resource,
+                                    action,
+                                  )}
                                 </td>
                               ))}
                             </tr>
@@ -252,4 +286,3 @@ export const PermissionMatrixModal: React.FC<PermissionMatrixModalProps> = ({
 };
 
 export default PermissionMatrixModal;
-

@@ -1,10 +1,14 @@
-import React, { useMemo } from 'react';
+import React, { useMemo } from "react";
 
-import { useToast } from '../../../shared/hooks/useToast';
-import { Button } from '../../../shared/ui/Button';
-import { Card } from '../../../shared/ui/Card';
-import type { ServiceStatusLevel } from '../api/adminApi';
-import { useAdminUsers, useAdminContent, useSystemStatus } from '../hooks/useAdmin';
+import { useToast } from "../../../shared/hooks/useToast";
+import { Button } from "../../../shared/ui/Button";
+import { Card } from "../../../shared/ui/Card";
+import type { ServiceStatusLevel } from "../api/adminApi";
+import {
+  useAdminUsers,
+  useAdminContent,
+  useSystemStatus,
+} from "../hooks/useAdmin";
 
 /**
  * AdminOverviewPage
@@ -13,42 +17,44 @@ import { useAdminUsers, useAdminContent, useSystemStatus } from '../hooks/useAdm
  * - Surfaces key metrics (users, content) using admin APIs
  * - Shows aggregate system health for API, ML, and satellite ingest services
  */
-const mapServiceToCardStatus = (status?: ServiceStatusLevel): 'default' | 'excellent' | 'fair' | 'poor' => {
+const mapServiceToCardStatus = (
+  status?: ServiceStatusLevel,
+): "default" | "excellent" | "fair" | "poor" => {
   switch (status) {
-    case 'up':
-      return 'excellent';
-    case 'degraded':
-      return 'fair';
-    case 'down':
-      return 'poor';
+    case "up":
+      return "excellent";
+    case "degraded":
+      return "fair";
+    case "down":
+      return "poor";
     default:
-      return 'default';
+      return "default";
   }
 };
 
 const mapServiceToLabel = (status?: ServiceStatusLevel): string => {
   switch (status) {
-    case 'up':
-      return 'OK';
-    case 'degraded':
-      return 'Degraded';
-    case 'down':
-      return 'Down';
+    case "up":
+      return "OK";
+    case "degraded":
+      return "Degraded";
+    case "down":
+      return "Down";
     default:
-      return 'Unknown';
+      return "Unknown";
   }
 };
 
 const mapServiceToBadgeClasses = (status?: ServiceStatusLevel): string => {
   switch (status) {
-    case 'up':
-      return 'inline-flex items-center rounded-full bg-status-excellent/10 px-2 py-0.5 text-xs font-medium text-status-excellent';
-    case 'degraded':
-      return 'inline-flex items-center rounded-full bg-status-fair/10 px-2 py-0.5 text-xs font-medium text-status-fair';
-    case 'down':
-      return 'inline-flex items-center rounded-full bg-status-poor/10 px-2 py-0.5 text-xs font-medium text-status-poor';
+    case "up":
+      return "inline-flex items-center rounded-full bg-status-excellent/10 px-2 py-0.5 text-xs font-medium text-status-excellent";
+    case "degraded":
+      return "inline-flex items-center rounded-full bg-status-fair/10 px-2 py-0.5 text-xs font-medium text-status-fair";
+    case "down":
+      return "inline-flex items-center rounded-full bg-status-poor/10 px-2 py-0.5 text-xs font-medium text-status-poor";
     default:
-      return 'inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500';
+      return "inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500";
   }
 };
 
@@ -91,15 +97,17 @@ export const AdminOverviewPage: React.FC = () => {
     try {
       await refetchSystemStatus();
       showToast({
-        title: 'System status refreshed',
-        variant: 'success',
+        title: "System status refreshed",
+        variant: "success",
       });
     } catch (err) {
       const apiError = statusError ?? (err as Error);
       showToast({
-        title: 'Failed to refresh system status',
-        description: apiError?.message ?? 'Something went wrong while checking system status.',
-        variant: 'error',
+        title: "Failed to refresh system status",
+        description:
+          apiError?.message ??
+          "Something went wrong while checking system status.",
+        variant: "error",
       });
     }
   };
@@ -113,7 +121,11 @@ export const AdminOverviewPage: React.FC = () => {
       return (
         <div className="flex flex-col gap-2 text-sm">
           <p className="text-red-600">Unable to load system status.</p>
-          <Button size="sm" variant="secondary" onClick={handleRetrySystemStatus}>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={handleRetrySystemStatus}
+          >
             Retry
           </Button>
         </div>
@@ -121,14 +133,20 @@ export const AdminOverviewPage: React.FC = () => {
     }
 
     if (!systemStatus) {
-      return <p className="text-sm text-gray-500">System status is currently unavailable.</p>;
+      return (
+        <p className="text-sm text-gray-500">
+          System status is currently unavailable.
+        </p>
+      );
     }
 
     return (
       <dl className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-3">
         <div className="flex items-center justify-between gap-2">
           <dt className="text-gray-600">API</dt>
-          <dd className={mapServiceToBadgeClasses(systemStatus.api)}>{mapServiceToLabel(systemStatus.api)}</dd>
+          <dd className={mapServiceToBadgeClasses(systemStatus.api)}>
+            {mapServiceToLabel(systemStatus.api)}
+          </dd>
         </div>
         <div className="flex items-center justify-between gap-2">
           <dt className="text-gray-600">ML service</dt>
@@ -138,7 +156,9 @@ export const AdminOverviewPage: React.FC = () => {
         </div>
         <div className="flex items-center justify-between gap-2">
           <dt className="text-gray-600">Satellite ingest</dt>
-          <dd className={mapServiceToBadgeClasses(systemStatus.satelliteIngest)}>
+          <dd
+            className={mapServiceToBadgeClasses(systemStatus.satelliteIngest)}
+          >
             {mapServiceToLabel(systemStatus.satelliteIngest)}
           </dd>
         </div>
@@ -149,41 +169,51 @@ export const AdminOverviewPage: React.FC = () => {
   return (
     <section aria-labelledby="admin-overview-heading" className="space-y-4">
       <header className="space-y-1">
-        <h1 id="admin-overview-heading" className="text-lg font-semibold text-gray-900">
+        <h1
+          id="admin-overview-heading"
+          className="text-lg font-semibold text-gray-900"
+        >
           Admin overview
         </h1>
         <p className="text-sm text-gray-600">
-          System status and key metrics for SkyCrop. Use this dashboard to monitor platform health and activity.
+          System status and key metrics for SkyCrop. Use this dashboard to
+          monitor platform health and activity.
         </p>
       </header>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <Card title="Active farmers" showStatusStripe status="excellent">
           <p className="text-2xl font-semibold text-gray-900">
-            {activeFarmersCount ?? '—'}
+            {activeFarmersCount ?? "—"}
           </p>
           <p className="mt-1 text-xs text-gray-500">
-            Approximated using total user count. Filtering by role/status will be wired in a future iteration.
+            Approximated using total user count. Filtering by role/status will
+            be wired in a future iteration.
           </p>
         </Card>
 
         <Card title="Fields monitored" showStatusStripe status="fair">
           <p className="text-2xl font-semibold text-gray-900">—</p>
           <p className="mt-1 text-xs text-gray-500">
-            Placeholder metric. Will be derived from field inventories in a future iteration.
+            Placeholder metric. Will be derived from field inventories in a
+            future iteration.
           </p>
         </Card>
 
         <Card title="Content items" showStatusStripe status="excellent">
           <p className="text-2xl font-semibold text-gray-900">
-            {contentItemsCount ?? '—'}
+            {contentItemsCount ?? "—"}
           </p>
           <p className="mt-1 text-xs text-gray-500">
             Total news and articles currently managed in the system.
           </p>
         </Card>
 
-        <Card title="System health" showStatusStripe status={mapServiceToCardStatus(systemStatus?.api)}>
+        <Card
+          title="System health"
+          showStatusStripe
+          status={mapServiceToCardStatus(systemStatus?.api)}
+        >
           {renderSystemSummary()}
           {isStatusFetching && (
             <p className="mt-2 text-xs text-gray-500">Refreshing status…</p>
@@ -199,10 +229,15 @@ export const AdminOverviewPage: React.FC = () => {
         {isStatusError && !systemStatus && (
           <div className="flex flex-col gap-3 text-sm">
             <p className="text-red-600">
-              Unable to load system status: {statusError?.message ?? 'Unknown error'}.
+              Unable to load system status:{" "}
+              {statusError?.message ?? "Unknown error"}.
             </p>
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="secondary" onClick={handleRetrySystemStatus}>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={handleRetrySystemStatus}
+              >
                 Retry
               </Button>
             </div>
@@ -218,11 +253,12 @@ export const AdminOverviewPage: React.FC = () => {
               className="border-0 shadow-none"
             >
               <p className="text-sm text-gray-700">
-                {systemStatus.api === 'up' && 'Core APIs are responding within expected latency.'}
-                {systemStatus.api === 'degraded' &&
-                  'API is degraded. Expect slower responses and occasional timeouts.'}
-                {systemStatus.api === 'down' &&
-                  'API is currently unavailable. Farmers may not be able to access latest data.'}
+                {systemStatus.api === "up" &&
+                  "Core APIs are responding within expected latency."}
+                {systemStatus.api === "degraded" &&
+                  "API is degraded. Expect slower responses and occasional timeouts."}
+                {systemStatus.api === "down" &&
+                  "API is currently unavailable. Farmers may not be able to access latest data."}
               </p>
             </Card>
 
@@ -233,12 +269,12 @@ export const AdminOverviewPage: React.FC = () => {
               className="border-0 shadow-none"
             >
               <p className="text-sm text-gray-700">
-                {systemStatus.mlService === 'up' &&
-                  'Model predictions for health and yield are running normally.'}
-                {systemStatus.mlService === 'degraded' &&
-                  'ML service is degraded. Recommendations may be slower than usual.'}
-                {systemStatus.mlService === 'down' &&
-                  'ML service is unavailable. Health insights and recommendations may be stale.'}
+                {systemStatus.mlService === "up" &&
+                  "Model predictions for health and yield are running normally."}
+                {systemStatus.mlService === "degraded" &&
+                  "ML service is degraded. Recommendations may be slower than usual."}
+                {systemStatus.mlService === "down" &&
+                  "ML service is unavailable. Health insights and recommendations may be stale."}
               </p>
             </Card>
 
@@ -249,12 +285,12 @@ export const AdminOverviewPage: React.FC = () => {
               className="border-0 shadow-none"
             >
               <p className="text-sm text-gray-700">
-                {systemStatus.satelliteIngest === 'up' &&
-                  'Satellite scenes are being ingested and processed as expected.'}
-                {systemStatus.satelliteIngest === 'degraded' &&
-                  'Satellite ingest is degraded. Expect delays before new imagery appears.'}
-                {systemStatus.satelliteIngest === 'down' &&
-                  'Satellite ingest is down. New acquisitions will not be processed until this is resolved.'}
+                {systemStatus.satelliteIngest === "up" &&
+                  "Satellite scenes are being ingested and processed as expected."}
+                {systemStatus.satelliteIngest === "degraded" &&
+                  "Satellite ingest is degraded. Expect delays before new imagery appears."}
+                {systemStatus.satelliteIngest === "down" &&
+                  "Satellite ingest is down. New acquisitions will not be processed until this is resolved."}
               </p>
             </Card>
           </div>

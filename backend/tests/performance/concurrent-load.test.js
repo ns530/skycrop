@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Performance Testing - Concurrent Load
  * Simulates concurrent user requests to verify performance
@@ -9,23 +7,23 @@ const request = require('supertest');
 
 // Mock auth
 jest.mock('../../src/api/middleware/auth.middleware', () => ({
-  authMiddleware: (req, _res, next) => {
-    req.user = { userId: 'perf-test-user' };
+  authMiddleware: (req, res, next) => {
+    req.user = { user_id: 'perf-test-user' };
     next();
   },
-  requireRole: () => (_req, _res, next) => next(),
-  requireAnyRole: () => (_req, _res, next) => next(),
+  requireRole: () => (req, res, next) => next(),
+  requireAnyRole: () => (req, res, next) => next(),
 }));
 
 jest.mock('../../src/api/middleware/rateLimit.middleware', () => ({
-  apiLimiter: (_req, _res, next) => next(),
-  authLimiter: (_req, _res, next) => next(),
+  apiLimiter: (req, res, next) => next(),
+  authLimiter: (req, res, next) => next(),
 }));
 
 const app = require('../../src/app');
 
 describe('Performance Tests - Concurrent Load', () => {
-  const testFieldId = 'perf-field-123';
+  const testfield_id = 'perf-field-123';
 
   beforeAll(() => {
     process.env.NODE_ENV = 'test';
@@ -34,12 +32,14 @@ describe('Performance Tests - Concurrent Load', () => {
   describe('Health API Performance', () => {
     it('should handle 50 concurrent health history requests', async () => {
       const startTime = Date.now();
-      
-      const requests = Array(50).fill(null).map(() => 
-        request(app)
-          .get(`/api/v1/fields/${testFieldId}/health/history`)
-          .query({ start: '2024-01-01', end: '2024-01-31' })
-      );
+
+      const requests = Array(50)
+        .fill(null)
+        .map(() =>
+          request(app)
+            .get(`/api/v1/fields/${testfield_id}/health/history`)
+            .query({ start: '2024-01-01', end: '2024-01-31' })
+        );
 
       const responses = await Promise.all(requests);
       const duration = Date.now() - startTime;
@@ -63,12 +63,14 @@ describe('Performance Tests - Concurrent Load', () => {
   describe('Recommendation API Performance', () => {
     it('should handle 30 concurrent recommendation requests', async () => {
       const startTime = Date.now();
-      
-      const requests = Array(30).fill(null).map(() => 
-        request(app)
-          .get(`/api/v1/fields/${testFieldId}/recommendations`)
-          .query({ page: 1, pageSize: 20 })
-      );
+
+      const requests = Array(30)
+        .fill(null)
+        .map(() =>
+          request(app)
+            .get(`/api/v1/fields/${testfield_id}/recommendations`)
+            .query({ page: 1, pageSize: 20 })
+        );
 
       const responses = await Promise.all(requests);
       const duration = Date.now() - startTime;
@@ -82,7 +84,7 @@ describe('Performance Tests - Concurrent Load', () => {
       console.log(`Total Duration: ${duration}ms`);
       console.log(`Avg Response Time: ${avgResponseTime.toFixed(2)}ms`);
 
-      expect(successful).toBeGreaterThanOrEqual(requests.length * 0.90); // 90% success rate
+      expect(successful).toBeGreaterThanOrEqual(requests.length * 0.9); // 90% success rate
       expect(avgResponseTime).toBeLessThan(1000); // <1s average
     });
   });
@@ -90,10 +92,10 @@ describe('Performance Tests - Concurrent Load', () => {
   describe('Notification API Performance', () => {
     it('should handle 100 concurrent queue stats requests', async () => {
       const startTime = Date.now();
-      
-      const requests = Array(100).fill(null).map(() => 
-        request(app).get('/api/v1/notifications/queue/stats')
-      );
+
+      const requests = Array(100)
+        .fill(null)
+        .map(() => request(app).get('/api/v1/notifications/queue/stats'));
 
       const responses = await Promise.all(requests);
       const duration = Date.now() - startTime;
@@ -115,24 +117,32 @@ describe('Performance Tests - Concurrent Load', () => {
   describe('Mixed Workload Performance', () => {
     it('should handle mixed API requests concurrently', async () => {
       const startTime = Date.now();
-      
+
       const requests = [
         // Health API requests (20)
-        ...Array(20).fill(null).map(() => 
-          request(app).get(`/api/v1/fields/${testFieldId}/health/history`).query({ start: '2024-01-01', end: '2024-01-31' })
-        ),
+        ...Array(20)
+          .fill(null)
+          .map(() =>
+            request(app)
+              .get(`/api/v1/fields/${testfield_id}/health/history`)
+              .query({ start: '2024-01-01', end: '2024-01-31' })
+          ),
         // Recommendation API requests (15)
-        ...Array(15).fill(null).map(() => 
-          request(app).get(`/api/v1/fields/${testFieldId}/recommendations`).query({ page: 1 })
-        ),
+        ...Array(15)
+          .fill(null)
+          .map(() =>
+            request(app).get(`/api/v1/fields/${testfield_id}/recommendations`).query({ page: 1 })
+          ),
         // Notification API requests (25)
-        ...Array(25).fill(null).map(() => 
-          request(app).get('/api/v1/notifications/queue/stats')
-        ),
+        ...Array(25)
+          .fill(null)
+          .map(() => request(app).get('/api/v1/notifications/queue/stats')),
         // Yield API requests (10)
-        ...Array(10).fill(null).map(() => 
-          request(app).get(`/api/v1/fields/${testFieldId}/yield/predictions`).query({ limit: 5 })
-        ),
+        ...Array(10)
+          .fill(null)
+          .map(() =>
+            request(app).get(`/api/v1/fields/${testfield_id}/yield/predictions`).query({ limit: 5 })
+          ),
       ];
 
       const responses = await Promise.all(requests);
@@ -148,15 +158,15 @@ describe('Performance Tests - Concurrent Load', () => {
       console.log(`Avg Response Time: ${avgResponseTime.toFixed(2)}ms`);
       console.log(`Throughput: ${(requests.length / (duration / 1000)).toFixed(2)} req/s`);
 
-      expect(successful).toBeGreaterThanOrEqual(requests.length * 0.90); // 90% success rate
+      expect(successful).toBeGreaterThanOrEqual(requests.length * 0.9); // 90% success rate
     });
   });
 
   describe('Stress Test - High Load', () => {
     it('should survive 200 concurrent requests without crashing', async () => {
-      const requests = Array(200).fill(null).map(() => 
-        request(app).get('/health')
-      );
+      const requests = Array(200)
+        .fill(null)
+        .map(() => request(app).get('/health'));
 
       const responses = await Promise.all(requests);
       const successful = responses.filter(r => r.status === 200).length;
@@ -174,20 +184,19 @@ describe('Performance Tests - Concurrent Load', () => {
 
 /**
  * Performance Test Summary
- * 
+ *
  * Tests:
  * ✅ Health API: 50 concurrent requests
  * ✅ Recommendation API: 30 concurrent requests
  * ✅ Notification API: 100 concurrent requests
  * ✅ Mixed Workload: 70 concurrent requests across all APIs
  * ✅ Stress Test: 200 concurrent requests
- * 
+ *
  * Performance Targets:
  * - Health API: <500ms average
  * - Recommendation API: <1000ms average
  * - Notification API: <100ms average
  * - Success Rate: >90%
- * 
+ *
  * This provides realistic load simulation for Sprint 3 APIs.
  */
-
