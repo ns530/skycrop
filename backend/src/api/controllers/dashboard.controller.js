@@ -1,120 +1,16 @@
 const { sequelize } = require('../../config/database.config');
-const { getRedisClient, initRedis } = require('../../config/redis.config');
-const { getFieldHealthService } = require('../../services/fieldHealth.service');
-const { getSatelliteService } = require('../../services/satellite.service');
+const { initRedis } = require('../../config/redis.config');
+const { getWeatherService } = require('../../services/weather.service');
+const { getMlGatewayService } = require('../../services/mlGateway.service');
 const { logger } = require('../../utils/logger');
 
 const DASHBOARDCACHETTLSEC = parseInt(process.env.DASHBOARDCACHETTLSEC || '300', 10); // 5 minutes
 
-/**
- * Dashboard Controller
- * Provides aggregated metrics for dashboard display.
- */
-module.exports = {
-  // GET /api/v1/dashboard/metrics
-  async getMetrics(req, res, next) {
-    const started = Date.now();
-    const correlationId = req.headers['x-request-id'] || null;
-    try {
-      const { user_id } = req.user;
-      const cacheKey = `dashboard:metrics:${user_id}`;
-
-      // Try cache first
-      const redis = await initRedis();
-      const cached = await redis.get(cacheKey);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        logger.info('dashboard.metrics.cachehit', {
-          user_id,
-          correlationid: correlationId,
-        });
-        return res.status(200).json({
-          success: true,
-          data: parsed,
-          meta: {
-            correlationid: correlationId,
-            cachehit: true,
-            latencyms: Date.now() - started,
-          },
-        });
-      }
-
-      // Aggregate metrics
-      const metrics = await aggregateDashboardMetrics(user_id);
-
-      // Cache the result
-      await redis.setEx(cacheKey, DASHBOARDCACHETTLSEC, JSON.stringify(metrics));
-
-      const latency = Date.now() - started;
-      logger.info('dashboard.metrics', {
-        user_id,
-        correlationid: correlationId,
-        latencyms: latency,
-        cachehit: false,
-      });
-
-      return res.status(200).json({
-        success: true,
-        data: metrics,
-        meta: {
-          correlationid: correlationId,
-          cachehit: false,
-          latencyms: latency,
-        },
-      });
-    } catch (err) {
-      return next(err);
-    }
-  },
-};
-
-/**
- * Aggregate dashboard metrics from multiple sources
- */
-async function aggregateDashboardMetrics(user_id) {
-  const [
-    fieldMetrics,
-    healthMetrics,
-    alertMetrics,
-    recentActivity,
-    fieldThumbnails,
-    vegetationIndices,
-    systemMetrics,
-    weatherForecast,
-    userAnalytics,
-    disasterAssessment,
-  ] = await Promise.all([
-    getFieldMetrics(user_id),
-    getHealthMetrics(user_id),
-    getAlertMetrics(user_id),
-    getRecentActivity(user_id),
-    getFieldThumbnails(user_id),
-    getVegetationIndices(user_id),
-    getSystemMetrics(),
-    getWeatherForecast(user_id),
-    getUserAnalytics(user_id),
-    getDisasterAssessment(user_id),
-  ]);
-
-  return {
-    fields: fieldMetrics,
-    health: healthMetrics,
-    alerts: alertMetrics,
-    recentactivity: recentActivity,
-    fieldthumbnails: fieldThumbnails,
-    vegetationindices: vegetationIndices,
-    system: systemMetrics,
-    weatherforecast: weatherForecast,
-    useranalytics: userAnalytics,
-    disasterassessment: disasterAssessment,
-    generatedat: new Date().toISOString(),
-  };
-}
 
 /**
  * Get field count and basic info
  */
-async function getFieldMetrics(user_id) {
+async function getFieldMetrics(userId) {
   const result = await sequelize.query(
     `
     SELECT
@@ -123,11 +19,11 @@ async function getFieldMetrics(user_id) {
       SUM(areasqm) as totalareasqm,
       AVG(areasqm) as avgfieldsizesqm
     FROM fields
-    WHERE user_id = :user_id AND status != 'deleted'
+    WHERE user_id = :userId AND status != 'deleted'
     `,
     {
       type: sequelize.QueryTypes.SELECT,
-      replacements: { user_id },
+      replacements: { userId },
     }
   );
 
@@ -147,7 +43,7 @@ async function getFieldMetrics(user_id) {
 /**
  * Get health status summaries
  */
-async function getHealthMetrics(user_id) {
+async function getHealthMetrics(userId) {
   // Get latest health records for all user's fields
   const healthRecords = await sequelize.query(
     `
@@ -161,7 +57,7 @@ async function getHealthMetrics(user_id) {
       f.name as fieldname
     FROM healthrecords hr
     INNER JOIN fields f ON hr.field_id = f.field_id
-    WHERE f.user_id = :user_id AND f.status = 'active'
+    WHERE f.user_id = :userId AND f.status = 'active'
     AND hr.measurementdate = (
       SELECT MAX(hr2.measurementdate)
       FROM healthrecords hr2
@@ -170,7 +66,7 @@ async function getHealthMetrics(user_id) {
     `,
     {
       type: sequelize.QueryTypes.SELECT,
-      replacements: { user_id },
+      replacements: { userId },
     }
   );
 
@@ -211,7 +107,7 @@ async function getHealthMetrics(user_id) {
 /**
  * Get active alerts count (recommendations)
  */
-async function getAlertMetrics(user_id) {
+async function getAlertMetrics(userId) {
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
@@ -226,13 +122,13 @@ async function getAlertMetrics(user_id) {
       COUNT(CASE WHEN type = 'fertilizer' THEN 1 END) as fertilizeralerts
     FROM recommendations r
     INNER JOIN fields f ON r.field_id = f.field_id
-    WHERE f.user_id = :user_id AND f.status = 'active'
+    WHERE f.user_id = :userId AND f.status = 'active'
     AND r.timestamp >= :sevenDaysAgo
     `,
     {
       type: sequelize.QueryTypes.SELECT,
       replacements: {
-        user_id,
+        userId,
         sevenDaysAgo: sevenDaysAgo.toISOString(),
       },
     }
@@ -256,7 +152,7 @@ async function getAlertMetrics(user_id) {
 /**
  * Get recent activity (last 7 days)
  */
-async function getRecentActivity(user_id) {
+async function getRecentActivity(userId) {
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
@@ -271,14 +167,14 @@ async function getRecentActivity(user_id) {
       hr.healthscore
     FROM healthrecords hr
     INNER JOIN fields f ON hr.field_id = f.field_id
-    WHERE f.user_id = :user_id AND f.status = 'active'
+    WHERE f.user_id = :userId AND f.status = 'active'
     AND hr.createdat >= :sevenDaysAgo
     ORDER BY hr.createdat DESC
     LIMIT 10
     `,
     {
       type: sequelize.QueryTypes.SELECT,
-      replacements: { user_id, sevenDaysAgo: sevenDaysAgo.toISOString() },
+      replacements: { userId, sevenDaysAgo: sevenDaysAgo.toISOString() },
     }
   );
 
@@ -293,14 +189,14 @@ async function getRecentActivity(user_id) {
       r.severity
     FROM recommendations r
     INNER JOIN fields f ON r.field_id = f.field_id
-    WHERE f.user_id = :user_id AND f.status = 'active'
+    WHERE f.user_id = :userId AND f.status = 'active'
     AND r.createdat >= :sevenDaysAgo
     ORDER BY r.createdat DESC
     LIMIT 10
     `,
     {
       type: sequelize.QueryTypes.SELECT,
-      replacements: { user_id, sevenDaysAgo: sevenDaysAgo.toISOString() },
+      replacements: { userId, sevenDaysAgo: sevenDaysAgo.toISOString() },
     }
   );
 
@@ -323,9 +219,7 @@ async function getRecentActivity(user_id) {
 /**
  * Get field thumbnails (satellite image URLs)
  */
-async function getFieldThumbnails(user_id) {
-  const satelliteService = getSatelliteService();
-
+async function getFieldThumbnails(userId) {
   // Get fields with their centers for thumbnail generation
   const fields = await sequelize.query(
     `
@@ -335,13 +229,13 @@ async function getFieldThumbnails(user_id) {
       STAsGeoJSON(f.center)::json as center,
       f.areasqm
     FROM fields f
-    WHERE f.user_id = :user_id AND f.status = 'active'
+    WHERE f.user_id = :userId AND f.status = 'active'
     ORDER BY f.createdat DESC
     LIMIT 12
     `,
     {
       type: sequelize.QueryTypes.SELECT,
-      replacements: { user_id },
+      replacements: { userId },
     }
   );
 
@@ -351,7 +245,7 @@ async function getFieldThumbnails(user_id) {
         const { center } = field;
         if (!center || !center.coordinates) {
           return {
-            field_id: field.field_id,
+            fieldId: field.field_id,
             fieldname: field.name,
             thumbnailurl: null,
             areahectares: Math.round((field.areasqm / 10000) * 100) / 100,
@@ -381,18 +275,18 @@ async function getFieldThumbnails(user_id) {
         const thumbnailurl = `/api/v1/satellite/tiles/${zoom}/${x}/${y}?date=${today}&bands=RGB`;
 
         return {
-          field_id: field.field_id,
+          fieldId: field.field_id,
           fieldname: field.name,
           thumbnailurl,
           areahectares: Math.round((field.areasqm / 10000) * 100) / 100,
         };
       } catch (error) {
         logger.warn('dashboard.thumbnail.error', {
-          field_id: field.field_id,
+          fieldId: field.field_id,
           error: error.message,
         });
         return {
-          field_id: field.field_id,
+          fieldId: field.field_id,
           fieldname: field.name,
           thumbnailurl: null,
           areahectares: Math.round((field.areasqm / 10000) * 100) / 100,
@@ -407,7 +301,7 @@ async function getFieldThumbnails(user_id) {
 /**
  * Get vegetation indices (NDVI, NDWI, TDVI) averages
  */
-async function getVegetationIndices(user_id) {
+async function getVegetationIndices(userId) {
   const result = await sequelize.query(
     `
     SELECT
@@ -417,12 +311,12 @@ async function getVegetationIndices(user_id) {
       COUNT(*) as totalrecords
     FROM healthrecords hr
     INNER JOIN fields f ON hr.field_id = f.field_id
-    WHERE f.user_id = :user_id AND f.status = 'active'
+    WHERE f.user_id = :userId AND f.status = 'active'
     AND hr.measurementdate >= DATE('now', '-30 days')
     `,
     {
       type: sequelize.QueryTypes.SELECT,
-      replacements: { user_id },
+      replacements: { userId },
     }
   );
 
@@ -468,9 +362,8 @@ async function getSystemMetrics() {
 /**
  * Get weather forecast for user's first field
  */
-async function getWeatherForecast(user_id) {
+async function getWeatherForecast(userId) {
   try {
-    const { getWeatherService } = require('../../services/weather.service');
     const weatherService = getWeatherService();
 
     // Get user's first active field
@@ -478,13 +371,13 @@ async function getWeatherForecast(user_id) {
       `
       SELECT field_id
       FROM fields
-      WHERE user_id = :user_id AND status = 'active'
+      WHERE user_id = :userId AND status = 'active'
       ORDER BY createdat ASC
       LIMIT 1
       `,
       {
         type: sequelize.QueryTypes.SELECT,
-        replacements: { user_id },
+        replacements: { userId },
       }
     );
 
@@ -492,8 +385,8 @@ async function getWeatherForecast(user_id) {
       return { forecast: [], available: false };
     }
 
-    const { field_id } = fieldResult[0];
-    const forecast = await weatherService.getForecast(user_id, field_id);
+    const { field_id: fieldId } = fieldResult[0];
+    const forecast = await weatherService.getForecast(userId, fieldId);
 
     return {
       forecast: forecast.data.days.slice(0, 7),
@@ -509,7 +402,7 @@ async function getWeatherForecast(user_id) {
 /**
  * Get user analytics (mock for now, would integrate with Firebase)
  */
-async function getUserAnalytics(user_id) {
+async function getUserAnalytics(userId) {
   // Mock analytics - in real implementation, fetch from Firebase Analytics
   const result = await sequelize.query(
     `
@@ -520,11 +413,11 @@ async function getUserAnalytics(user_id) {
       MAX(hr.createdat) as lastactivity
     FROM fields f
     LEFT JOIN healthrecords hr ON f.field_id = hr.field_id
-    WHERE f.user_id = :user_id AND f.status = 'active'
+    WHERE f.user_id = :userId AND f.status = 'active'
     `,
     {
       type: sequelize.QueryTypes.SELECT,
-      replacements: { user_id },
+      replacements: { userId },
     }
   );
 
@@ -542,9 +435,8 @@ async function getUserAnalytics(user_id) {
 /**
  * Get disaster assessment (integrate with ML service)
  */
-async function getDisasterAssessment(user_id) {
+async function getDisasterAssessment(userId) {
   try {
-    const { getMlGatewayService } = require('../../services/mlGateway.service');
     const mlService = getMlGatewayService();
 
     // Get user's fields
@@ -552,11 +444,11 @@ async function getDisasterAssessment(user_id) {
       `
       SELECT field_id, name
       FROM fields
-      WHERE user_id = :user_id AND status = 'active'
+      WHERE user_id = :userId AND status = 'active'
       `,
       {
         type: sequelize.QueryTypes.SELECT,
-        replacements: { user_id },
+        replacements: { userId },
       }
     );
 
@@ -570,7 +462,7 @@ async function getDisasterAssessment(user_id) {
         try {
           const assessment = await mlService.getDisasterAssessment(field.field_id);
           return {
-            field_id: field.field_id,
+            fieldId: field.field_id,
             fieldname: field.name,
             risklevel: assessment.risklevel,
             disastertypes: assessment.disastertypes,
@@ -579,7 +471,7 @@ async function getDisasterAssessment(user_id) {
           };
         } catch (error) {
           return {
-            field_id: field.field_id,
+            fieldId: field.field_id,
             fieldname: field.name,
             risklevel: 'unknown',
             disastertypes: [],
@@ -600,3 +492,109 @@ async function getDisasterAssessment(user_id) {
     return { assessments: [], available: false };
   }
 }
+
+/**
+ * Aggregate dashboard metrics from multiple sources
+ */
+async function aggregateDashboardMetrics(userId) {
+  const [
+    fieldMetrics,
+    healthMetrics,
+    alertMetrics,
+    recentActivity,
+    fieldThumbnails,
+    vegetationIndices,
+    systemMetrics,
+    weatherForecast,
+    userAnalytics,
+    disasterAssessment,
+  ] = await Promise.all([
+    getFieldMetrics(userId),
+    getHealthMetrics(userId),
+    getAlertMetrics(userId),
+    getRecentActivity(userId),
+    getFieldThumbnails(userId),
+    getVegetationIndices(userId),
+    getSystemMetrics(),
+    getWeatherForecast(userId),
+    getUserAnalytics(userId),
+    getDisasterAssessment(userId),
+  ]);
+
+  return {
+    fields: fieldMetrics,
+    health: healthMetrics,
+    alerts: alertMetrics,
+    recentactivity: recentActivity,
+    fieldthumbnails: fieldThumbnails,
+    vegetationindices: vegetationIndices,
+    system: systemMetrics,
+    weatherforecast: weatherForecast,
+    useranalytics: userAnalytics,
+    disasterassessment: disasterAssessment,
+    generatedat: new Date().toISOString(),
+  };
+}
+
+/**
+ * Dashboard Controller
+ * Provides aggregated metrics for dashboard display.
+ */
+module.exports = {
+  // GET /api/v1/dashboard/metrics
+  async getMetrics(req, res, next) {
+    const started = Date.now();
+    const correlationId = req.headers['x-request-id'] || null;
+    try {
+      const { user_id: userId } = req.user;
+      const cacheKey = `dashboard:metrics:${userId}`;
+
+      // Try cache first
+      const redis = await initRedis();
+      const cached = await redis.get(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        logger.info('dashboard.metrics.cachehit', {
+          userId,
+          correlationid: correlationId,
+        });
+        return res.status(200).json({
+          success: true,
+          data: parsed,
+          meta: {
+            correlationid: correlationId,
+            cachehit: true,
+            latencyms: Date.now() - started,
+          },
+        });
+      }
+
+      // Aggregate metrics
+      const metrics = await aggregateDashboardMetrics(userId);
+
+      // Cache the result
+      await redis.setEx(cacheKey, DASHBOARDCACHETTLSEC, JSON.stringify(metrics));
+
+      const latency = Date.now() - started;
+      logger.info('dashboard.metrics', {
+        userId,
+        correlationid: correlationId,
+        latencyms: latency,
+        cachehit: false,
+      });
+
+      return res.status(200).json({
+        success: true,
+        data: metrics,
+        meta: {
+          correlationid: correlationId,
+          cachehit: false,
+          latencyms: latency,
+        },
+      });
+    } catch (err) {
+      return next(err);
+    }
+  },
+};
+

@@ -24,14 +24,14 @@ describe('HealthMonitoringService', () => {
   });
 
   describe('analyzeFieldHealth', () => {
-    const field_id = 'field-123';
+    const fieldId = 'field-123';
     const startDate = '2025-01-01';
     const endDate = '2025-01-31';
 
     it('should return comprehensive health analysis for valid field with records', async () => {
       // Mock field exists
       mockFieldModel.findByPk.mockResolvedValue({
-        field_id,
+        field_id: fieldId,
         name: 'Test Field',
         user_id: 'user-123',
       });
