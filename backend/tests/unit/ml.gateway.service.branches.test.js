@@ -37,8 +37,6 @@ describe('MLGatewayService branch coverage lifts', () => {
     post: jest.fn(),
   }));
 
-  const { AppError } = require('../../src/errors/custom-errors');
-
   test('predict caches via setex fallback when return=maskurl and maskurl present; covers validateStatus in callML', async () => {
     const axios = require('axios');
     axios.post.mockReset();

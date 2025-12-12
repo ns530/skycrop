@@ -115,7 +115,7 @@ describe('Additional branch coverage lifts', () => {
         })),
       }));
       jest.doMock('axios', () => ({
-        post: jest.fn(async (url, body) => ({
+        post: jest.fn(async (_url, _body) => ({
           status: 200,
           headers: {},
           data: {

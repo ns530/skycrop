@@ -41,7 +41,7 @@ const fakeRedis = {
     store.set(key, String(next));
     return next;
   },
-  async expire(key, ttl) {
+  async expire(_key, _ttl) {
     return 1;
   },
   async scan(cursor, opts = {}) {

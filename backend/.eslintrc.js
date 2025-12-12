@@ -63,6 +63,19 @@ module.exports = {
       },
     },
     {
+      files: ['tests/unit/**/*.js'],
+      rules: {
+        'global-require': 'off',
+        'no-restricted-syntax': 'off',
+        'no-await-in-loop': 'off',
+        camelcase: 'off',
+        'no-shadow': 'off',
+        'no-continue': 'off',
+        'no-lonely-if': 'off',
+        'no-underscore-dangle': 'off',
+      },
+    },
+    {
       files: ['src/services/**/*.js', 'src/websocket/**/*.js', 'src/app.js', 'src/server.js'],
       rules: {
         camelcase: [

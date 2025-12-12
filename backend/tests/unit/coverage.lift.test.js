@@ -38,7 +38,7 @@ const fakeRedis = {
     store.set(key, String(next));
     return next;
   },
-  async expire(key, ttl) {
+  async expire(_key, _ttl) {
     return 1;
   },
   async scan(cursor, opts = {}) {
@@ -246,7 +246,7 @@ describe('Coverage Lift: SatelliteService preprocess idempotency and worker', ()
     svc = new SatelliteService();
 
     // Mock axios for OAuth and Process API
-    axiosSpy = jest.spyOn(axios, 'post').mockImplementation(async (url, data, config) => {
+    axiosSpy = jest.spyOn(axios, 'post').mockImplementation(async (url, _data, _config) => {
       if (String(url).includes('/oauth/token')) {
         return { status: 200, data: { accesstoken: 'access', expiresin: 3600 } };
       }

@@ -15,10 +15,10 @@ const mockApp = {};
 jest.mock('../../src/app', () => mockApp);
 
 const http = require('http');
-const { initDatabase } = require('../../src/config/database.config');
+const { _initDatabase } = require('../../src/config/database.config');
 const { logger } = require('../../src/utils/logger');
-const { runMigrations } = require('../../src/scripts/migrate');
-const { initializeJobs, startJobs, stopJobs } = require('../../src/jobs');
+const { _runMigrations } = require('../../src/scripts/migrate');
+const { _initializeJobs, _startJobs, stopJobs } = require('../../src/jobs');
 const { initializeWebSocket } = require('../../src/websocket/server');
 
 // Mock server instance

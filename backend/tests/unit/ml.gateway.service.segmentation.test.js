@@ -2,20 +2,20 @@ const axios = require('axios');
 
 // In-memory fake Redis
 const redisStore = new Map();
-let lastSetExTTL = null;
+let _lastSetExTTL = null;
 const fakeRedisClient = {
   isOpen: true,
   async get(key) {
     return redisStore.has(key) ? redisStore.get(key) : null;
   },
   async setEx(key, ttl, value) {
-    lastSetExTTL = ttl;
+    _lastSetExTTL = ttl;
     redisStore.set(key, value);
     return 'OK';
   },
   async setex(key, ttl, value) {
     // compatibility fallback
-    lastSetExTTL = ttl;
+    _lastSetExTTL = ttl;
     redisStore.set(key, value);
     return 'OK';
   },
@@ -37,7 +37,7 @@ describe('MLGatewayService.detectBoundaries Unit', () => {
     jest.resetModules();
     jest.clearAllMocks();
     redisStore.clear();
-    lastSetExTTL = null;
+    _lastSetExTTL = null;
 
     process.env = {
       ...ORIGINALENV,

@@ -84,7 +84,7 @@ describe('Field Controller', () => {
           })
         );
         expect(mockRes.status).toHaveBeenCalledWith(200);
-        expect(mockReson).toHaveBeenCalledWith({
+        expect(mockRes.json).toHaveBeenCalledWith({
           success: true,
           data: [{ id: 'field1', name: 'Field 1' }],
           pagination: { page: 1, pagesize: 20, total: 1 },
@@ -118,7 +118,7 @@ describe('Field Controller', () => {
 
       await fieldController.list(mockReq, mockRes, mockNext);
 
-      expect(mockReson).toHaveBeenCalledWith(
+      expect(mockRes.json).toHaveBeenCalledWith(
         expect.objectContaining({
           meta: expect.objectContaining({
             correlationid: null,
@@ -153,7 +153,7 @@ describe('Field Controller', () => {
         })
       );
       expect(mockRes.status).toHaveBeenCalledWith(201);
-      expect(mockReson).toHaveBeenCalledWith({
+      expect(mockRes.json).toHaveBeenCalledWith({
         success: true,
         data: mockData,
         meta: expect.objectContaining({
@@ -194,7 +194,7 @@ describe('Field Controller', () => {
         })
       );
       expect(mockRes.status).toHaveBeenCalledWith(200);
-      expect(mockReson).toHaveBeenCalledWith({
+      expect(mockRes.json).toHaveBeenCalledWith({
         success: true,
         data: mockData,
         meta: expect.objectContaining({
@@ -239,7 +239,7 @@ describe('Field Controller', () => {
         })
       );
       expect(mockRes.status).toHaveBeenCalledWith(200);
-      expect(mockReson).toHaveBeenCalledWith({
+      expect(mockRes.json).toHaveBeenCalledWith({
         success: true,
         data: mockData,
         meta: expect.objectContaining({
@@ -274,7 +274,7 @@ describe('Field Controller', () => {
         coordinates: [],
       });
       expect(mockRes.status).toHaveBeenCalledWith(200);
-      expect(mockReson).toHaveBeenCalledWith({
+      expect(mockRes.json).toHaveBeenCalledWith({
         success: true,
         data: mockData,
       });
@@ -302,7 +302,7 @@ describe('Field Controller', () => {
 
       expect(mockFieldService.archive).toHaveBeenCalledWith('test-user-id', 'field123');
       expect(mockRes.status).toHaveBeenCalledWith(200);
-      expect(mockReson).toHaveBeenCalledWith({
+      expect(mockRes.json).toHaveBeenCalledWith({
         success: true,
         data: mockData,
       });
@@ -340,7 +340,7 @@ describe('Field Controller', () => {
         })
       );
       expect(mockRes.status).toHaveBeenCalledWith(200);
-      expect(mockReson).toHaveBeenCalledWith({
+      expect(mockRes.json).toHaveBeenCalledWith({
         success: true,
         data: mockData,
         meta: expect.objectContaining({
@@ -370,7 +370,7 @@ describe('Field Controller', () => {
 
       expect(mockFieldService.restore).toHaveBeenCalledWith('test-user-id', 'field123');
       expect(mockRes.status).toHaveBeenCalledWith(200);
-      expect(mockReson).toHaveBeenCalledWith({
+      expect(mockRes.json).toHaveBeenCalledWith({
         success: true,
         data: mockData,
       });

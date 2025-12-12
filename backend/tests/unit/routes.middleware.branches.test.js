@@ -1,3 +1,6 @@
+let responseBody;
+let _response;
+
 describe('Routes middleware branch coverage lifts (ML and Satellite)', () => {
   beforeEach(() => {
     jest.resetModules();
@@ -13,7 +16,7 @@ describe('Routes middleware branch coverage lifts (ML and Satellite)', () => {
       res.statusCode = code;
       return res;
     };
-    response = body => {
+    _response = body => {
       responseBody = body;
       return res;
     };

@@ -46,8 +46,6 @@ describe('SatelliteService branch coverage lifts', () => {
     post: jest.fn(),
   }));
 
-  const { ValidationError } = require('../../src/errors/custom-errors');
-
   test('tileToBBox rejects zoom > 22 (covers validation branch)', () => {
     const { SatelliteService } = require('../../src/services/satellite.service');
     const svc = new SatelliteService();

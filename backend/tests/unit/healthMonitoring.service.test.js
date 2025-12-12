@@ -43,7 +43,7 @@ describe('HealthMonitoringService', () => {
         date.setDate(date.getDate() + i);
         mockRecords.push({
           recordid: `rec-${i}`,
-          field_id,
+          field_id: fieldId,
           measurementdate: date.toISOString().split('T')[0],
           ndvimean: 0.6 + i * 0.001, // Slight improvement
           ndvimin: 0.55,
@@ -64,10 +64,10 @@ describe('HealthMonitoringService', () => {
 
       mockHealthModel.findAll.mockResolvedValue(mockRecords);
 
-      const result = await service.analyzeFieldHealth(field_id, startDate, endDate);
+      const result = await service.analyzeFieldHealth(fieldId, startDate, endDate);
 
       expect(result).toBeDefined();
-      expect(result.field_id).toBe(field_id);
+      expect(result.field_id).toBe(fieldId);
       expect(result.fieldName).toBe('Test Field');
       expect(result.recordCount).toBe(30);
       expect(result.currentHealth).toBeDefined();
@@ -77,19 +77,19 @@ describe('HealthMonitoringService', () => {
       expect(result.trend.direction).toMatch(/improving|stable|declining|insufficientdata/);
       expect(result.timeSeries).toHaveLength(30);
       expect(result.movingAverages).toBeDefined();
-      expect(mockFieldModel.findByPk).toHaveBeenCalledWith(field_id);
+      expect(mockFieldModel.findByPk).toHaveBeenCalledWith(fieldId);
       expect(mockHealthModel.findAll).toHaveBeenCalled();
     });
 
     it('should return nodata status when no health records exist', async () => {
       mockFieldModel.findByPk.mockResolvedValue({
-        field_id,
+        field_id: fieldId,
         name: 'Test Field',
       });
 
       mockHealthModel.findAll.mockResolvedValue([]);
 
-      const result = await service.analyzeFieldHealth(field_id, startDate, endDate);
+      const result = await service.analyzeFieldHealth(fieldId, startDate, endDate);
 
       expect(result.recordCount).toBe(0);
       expect(result.currentHealth).toBeNull();
@@ -101,27 +101,27 @@ describe('HealthMonitoringService', () => {
     it('should throw 404 error when field does not exist', async () => {
       mockFieldModel.findByPk.mockResolvedValue(null);
 
-      await expect(service.analyzeFieldHealth(field_id, startDate, endDate)).rejects.toThrow(
+      await expect(service.analyzeFieldHealth(fieldId, startDate, endDate)).rejects.toThrow(
         'Field not found'
       );
     });
 
     it('should throw 400 error for invalid start date', async () => {
-      await expect(service.analyzeFieldHealth(field_id, 'invalid-date', endDate)).rejects.toThrow(
+      await expect(service.analyzeFieldHealth(fieldId, 'invalid-date', endDate)).rejects.toThrow(
         'Invalid start date format'
       );
     });
 
     it('should throw 400 error for invalid end date', async () => {
-      await expect(service.analyzeFieldHealth(field_id, startDate, 'invalid-date')).rejects.toThrow(
+      await expect(service.analyzeFieldHealth(fieldId, startDate, 'invalid-date')).rejects.toThrow(
         'Invalid end date format'
       );
     });
 
     it('should throw 400 error when start date is after end date', async () => {
-      await expect(
-        service.analyzeFieldHealth(field_id, '2025-02-01', '2025-01-01')
-      ).rejects.toThrow('Start date must be before end date');
+      await expect(service.analyzeFieldHealth(fieldId, '2025-02-01', '2025-01-01')).rejects.toThrow(
+        'Start date must be before end date'
+      );
     });
 
     it('should throw 400 error for future end date', async () => {
@@ -129,15 +129,15 @@ describe('HealthMonitoringService', () => {
       futureDate.setFullYear(futureDate.getFullYear() + 1);
       const futureDateStr = futureDate.toISOString().split('T')[0];
 
-      await expect(service.analyzeFieldHealth(field_id, startDate, futureDateStr)).rejects.toThrow(
+      await expect(service.analyzeFieldHealth(fieldId, startDate, futureDateStr)).rejects.toThrow(
         'End date cannot be in the future'
       );
     });
 
     it('should throw 400 error for date range exceeding 365 days', async () => {
-      await expect(
-        service.analyzeFieldHealth(field_id, '2023-01-01', '2024-01-02')
-      ).rejects.toThrow('Date range cannot exceed 365 days');
+      await expect(service.analyzeFieldHealth(fieldId, '2023-01-01', '2024-01-02')).rejects.toThrow(
+        'Date range cannot exceed 365 days'
+      );
     });
   });
 

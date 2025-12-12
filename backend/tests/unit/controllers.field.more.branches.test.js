@@ -1,5 +1,3 @@
-const controller = require('../../src/api/controllers/field.controller');
-
 const {
   AppError,
   ValidationError,
@@ -11,7 +9,7 @@ const {
 } = require('../../src/errors/custom-errors');
 
 let responseBody;
-let response;
+let _response;
 
 describe('Field Controller additional branches', () => {
   beforeEach(() => {
@@ -28,7 +26,7 @@ describe('Field Controller additional branches', () => {
       res.statusCode = code;
       return res;
     };
-    response = body => {
+    _response = body => {
       responseBody = body;
       return res;
     };
@@ -42,7 +40,7 @@ describe('Field Controller additional branches', () => {
   test('updateBoundary success path returns 200 and payload', async () => {
     await jest.isolateModules(async () => {
       const mockSvc = {
-        updateBoundary: jest.fn(async (user_id, id, boundary) => ({ ok: true, id })),
+        updateBoundary: jest.fn(async (user_id, id, _boundary) => ({ ok: true, id })),
       };
       jest.doMock('../../src/services/field.service', () => ({
         getFieldService: () => mockSvc,
@@ -166,16 +164,6 @@ describe('Field Controller additional branches', () => {
 
 describe('custom-errors constructors branch hits', () => {
   test('instantiate all custom errors and assert properties', () => {
-    const {
-      AppError,
-      ValidationError,
-      NotFoundError,
-      UnauthorizedError,
-      ForbiddenError,
-      ConflictError,
-      BusinessError,
-    } = require('../../src/errors/custom-errors');
-
     const e1 = new AppError('X', 'msg', 418, { a: 1 });
     expect(e1).toMatchObject({ code: 'X', statusCode: 418, details: { a: 1 }, name: 'AppError' });
 

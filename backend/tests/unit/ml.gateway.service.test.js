@@ -72,7 +72,7 @@ describe('MLGatewayService Unit', () => {
 
   test('cache key/TTL logic: caches successful maskurl responses with configured TTL', async () => {
     const svc = new MLGatewayService();
-    const spy = jest.spyOn(axios, 'post').mockResolvedValue({
+    const _spy = jest.spyOn(axios, 'post').mockResolvedValue({
       status: 200,
       headers: { 'x-model-version': 'unet-1.0.0' },
       data: {
@@ -95,13 +95,13 @@ describe('MLGatewayService Unit', () => {
     // First call -> miss, triggers axios + cache set
     const out1 = await svc.predict(input, 'corr-1');
     expect(out1.cacheHit).toBe(false);
-    expect(spy).toHaveBeenCalledTimes(1);
+    expect(_spy).toHaveBeenCalledTimes(1);
     expect(lastSetExTTL).toBe(86400);
 
     // Second call -> hit, no axios
     const out2 = await svc.predict(input, 'corr-2');
     expect(out2.cacheHit).toBe(true);
-    expect(spy).toHaveBeenCalledTimes(1);
+    expect(_spy).toHaveBeenCalledTimes(1);
   });
 
   test('error mapping: INVALIDINPUT -> 400', async () => {
@@ -228,7 +228,7 @@ describe('MLGatewayService Unit', () => {
 
   test('callML makes correct axios request and handles success', async () => {
     const svc = new MLGatewayService();
-    const spy = jest.spyOn(axios, 'post').mockResolvedValue({
+    const _spy = jest.spyOn(axios, 'post').mockResolvedValue({
       status: 200,
       headers: { 'x-model-version': '1.0.0' },
       data: { result: 'success' },
@@ -238,7 +238,7 @@ describe('MLGatewayService Unit', () => {
     expect(result.ok).toBe(true);
     expect(result.status).toBe(200);
     expect(result.data).toEqual({ result: 'success' });
-    expect(spy).toHaveBeenCalledWith(
+    expect(_spy).toHaveBeenCalledWith(
       'http://ml-service.local:80/v1/segmentation/predict',
       payload,
       expect.objectContaining({
@@ -262,7 +262,7 @@ describe('MLGatewayService Unit', () => {
 
   test('callYieldML makes correct request for yield prediction', async () => {
     const svc = new MLGatewayService();
-    const spy = jest.spyOn(axios, 'post').mockResolvedValue({
+    const _spy = jest.spyOn(axios, 'post').mockResolvedValue({
       status: 200,
       headers: {},
       data: { predictions: [] },
@@ -270,7 +270,7 @@ describe('MLGatewayService Unit', () => {
     const payload = { features: [] };
     const result = await svc.callYieldML(payload, 'corr-1');
     expect(result.ok).toBe(true);
-    expect(spy).toHaveBeenCalledWith(
+    expect(_spy).toHaveBeenCalledWith(
       'http://ml-service.local:80/v1/yield/predict',
       payload,
       expect.any(Object)
@@ -311,7 +311,7 @@ describe('MLGatewayService Unit', () => {
 
   test('predict caches inline responses but not maskurl', async () => {
     const svc = new MLGatewayService();
-    const spy = jest.spyOn(axios, 'post').mockResolvedValue({
+    const _spy = jest.spyOn(axios, 'post').mockResolvedValue({
       status: 200,
       headers: {},
       data: { maskurl: 'http://example.com/mask', maskbase64: 'base64data' },
@@ -393,7 +393,7 @@ describe('MLGatewayService Unit', () => {
 
   test('yieldPredict caches and normalizes response', async () => {
     const svc = new MLGatewayService();
-    const spy = jest.spyOn(axios, 'post').mockResolvedValue({
+    const _spy = jest.spyOn(axios, 'post').mockResolvedValue({
       status: 200,
       headers: { 'x-model-version': 'yield-1.0.0' },
       data: {
@@ -416,7 +416,7 @@ describe('MLGatewayService Unit', () => {
     // Second call should hit cache
     const cached = await svc.yieldPredict(input, 'corr-2');
     expect(cached.cacheHit).toBe(true);
-    expect(spy).toHaveBeenCalledTimes(1);
+    expect(_spy).toHaveBeenCalledTimes(1);
   });
 
   test('getMLGatewayService returns singleton', () => {

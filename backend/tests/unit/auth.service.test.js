@@ -26,7 +26,7 @@ const fakeRedis = {
     fakeRedisStore.set(key, String(next));
     return next;
   },
-  async expire(key, ttl) {
+  async expire(_key, _ttl) {
     return 1;
   },
 };
@@ -127,11 +127,13 @@ describe('AuthService - signup/login', () => {
       update: jest.fn(),
     });
 
+    /* eslint-disable no-await-in-loop */
     for (let i = 0; i < 5; i += 1) {
       await expect(service.login('user@example.com', 'WrongPass1')).rejects.toMatchObject({
         code: 'UNAUTHORIZED',
       });
     }
+    /* eslint-enable no-await-in-loop */
 
     // 6th attempt should be locked immediately
     await expect(service.login('user@example.com', 'WrongPass1')).rejects.toMatchObject({

@@ -62,8 +62,6 @@ describe('WeatherService branch coverage lifts', () => {
     };
   });
 
-  const { ValidationError } = require('../../src/errors/custom-errors');
-
   test('throws ValidationError when OPENWEATHER_API_KEY is missing (covers requireApiKey false branch)', async () => {
     // Ensure no API keys present
     delete process.env.OPENWEATHER_API_KEY;

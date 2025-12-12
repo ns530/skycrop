@@ -69,7 +69,7 @@ describe('HealthService (vegetation indices) unit', () => {
     // Default DB query mock
     querySpy = jest
       .spyOn(sequelize, 'query')
-      .mockImplementation(async (sql, { replacements, type } = {}) => {
+      .mockImplementation(async (sql, { replacements, _type } = {}) => {
         const sqlStr = String(sql);
 
         // Get field boundary geometry
@@ -171,7 +171,7 @@ describe('HealthService (vegetation indices) unit', () => {
       expect(config.validateStatus(200)).toBe(true);
       return { status: 200, data: { accesstoken: 'tok', expiresin: 3600 } };
     });
-    axios.post.mockImplementationOnce(async (url, body, config) => {
+    axios.post.mockImplementationOnce(async (url, body, _config) => {
       // Process
       expect(url).toContain('/api/v1/process');
       expect(body).toHaveProperty('input.bounds.geometry'); // using geometry, not bbox

@@ -55,7 +55,7 @@ let mockForecastPayload = { data: { days: [], totals: { rain_3d_mm: 0, rain_7d_m
 
 jest.mock('../../src/services/health.service', () => ({
   getHealthService: () => ({
-    listSnapshots: jest.fn(async (userId, fieldId, opts) => {
+    listSnapshots: jest.fn(async (_userId, _fieldId, _opts) => {
       return { items: mockSnapshots.slice() };
     }),
   }),
@@ -63,7 +63,7 @@ jest.mock('../../src/services/health.service', () => ({
 
 jest.mock('../../src/services/weather.service', () => ({
   getWeatherService: () => ({
-    getForecast: jest.fn(async (user_id, field_id) => mockForecastPayload),
+    getForecast: jest.fn(async (_user_id, _field_id) => mockForecastPayload),
   }),
 }));
 
@@ -103,7 +103,7 @@ jest.mock('../../src/config/database.config', () => {
     ...original,
     sequelize: {
       ...original.sequelize,
-      query: jest.fn(async (sql, { replacements, type } = {}) => {
+      query: jest.fn(async (sql, { replacements, _type } = {}) => {
         const s = String(sql);
 
         // Count existing for date (controller helper)
@@ -279,7 +279,7 @@ describe('RecommendationService unit', () => {
     // 3-day rain below 5mm (keep totals default 1.8mm)
     mockForecastPayload.data.totals = { rain_3d_mm: 3.5, rain_7d_mm: 15.0 };
 
-    const { recommendations } = await svc.computeRecommendationsForField(userId, fieldId, date, {
+    const { recommendations } = await svc.computeRecommendationsForField(user_id, field_id, date, {
       recompute: true,
     });
     const water = recommendations.find(r => r.type === 'water');
@@ -308,7 +308,7 @@ describe('RecommendationService unit', () => {
       mockMakeSnapshot('2025-01-01T00:00:00.000Z', 0.49, 0.18, 0.3), // delta = 0.01
     ];
 
-    const { recommendations } = await svc.computeRecommendationsForField(userId, fieldId, date, {
+    const { recommendations } = await svc.computeRecommendationsForField(user_id, field_id, date, {
       recompute: true,
     });
     const fert = recommendations.find(r => r.type === 'fertilizer');
@@ -345,10 +345,10 @@ describe('RecommendationService unit', () => {
       mockMakeSnapshot(ts, 0.5, 0.04, 0.55),
       mockMakeSnapshot('2025-01-01T00:00:00.000Z', 0.49, 0.18, 0.3),
     ];
-    const r1 = await svc.computeRecommendationsForField(userId, fieldId, date, {
+    const r1 = await svc.computeRecommendationsForField(user_id, field_id, date, {
       recompute: false,
     });
-    const r2 = await svc.computeRecommendationsForField(userId, fieldId, date, {
+    const r2 = await svc.computeRecommendationsForField(user_id, field_id, date, {
       recompute: false,
     });
     expect(r1.meta.cachehit).toBe(false);
@@ -386,20 +386,20 @@ describe('RecommendationService unit', () => {
   test('listRecommendations filters by type and range and returns pagination; cache stored and invalidated on upsert', async () => {
     // Seed two days
     await svc.upsertRecommendations(
-      fieldId,
+      field_id,
       '2025-01-14',
       [{ type: 'water', severity: 'low', reason: 'older' }],
       { recompute: true }
     );
     await svc.upsertRecommendations(
-      fieldId,
+      field_id,
       '2025-01-15',
       [{ type: 'fertilizer', severity: 'medium', reason: 'newer' }],
       { recompute: true }
     );
 
     // List fertilizer only in range
-    const list1 = await svc.listRecommendations(fieldId, {
+    const list1 = await svc.listRecommendations(field_id, {
       from: '2025-01-14',
       to: '2025-01-15',
       type: 'fertilizer',
@@ -410,18 +410,18 @@ describe('RecommendationService unit', () => {
     expect(list1.data[0].type).toBe('fertilizer');
 
     // Confirm cache set
-    const cacheKeyPrefix = `recommendations:list:${fieldId}:`;
+    const cacheKeyPrefix = `recommendations:list:${field_id}:`;
     const anyCached = Array.from(redisStore.keys()).some(k => k.startsWith(cacheKeyPrefix));
     expect(anyCached).toBe(true);
 
     // Upsert new fertilizer on same day and assert cache invalidation best-effort
     await svc.upsertRecommendations(
-      fieldId,
+      field_id,
       '2025-01-15',
       [{ type: 'fertilizer', severity: 'high', reason: 'update' }],
       { recompute: true }
     );
-    const list2 = await svc.listRecommendations(fieldId, {
+    const list2 = await svc.listRecommendations(field_id, {
       from: '2025-01-14',
       to: '2025-01-15',
       type: 'fertilizer',
@@ -446,7 +446,7 @@ describe('RecommendationService unit', () => {
       },
     };
 
-    const res = await svc.computeRecommendationsForField(userId, fieldId, date, {
+    const res = await svc.computeRecommendationsForField(user_id, field_id, date, {
       recompute: true,
     });
     expect(res.recommendations.some(r => r.type === 'water')).toBe(true);
