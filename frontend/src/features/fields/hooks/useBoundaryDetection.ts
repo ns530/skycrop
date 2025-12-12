@@ -4,7 +4,7 @@
  */
 
 import { useMutation } from "@tanstack/react-query";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 
 import type { FieldGeometry } from "../../../shared/types/geojson";
 import { detectFieldBoundary } from "../api/fieldsApi";

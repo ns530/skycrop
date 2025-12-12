@@ -33,13 +33,17 @@ const createTestQueryClient = () =>
     },
   });
 
-const createWrapper =
-  (queryClient: QueryClient): React.FC<{ children: React.ReactNode }> =>
-  ({ children }) => (
+const createWrapper = (queryClient: QueryClient) => {
+  const TestQueryClientWrapper: React.FC<{ children: React.ReactNode }> = ({
+    children,
+  }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
 
-createWrapper.displayName = "TestQueryClientWrapper";
+  TestQueryClientWrapper.displayName = "TestQueryClientWrapper";
+
+  return TestQueryClientWrapper;
+};
 
 describe("useFields", () => {
   it("returns data from listFields and uses the expected query key", async () => {
