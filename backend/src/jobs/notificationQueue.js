@@ -1,4 +1,8 @@
+// eslint-disable-next-line import/no-unresolved
+const Bull = require('bull');
 const { logger } = require('../utils/logger');
+const { getEmailService } = require('../services/email.service');
+const { getPushNotificationService } = require('../services/pushNotification.service');
 
 /**
  * Notification Queue
@@ -23,7 +27,6 @@ class NotificationQueue {
 
   initBull() {
     try {
-      const Bull = require('bull');
       const redisUrl = process.env.REDISURL || 'redis://localhost:6379';
 
       this.bullQueue = new Bull('notification-queue', redisUrl, {
@@ -77,8 +80,7 @@ class NotificationQueue {
   }
 
   async processQueue() {
-    while (this.queue.length > 0) {
-      const job = this.queue.shift();
+    const processJob = async job => {
       try {
         if (job.type === 'email') {
           await this.processEmailJob({ data: job.data });
@@ -96,17 +98,23 @@ class NotificationQueue {
         });
 
         // Retry logic (simple)
-        if (!job.retries) job.retries = 0;
-        if (job.retries < 2) {
-          job.retries++;
-          this.queue.push(job); // Re-queue with incremented retry count
+        const currentRetries = job.retries || 0;
+        if (currentRetries < 2) {
+          this.queue.push({ ...job, retries: currentRetries + 1 }); // Re-queue with incremented retry count
         }
       }
-    }
+    };
+
+    const jobsToProcess = this.queue.splice(0);
+    const processJobs = async (jobs, index = 0) => {
+      if (index >= jobs.length) return;
+      await processJob(jobs[index]);
+      await processJobs(jobs, index + 1);
+    };
+    await processJobs(jobsToProcess);
   }
 
   async processEmailJob(job) {
-    const { getEmailService } = require('../services/email.service');
     const emailService = getEmailService();
 
     const { to, subject, html, text } = job.data;
@@ -114,11 +122,10 @@ class NotificationQueue {
   }
 
   async processPushJob(job) {
-    const { getPushNotificationService } = require('../services/pushNotification.service');
     const pushService = getPushNotificationService();
 
-    const { user_id, title, body, data } = job.data;
-    await pushService.sendToUser(user_id, title, body, data);
+    const { user_id: userId, title, body, data } = job.data;
+    await pushService.sendToUser(userId, title, body, data);
   }
 
   /**

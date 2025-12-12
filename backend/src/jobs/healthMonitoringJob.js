@@ -44,10 +44,12 @@ async function runHealthMonitoring() {
     const BATCHSIZE = 5; // Process 5 fields concurrently
     const DELAYBETWEENBATCHES = 1000; // 1 second between batches
 
-    for (let i = 0; i < fields.length; i += BATCHSIZE) {
-      const batch = fields.slice(i, i + BATCHSIZE);
+    const processBatches = async currentIndex => {
+      if (currentIndex >= fields.length) return;
+
+      const batch = fields.slice(currentIndex, currentIndex + BATCHSIZE);
       logger.debug(
-        `Processing batch ${Math.floor(i / BATCHSIZE) + 1}/${Math.ceil(fields.length / BATCHSIZE)} (${batch.length} fields)`
+        `Processing batch ${Math.floor(currentIndex / BATCHSIZE) + 1}/${Math.ceil(fields.length / BATCHSIZE)} (${batch.length} fields)`
       );
 
       // Process batch in parallel
@@ -128,10 +130,16 @@ async function runHealthMonitoring() {
       }
 
       // Rate limiting delay between batches (except for the last batch)
-      if (i + BATCHSIZE < fields.length) {
-        await new Promise(resolve => setTimeout(resolve, DELAYBETWEENBATCHES));
+      if (currentIndex + BATCHSIZE < fields.length) {
+        await new Promise(resolve => {
+          setTimeout(() => resolve(), DELAYBETWEENBATCHES);
+        });
       }
-    }
+
+      await processBatches(currentIndex + BATCHSIZE);
+    };
+
+    await processBatches(0);
 
     // Log summary
     logger.info('Health monitoring job completed', {

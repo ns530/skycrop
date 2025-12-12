@@ -34,7 +34,8 @@ async function runWeatherForecastUpdate() {
     // Group fields by location to avoid duplicate API calls
     const locationGroups = new Map();
 
-    for (const field of fields) {
+    for (let i = 0; i < fields.length; i += 1) {
+      const field = fields[i];
       const center = JSON.parse(field.center);
       const latitude = center.coordinates[1].toFixed(2); // Round to 2 decimals
       const longitude = center.coordinates[0].toFixed(2);
@@ -66,7 +67,13 @@ async function runWeatherForecastUpdate() {
     };
 
     // Fetch weather for each unique location
-    for (const [locationKey, locationData] of locationGroups.entries()) {
+    const locationKeys = Array.from(locationGroups.keys());
+    const processLocations = async index => {
+      if (index >= locationKeys.length) return;
+
+      const locationKey = locationKeys[index];
+      const locationData = locationGroups.get(locationKey);
+
       try {
         logger.debug(
           `Fetching weather for location: ${locationKey} (${locationData.fields.length} fields)`
@@ -85,18 +92,19 @@ async function runWeatherForecastUpdate() {
         });
 
         // Cache weather data for all fields at this location
-        for (const fieldInfo of locationData.fields) {
-          try {
-            await weatherService.cacheWeatherData(fieldInfo.field_id, {
+        const cachePromises = locationData.fields.map(fieldInfo => {
+          return weatherService
+            .cacheWeatherData(fieldInfo.field_id, {
               forecast,
               alerts,
               cachedAt: new Date(),
+            })
+            .catch(cacheError => {
+              logger.error(`Error caching weather for field ${fieldInfo.field_id}:`, cacheError);
             });
-            results.fieldsUpdated += 1;
-          } catch (cacheError) {
-            logger.error(`Error caching weather for field ${fieldInfo.field_id}:`, cacheError);
-          }
-        }
+        });
+        await Promise.all(cachePromises);
+        results.fieldsUpdated += locationData.fields.length;
 
         results.success += 1;
         logger.info(
@@ -105,7 +113,8 @@ async function runWeatherForecastUpdate() {
 
         // Check for severe weather alerts and send notifications
         if (alerts && alerts.length > 0) {
-          for (const alert of alerts) {
+          for (let k = 0; k < alerts.length; k += 1) {
+            const alert = alerts[k];
             if (alert.severity === 'severe' || alert.severity === 'extreme') {
               logger.warn(`Severe weather alert for ${locationKey}:`, {
                 event: alert.event,
@@ -120,18 +129,23 @@ async function runWeatherForecastUpdate() {
         }
 
         // Rate limiting delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => {
+          setTimeout(() => resolve(), 1000);
+        });
       } catch (error) {
         logger.error(`Error fetching weather for location ${locationKey}:`, error);
-        results.failed++;
+        results.failed += 1;
         results.errors.push({
           location: locationKey,
           fieldsCount: locationData.fields.length,
           error: error.message,
         });
-        continue;
       }
-    }
+
+      await processLocations(index + 1);
+    };
+
+    await processLocations(0);
 
     // Log summary
     logger.info('Weather forecast update job completed', {

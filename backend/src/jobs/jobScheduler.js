@@ -73,13 +73,13 @@ class JobScheduler {
       try {
         await handler();
 
-        stats.successCount++;
+        stats.successCount += 1;
         stats.lastError = null;
 
         const duration = Date.now() - startTime;
         logger.info(`Job "${name}" completed successfully in ${duration}ms`);
       } catch (error) {
-        stats.failureCount++;
+        stats.failureCount += 1;
         stats.lastError = {
           message: error.message,
           stack: error.stack,

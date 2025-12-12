@@ -122,7 +122,7 @@ async function triggerJob(jobName) {
   }
 
   logger.info(`Manually triggering job: ${jobName}`);
-  return await jobFn();
+  return jobFn();
 }
 
 export default {
