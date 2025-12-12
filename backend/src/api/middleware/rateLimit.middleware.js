@@ -73,8 +73,8 @@ function createRateLimiter({ windowMs, max, keyPrefix, keyGenerator, onLimitExce
  */
 function userOrIp(req) {
   // Prefer authenticated user id if available, else fall back to IP
-  const user_id = req.user?.user_id || req.user?.user_id;
-  return user_id || req.ip || 'unknown';
+  const userId = req.user?.user_id || req.user?.id;
+  return userId || req.ip || 'unknown';
 }
 
 function ipOnly(req) {

@@ -8,9 +8,14 @@ const { ValidationError } = require('../../errors/custom-errors');
  */
 function validateRequest(schema, source = 'body') {
   return (req, res, next) => {
-    const input = source === 'query' ? req.query : source === 'params' ? req.params : req.body;
-
-    console.log('validateRequest source:', source, 'input type:', typeof input, 'input:', input);
+    let input;
+    if (source === 'query') {
+      input = req.query;
+    } else if (source === 'params') {
+      input = req.params;
+    } else {
+      input = req.body;
+    }
 
     const { error, value } = schema.validate(input, {
       abortEarly: false,
@@ -18,7 +23,6 @@ function validateRequest(schema, source = 'body') {
     });
 
     if (error) {
-      console.log('Validation error:', error);
       const details = error.details.map(d => ({
         field: d.path.join('.'),
         message: d.message,
@@ -90,12 +94,11 @@ const satelliteTileQuery = Joi.object({
         .map(s => s.trim())
         .filter(Boolean);
       if (!parts.length) return helpers.error('any.invalid', { message: 'bands cannot be empty' });
-      for (const p of parts) {
-        if (!allowedBands.includes(p)) {
-          return helpers.error('any.invalid', {
-            message: `Invalid band '${p}'. Allowed: ${allowedBands.join(', ')}`,
-          });
-        }
+      const invalidBand = parts.find(p => !allowedBands.includes(p));
+      if (invalidBand) {
+        return helpers.error('any.invalid', {
+          message: `Invalid band '${invalidBand}'. Allowed: ${allowedBands.join(', ')}`,
+        });
       }
       return parts.join(',');
     })
