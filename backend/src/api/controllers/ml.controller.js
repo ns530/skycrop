@@ -15,8 +15,10 @@ module.exports = {
     const correlationId = req.headers['x-request-id'] || null;
     try {
       const input = req.body || {};
-      const { result, cacheHit, downstreamStatus, modelVersion, latencyms } =
-        await mlGateway.yieldPredict(input, correlationId);
+      const { result, cacheHit, downstreamStatus, modelVersion } = await mlGateway.yieldPredict(
+        input,
+        correlationId
+      );
 
       const totalLatency = Date.now() - started;
       logger.info('ml.yieldPredict', {
@@ -48,8 +50,10 @@ module.exports = {
     const correlationId = req.headers['x-request-id'] || null;
     try {
       const input = req.body || {};
-      const { result, cacheHit, downstreamStatus, modelVersion, latencyms } =
-        await mlGateway.predict(input, correlationId);
+      const { result, cacheHit, downstreamStatus, modelVersion } = await mlGateway.predict(
+        input,
+        correlationId
+      );
 
       const totalLatency = Date.now() - started;
       logger.info('ml.predict', {

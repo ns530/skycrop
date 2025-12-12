@@ -5,8 +5,9 @@ const { logger } = require('../../utils/logger');
  * Share a field with another user
  */
 async function shareField(req, res, next) {
+  const { user_id: userId } = req.user;
+  const { field_id: fieldId } = req.params;
   try {
-    const { field_id } = req.params;
     const { email, permissionLevel = 'view', expiresAt } = req.body;
 
     if (!email) {
@@ -21,16 +22,16 @@ async function shareField(req, res, next) {
     }
 
     const share = await fieldSharingService.shareField(
-      field_id,
-      req.user.user_id,
+      fieldId,
+      userId,
       email,
       permissionLevel,
       expiresAt ? new Date(expiresAt) : null
     );
 
     logger.info('field.share.created', {
-      user_id: req.user.user_id,
-      field_id,
+      userId,
+      fieldId,
       sharedWith: email,
       permissionLevel,
     });
@@ -43,8 +44,8 @@ async function shareField(req, res, next) {
     });
   } catch (error) {
     logger.error('field.share.error', {
-      user_id: req.user.user_id,
-      field_id: req.params.field_id,
+      userId,
+      fieldId,
       error: error.message,
     });
     next(error);
@@ -55,15 +56,15 @@ async function shareField(req, res, next) {
  * Revoke field share
  */
 async function revokeShare(req, res, next) {
+  const { user_id: userId } = req.user;
+  const { field_id: fieldId, user_id: userIdParam } = req.params;
   try {
-    const { field_id, user_id } = req.params;
-
-    await fieldSharingService.revokeShare(field_id, req.user.user_id, user_id);
+    await fieldSharingService.revokeShare(fieldId, userId, userIdParam);
 
     logger.info('field.share.revoked', {
-      ownerId: req.user.user_id,
-      field_id,
-      revokeduser_id: user_id,
+      ownerId: userId,
+      fieldId,
+      revokedUserId: userIdParam,
     });
 
     res.json({
@@ -73,8 +74,8 @@ async function revokeShare(req, res, next) {
     });
   } catch (error) {
     logger.error('field.share.revoke.error', {
-      ownerId: req.user.user_id,
-      field_id: req.params.field_id,
+      ownerId: userId,
+      fieldId,
       error: error.message,
     });
     next(error);
@@ -85,14 +86,14 @@ async function revokeShare(req, res, next) {
  * Get all shares for a field
  */
 async function getFieldShares(req, res, next) {
+  const { user_id: userId } = req.user;
+  const { field_id: fieldId } = req.params;
   try {
-    const { field_id } = req.params;
-
-    const shares = await fieldSharingService.getFieldShares(field_id, req.user.user_id);
+    const shares = await fieldSharingService.getFieldShares(fieldId, userId);
 
     logger.info('field.shares.list', {
-      user_id: req.user.user_id,
-      field_id,
+      userId,
+      fieldId,
       count: shares.length,
     });
 
@@ -103,8 +104,8 @@ async function getFieldShares(req, res, next) {
     });
   } catch (error) {
     logger.error('field.shares.list.error', {
-      user_id: req.user.user_id,
-      field_id: req.params.field_id,
+      userId,
+      fieldId,
       error: error.message,
     });
     next(error);
@@ -115,11 +116,12 @@ async function getFieldShares(req, res, next) {
  * Get all fields shared with me
  */
 async function getSharedWithMe(req, res, next) {
+  const { user_id: userId } = req.user;
   try {
-    const shares = await fieldSharingService.getSharedWithMe(req.user.user_id);
+    const shares = await fieldSharingService.getSharedWithMe(userId);
 
     logger.info('field.shared.list', {
-      user_id: req.user.user_id,
+      userId,
       count: shares.length,
     });
 
@@ -130,7 +132,7 @@ async function getSharedWithMe(req, res, next) {
     });
   } catch (error) {
     logger.error('field.shared.list.error', {
-      user_id: req.user.user_id,
+      userId,
       error: error.message,
     });
     next(error);
@@ -141,10 +143,10 @@ async function getSharedWithMe(req, res, next) {
  * Check field access
  */
 async function checkFieldAccess(req, res, next) {
+  const { user_id: userId } = req.user;
+  const { field_id: fieldId } = req.params;
   try {
-    const { field_id } = req.params;
-
-    const access = await fieldSharingService.checkFieldAccess(field_id, req.user.user_id);
+    const access = await fieldSharingService.checkFieldAccess(fieldId, userId);
 
     res.json({
       success: true,
@@ -153,8 +155,8 @@ async function checkFieldAccess(req, res, next) {
     });
   } catch (error) {
     logger.error('field.access.check.error', {
-      user_id: req.user.user_id,
-      field_id: req.params.field_id,
+      userId,
+      fieldId,
       error: error.message,
     });
     next(error);

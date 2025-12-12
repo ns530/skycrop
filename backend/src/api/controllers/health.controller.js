@@ -20,11 +20,11 @@ module.exports = {
     const started = Date.now();
     const corr = getCorrelationId(req);
     try {
-      const { user_id } = req.user;
+      const { user_id: userId } = req.user;
       const { id } = req.params;
       const { from, to, page, pageSize } = req.query || {};
 
-      const result = await healthService.listSnapshots(user_id, id, {
+      const result = await healthService.listSnapshots(userId, id, {
         from,
         to,
         page: page ? parseInt(page, 10) : undefined,
@@ -36,7 +36,7 @@ module.exports = {
         route: req.originalUrl,
         correlationid: corr,
         latencyms: latency,
-        field_id: id,
+        fieldId: id,
         from,
         to,
         page: result.page,
@@ -61,7 +61,7 @@ module.exports = {
     const started = Date.now();
     const corr = getCorrelationId(req);
     try {
-      const { user_id } = req.user;
+      const { user_id: userId } = req.user;
       const { id } = req.params;
       const { date, recompute = false } = req.body || {};
 
@@ -75,7 +75,7 @@ module.exports = {
             correlationid: corr,
             latencyms: latency,
             cachehit: true,
-            field_id: id,
+            fieldId: id,
             date,
           });
           return res.status(200).json({
@@ -87,7 +87,7 @@ module.exports = {
       }
 
       // Compute indices via Sentinel + cache
-      const computed = await healthService.computeIndicesForField(user_id, id, date);
+      const computed = await healthService.computeIndicesForField(userId, id, date);
 
       // Persist snapshot (idempotent upsert)
       const saved = await healthService.upsertSnapshot(
@@ -108,7 +108,7 @@ module.exports = {
         correlationid: corr,
         latencyms: latency,
         cachehit: !!computed.cachehit,
-        field_id: id,
+        fieldId: id,
         date,
       });
 
@@ -126,10 +126,10 @@ module.exports = {
   // GET /api/v1/fields/:id/health/history?days=180 or &from=YYYY-MM-DD&to=YYYY-MM-DD
   async getHistory(req, res, next) {
     try {
-      const { user_id } = req.user;
+      const { user_id: userId } = req.user;
       const { id } = req.params;
       const { days, from, to } = req.query || {};
-      const data = await healthService.getHistory(user_id, id, { days, from, to });
+      const data = await healthService.getHistory(userId, id, { days, from, to });
       return res.status(200).json({ success: true, data });
     } catch (err) {
       return next(err);
@@ -139,9 +139,9 @@ module.exports = {
   // POST /api/v1/fields/:id/health/refresh
   async refresh(req, res, next) {
     try {
-      const { user_id } = req.user;
+      const { user_id: userId } = req.user;
       const { id } = req.params;
-      const data = await healthService.refresh(user_id, id);
+      const data = await healthService.refresh(userId, id);
       return res.status(202).json({ success: true, data });
     } catch (err) {
       return next(err);

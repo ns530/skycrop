@@ -17,12 +17,12 @@ class RecommendationController {
    */
   async generateRecommendations(req, res, next) {
     try {
-      const { field_id } = req.params;
-      const { user_id } = req.user;
+      const { field_id: fieldId } = req.params;
+      const { user_id: userId } = req.user;
 
       const result = await this.recommendationEngineService.generateRecommendations(
-        field_id,
-        user_id
+        fieldId,
+        userId
       );
 
       res.status(200).json({
@@ -44,31 +44,31 @@ class RecommendationController {
    */
   async getFieldRecommendations(req, res, next) {
     try {
-      const { field_id } = req.params;
-      const { user_id } = req.user;
+      const { field_id: fieldId } = req.params;
+      const { user_id: userId } = req.user;
       const { status, priority, validOnly } = req.query;
 
       // Verify field ownership
-      const field = await this.Field.findByPk(field_id);
+      const field = await this.Field.findByPk(fieldId);
       if (!field) {
-        throw new AppError('FIELDNOTFOUND', `Field with ID ${field_id} not found`, 404);
+        throw new AppError('FIELDNOTFOUND', `Field with ID ${fieldId} not found`, 404);
       }
-      if (field.user_id !== user_id) {
+      if (field.user_id !== userId) {
         throw new AppError('FORBIDDEN', 'You do not have access to this field', 403);
       }
 
-      const recommendations = await this.recommendationRepository.findByfield_id(field_id, {
+      const recommendations = await this.recommendationRepository.findByfield_id(fieldId, {
         status,
         priority,
         validOnly: validOnly === 'true',
       });
 
-      const stats = await this.recommendationRepository.getStatistics(field_id);
+      const stats = await this.recommendationRepository.getStatistics(fieldId);
 
       res.status(200).json({
         success: true,
         data: {
-          field_id,
+          fieldId,
           recommendations: recommendations.map(r => this.formatRecommendation(r)),
           statistics: stats,
         },
@@ -88,10 +88,10 @@ class RecommendationController {
    */
   async getUserRecommendations(req, res, next) {
     try {
-      const { user_id } = req.user;
+      const { user_id: userId } = req.user;
       const { status, priority, validOnly } = req.query;
 
-      const recommendations = await this.recommendationRepository.findByuser_id(user_id, {
+      const recommendations = await this.recommendationRepository.findByuser_id(userId, {
         status,
         priority,
         validOnly: validOnly === 'true',
@@ -120,7 +120,7 @@ class RecommendationController {
     try {
       const { recommendationId } = req.params;
       const { status, notes } = req.body;
-      const { user_id } = req.user;
+      const { user_id: userId } = req.user;
 
       if (!status) {
         throw new AppError('VALIDATIONERROR', 'Status is required', 400);
@@ -141,7 +141,7 @@ class RecommendationController {
         throw new AppError('NOTFOUND', 'Recommendation not found', 404);
       }
 
-      if (recommendation.user_id !== user_id) {
+      if (recommendation.user_id !== userId) {
         throw new AppError('FORBIDDEN', 'You do not have access to this recommendation', 403);
       }
 
@@ -170,7 +170,7 @@ class RecommendationController {
   async deleteRecommendation(req, res, next) {
     try {
       const { recommendationId } = req.params;
-      const { user_id } = req.user;
+      const { user_id: userId } = req.user;
 
       // Verify recommendation exists and user owns the associated field
       const recommendation = await this.recommendationRepository.findById(recommendationId);
@@ -178,7 +178,7 @@ class RecommendationController {
         throw new AppError('NOTFOUND', 'Recommendation not found', 404);
       }
 
-      if (recommendation.user_id !== user_id) {
+      if (recommendation.user_id !== userId) {
         throw new AppError('FORBIDDEN', 'You do not have access to this recommendation', 403);
       }
 

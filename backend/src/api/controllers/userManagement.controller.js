@@ -6,6 +6,7 @@ const { logger } = require('../../utils/logger');
  * Get all users (admin/manager only)
  */
 async function getAllUsers(req, res, next) {
+  const { user_id: userId } = req.user;
   try {
     const { page = 1, limit = 20, role, status, search, sortBy, sortOrder } = req.query;
 
@@ -20,7 +21,7 @@ async function getAllUsers(req, res, next) {
     });
 
     logger.info('users.list.success', {
-      user_id: req.user.user_id,
+      userId,
       count: result.users.length,
       total: result.pagination.total,
     });
@@ -32,7 +33,7 @@ async function getAllUsers(req, res, next) {
     });
   } catch (error) {
     logger.error('users.list.error', {
-      user_id: req.user.user_id,
+      userId,
       error: error.message,
       stack: error.stack,
     });
@@ -44,14 +45,14 @@ async function getAllUsers(req, res, next) {
  * Get user by ID
  */
 async function getUserById(req, res, next) {
+  const { user_id: userId } = req.user;
+  const { user_id: targetUserId } = req.params;
   try {
-    const { user_id } = req.params;
-
-    const user = await userManagementService.getUserById(user_id);
+    const user = await userManagementService.getUserById(targetUserId);
 
     logger.info('users.get.success', {
-      actorId: req.user.user_id,
-      targetId: user_id,
+      actorId: userId,
+      targetId: targetUserId,
     });
 
     res.json({
@@ -61,8 +62,8 @@ async function getUserById(req, res, next) {
     });
   } catch (error) {
     logger.error('users.get.error', {
-      actorId: req.user.user_id,
-      targetId: req.params.user_id,
+      actorId: userId,
+      targetId: targetUserId,
       error: error.message,
     });
     next(error);
@@ -73,8 +74,9 @@ async function getUserById(req, res, next) {
  * Update user role
  */
 async function updateUserRole(req, res, next) {
+  const { user_id: userId } = req.user;
+  const { user_id: targetUserId } = req.params;
   try {
-    const { user_id } = req.params;
     const { role } = req.body;
 
     if (!role) {
@@ -89,15 +91,15 @@ async function updateUserRole(req, res, next) {
     }
 
     const updatedUser = await userManagementService.updateUserRole(
-      req.user.user_id,
+      userId,
       req.user.role,
-      user_id,
+      targetUserId,
       role
     );
 
     logger.info('users.role.updated', {
-      actorId: req.user.user_id,
-      targetId: user_id,
+      actorId: userId,
+      targetId: targetUserId,
       newRole: role,
     });
 
@@ -109,8 +111,8 @@ async function updateUserRole(req, res, next) {
     });
   } catch (error) {
     logger.error('users.role.error', {
-      actorId: req.user.user_id,
-      targetId: req.params.user_id,
+      actorId: userId,
+      targetId: targetUserId,
       error: error.message,
     });
     next(error);
@@ -121,8 +123,9 @@ async function updateUserRole(req, res, next) {
  * Update user status
  */
 async function updateUserStatus(req, res, next) {
+  const { user_id: userId } = req.user;
+  const { user_id: targetUserId } = req.params;
   try {
-    const { user_id } = req.params;
     const { status } = req.body;
 
     if (!status) {
@@ -137,15 +140,15 @@ async function updateUserStatus(req, res, next) {
     }
 
     const updatedUser = await userManagementService.updateUserStatus(
-      req.user.user_id,
+      userId,
       req.user.role,
-      user_id,
+      targetUserId,
       status
     );
 
     logger.info('users.status.updated', {
-      actorId: req.user.user_id,
-      targetId: user_id,
+      actorId: userId,
+      targetId: targetUserId,
       newStatus: status,
     });
 
@@ -157,8 +160,8 @@ async function updateUserStatus(req, res, next) {
     });
   } catch (error) {
     logger.error('users.status.error', {
-      actorId: req.user.user_id,
-      targetId: req.params.user_id,
+      actorId: userId,
+      targetId: targetUserId,
       error: error.message,
     });
     next(error);
@@ -169,11 +172,12 @@ async function updateUserStatus(req, res, next) {
  * Get user statistics
  */
 async function getUserStatistics(req, res, next) {
+  const { user_id: userId } = req.user;
   try {
     const stats = await userManagementService.getUserStatistics();
 
     logger.info('users.stats.success', {
-      user_id: req.user.user_id,
+      userId,
     });
 
     res.json({
@@ -183,7 +187,7 @@ async function getUserStatistics(req, res, next) {
     });
   } catch (error) {
     logger.error('users.stats.error', {
-      user_id: req.user.user_id,
+      userId,
       error: error.message,
     });
     next(error);
@@ -194,6 +198,7 @@ async function getUserStatistics(req, res, next) {
  * Search users
  */
 async function searchUsers(req, res, next) {
+  const { user_id: userId } = req.user;
   try {
     const { q, limit = 10 } = req.query;
 
@@ -208,7 +213,7 @@ async function searchUsers(req, res, next) {
     const users = await userManagementService.searchUsers(q, parseInt(limit, 10));
 
     logger.info('users.search.success', {
-      user_id: req.user.user_id,
+      userId,
       query: q,
       results: users.length,
     });
@@ -220,7 +225,7 @@ async function searchUsers(req, res, next) {
     });
   } catch (error) {
     logger.error('users.search.error', {
-      user_id: req.user.user_id,
+      userId,
       error: error.message,
     });
     next(error);
@@ -231,10 +236,11 @@ async function searchUsers(req, res, next) {
  * Get role hierarchy (for UI display)
  */
 function getRoles(req, res) {
+  const { user_id: userId } = req.user;
   const roles = getRoleHierarchy();
 
   logger.info('users.roles.success', {
-    user_id: req.user.user_id,
+    userId,
   });
 
   res.json({

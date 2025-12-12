@@ -20,7 +20,7 @@ module.exports = {
     const correlationId = req.headers['x-request-id'] || null;
 
     try {
-      const { user_id } = req.user;
+      const { user_id: userId } = req.user;
       const { deviceToken, platform } = req.body;
 
       if (!deviceToken || !platform) {
@@ -31,13 +31,13 @@ module.exports = {
         throw new ValidationError('platform must be either "android" or "ios"');
       }
 
-      const result = await pushService.registerDevice(user_id, deviceToken, platform);
+      const result = await pushService.registerDevice(userId, deviceToken, platform);
 
       const latency = Date.now() - started;
       logger.info('notifications.register', {
         route: '/api/v1/notifications/register',
         method: 'POST',
-        user_id,
+        userId,
         deviceid: result.deviceId,
         platform,
         correlationid: correlationId,
@@ -102,7 +102,7 @@ module.exports = {
     const correlationId = req.headers['x-request-id'] || null;
 
     try {
-      const { user_id } = req.user;
+      const { user_id: userId } = req.user;
       const { title, message, type } = req.body;
 
       if (!title || !message) {
@@ -110,7 +110,7 @@ module.exports = {
       }
 
       const result = await notificationService.sendNotification(
-        user_id,
+        userId,
         title || 'Test Notification',
         message || 'This is a test notification from SkyCrop',
         type || 'info'
@@ -120,7 +120,7 @@ module.exports = {
       logger.info('notifications.test', {
         route: '/api/v1/notifications/test',
         method: 'POST',
-        user_id,
+        userId,
         correlationid: correlationId,
         latencyms: latency,
       });

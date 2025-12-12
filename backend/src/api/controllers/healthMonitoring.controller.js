@@ -15,12 +15,12 @@ class HealthMonitoringController {
    */
   async getFieldHealthHistory(req, res, next) {
     try {
-      const { field_id } = req.params;
+      const { field_id: fieldId } = req.params;
       const { startDate, endDate, period } = req.query;
-      const { user_id } = req.user;
+      const { user_id: userId } = req.user;
 
       // 1. Verify field ownership
-      const field = await this.Field.findByPk(field_id);
+      const field = await this.Field.findByPk(fieldId);
       if (!field) {
         return res.status(404).json({
           success: false,
@@ -31,7 +31,7 @@ class HealthMonitoringController {
         });
       }
 
-      if (field.user_id !== user_id) {
+      if (field.user_id !== userId) {
         return res.status(403).json({
           success: false,
           error: {
@@ -46,7 +46,7 @@ class HealthMonitoringController {
       let end = endDate;
 
       if (period) {
-        end = new Date().toISOString().split('T')[0]; // Today
+        [end] = new Date().toISOString().split('T'); // Today
         const periodDays = this.parsePeriod(period);
         if (!periodDays) {
           return res.status(400).json({
@@ -57,9 +57,9 @@ class HealthMonitoringController {
             },
           });
         }
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - periodDays);
-        start = startDate.toISOString().split('T')[0];
+        const currentDate = new Date();
+        currentDate.setDate(currentDate.getDate() - periodDays);
+        [start] = currentDate.toISOString().split('T');
       }
 
       // 3. Validate required parameters
@@ -74,7 +74,7 @@ class HealthMonitoringController {
       }
 
       // 4. Call service to analyze health
-      const analysis = await this.healthMonitoringService.analyzeFieldHealth(field_id, start, end);
+      const analysis = await this.healthMonitoringService.analyzeFieldHealth(fieldId, start, end);
 
       // 5. Return response
       return res.status(200).json({

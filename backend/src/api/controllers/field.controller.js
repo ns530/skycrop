@@ -13,8 +13,8 @@ module.exports = {
     const started = Date.now();
     const correlationId = req.headers['x-request-id'] || null;
     try {
-      const { user_id } = req.user;
-      const result = await fieldService.list(user_id, req.query || {});
+      const { user_id: userId } = req.user;
+      const result = await fieldService.list(userId, req.query || {});
       const { items, total, page, pageSize, cacheHit } = {
         items: result.items || result.data || [],
         total: result.total || 0,
@@ -27,7 +27,7 @@ module.exports = {
       logger.info('fields.list', {
         route: '/api/v1/fields',
         method: 'GET',
-        user_id,
+        userId,
         correlationid: correlationId,
         latencyms: latency,
         cachehit: cacheHit,
@@ -49,15 +49,15 @@ module.exports = {
     const started = Date.now();
     const correlationId = req.headers['x-request-id'] || null;
     try {
-      const { user_id } = req.user;
+      const { user_id: userId } = req.user;
       const { name, boundary } = req.body || {};
-      const data = await fieldService.createWithBoundary(user_id, name, boundary);
+      const data = await fieldService.createWithBoundary(userId, name, boundary);
 
       const latency = Date.now() - started;
       logger.info('fields.create', {
         route: '/api/v1/fields',
         method: 'POST',
-        user_id,
+        userId,
         correlationid: correlationId,
         latencyms: latency,
       });
@@ -77,16 +77,16 @@ module.exports = {
     const started = Date.now();
     const correlationId = req.headers['x-request-id'] || null;
     try {
-      const { user_id } = req.user;
+      const { user_id: userId } = req.user;
       const { id } = req.params;
-      const data = await fieldService.getById(user_id, id);
+      const data = await fieldService.getById(userId, id);
 
       const latency = Date.now() - started;
       logger.info('fields.getById', {
         route: '/api/v1/fields/{id}',
         method: 'GET',
-        user_id,
-        field_id: id,
+        userId,
+        fieldId: id,
         correlationid: correlationId,
         latencyms: latency,
       });
@@ -106,16 +106,16 @@ module.exports = {
     const started = Date.now();
     const correlationId = req.headers['x-request-id'] || null;
     try {
-      const { user_id } = req.user;
+      const { user_id: userId } = req.user;
       const { id } = req.params;
       const { name, status } = req.body || {};
-      const data = await fieldService.update(user_id, id, { name, status });
+      const data = await fieldService.update(userId, id, { name, status });
       const latency = Date.now() - started;
       logger.info('fields.update', {
         route: '/api/v1/fields/{id}',
         method: 'PATCH',
-        user_id,
-        field_id: id,
+        userId,
+        fieldId: id,
         correlationid: correlationId,
         latencyms: latency,
       });
@@ -132,10 +132,10 @@ module.exports = {
   // PUT /api/v1/fields/:id/boundary
   async updateBoundary(req, res, next) {
     try {
-      const { user_id } = req.user;
+      const { user_id: userId } = req.user;
       const { id } = req.params;
       const { boundary } = req.body || {};
-      const data = await fieldService.updateBoundary(user_id, id, boundary);
+      const data = await fieldService.updateBoundary(userId, id, boundary);
       return res.status(200).json({ success: true, data });
     } catch (err) {
       return next(err);
@@ -145,9 +145,9 @@ module.exports = {
   // POST /api/v1/fields/:id/archive
   async archive(req, res, next) {
     try {
-      const { user_id } = req.user;
+      const { user_id: userId } = req.user;
       const { id } = req.params;
-      const data = await fieldService.archive(user_id, id);
+      const data = await fieldService.archive(userId, id);
       return res.status(200).json({ success: true, data });
     } catch (err) {
       return next(err);
@@ -159,16 +159,16 @@ module.exports = {
     const started = Date.now();
     const correlationId = req.headers['x-request-id'] || null;
     try {
-      const { user_id } = req.user;
+      const { user_id: userId } = req.user;
       const { id } = req.params;
-      const data = await fieldService.delete(user_id, id);
+      const data = await fieldService.delete(userId, id);
 
       const latency = Date.now() - started;
       logger.info('fields.delete', {
         route: '/api/v1/fields/{id}',
         method: 'DELETE',
-        user_id,
-        field_id: id,
+        userId,
+        fieldId: id,
         correlationid: correlationId,
         latencyms: latency,
       });
@@ -186,9 +186,9 @@ module.exports = {
   // POST /api/v1/fields/:id/restore
   async restore(req, res, next) {
     try {
-      const { user_id } = req.user;
+      const { user_id: userId } = req.user;
       const { id } = req.params;
-      const data = await fieldService.restore(user_id, id);
+      const data = await fieldService.restore(userId, id);
       return res.status(200).json({ success: true, data });
     } catch (err) {
       return next(err);

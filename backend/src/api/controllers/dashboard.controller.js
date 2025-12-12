@@ -6,7 +6,6 @@ const { logger } = require('../../utils/logger');
 
 const DASHBOARDCACHETTLSEC = parseInt(process.env.DASHBOARDCACHETTLSEC || '300', 10); // 5 minutes
 
-
 /**
  * Get field count and basic info
  */
@@ -597,4 +596,3 @@ module.exports = {
     }
   },
 };
-

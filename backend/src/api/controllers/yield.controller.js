@@ -17,18 +17,18 @@ module.exports = {
     const correlationId = req.headers['x-request-id'] || null;
 
     try {
-      const { user_id } = req.user;
-      const { field_id } = req.params;
+      const { user_id: userId } = req.user;
+      const { field_id: fieldId } = req.params;
       const yieldData = req.body;
 
-      const result = await yieldService.create(user_id, field_id, yieldData);
+      const result = await yieldService.create(userId, fieldId, yieldData);
 
       const latency = Date.now() - started;
       logger.info('yields.create', {
-        route: `/api/v1/fields/${field_id}/yield`,
+        route: `/api/v1/fields/${fieldId}/yield`,
         method: 'POST',
-        user_id,
-        field_id,
+        userId,
+        fieldId,
         yieldid: result.yieldid,
         correlationid: correlationId,
         latencyms: latency,
@@ -53,18 +53,18 @@ module.exports = {
     const correlationId = req.headers['x-request-id'] || null;
 
     try {
-      const { user_id } = req.user;
-      const { field_id } = req.params;
+      const { user_id: userId } = req.user;
+      const { field_id: fieldId } = req.params;
       const options = req.query || {};
 
-      const result = await yieldService.listByField(user_id, field_id, options);
+      const result = await yieldService.listByField(userId, fieldId, options);
 
       const latency = Date.now() - started;
       logger.info('yields.listByField', {
-        route: `/api/v1/fields/${field_id}/yield`,
+        route: `/api/v1/fields/${fieldId}/yield`,
         method: 'GET',
-        user_id,
-        field_id,
+        userId,
+        fieldId,
         page: result.page,
         pagesize: result.pageSize,
         total: result.total,
@@ -102,17 +102,17 @@ module.exports = {
     const correlationId = req.headers['x-request-id'] || null;
 
     try {
-      const { user_id } = req.user;
-      const { field_id } = req.params;
+      const { user_id: userId } = req.user;
+      const { field_id: fieldId } = req.params;
 
-      const result = await yieldService.getStatistics(user_id, field_id);
+      const result = await yieldService.getStatistics(userId, fieldId);
 
       const latency = Date.now() - started;
       logger.info('yields.getStatistics', {
-        route: `/api/v1/fields/${field_id}/yield/statistics`,
+        route: `/api/v1/fields/${fieldId}/yield/statistics`,
         method: 'GET',
-        user_id,
-        field_id,
+        userId,
+        fieldId,
         correlationid: correlationId,
         latencyms: latency,
       });
@@ -136,16 +136,16 @@ module.exports = {
     const correlationId = req.headers['x-request-id'] || null;
 
     try {
-      const { user_id } = req.user;
+      const { user_id: userId } = req.user;
       const { yieldId } = req.params;
 
-      const result = await yieldService.getById(user_id, yieldId);
+      const result = await yieldService.getById(userId, yieldId);
 
       const latency = Date.now() - started;
       logger.info('yields.getById', {
         route: `/api/v1/yield/${yieldId}`,
         method: 'GET',
-        user_id,
+        userId,
         yieldid: yieldId,
         correlationid: correlationId,
         latencyms: latency,
@@ -170,17 +170,17 @@ module.exports = {
     const correlationId = req.headers['x-request-id'] || null;
 
     try {
-      const { user_id } = req.user;
+      const { user_id: userId } = req.user;
       const { yieldId } = req.params;
       const updates = req.body;
 
-      const result = await yieldService.update(user_id, yieldId, updates);
+      const result = await yieldService.update(userId, yieldId, updates);
 
       const latency = Date.now() - started;
       logger.info('yields.update', {
         route: `/api/v1/yield/${yieldId}`,
         method: 'PATCH',
-        user_id,
+        userId,
         yieldid: yieldId,
         correlationid: correlationId,
         latencyms: latency,
@@ -205,16 +205,16 @@ module.exports = {
     const correlationId = req.headers['x-request-id'] || null;
 
     try {
-      const { user_id } = req.user;
+      const { user_id: userId } = req.user;
       const { yieldId } = req.params;
 
-      await yieldService.remove(user_id, yieldId);
+      await yieldService.remove(userId, yieldId);
 
       const latency = Date.now() - started;
       logger.info('yields.remove', {
         route: `/api/v1/yield/${yieldId}`,
         method: 'DELETE',
-        user_id,
+        userId,
         yieldid: yieldId,
         correlationid: correlationId,
         latencyms: latency,
@@ -239,18 +239,18 @@ module.exports = {
     const correlationId = req.headers['x-request-id'] || null;
 
     try {
-      const { user_id } = req.user;
-      const { field_id } = req.params;
+      const { user_id: userId } = req.user;
+      const { field_id: fieldId } = req.params;
       const predictionOptions = req.body || {};
 
-      const result = await yieldService.predictYield(user_id, field_id, predictionOptions);
+      const result = await yieldService.predictYield(userId, fieldId, predictionOptions);
 
       const latency = Date.now() - started;
       logger.info('yields.predict', {
-        route: `/api/v1/fields/${field_id}/yield/predict`,
+        route: `/api/v1/fields/${fieldId}/yield/predict`,
         method: 'POST',
-        user_id,
-        field_id,
+        userId,
+        fieldId,
         predictionid: result.predictionid,
         predictedyield: result.predictedyieldperha,
         correlationid: correlationId,
@@ -276,18 +276,18 @@ module.exports = {
     const correlationId = req.headers['x-request-id'] || null;
 
     try {
-      const { user_id } = req.user;
-      const { field_id } = req.params;
+      const { user_id: userId } = req.user;
+      const { field_id: fieldId } = req.params;
       const options = req.query || {};
 
-      const result = await yieldService.getPredictions(user_id, field_id, options);
+      const result = await yieldService.getPredictions(userId, fieldId, options);
 
       const latency = Date.now() - started;
       logger.info('yields.getPredictions', {
-        route: `/api/v1/fields/${field_id}/yield/predictions`,
+        route: `/api/v1/fields/${fieldId}/yield/predictions`,
         method: 'GET',
-        user_id,
-        field_id,
+        userId,
+        fieldId,
         count: result.predictions.length,
         cachehit: result.cacheHit,
         correlationid: correlationId,
