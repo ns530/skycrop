@@ -34,16 +34,12 @@ const fakeRedis = {
     }
     return redisStore.delete(keys) ? 1 : 0;
   },
-  // Minimal async iterator for SCAN pattern used by invalidateListCache
-  async *scanIterator({ MATCH } = {}) {
+  // Minimal array for SCAN pattern used by invalidateListCache
+  scanIterator({ MATCH } = {}) {
     const regex = MATCH
       ? new RegExp(`^${MATCH.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\\\*/g, '.*')}$`)
       : null;
-    for (const k of redisStore.keys()) {
-      if (!regex || regex.test(k)) {
-        yield k;
-      }
-    }
+    return Array.from(redisStore.keys()).filter(k => !regex || regex.test(k));
   },
 };
 
@@ -59,7 +55,7 @@ let mockForecastPayload = { data: { days: [], totals: { rain_3d_mm: 0, rain_7d_m
 
 jest.mock('../../src/services/health.service', () => ({
   getHealthService: () => ({
-    listSnapshots: jest.fn(async (user_id, field_id, opts) => {
+    listSnapshots: jest.fn(async (userId, fieldId, opts) => {
       return { items: mockSnapshots.slice() };
     }),
   }),
@@ -75,8 +71,8 @@ jest.mock('../../src/config/database.config', () => {
   const mockRecStore = new Map(); // key = `${field_id}|${ts}|${type}`
   let mockIdCounter = 1;
 
-  function mockKeyOf(field_id, ts, type) {
-    return `${field_id}|${ts}|${type}`;
+  function mockKeyOf(fieldId, ts, type) {
+    return `${fieldId}|${ts}|${type}`;
   }
 
   function mockSelectByKey(field_id, ts, type) {
@@ -84,10 +80,10 @@ jest.mock('../../src/config/database.config', () => {
     return mockRecStore.has(k) ? { ...mockRecStore.get(k) } : null;
   }
 
-  function mockListByWhere({ field_id, fromISO, toISO, type }) {
+  function mockListByWhere({ fieldId, fromISO, toISO, type }) {
     const all = [];
     for (const v of mockRecStore.values()) {
-      if (v.field_id !== field_id) continue;
+      if (v.field_id !== fieldId) continue;
       if (type && v.type !== type) continue;
       const t = new Date(v.timestamp).getTime();
       if (fromISO && t < new Date(fromISO).getTime()) continue;
@@ -153,7 +149,7 @@ jest.mock('../../src/config/database.config', () => {
             // DO NOTHING path
             if (!mockRecStore.has(k)) {
               mockRecStore.set(k, {
-                id: `rec-${mockIdCounter++}`,
+                id: `rec-${mockIdCounter += 1}`,
                 field_id: field_id,
                 timestamp: ts,
                 type: rtype,
@@ -281,7 +277,7 @@ describe('RecommendationService unit', () => {
     // 3-day rain below 5mm (keep totals default 1.8mm)
     mockForecastPayload.data.totals = { rain_3d_mm: 3.5, rain_7d_mm: 15.0 };
 
-    const { recommendations } = await svc.computeRecommendationsForField(user_id, field_id, date, {
+    const { recommendations } = await svc.computeRecommendationsForField(userId, fieldId, date, {
       recompute: true,
     });
     const water = recommendations.find(r => r.type === 'water');
@@ -310,7 +306,7 @@ describe('RecommendationService unit', () => {
       mockMakeSnapshot('2025-01-01T00:00:00.000Z', 0.49, 0.18, 0.3), // delta = 0.01
     ];
 
-    const { recommendations } = await svc.computeRecommendationsForField(user_id, field_id, date, {
+    const { recommendations } = await svc.computeRecommendationsForField(userId, fieldId, date, {
       recompute: true,
     });
     const fert = recommendations.find(r => r.type === 'fertilizer');
@@ -347,10 +343,10 @@ describe('RecommendationService unit', () => {
       mockMakeSnapshot(ts, 0.5, 0.04, 0.55),
       mockMakeSnapshot('2025-01-01T00:00:00.000Z', 0.49, 0.18, 0.3),
     ];
-    const r1 = await svc.computeRecommendationsForField(user_id, field_id, date, {
+    const r1 = await svc.computeRecommendationsForField(userId, fieldId, date, {
       recompute: false,
     });
-    const r2 = await svc.computeRecommendationsForField(user_id, field_id, date, {
+    const r2 = await svc.computeRecommendationsForField(userId, fieldId, date, {
       recompute: false,
     });
     expect(r1.meta.cachehit).toBe(false);
@@ -388,20 +384,20 @@ describe('RecommendationService unit', () => {
   test('listRecommendations filters by type and range and returns pagination; cache stored and invalidated on upsert', async () => {
     // Seed two days
     await svc.upsertRecommendations(
-      field_id,
+      fieldId,
       '2025-01-14',
       [{ type: 'water', severity: 'low', reason: 'older' }],
       { recompute: true }
     );
     await svc.upsertRecommendations(
-      field_id,
+      fieldId,
       '2025-01-15',
       [{ type: 'fertilizer', severity: 'medium', reason: 'newer' }],
       { recompute: true }
     );
 
     // List fertilizer only in range
-    const list1 = await svc.listRecommendations(field_id, {
+    const list1 = await svc.listRecommendations(fieldId, {
       from: '2025-01-14',
       to: '2025-01-15',
       type: 'fertilizer',
@@ -412,18 +408,18 @@ describe('RecommendationService unit', () => {
     expect(list1.data[0].type).toBe('fertilizer');
 
     // Confirm cache set
-    const cacheKeyPrefix = `recommendations:list:${field_id}:`;
+    const cacheKeyPrefix = `recommendations:list:${fieldId}:`;
     const anyCached = Array.from(redisStore.keys()).some(k => k.startsWith(cacheKeyPrefix));
     expect(anyCached).toBe(true);
 
     // Upsert new fertilizer on same day and assert cache invalidation best-effort
     await svc.upsertRecommendations(
-      field_id,
+      fieldId,
       '2025-01-15',
       [{ type: 'fertilizer', severity: 'high', reason: 'update' }],
       { recompute: true }
     );
-    const list2 = await svc.listRecommendations(field_id, {
+    const list2 = await svc.listRecommendations(fieldId, {
       from: '2025-01-14',
       to: '2025-01-15',
       type: 'fertilizer',
@@ -448,7 +444,7 @@ describe('RecommendationService unit', () => {
       },
     };
 
-    const res = await svc.computeRecommendationsForField(user_id, field_id, date, {
+    const res = await svc.computeRecommendationsForField(userId, fieldId, date, {
       recompute: true,
     });
     expect(res.recommendations.some(r => r.type === 'water')).toBe(true);

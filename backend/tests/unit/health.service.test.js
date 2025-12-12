@@ -187,8 +187,8 @@ describe('HealthService (vegetation indices) unit', () => {
       };
     });
 
-    const result = await svc.computeIndicesForField(user_id, field_id, date);
-    expect(result.field_id).toBe(field_id);
+    const result = await svc.computeIndicesForField(userId, fieldId, date);
+    expect(result.field_id).toBe(fieldId);
     expect(result.timestamp).toBe(`${date}T00:00:00.000Z`);
     expect(result.source).toBe('sentinel2');
     expect(result.ndvi).toBeCloseTo(0.62, 5);
@@ -205,7 +205,7 @@ describe('HealthService (vegetation indices) unit', () => {
   });
 
   test('upsertSnapshot is idempotent and returns row; recompute=true updates values', async () => {
-    const field_id = 'field-1';
+    const fieldId = 'field-1';
     const ts = '2025-01-15T00:00:00.000Z';
 
     // First insert (no existing) recompute=false
@@ -221,13 +221,13 @@ describe('HealthService (vegetation indices) unit', () => {
 
     // Recompute=true should "update"; our mock returns same select row structure
     const row2 = await svc.upsertSnapshot(
-      field_id,
+      fieldId,
       ts,
       { ndvi: 0.55, ndwi: 0.12, tdvi: 0.35, source: 'sentinel2' },
       true
     );
     expect(row2).toBeDefined();
-    expect(row2.field_id).toBe(field_id);
+    expect(row2.field_id).toBe(fieldId);
   });
 
   test('listSnapshots returns paginated results and respects range and page/pageSize defaults', async () => {
@@ -249,8 +249,8 @@ describe('HealthService (vegetation indices) unit', () => {
   });
 
   test('Process API error mapping: 5xx -> 503, 4xx -> 400', async () => {
-    const user_id = 'user-1';
-    const field_id = 'field-1';
+    const userId = 'user-1';
+    const fieldId = 'field-1';
     const date = '2025-01-15';
 
     // OAuth OK
@@ -282,7 +282,7 @@ describe('HealthService (vegetation indices) unit', () => {
       data: Buffer.from('{}', 'utf8'),
       headers: { 'content-type': 'application/json' },
     }));
-    await expect(svc.computeIndicesForField(user_id, field_id, date)).rejects.toMatchObject({
+    await expect(svc.computeIndicesForField(userId, fieldId, date)).rejects.toMatchObject({
       statusCode: 400,
     });
   });
