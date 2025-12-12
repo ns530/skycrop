@@ -118,14 +118,14 @@ User.findByEmail = function findByEmail(email) {
 
 /**
  * Helper: soft-delete user by setting status
- * @param {string} user_id
+ * @param {string} userId
  * @returns {Promise<[affectedCount]>}
  */
-User.softDeleteById = function softDeleteById(user_id) {
+User.softDeleteById = function softDeleteById(userId) {
   return this.update(
     { status: 'deleted' },
     {
-      where: { user_id },
+      where: { user_id: userId },
       returning: false,
     }
   );

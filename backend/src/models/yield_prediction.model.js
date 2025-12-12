@@ -73,7 +73,7 @@ const YieldPrediction = sequelize.define(
       allowNull: false,
     },
     featuresused: {
-      type: DataTypesONB,
+      type: DataTypes.JSONB,
       allowNull: false,
     },
     actualyield: {
