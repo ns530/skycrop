@@ -124,7 +124,7 @@ app.use('/api/v1/admin/content', adminContentRoutes); // Admin content managemen
 app.use('/debug', debugRoutes); // Debug routes (development/staging only)
 
 // 404 handler
-app.use((req, res, next) => {
+app.use((req, res, _next) => {
   return res.status(404).json({
     success: false,
     error: {

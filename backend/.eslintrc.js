@@ -57,7 +57,7 @@ module.exports = {
       },
     },
     {
-      files: ['src/services/**/*.js'],
+      files: ['src/services/**/*.js', 'src/websocket/**/*.js', 'src/app.js', 'src/server.js'],
       rules: {
         camelcase: [
           'error',
@@ -92,6 +92,7 @@ module.exports = {
         'global-require': 'off',
         'import/no-unresolved': 'off',
         'no-return-await': 'off',
+        'no-param-reassign': 'off',
       },
     },
   ],
