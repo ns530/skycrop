@@ -140,7 +140,7 @@ export const BoundaryConfirmation: React.FC<BoundaryConfirmationProps> = ({
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
             <p className="text-xs text-blue-900">
               <strong>💡 Tip:</strong> The green boundary shows your detected
-              field. If it looks accurate, click "Confirm" to proceed. You can
+              field. If it looks accurate, click &#34;Confirm&#34; to proceed. You can
               adjust it manually later from the field details page.
             </p>
           </div>

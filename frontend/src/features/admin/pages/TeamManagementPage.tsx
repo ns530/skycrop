@@ -1,31 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Users,
-  UserPlus,
-  Shield,
-  Search,
-  MoreVertical,
-  Mail,
-} from "lucide-react";
-import React, { useState, useEffect } from "react";
+import { AxiosError } from "axios";
+import { Users, UserPlus, Shield, Search } from "lucide-react";
+import React, { useState } from "react";
 
-import { httpClient } from "../../../shared/api/httpClient";
+import { httpClient, ApiErrorPayload } from "../../../shared/api/httpClient";
 import { useToast } from "../../../shared/hooks/useToast";
 import { InviteUserModal } from "../components/InviteUserModal";
 import { PermissionMatrixModal } from "../components/PermissionMatrixModal";
 import { TeamMembersList } from "../components/TeamMembersList";
 import { UserStatsCard } from "../components/UserStatsCard";
 
-interface User {
-  user_id: string;
-  email: string;
-  name: string;
-  role: "admin" | "manager" | "farmer" | "viewer";
-  status: "active" | "suspended" | "deleted";
-  created_at: string;
-  last_login: string | null;
-  profile_photo_url: string | null;
-}
 
 interface UserStats {
   total: number;
@@ -106,7 +90,7 @@ export const TeamManagementPage: React.FC = () => {
         description: "User role has been updated successfully",
       });
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<ApiErrorPayload>) => {
       showToast({
         variant: "error",
         title: "Update Failed",
@@ -138,7 +122,7 @@ export const TeamManagementPage: React.FC = () => {
         description: "User status has been updated successfully",
       });
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<ApiErrorPayload>) => {
       showToast({
         variant: "error",
         title: "Update Failed",

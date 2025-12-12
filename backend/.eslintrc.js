@@ -41,6 +41,8 @@ module.exports = {
       rules: {
         'import/no-unresolved': 'off',
         'no-undef': 'off', // ENV is defined by k6
+        'no-console': 'off',
+        'func-names': 'off',
       },
     },
     {

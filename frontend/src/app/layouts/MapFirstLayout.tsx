@@ -2,7 +2,6 @@ import React from "react";
 import { Outlet } from "react-router-dom";
 
 import { FieldMapView } from "../../shared/components/Map/FieldMapView";
-import { Card } from "../../shared/ui/Card";
 import { PageContainer } from "../../shared/ui/layout/PageContainer";
 
 /**

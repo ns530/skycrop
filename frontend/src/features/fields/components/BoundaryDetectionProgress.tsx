@@ -5,8 +5,6 @@
 
 import React from "react";
 
-import { LoadingState } from "../../../shared/ui/LoadingState";
-
 interface BoundaryDetectionProgressProps {
   progress: number; // 0-100
   currentStep: string;
