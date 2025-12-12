@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-'use strict';
-
 /**
  * Check PostGIS Service Health
  * Tests if PostGIS is responding and accessible
@@ -9,7 +7,7 @@
 
 const { Pool } = require('pg');
 
-const { DATABASEURL, DATABASEPRIVATEURL, NODEENV = 'development' } = process.env;
+const { DATABASEURL, DATABASEPRIVATEURL, NODEENV: _NODEENV = 'development' } = process.env;
 
 // Prefer private URL for internal connections (no SSL needed)
 const DBCONNECTIONSTRING = DATABASEPRIVATEURL || DATABASEURL;

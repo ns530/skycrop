@@ -1,12 +1,12 @@
-import { sequelize } from '../../config/database.config';
-import { ValidationError, NotFoundError } from '../../errors/custom-errors';
-import { logger } from '../../utils/logger';
+const { sequelize } = require('../../config/database.config');
+const { NotFoundError } = require('../../errors/custom-errors');
+const { logger } = require('../../utils/logger');
 
 /**
  * Admin Content Controller
  * Manages content items (news, articles, etc.) for admin users
  */
-export default {
+module.exports = {
   /**
    * GET /api/v1/admin/content
    * Get paginated list of content items
@@ -86,7 +86,7 @@ export default {
   async createContent(req, res, next) {
     try {
       const { title, summary, body, status, publishedat } = req.body;
-      const { user_id } = req.user;
+      const { user_id: userId } = req.user;
 
       const [result] = await sequelize.query(
         `
@@ -109,14 +109,14 @@ export default {
             body,
             status: status || 'draft',
             publishedat: publishedat || null,
-            createdby: user_id,
+            createdby: userId,
           },
         }
       );
 
       logger.info('admin.content.created', {
         contentid: result.id,
-        user_id: user_id,
+        userId,
         title: result.title,
       });
 
@@ -181,7 +181,7 @@ export default {
     try {
       const { id } = req.params;
       const { title, summary, body, status, publishedat } = req.body;
-      const { user_id } = req.user;
+      const { user_id: userId } = req.user;
 
       const [result] = await sequelize.query(
         `
@@ -222,7 +222,7 @@ export default {
 
       logger.info('admin.content.updated', {
         contentid: id,
-        user_id: user_id,
+        userId,
         title: result[0].title,
       });
 
@@ -245,7 +245,7 @@ export default {
   async deleteContent(req, res, next) {
     try {
       const { id } = req.params;
-      const { user_id } = req.user;
+      const { user_id: userId } = req.user;
 
       const [result] = await sequelize.query(
         `
@@ -262,7 +262,7 @@ export default {
 
       logger.info('admin.content.deleted', {
         contentid: id,
-        user_id: user_id,
+        userId,
         title: result[0].title,
       });
 

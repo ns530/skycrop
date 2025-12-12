@@ -127,7 +127,7 @@ User.softDeleteById = function softDeleteById(user_id) {
   return this.update(
     { status: 'deleted' },
     {
-      where: { user_id: user_id },
+      where: { user_id },
       returning: false,
     }
   );

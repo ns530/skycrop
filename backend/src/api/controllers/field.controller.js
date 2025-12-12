@@ -29,7 +29,7 @@ module.exports = {
       logger.info('fields.list', {
         route: '/api/v1/fields',
         method: 'GET',
-        user_id: user_id,
+        user_id,
         correlationid: correlationId,
         latencyms: latency,
         cachehit: cacheHit,
@@ -59,7 +59,7 @@ module.exports = {
       logger.info('fields.create', {
         route: '/api/v1/fields',
         method: 'POST',
-        user_id: user_id,
+        user_id,
         correlationid: correlationId,
         latencyms: latency,
       });
@@ -87,7 +87,7 @@ module.exports = {
       logger.info('fields.getById', {
         route: '/api/v1/fields/{id}',
         method: 'GET',
-        user_id: user_id,
+        user_id,
         field_id: id,
         correlationid: correlationId,
         latencyms: latency,
@@ -116,7 +116,7 @@ module.exports = {
       logger.info('fields.update', {
         route: '/api/v1/fields/{id}',
         method: 'PATCH',
-        user_id: user_id,
+        user_id,
         field_id: id,
         correlationid: correlationId,
         latencyms: latency,
@@ -169,7 +169,7 @@ module.exports = {
       logger.info('fields.delete', {
         route: '/api/v1/fields/{id}',
         method: 'DELETE',
-        user_id: user_id,
+        user_id,
         field_id: id,
         correlationid: correlationId,
         latencyms: latency,

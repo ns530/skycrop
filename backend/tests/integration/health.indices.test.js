@@ -210,7 +210,7 @@ describe('Health Indices API (NDVI/NDWI/TDVI)', () => {
 
       expect(r1.body.success).toBe(true);
       expect(r1.body.data).toMatchObject({
-        field_id: field_id,
+        field_id,
         source: 'sentinel2',
       });
       expect(r1.body.data).toHaveProperty('ndvi');
@@ -224,7 +224,7 @@ describe('Health Indices API (NDVI/NDWI/TDVI)', () => {
         .expect(200);
 
       expect(r2.body.success).toBe(true);
-      expect(r2.body.data).toMatchObject({ field_id: field_id });
+      expect(r2.body.data).toMatchObject({ field_id });
     });
 
     test('recompute=true returns 200 and updates values', async () => {

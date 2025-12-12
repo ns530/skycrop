@@ -36,7 +36,7 @@ class HealthMonitoringService {
     // 3. Fetch health records from database (sorted by date ascending)
     const records = await this.HealthRecord.findAll({
       where: {
-        field_id: field_id,
+        field_id,
         measurementdate: {
           [Sequelize.Op.gte]: startDate,
           [Sequelize.Op.lte]: endDate,

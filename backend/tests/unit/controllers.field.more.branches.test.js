@@ -1,3 +1,18 @@
+const controller = require('../../src/api/controllers/field.controller');
+
+const {
+  AppError,
+  ValidationError,
+  NotFoundError,
+  UnauthorizedError,
+  ForbiddenError,
+  ConflictError,
+  BusinessError,
+} = require('../../src/errors/custom-errors');
+
+let responseBody;
+let response;
+
 describe('Field Controller additional branches', () => {
   beforeEach(() => {
     jest.resetModules();
@@ -27,7 +42,7 @@ describe('Field Controller additional branches', () => {
   test('updateBoundary success path returns 200 and payload', async () => {
     await jest.isolateModules(async () => {
       const mockSvc = {
-        updateBoundary: jest.fn(async (user_id, id, boundary) => ({ ok: true, id: id })),
+        updateBoundary: jest.fn(async (user_id, id, boundary) => ({ ok: true, id })),
       };
       jest.doMock('../../src/services/field.service', () => ({
         getFieldService: () => mockSvc,
@@ -96,7 +111,7 @@ describe('Field Controller additional branches', () => {
   test('restore success path returns 200', async () => {
     await jest.isolateModules(async () => {
       const mockSvc = {
-        restore: jest.fn(async (user_id, id) => ({ id: id, status: 'active' })),
+        restore: jest.fn(async (user_id, id) => ({ id, status: 'active' })),
       };
       jest.doMock('../../src/services/field.service', () => ({
         getFieldService: () => mockSvc,

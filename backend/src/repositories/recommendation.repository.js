@@ -25,7 +25,7 @@ class RecommendationRepository {
   async findByfield_id(field_id, options = {}) {
     const { status, priority, validOnly = false, limit = 50 } = options;
 
-    const where = { field_id: field_id };
+    const where = { field_id };
 
     if (status) {
       where.status = status;
@@ -60,7 +60,7 @@ class RecommendationRepository {
   async findByuser_id(user_id, options = {}) {
     const { status, priority, validOnly = false, limit = 100 } = options;
 
-    const where = { user_id: user_id };
+    const where = { user_id };
 
     if (status) {
       where.status = status;

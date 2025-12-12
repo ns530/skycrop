@@ -78,8 +78,8 @@ describe('Health Monitoring API Integration Tests', () => {
     it('should return 200 with health analysis for valid field and period', async () => {
       // Mock field exists and belongs to user
       findByPkSpy.mockResolvedValue({
-        field_id: field_id,
-        user_id: user_id,
+        field_id,
+        user_id,
         name: 'Test Field',
       });
 
@@ -90,7 +90,7 @@ describe('Health Monitoring API Integration Tests', () => {
         date.setDate(date.getDate() - (30 - i));
         mockRecords.push({
           recordid: `rec-${i}`,
-          field_id: field_id,
+          field_id,
           measurementdate: date.toISOString().split('T')[0],
           ndvimean: 0.6 + i * 0.001,
           ndvimin: 0.55,
@@ -128,15 +128,15 @@ describe('Health Monitoring API Integration Tests', () => {
 
     it('should return 200 with custom date range', async () => {
       findByPkSpy.mockResolvedValue({
-        field_id: field_id,
-        user_id: user_id,
+        field_id,
+        user_id,
         name: 'Test Field',
       });
 
       findAllSpy.mockResolvedValue([
         {
           recordid: 'rec-1',
-          field_id: field_id,
+          field_id,
           measurementdate: '2025-01-15',
           ndvimean: 0.65,
           ndvimin: 0.6,
@@ -182,7 +182,7 @@ describe('Health Monitoring API Integration Tests', () => {
 
     it('should return 403 when user does not own field', async () => {
       findByPkSpy.mockResolvedValue({
-        field_id: field_id,
+        field_id,
         user_id: 'different-user-456',
         name: 'Other User Field',
       });
@@ -199,8 +199,8 @@ describe('Health Monitoring API Integration Tests', () => {
 
     it('should return 400 when neither period nor date range provided', async () => {
       findByPkSpy.mockResolvedValue({
-        field_id: field_id,
-        user_id: user_id,
+        field_id,
+        user_id,
         name: 'Test Field',
       });
 
@@ -215,8 +215,8 @@ describe('Health Monitoring API Integration Tests', () => {
 
     it('should return 400 for invalid period format', async () => {
       findByPkSpy.mockResolvedValue({
-        field_id: field_id,
-        user_id: user_id,
+        field_id,
+        user_id,
         name: 'Test Field',
       });
 
@@ -232,8 +232,8 @@ describe('Health Monitoring API Integration Tests', () => {
 
     it('should return 400 for invalid date format', async () => {
       findByPkSpy.mockResolvedValue({
-        field_id: field_id,
-        user_id: user_id,
+        field_id,
+        user_id,
         name: 'Test Field',
       });
 
@@ -251,8 +251,8 @@ describe('Health Monitoring API Integration Tests', () => {
 
     it('should return 200 with nodata status when field has no health records', async () => {
       findByPkSpy.mockResolvedValue({
-        field_id: field_id,
-        user_id: user_id,
+        field_id,
+        user_id,
         name: 'Test Field',
       });
 
@@ -272,8 +272,8 @@ describe('Health Monitoring API Integration Tests', () => {
 
     it('should include correlation ID in response metadata', async () => {
       findByPkSpy.mockResolvedValue({
-        field_id: field_id,
-        user_id: user_id,
+        field_id,
+        user_id,
         name: 'Test Field',
       });
 

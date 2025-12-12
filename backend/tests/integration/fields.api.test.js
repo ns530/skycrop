@@ -203,7 +203,7 @@ describe('Fields API Integration', () => {
     expect(createRes.body.data).toHaveProperty('field_id');
     expect(createRes.body.data).toHaveProperty('areasqm');
 
-    const field_id = createRes.body.data.field_id;
+    const { field_id } = createRes.body.data;
 
     // Get by id
     const getRes = await request(app)

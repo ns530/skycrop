@@ -44,7 +44,7 @@ class FieldHealthService {
     if (!user_id) throw new ValidationError('user_id is required');
     if (!field_id) throw new ValidationError('field_id is required');
     const field = await Field.findOne({
-      where: { user_id: user_id, field_id: field_id, status: { [Sequelize.Op.ne]: 'deleted' } },
+      where: { user_id, field_id, status: { [Sequelize.Op.ne]: 'deleted' } },
     });
     if (!field) throw new NotFoundError('Field not found');
     return field;
@@ -136,7 +136,7 @@ class FieldHealthService {
 
   async getLatestRecord(field_id) {
     return HealthRecord.findOne({
-      where: { field_id: field_id },
+      where: { field_id },
       order: [['measurementdate', 'DESC']],
     });
   }

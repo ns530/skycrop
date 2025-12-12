@@ -133,9 +133,11 @@ jest.mock('../../src/config/database.config', () => {
                 updatedat: new Date().toISOString(),
               });
             } else {
+              const id = `rec-${mockIdCounter}`;
+              mockIdCounter += 1;
               mockRecStore.set(k, {
-                id: `rec-${mockIdCounter++}`,
-                field_id: field_id,
+                id,
+                field_id,
                 timestamp: ts,
                 type: rtype,
                 severity,
@@ -149,8 +151,8 @@ jest.mock('../../src/config/database.config', () => {
             // DO NOTHING path
             if (!mockRecStore.has(k)) {
               mockRecStore.set(k, {
-                id: `rec-${mockIdCounter += 1}`,
-                field_id: field_id,
+                id: `rec-${(mockIdCounter += 1)}`,
+                field_id,
                 timestamp: ts,
                 type: rtype,
                 severity,

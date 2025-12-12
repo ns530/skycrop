@@ -39,7 +39,7 @@ module.exports = {
       logger.info('notifications.register', {
         route: '/api/v1/notifications/register',
         method: 'POST',
-        user_id: user_id,
+        user_id,
         deviceid: result.deviceId,
         platform,
         correlationid: correlationId,
@@ -122,7 +122,7 @@ module.exports = {
       logger.info('notifications.test', {
         route: '/api/v1/notifications/test',
         method: 'POST',
-        user_id: user_id,
+        user_id,
         correlationid: correlationId,
         latencyms: latency,
       });

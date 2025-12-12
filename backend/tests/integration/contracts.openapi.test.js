@@ -332,7 +332,7 @@ describe('OpenAPI Contract & Performance (Fields, Satellite, ML)', () => {
 
       expectSuccessBody(createRes.body);
       expect(createRes.body.data).toBeDefined();
-      const field_id = createRes.body.data.field_id;
+      const { field_id } = createRes.body.data;
       expect(typeof field_id).toBe('string');
 
       // Contract check against OpenAPI

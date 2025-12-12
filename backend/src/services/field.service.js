@@ -381,7 +381,7 @@ class FieldService {
       throw new ValidationError('Field name is required', { field: 'name' });
     }
 
-    const existing = await Field.findOne({ where: { user_id: user_id, name: name.trim() } });
+    const existing = await Field.findOne({ where: { user_id, name: name.trim() } });
     if (existing) {
       throw new ConflictError(
         `You already have a field named '${name}'. Please choose a different name.`,
@@ -415,7 +415,7 @@ class FieldService {
       };
 
       const created = await Field.create({
-        user_id: user_id,
+        user_id,
         name: name.trim(),
         boundary: normalized,
         area: areaHa,
@@ -507,7 +507,7 @@ class FieldService {
    */
   async update(user_id, field_id, { name, status }) {
     const field = await Field.scope('allStatuses').findOne({
-      where: { field_id: field_id, user_id: user_id },
+      where: { field_id, user_id },
     });
     if (!field || field.status === 'deleted') {
       throw new NotFoundError('Field not found');
@@ -515,7 +515,7 @@ class FieldService {
 
     if (typeof name === 'string' && name.trim().length > 0 && name.trim() !== field.name) {
       const exists = await Field.findOne({
-        where: { user_id: user_id, name: name.trim() },
+        where: { user_id, name: name.trim() },
       });
       if (exists) {
         throw new ConflictError(
@@ -546,7 +546,7 @@ class FieldService {
    */
   async delete(user_id, field_id) {
     const field = await Field.scope('allStatuses').findOne({
-      where: { field_id: field_id, user_id: user_id },
+      where: { field_id, user_id },
     });
     if (!field || field.status === 'deleted') {
       throw new NotFoundError('Field not found');

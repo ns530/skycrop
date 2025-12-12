@@ -29,8 +29,8 @@ module.exports = {
       logger.info('yields.create', {
         route: `/api/v1/fields/${field_id}/yield`,
         method: 'POST',
-        user_id: user_id,
-        field_id: field_id,
+        user_id,
+        field_id,
         yieldid: result.yieldid,
         correlationid: correlationId,
         latencyms: latency,
@@ -65,8 +65,8 @@ module.exports = {
       logger.info('yields.listByField', {
         route: `/api/v1/fields/${field_id}/yield`,
         method: 'GET',
-        user_id: user_id,
-        field_id: field_id,
+        user_id,
+        field_id,
         page: result.page,
         pagesize: result.pageSize,
         total: result.total,
@@ -113,8 +113,8 @@ module.exports = {
       logger.info('yields.getStatistics', {
         route: `/api/v1/fields/${field_id}/yield/statistics`,
         method: 'GET',
-        user_id: user_id,
-        field_id: field_id,
+        user_id,
+        field_id,
         correlationid: correlationId,
         latencyms: latency,
       });
@@ -147,7 +147,7 @@ module.exports = {
       logger.info('yields.getById', {
         route: `/api/v1/yield/${yieldId}`,
         method: 'GET',
-        user_id: user_id,
+        user_id,
         yieldid: yieldId,
         correlationid: correlationId,
         latencyms: latency,
@@ -182,7 +182,7 @@ module.exports = {
       logger.info('yields.update', {
         route: `/api/v1/yield/${yieldId}`,
         method: 'PATCH',
-        user_id: user_id,
+        user_id,
         yieldid: yieldId,
         correlationid: correlationId,
         latencyms: latency,
@@ -216,7 +216,7 @@ module.exports = {
       logger.info('yields.remove', {
         route: `/api/v1/yield/${yieldId}`,
         method: 'DELETE',
-        user_id: user_id,
+        user_id,
         yieldid: yieldId,
         correlationid: correlationId,
         latencyms: latency,
@@ -251,8 +251,8 @@ module.exports = {
       logger.info('yields.predict', {
         route: `/api/v1/fields/${field_id}/yield/predict`,
         method: 'POST',
-        user_id: user_id,
-        field_id: field_id,
+        user_id,
+        field_id,
         predictionid: result.predictionid,
         predictedyield: result.predictedyieldperha,
         correlationid: correlationId,
@@ -288,8 +288,8 @@ module.exports = {
       logger.info('yields.getPredictions', {
         route: `/api/v1/fields/${field_id}/yield/predictions`,
         method: 'GET',
-        user_id: user_id,
-        field_id: field_id,
+        user_id,
+        field_id,
         count: result.predictions.length,
         cachehit: result.cacheHit,
         correlationid: correlationId,

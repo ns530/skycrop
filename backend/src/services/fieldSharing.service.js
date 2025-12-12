@@ -56,7 +56,7 @@ class FieldSharingService {
     // Check if already shared
     const existingShare = await FieldShare.findOne({
       where: {
-        field_id: field_id,
+        field_id,
         sharedwithuser_id: sharedWithUser.user_id,
       },
     });
@@ -73,7 +73,7 @@ class FieldSharingService {
 
     // Create new share
     const share = await FieldShare.create({
-      field_id: field_id,
+      field_id,
       ownerid: ownerId,
       sharedwithuser_id: sharedWithUser.user_id,
       permissionlevel: permissionLevel,
@@ -110,7 +110,7 @@ class FieldSharingService {
     // Delete share
     const deleted = await FieldShare.destroy({
       where: {
-        field_id: field_id,
+        field_id,
         sharedwithuser_id: sharedWithuser_id,
       },
     });
@@ -148,7 +148,7 @@ class FieldSharingService {
 
     // Get all shares
     const shares = await FieldShare.findAll({
-      where: { field_id: field_id },
+      where: { field_id },
       include: [
         {
           model: User,
@@ -228,7 +228,7 @@ class FieldSharingService {
     // Check if shared
     const share = await FieldShare.findOne({
       where: {
-        field_id: field_id,
+        field_id,
         sharedwithuser_id: user_id,
         [Sequelize.Op.or]: [{ expiresat: null }, { expiresat: { [Sequelize.Op.gt]: new Date() } }],
       },

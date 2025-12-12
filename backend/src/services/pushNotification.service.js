@@ -167,7 +167,7 @@ class PushNotificationService {
 
       const devices = await DeviceToken.findAll({
         where: {
-          user_id: user_id,
+          user_id,
           active: true,
         },
       });
@@ -275,7 +275,7 @@ class PushNotificationService {
       if (device) {
         // Update existing token
         await device.update({
-          user_id: user_id,
+          user_id,
           platform,
           active: true,
           lastused: new Date(),
@@ -289,7 +289,7 @@ class PushNotificationService {
       } else {
         // Create new token
         device = await DeviceToken.create({
-          user_id: user_id,
+          user_id,
           devicetoken: deviceToken,
           platform,
           active: true,

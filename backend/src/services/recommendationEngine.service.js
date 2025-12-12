@@ -429,8 +429,8 @@ class RecommendationEngineService {
 
     for (const rec of recommendations) {
       const saved = await this.Recommendation.create({
-        field_id: field_id,
-        user_id: user_id,
+        field_id,
+        user_id,
         type: rec.type,
         priority: rec.priority,
         title: rec.title,

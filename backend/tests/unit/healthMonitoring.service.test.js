@@ -31,19 +31,19 @@ describe('HealthMonitoringService', () => {
     it('should return comprehensive health analysis for valid field with records', async () => {
       // Mock field exists
       mockFieldModel.findByPk.mockResolvedValue({
-        field_id: field_id,
+        field_id,
         name: 'Test Field',
         user_id: 'user-123',
       });
 
       // Mock health records (30 days of data)
       const mockRecords = [];
-      for (let i = 0; i < 30; i++) {
+      for (let i = 0; i < 30; i += 1) {
         const date = new Date('2025-01-01');
         date.setDate(date.getDate() + i);
         mockRecords.push({
           recordid: `rec-${i}`,
-          field_id: field_id,
+          field_id,
           measurementdate: date.toISOString().split('T')[0],
           ndvimean: 0.6 + i * 0.001, // Slight improvement
           ndvimin: 0.55,
@@ -83,7 +83,7 @@ describe('HealthMonitoringService', () => {
 
     it('should return nodata status when no health records exist', async () => {
       mockFieldModel.findByPk.mockResolvedValue({
-        field_id: field_id,
+        field_id,
         name: 'Test Field',
       });
 
@@ -168,7 +168,7 @@ describe('HealthMonitoringService', () => {
   describe('detectTrend', () => {
     it('should detect improving trend', () => {
       const timeSeries = [];
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 10; i += 1) {
         timeSeries.push({
           date: `2025-01-${i + 1}`,
           value: 0.5 + i * 0.02, // Increasing
@@ -182,7 +182,7 @@ describe('HealthMonitoringService', () => {
 
     it('should detect declining trend', () => {
       const timeSeries = [];
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 10; i += 1) {
         timeSeries.push({
           date: `2025-01-${i + 1}`,
           value: 0.7 - i * 0.02, // Decreasing
@@ -196,7 +196,7 @@ describe('HealthMonitoringService', () => {
 
     it('should detect stable trend', () => {
       const timeSeries = [];
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 10; i += 1) {
         timeSeries.push({
           date: `2025-01-${i + 1}`,
           value: 0.6 + (Math.random() - 0.5) * 0.01, // Small fluctuations
@@ -223,7 +223,7 @@ describe('HealthMonitoringService', () => {
     it('should detect critical NDVI drop (>25%)', () => {
       const records = [];
       // First 10 days: normal
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 10; i += 1) {
         records.push({
           measurementdate: `2025-01-${i + 1}`,
           ndvimean: 0.7,
@@ -243,7 +243,7 @@ describe('HealthMonitoringService', () => {
 
     it('should detect high NDVI drop (15-25%)', () => {
       const records = [];
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 10; i += 1) {
         records.push({
           measurementdate: `2025-01-${i + 1}`,
           ndvimean: 0.7,
@@ -261,7 +261,7 @@ describe('HealthMonitoringService', () => {
 
     it('should not detect anomalies for small drops (<15%)', () => {
       const records = [];
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 10; i += 1) {
         records.push({
           measurementdate: `2025-01-${i + 1}`,
           ndvimean: 0.7,

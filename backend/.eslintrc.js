@@ -1,15 +1,10 @@
-'use strict';
-
 module.exports = {
   env: {
     node: true,
     es2022: true,
     jest: true,
   },
-  extends: [
-    'airbnb-base',
-    'plugin:prettier/recommended',
-  ],
+  extends: ['airbnb-base', 'plugin:prettier/recommended'],
   plugins: ['prettier', 'import'],
   parserOptions: {
     ecmaVersion: 2022,

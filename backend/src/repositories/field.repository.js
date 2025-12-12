@@ -25,7 +25,7 @@ class FieldRepository {
   async findByuser_id(user_id, options = {}) {
     const { status = 'active', limit = 100 } = options;
 
-    const where = { user_id: user_id };
+    const where = { user_id };
 
     if (status) {
       where.status = status;
@@ -115,7 +115,7 @@ class FieldRepository {
   async countByUser(user_id) {
     return await Field.count({
       where: {
-        user_id: user_id,
+        user_id,
         status: 'active',
       },
     });

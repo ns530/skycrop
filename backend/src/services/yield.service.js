@@ -81,11 +81,11 @@ async function redisDelPattern(pattern) {
 async function create(user_id, field_id, yieldData) {
   // Validate field exists and belongs to user
   const field = await Field.findOne({
-    where: { field_id: field_id, user_id: user_id, status: 'active' },
+    where: { field_id, user_id, status: 'active' },
   });
 
   if (!field) {
-    throw new NotFoundError('Field not found or does not belong to user', { field_id: field_id });
+    throw new NotFoundError('Field not found or does not belong to user', { field_id });
   }
 
   // Validate required fields
@@ -103,12 +103,12 @@ async function create(user_id, field_id, yieldData) {
 
   // Check for duplicate (same field, same harvest date)
   const existing = await ActualYield.findOne({
-    where: { field_id: field_id, harvestdate: yieldData.harvestdate },
+    where: { field_id, harvestdate: yieldData.harvestdate },
   });
 
   if (existing) {
     throw new ConflictError('Yield entry already exists for this field on this date', {
-      field_id: field_id,
+      field_id,
       harvestdate: yieldData.harvestdate,
       existingid: existing.yieldid,
     });
@@ -125,8 +125,8 @@ async function create(user_id, field_id, yieldData) {
 
   // Create yield entry
   const yieldEntry = await ActualYield.create({
-    field_id: field_id,
-    user_id: user_id,
+    field_id,
+    user_id,
     actualyieldperha: yieldData.actualyieldperha,
     totalyieldkg: yieldData.totalyieldkg,
     harvestdate: yieldData.harvestdate,
@@ -155,11 +155,11 @@ async function create(user_id, field_id, yieldData) {
 async function listByField(user_id, field_id, options = {}) {
   // Validate field exists and belongs to user
   const field = await Field.findOne({
-    where: { field_id: field_id, user_id: user_id, status: 'active' },
+    where: { field_id, user_id, status: 'active' },
   });
 
   if (!field) {
-    throw new NotFoundError('Field not found or does not belong to user', { field_id: field_id });
+    throw new NotFoundError('Field not found or does not belong to user', { field_id });
   }
 
   const page = Math.max(1, parseInt(options.page, 10) || 1);
@@ -177,7 +177,7 @@ async function listByField(user_id, field_id, options = {}) {
 
   // Query database
   const { count, rows } = await ActualYield.findAndCountAll({
-    where: { field_id: field_id },
+    where: { field_id },
     order: [[sortBy, sortOrder]],
     limit: pageSize,
     offset,
@@ -219,7 +219,7 @@ async function listByField(user_id, field_id, options = {}) {
  */
 async function getById(user_id, yieldId) {
   const yieldEntry = await ActualYield.findOne({
-    where: { yieldid: yieldId, user_id: user_id },
+    where: { yieldid: yieldId, user_id },
     include: [
       {
         model: Field,
@@ -245,7 +245,7 @@ async function getById(user_id, yieldId) {
  */
 async function update(user_id, yieldId, updates) {
   const yieldEntry = await ActualYield.findOne({
-    where: { yieldid: yieldId, user_id: user_id },
+    where: { yieldid: yieldId, user_id },
   });
 
   if (!yieldEntry) {
@@ -309,14 +309,14 @@ async function update(user_id, yieldId, updates) {
  */
 async function remove(user_id, yieldId) {
   const yieldEntry = await ActualYield.findOne({
-    where: { yieldid: yieldId, user_id: user_id },
+    where: { yieldid: yieldId, user_id },
   });
 
   if (!yieldEntry) {
     throw new NotFoundError('Yield entry not found', { yieldid: yieldId });
   }
 
-  const field_id = yieldEntry.field_id;
+  const { field_id } = yieldEntry;
 
   await yieldEntry.destroy();
 
@@ -336,11 +336,11 @@ async function remove(user_id, yieldId) {
 async function getStatistics(user_id, field_id) {
   // Validate field exists and belongs to user
   const field = await Field.findOne({
-    where: { field_id: field_id, user_id: user_id, status: 'active' },
+    where: { field_id, user_id, status: 'active' },
   });
 
   if (!field) {
-    throw new NotFoundError('Field not found or does not belong to user', { field_id: field_id });
+    throw new NotFoundError('Field not found or does not belong to user', { field_id });
   }
 
   const [result] = await sequelize.query(
@@ -357,7 +357,7 @@ async function getStatistics(user_id, field_id) {
     WHERE field_id = :field_id
     `,
     {
-      replacements: { field_id: field_id },
+      replacements: { field_id },
       type: sequelize.QueryTypes.SELECT,
     }
   );
@@ -385,11 +385,11 @@ async function getStatistics(user_id, field_id) {
 async function predictYield(user_id, field_id, predictionOptions = {}) {
   // Validate field exists and belongs to user
   const field = await Field.findOne({
-    where: { field_id: field_id, user_id: user_id, status: 'active' },
+    where: { field_id, user_id, status: 'active' },
   });
 
   if (!field) {
-    throw new NotFoundError('Field not found or does not belong to user', { field_id: field_id });
+    throw new NotFoundError('Field not found or does not belong to user', { field_id });
   }
 
   // 1. Get NDVI history (last 90 days)
@@ -452,7 +452,7 @@ async function predictYield(user_id, field_id, predictionOptions = {}) {
   // [ndviavg, ndvimax, ndvimin, ndvistd, rainfallmm, tempavg, humidity, areaha]
   const features = [
     {
-      field_id: field_id,
+      field_id,
       ndviavg: ndviAvg,
       ndvimax: ndviMax,
       ndvimin: ndviMin,
@@ -495,7 +495,7 @@ async function predictYield(user_id, field_id, predictionOptions = {}) {
 
   // 7. Save prediction to database
   const savedPrediction = await YieldPrediction.create({
-    field_id: field_id,
+    field_id,
     predictiondate: new Date().toISOString().split('T')[0],
     predictedyieldperha: predictedYieldPerHa,
     predictedtotalyield: predictedTotalYield,
@@ -514,7 +514,7 @@ async function predictYield(user_id, field_id, predictionOptions = {}) {
   // Build response
   const response = {
     predictionid: savedPrediction.predictionid,
-    field_id: field_id,
+    field_id,
     fieldname: field.name,
     fieldareaha: areaHa,
     predictiondate: savedPrediction.predictiondate,
@@ -569,11 +569,11 @@ async function predictYield(user_id, field_id, predictionOptions = {}) {
 async function getPredictions(user_id, field_id, options = {}) {
   // Validate field exists and belongs to user
   const field = await Field.findOne({
-    where: { field_id: field_id, user_id: user_id, status: 'active' },
+    where: { field_id, user_id, status: 'active' },
   });
 
   if (!field) {
-    throw new NotFoundError('Field not found or does not belong to user', { field_id: field_id });
+    throw new NotFoundError('Field not found or does not belong to user', { field_id });
   }
 
   const limit = Math.min(100, Math.max(1, parseInt(options.limit, 10) || 10));
@@ -589,7 +589,7 @@ async function getPredictions(user_id, field_id, options = {}) {
 
   // Query database
   const predictions = await YieldPrediction.findAll({
-    where: { field_id: field_id },
+    where: { field_id },
     order: [[sortBy, sortOrder]],
     limit,
     attributes: [

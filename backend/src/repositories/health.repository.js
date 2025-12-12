@@ -17,7 +17,7 @@ class HealthRepository {
   async findByFieldAndDateRange(field_id, startDate, endDate) {
     return await HealthRecord.findAll({
       where: {
-        field_id: field_id,
+        field_id,
         measurementdate: {
           [Sequelize.Op.between]: [startDate, endDate],
         },
@@ -33,7 +33,7 @@ class HealthRepository {
    */
   async findLatestByField(field_id) {
     return await HealthRecord.findOne({
-      where: { field_id: field_id },
+      where: { field_id },
       order: [['measurementdate', 'DESC']],
     });
   }

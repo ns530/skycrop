@@ -73,7 +73,7 @@ class HealthService {
     if (!field_id) throw new ValidationError('field_id is required');
 
     const field = await Field.scope('allStatuses').findOne({
-      where: { field_id: field_id, user_id: user_id },
+      where: { field_id, user_id },
     });
     if (!field || field.status === 'deleted') {
       throw new NotFoundError('Field not found');
@@ -290,7 +290,7 @@ class HealthService {
         status: resp.status,
         durationms: duration,
         route: '/api/v1/fields/:id/health/compute',
-        field_id: field_id,
+        field_id,
         date,
       });
       const e = new Error(`Sentinel Hub process error (${resp.status})`);
@@ -301,7 +301,7 @@ class HealthService {
     const { ndvi, ndwi, tdvi } = this.parseProcessResponse(resp.data, resp.headers);
 
     const payload = {
-      field_id: field_id,
+      field_id,
       timestamp: `${date}T00:00:00.000Z`,
       source: 'sentinel2',
       ndvi,
@@ -314,7 +314,7 @@ class HealthService {
 
     logger.info('health.indices.process.ok', {
       route: '/api/v1/fields/:id/health/compute',
-      field_id: field_id,
+      field_id,
       date,
       latencyms: Date.now() - start,
       cachehit: false,
@@ -491,7 +491,7 @@ class HealthService {
     await this.assertFieldOwnership(user_id, field_id);
 
     const latest = await HealthRecord.findOne({
-      where: { field_id: field_id },
+      where: { field_id },
       order: [['measurementdate', 'DESC']],
     });
 
@@ -507,7 +507,7 @@ class HealthService {
   async getHistory(user_id, field_id, options = {}) {
     await this.assertFieldOwnership(user_id, field_id);
 
-    const where = { field_id: field_id };
+    const where = { field_id };
     const { days, from, to } = options || {};
 
     if (from || to) {

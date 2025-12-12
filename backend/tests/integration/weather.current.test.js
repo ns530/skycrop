@@ -89,7 +89,7 @@ describe('GET /api/v1/weather/current', () => {
     const res1 = await request(app)
       .get('/api/v1/weather/current')
       .set('Authorization', 'Bearer token') // authMiddleware mocked; token not validated
-      .query({ field_id: field_id })
+      .query({ field_id })
       .expect(200);
 
     expect(res1.body).toHaveProperty('success', true);
@@ -97,7 +97,7 @@ describe('GET /api/v1/weather/current', () => {
     expect(res1.body).toHaveProperty('meta');
     expect(res1.body.meta).toMatchObject({ cache: 'miss', source: 'provider' });
     expect(res1.body.data).toMatchObject({
-      field_id: field_id,
+      field_id,
       coord: { lat: expect.any(Number), lon: expect.any(Number) },
       current: expect.any(Object),
       source: 'openweathermaponecall',
@@ -107,7 +107,7 @@ describe('GET /api/v1/weather/current', () => {
     const res2 = await request(app)
       .get('/api/v1/weather/current')
       .set('Authorization', 'Bearer token')
-      .query({ field_id: field_id })
+      .query({ field_id })
       .expect(200);
 
     expect(res2.body.meta).toMatchObject({ cache: 'hit', source: 'cache' });
@@ -133,7 +133,7 @@ describe('GET /api/v1/weather/current', () => {
     const res = await request(app)
       .get('/api/v1/weather/current')
       .set('Authorization', 'Bearer token')
-      .query({ field_id: field_id })
+      .query({ field_id })
       .expect(404);
 
     expect(res.body.success).toBe(false);

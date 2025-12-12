@@ -379,7 +379,7 @@ describe('RecommendationEngineService', () => {
       const result = await service.generateRecommendations('field-1', 'user-1');
 
       // Verify urgency is sorted descending
-      for (let i = 0; i < result.recommendations.length - 1; i++) {
+      for (let i = 0; i < result.recommendations.length - 1; i += 1) {
         expect(result.recommendations[i].urgency).toBeGreaterThanOrEqual(
           result.recommendations[i + 1].urgency
         );

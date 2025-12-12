@@ -282,7 +282,7 @@ class RecommendationService {
     };
     await cacheSetJSON(computeKey, result, RECOTTLCOMPUTESECONDS);
     logger.info('recommendations.compute.cached', {
-      field_id: field_id,
+      field_id,
       date,
       count: recs.length,
       ttl: RECOTTLCOMPUTESECONDS,
@@ -479,7 +479,7 @@ class RecommendationService {
         if (keys.length) {
           await redis.del(keys);
           logger.info('recommendations.cache.invalidated', {
-            field_id: field_id,
+            field_id,
             keys: keys.length,
           });
         }
@@ -491,7 +491,7 @@ class RecommendationService {
       // best-effort
       logger.warn('recommendations.cache.invalidate.error', {
         message: e.message,
-        field_id: field_id,
+        field_id,
       });
     }
   }

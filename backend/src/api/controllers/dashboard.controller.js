@@ -27,7 +27,7 @@ module.exports = {
       if (cached) {
         const parsed = JSON.parse(cached);
         logger.info('dashboard.metrics.cachehit', {
-          user_id: user_id,
+          user_id,
           correlationid: correlationId,
         });
         return res.status(200).json({
@@ -49,7 +49,7 @@ module.exports = {
 
       const latency = Date.now() - started;
       logger.info('dashboard.metrics', {
-        user_id: user_id,
+        user_id,
         correlationid: correlationId,
         latencyms: latency,
         cachehit: false,
@@ -494,7 +494,7 @@ async function getWeatherForecast(user_id) {
       return { forecast: [], available: false };
     }
 
-    const field_id = fieldResult[0].field_id;
+    const { field_id } = fieldResult[0];
     const forecast = await weatherService.getForecast(user_id, field_id);
 
     return {

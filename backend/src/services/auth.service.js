@@ -186,7 +186,7 @@ class AuthService {
       throw new ValidationError('Verification link is invalid or expired');
     }
 
-    await User.update({ emailverified: true }, { where: { user_id: user_id } });
+    await User.update({ emailverified: true }, { where: { user_id } });
     if (this.redis) {
       await this.redis.del(key);
     }
@@ -229,7 +229,7 @@ class AuthService {
     }
 
     const passwordhash = await bcrypt.hash(newPassword, 10);
-    await User.update({ passwordhash }, { where: { user_id: user_id } });
+    await User.update({ passwordhash }, { where: { user_id } });
 
     // Invalidate token and existing sessions (blacklist strategy is per-JWT; user should log back in)
     if (this.redis) {

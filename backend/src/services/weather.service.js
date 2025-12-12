@@ -57,7 +57,7 @@ class WeatherService {
     if (!field_id) throw new ValidationError('field_id is required');
 
     const field = await Field.findOne({
-      where: { user_id: user_id, field_id: field_id, status: 'active' },
+      where: { user_id, field_id, status: 'active' },
     });
     if (!field) {
       throw new NotFoundError('Field not found');
@@ -158,7 +158,7 @@ class WeatherService {
     try {
       const { json, duration } = await this.requestWithRetry(url, label);
       const payload = {
-        field_id: field_id,
+        field_id,
         coord: { lat, lon },
         current: json.current || null,
         source: 'openweathermaponecall',
@@ -213,7 +213,7 @@ class WeatherService {
     try {
       const { json, duration } = await this.requestWithRetry(url, label);
       const payload = {
-        field_id: field_id,
+        field_id,
         coord: { lat, lon },
         daily: Array.isArray(json.daily) ? json.daily.slice(0, 7) : [],
         source: 'openweathermaponecall',
@@ -292,7 +292,7 @@ class WeatherService {
     const { days, totals } = this.normalizeDaily(json.daily || []);
 
     const payload = {
-      field_id: field_id,
+      field_id,
       coord: { lat, lon },
       days,
       totals,
