@@ -13,7 +13,7 @@ const path = require('path');
 
 // Import configurations
 const { sequelize, initDatabase } = require('../src/config/database.config');
-const { getRedisClient, isRedisAvailable } = require('../src/config/redis.config');
+const { getRedisClient } = require('../src/config/redis.config');
 
 const BASEURL = process.env.BACKENDURL || 'http://localhost:3000';
 const TIMEOUT = 10000; // 10 seconds
@@ -66,7 +66,7 @@ class HealthChecker {
       { name: 'fieldslist', url: '/api/v1/fields', method: 'GET', expectedStatus: 401 }, // Should require auth
     ];
 
-    for (const endpoint of endpoints) {
+    const endpointPromises = endpoints.map(async endpoint => {
       try {
         const startTime = Date.now();
         const response = await axios({
@@ -90,7 +90,9 @@ class HealthChecker {
           responsetimems: null,
         };
       }
-    }
+    });
+
+    await Promise.all(endpointPromises);
 
     this.results.checks.apiendpoints = checks;
   }
@@ -280,8 +282,15 @@ class HealthChecker {
     // Check load average (for multi-core systems)
     const loadAvg = system.loadaverage[0];
     const normalizedLoad = loadAvg / system.cpus;
-    system.cpustatus =
-      normalizedLoad < 0.8 ? 'healthy' : normalizedLoad < 1.5 ? 'warning' : 'critical';
+    let cpustatus;
+    if (normalizedLoad < 0.8) {
+      cpustatus = 'healthy';
+    } else if (normalizedLoad < 1.5) {
+      cpustatus = 'warning';
+    } else {
+      cpustatus = 'critical';
+    }
+    system.cpustatus = cpustatus;
 
     this.results.system = system;
   }

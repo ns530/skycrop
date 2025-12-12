@@ -36,6 +36,13 @@ module.exports = {
         sourceType: 'module',
       },
     },
+    {
+      files: ['tests/load/**/*.js'],
+      rules: {
+        'import/no-unresolved': 'off',
+        'no-undef': 'off', // ENV is defined by k6
+      },
+    },
   ],
   ignorePatterns: ['node_modules/', 'coverage/', 'dist/', '*.log'],
 };

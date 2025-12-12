@@ -8,6 +8,7 @@
 
 const axios = require('axios');
 const os = require('os');
+const fs = require('fs').promises;
 const { sequelize } = require('../src/config/database.config');
 
 const BASEURL = process.env.BACKENDURL || 'http://localhost:3000';
@@ -89,7 +90,7 @@ class PerformanceBaselineTester {
     console.log('Setting up test data...');
 
     // Create test user
-    const registerResponse = await axios.post(`${APIBASE}/auth/register`, this.testUser, {
+    await axios.post(`${APIBASE}/auth/register`, this.testUser, {
       timeout: 10000,
     });
 
@@ -241,7 +242,7 @@ class PerformanceBaselineTester {
 
     // Connection time
     const connStart = Date.now();
-    const testConn = await sequelize.authenticate();
+    await sequelize.authenticate();
     const connTime = Date.now() - connStart;
 
     dbMetrics.connection = {
@@ -269,13 +270,6 @@ class PerformanceBaselineTester {
 
     // CPU usage (simplified)
     const cpus = os.cpus();
-    const totalIdle = cpus.reduce((acc, cpu) => acc + cpu.times.idle, 0);
-    const totalTick = cpus.reduce(
-      (acc, cpu) => acc + Object.values(cpu.times).reduce((a, b) => a + b),
-      0
-    );
-    const idle = totalIdle / cpus.length;
-    const total = totalTick / cpus.length;
 
     systemMetrics.cpu = {
       cores: cpus.length,
@@ -285,7 +279,6 @@ class PerformanceBaselineTester {
 
     // Disk usage (simplified check)
     try {
-      const fs = require('fs').promises;
       const stats = await fs.statvfs('/');
       const totalSpace = stats.blocks * stats.fbsize;
       const freeSpace = stats.bavail * stats.fbsize;
@@ -373,7 +366,10 @@ class PerformanceBaselineTester {
 
     // API comparisons
     comparisons.api = {};
-    for (const [endpoint, metrics] of Object.entries(this.results.metrics.api || {})) {
+    const apiKeys = Object.keys(this.results.metrics.api || {});
+    for (let i = 0; i < apiKeys.length; i += 1) {
+      const endpoint = apiKeys[i];
+      const metrics = this.results.metrics.api[endpoint];
       let threshold = THRESHOLDS.api.general;
 
       if (endpoint.includes('auth')) threshold = THRESHOLDS.api.authentication;
@@ -390,7 +386,10 @@ class PerformanceBaselineTester {
 
     // Database comparisons
     comparisons.database = {};
-    for (const [query, metrics] of Object.entries(this.results.metrics.database || {})) {
+    const dbKeys = Object.keys(this.results.metrics.database || {});
+    for (let i = 0; i < dbKeys.length; i += 1) {
+      const query = dbKeys[i];
+      const metrics = this.results.metrics.database[query];
       let threshold = THRESHOLDS.database.simplequery;
 
       if (query === 'complexquery') threshold = THRESHOLDS.database.complexquery;
