@@ -1,65 +1,39 @@
 'use strict';
 
-const js = require('@eslint/js');
-const prettier = require('eslint-plugin-prettier');
-const importPlugin = require('eslint-plugin-import');
-const globals = require('globals');
-
-module.exports = [
-  {
-    files: ['**/*.js'],
-    languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: 'module',
-      globals: {
-        ...globals.node,
-        ...globals.es2022,
-        ...globals.jest,
+module.exports = {
+  root: true,
+  env: {
+    node: true,
+    es2022: true,
+    jest: true,
+  },
+  extends: [
+    'airbnb-base',
+    'plugin:prettier/recommended',
+  ],
+  plugins: ['prettier', 'import'],
+  parserOptions: {
+    ecmaVersion: 2022,
+    sourceType: 'script',
+  },
+  settings: {
+    'import/resolver': {
+      node: {
+        extensions: ['.js', '.json'],
       },
     },
-
-    plugins: {
-      prettier,
-      import: importPlugin,
-    },
-
-    ...js.configs.recommended,
-
-    rules: {
-      'prettier/prettier': 'error',
-      'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
-      'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
-      'class-methods-use-this': 'off',
-      'consistent-return': 'off',
-      'import/prefer-default-export': 'off',
-
-      'import/no-extraneous-dependencies': [
-        'error',
-        {
-          devDependencies: [
-            '**/tests/**',
-            '**/*.test.js',
-            '**/jest.config.js',
-            '**/eslint.config.js',
-          ],
-        },
-      ],
-    },
-
-    settings: {
-      'import/resolver': {
-        node: {
-          extensions: ['.js', '.json'],
-        },
-      },
-    },
-
-    ignores: ['node_modules/', 'coverage/', 'dist/', '*.log'],
   },
-  {
-    files: ['**/*.test.js', 'tests/**/*.js'],
-    languageOptions: {
-      sourceType: 'module',
-    },
+  rules: {
+    'prettier/prettier': 'error',
+    'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+    'class-methods-use-this': 'off',
+    'consistent-return': 'off',
+    'import/prefer-default-export': 'off',
+    'import/no-extraneous-dependencies': [
+      'error',
+      { devDependencies: ['**/tests/**', '**/*.test.js', '**/jest.config.js'] },
+    ],
   },
-];
+  ignorePatterns: ['node_modules/', 'coverage/', 'dist/', '*.log'],
+};
