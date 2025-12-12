@@ -471,7 +471,7 @@ class HealthService {
       }
     );
     const total = rows.length ? Number(rows[0].totalcount) : 0;
-    const items = rows.map(({ totalcount, ...r }) => r);
+    const items = rows.map(({ totalcount: _totalcount, ...r }) => r);
     return {
       items,
       total,

@@ -404,7 +404,7 @@ async function predictYield(user_id, field_id, predictionOptions = {}) {
   );
 
   // Calculate NDVI statistics
-  const ndviValues = healthRecords.map(r => parseFloat(r.ndvimean)).filter(v => !isNaN(v));
+  const ndviValues = healthRecords.map(r => parseFloat(r.ndvimean)).filter(v => !Number.isNaN(v));
   const ndviAvg =
     ndviValues.length > 0 ? ndviValues.reduce((a, b) => a + b, 0) / ndviValues.length : 0.6;
   const ndviMax = ndviValues.length > 0 ? Math.max(...ndviValues) : 0.7;
@@ -435,7 +435,7 @@ async function predictYield(user_id, field_id, predictionOptions = {}) {
     if (weatherResponse.data && weatherResponse.data.days && weatherResponse.data.days.length > 0) {
       const temps = weatherResponse.data.days
         .map(d => (d.tmax + d.tmin) / 2)
-        .filter(t => !isNaN(t));
+        .filter(t => !Number.isNaN(t));
       tempAvg = temps.length > 0 ? temps.reduce((a, b) => a + b, 0) / temps.length : tempAvg;
     }
   } catch (error) {

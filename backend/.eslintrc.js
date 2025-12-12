@@ -56,6 +56,44 @@ module.exports = {
         'no-await-in-loop': 'off',
       },
     },
+    {
+      files: ['src/services/**/*.js'],
+      rules: {
+        camelcase: [
+          'error',
+          {
+            properties: 'never',
+            ignoreDestructuring: false,
+            allow: [
+              'user_id',
+              'field_id',
+              'sharedWithuser_id',
+              'actoruser_id',
+              'targetuser_id',
+              'user_ids',
+              'rain_3d_mm',
+              'rain_7d_mm',
+              'WATERrain_mmMIN',
+              'totalcount',
+            ],
+          },
+        ],
+        'no-console': 'off',
+        'no-await-in-loop': 'off',
+        'no-restricted-syntax': ['error', 'ForInStatement', 'LabeledStatement', 'WithStatement'],
+        'no-plusplus': 'off',
+        'no-continue': 'off',
+        'no-restricted-globals': ['error', 'isFinite', 'isNaN'].concat(
+          process.browser ? [] : ['window', 'document', 'navigator', 'fetch']
+        ),
+        'no-promise-executor-return': 'off',
+        'no-nested-ternary': 'off',
+        'no-shadow': 'off',
+        'global-require': 'off',
+        'import/no-unresolved': 'off',
+        'no-return-await': 'off',
+      },
+    },
   ],
   ignorePatterns: ['node_modules/', 'coverage/', 'dist/', '*.log'],
 };

@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('../models/user.model');
-const { initRedis, getRedisClient } = require('../config/redis.config');
+const { initRedis, getRedisClient: _getRedisClient } = require('../config/redis.config');
 const { ValidationError, UnauthorizedError, ConflictError } = require('../errors/custom-errors');
 
 const JWTEXPIRES = '30d';

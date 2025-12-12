@@ -114,12 +114,12 @@ class EmailService {
     };
   }
 
-  async sendViaSES({ to, subject, html, text }) {
+  async sendViaSES({ to: _to, subject: _subject, html: _html, text: _text }) {
     // AWS SES implementation (future)
     throw new Error('AWS SES not yet implemented');
   }
 
-  async sendViaConsole({ to, subject, html, text }) {
+  async sendViaConsole({ to, subject, html, text: _text }) {
     const latency = Date.now() - Date.now();
 
     logger.info('email.sent.console', {
@@ -127,7 +127,7 @@ class EmailService {
       subject,
       provider: 'console',
       htmllength: html.length,
-      textlength: text ? text.length : 0,
+      textlength: _text ? _text.length : 0,
     });
 
     // Log to console for development
@@ -135,7 +135,7 @@ class EmailService {
     console.log(`To: ${to}`);
     console.log(`Subject: ${subject}`);
     console.log(`HTML Length: ${html.length} chars`);
-    if (text) console.log(`Text: ${text.substring(0, 100)}...`);
+    if (_text) console.log(`Text: ${_text.substring(0, 100)}...`);
     console.log('===========================================\n');
 
     return {
@@ -210,7 +210,7 @@ class EmailService {
       }[recommendation.priority] || '#6c757d';
 
     const actionStepsHtml = recommendation.actionSteps
-      ? recommendation.actionSteps.map((step, i) => `<li>${step}</li>`).join('')
+      ? recommendation.actionSteps.map(step => `<li>${step}</li>`).join('')
       : '';
 
     const html = `

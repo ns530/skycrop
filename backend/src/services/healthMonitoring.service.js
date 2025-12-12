@@ -350,13 +350,13 @@ class HealthMonitoringService {
     const end = new Date(endDate);
     const now = new Date();
 
-    if (isNaN(start.getTime())) {
+    if (Number.isNaN(start.getTime())) {
       const error = new Error('Invalid start date format');
       error.statusCode = 400;
       throw error;
     }
 
-    if (isNaN(end.getTime())) {
+    if (Number.isNaN(end.getTime())) {
       const error = new Error('Invalid end date format');
       error.statusCode = 400;
       throw error;

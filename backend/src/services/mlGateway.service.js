@@ -124,7 +124,7 @@ class MLGatewayService {
     return now.toISOString().split('T')[0];
   }
 
-  getPreviousSeasonYield(field_id) {
+  getPreviousSeasonYield(_field_id) {
     // Mock previous season yield - in real implementation, query database
     // Return a value slightly lower than current optimal
     return 4800; // kg/ha
@@ -415,7 +415,7 @@ class MLGatewayService {
   /**
    * Get disaster assessment for a field
    */
-  async getDisasterAssessment(field_id) {
+  async getDisasterAssessment(_field_id) {
     // Mock implementation - in real implementation, call ML service disaster analysis
     // For now, return basic assessment based on recent health data
     return {

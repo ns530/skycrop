@@ -447,7 +447,7 @@ class RecommendationService {
     );
 
     const total = rows.length ? Number(rows[0].totalcount) : 0;
-    const data = rows.map(({ totalcount, ...rec }) => rec);
+    const data = rows.map(({ totalcount: _totalcount, ...rec }) => rec);
     const payload = {
       data,
       pagination: {

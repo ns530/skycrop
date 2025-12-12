@@ -343,7 +343,7 @@ class WeatherService {
    * Get weather alerts for user's location (simplified - OpenWeather alerts are limited).
    * Returns { data: { alerts: [] }, meta }
    */
-  async getWeatherAlerts(user_id) {
+  async getWeatherAlerts(_user_id) {
     await this.init();
 
     // For now, return empty alerts array since OpenWeather One Call API

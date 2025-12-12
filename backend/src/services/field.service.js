@@ -357,7 +357,7 @@ async function queryFieldsList(user_id, filters) {
 
   const total = rows.length ? Number(rows[0].totalcount) : 0;
   // strip window column
-  const data = rows.map(({ totalcount, ...r }) => r);
+  const data = rows.map(({ totalcount: _totalcount, ...r }) => r);
 
   return { items: data, total, page, pageSize };
 }
@@ -404,7 +404,6 @@ class FieldService {
     try {
       // Create field with placeholder values - trigger will compute actual center and areasqm
       // We use a simple point and 0 area as placeholders that satisfy Sequelize validation
-      const { sequelize } = Field;
 
       // Create a temporary point for center (trigger will override)
       const tempCenter = {

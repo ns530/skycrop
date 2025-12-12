@@ -1,6 +1,6 @@
 const axios = require('axios');
 const crypto = require('crypto');
-const { initRedis, getRedisClient } = require('../config/redis.config');
+const { initRedis, getRedisClient: _getRedisClient } = require('../config/redis.config');
 const { ValidationError } = require('../errors/custom-errors');
 const { logger } = require('../utils/logger');
 
