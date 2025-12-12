@@ -67,7 +67,7 @@ export function setup() {
     return;
   }
 
-  const { token } = loginResponseon();
+  const { token } = loginResponse.json();
 
   // Create multiple test fields
   const testFields = [];
@@ -79,7 +79,7 @@ export function setup() {
     { lat: 7.957, lng: 80.7603 }, // Polonnaruwa
   ];
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i += 1) {
     // Create 10 test fields
     const coords = coordinates[i % coordinates.length];
     const fieldData = {
@@ -104,7 +104,7 @@ export function setup() {
         `${BASEURL}/fields`,
         JSON.stringify({
           name: `Test Field ${i + 1}`,
-          boundary: boundaryResponseon().boundary,
+          boundary: boundaryResponse.json().boundary,
         }),
         {
           headers: {
@@ -115,7 +115,7 @@ export function setup() {
       );
 
       if (fieldResponse.status === 201) {
-        testFields.push(fieldResponseon().field.id);
+        testFields.push(fieldResponse.json().field.id);
         console.log(`Created test field ${i + 1}`);
       }
     }
@@ -138,7 +138,7 @@ export default function (data) {
   }
 
   // Select random field
-  const field_id = testFields[Math.floor(Math.random() * testFields.length)];
+  const fieldId = testFields[Math.floor(Math.random() * testFields.length)];
 
   const params = {
     headers: {
@@ -150,7 +150,7 @@ export default function (data) {
   const startTime = new Date().getTime();
 
   // Request health data update
-  const healthResponse = http.post(`${BASEURL}/fields/${field_id}/update-health`, {}, params);
+  const healthResponse = http.post(`${BASEURL}/fields/${fieldId}/update-health`, {}, params);
 
   const endTime = new Date().getTime();
   const duration = endTime - startTime;
@@ -161,10 +161,11 @@ export default function (data) {
   // Check health update success
   const healthSuccess = check(healthResponse, {
     'health update status is 200': r => r.status === 200,
-    'health update response has health data': r => ron().hasOwnProperty('health'),
+    'health update response has health data': r =>
+      Object.prototype.hasOwnProperty.call(r.json(), 'health'),
     'health update completes within 15 seconds': r => r.timings.duration < 15000,
-    'health data has NDVI': r => ron().health.hasOwnProperty('ndvi'),
-    'health data has status': r => ron().health.hasOwnProperty('status'),
+    'health data has NDVI': r => Object.prototype.hasOwnProperty.call(r.json().health, 'ndvi'),
+    'health data has status': r => Object.prototype.hasOwnProperty.call(r.json().health, 'status'),
   });
 
   healthUpdateSuccessRate.add(healthSuccess);
@@ -172,7 +173,7 @@ export default function (data) {
   // Log failures for debugging
   if (!healthSuccess) {
     console.log(
-      `Health update failed for field ${field_id}: ${healthResponse.status} - ${healthResponse.body}`
+      `Health update failed for field ${fieldId}: ${healthResponse.status} - ${healthResponse.body}`
     );
   }
 
@@ -181,6 +182,6 @@ export default function (data) {
 }
 
 // Teardown function
-export function teardown(data) {
+export function teardown(_data) {
   console.log('Daily health update load test completed');
 }

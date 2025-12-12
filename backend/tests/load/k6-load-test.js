@@ -22,7 +22,7 @@ import { Rate, Trend, Counter } from 'k6/metrics';
 
 const BASEURL = ENV.BASEURL || 'http://localhost:3000';
 const TOKEN = ENV.JWTTOKEN || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // Replace with valid token
-const field_id = ENV.field_id || 'test-field-123';
+const fieldId = ENV.field_id || 'test-field-123';
 
 // ========== Custom Metrics ==========
 
@@ -95,15 +95,19 @@ export default function () {
 
   if (scenario < 0.4) {
     // 40% of requests: Health Monitoring API
+    // eslint-disable-next-line no-use-before-define
     testHealthMonitoringAPI(headers);
   } else if (scenario < 0.7) {
     // 30% of requests: Recommendation Engine API
+    // eslint-disable-next-line no-use-before-define
     testRecommendationAPI(headers);
   } else if (scenario < 0.85) {
     // 15% of requests: Yield Prediction API
+    // eslint-disable-next-line no-use-before-define
     testYieldPredictionAPI(headers);
   } else {
     // 15% of requests: Notification Service API
+    // eslint-disable-next-line no-use-before-define
     testNotificationAPI(headers);
   }
 
@@ -116,9 +120,9 @@ export default function () {
 function testHealthMonitoringAPI(headers) {
   const startTime = Date.now();
 
-  // GET /api/v1/fields/{field_id}/health/history
+  // GET /api/v1/fields/{fieldId}/health/history
   const response = http.get(
-    `${BASEURL}/api/v1/fields/${field_id}/health/history?start=2024-01-01&end=2024-01-31`,
+    `${BASEURL}/api/v1/fields/${fieldId}/health/history?start=2024-01-01&end=2024-01-31`,
     { headers }
   );
 
@@ -131,7 +135,7 @@ function testHealthMonitoringAPI(headers) {
     'Health API: has success field': r => {
       try {
         const body = JSON.parse(r.body);
-        return body.hasOwnProperty('success');
+        return Object.prototype.hasOwnProperty.call(body, 'success');
       } catch (e) {
         return false;
       }
@@ -151,9 +155,9 @@ function testHealthMonitoringAPI(headers) {
 function testRecommendationAPI(headers) {
   const startTime = Date.now();
 
-  // GET /api/v1/fields/{field_id}/recommendations
+  // GET /api/v1/fields/{fieldId}/recommendations
   const response = http.get(
-    `${BASEURL}/api/v1/fields/${field_id}/recommendations?page=1&pageSize=10&status=pending`,
+    `${BASEURL}/api/v1/fields/${fieldId}/recommendations?page=1&pageSize=10&status=pending`,
     { headers }
   );
 
@@ -166,7 +170,7 @@ function testRecommendationAPI(headers) {
     'Recommendation API: has success field': r => {
       try {
         const body = JSON.parse(r.body);
-        return body.hasOwnProperty('success');
+        return Object.prototype.hasOwnProperty.call(body, 'success');
       } catch (e) {
         return false;
       }
@@ -186,9 +190,9 @@ function testRecommendationAPI(headers) {
 function testYieldPredictionAPI(headers) {
   const startTime = Date.now();
 
-  // GET /api/v1/fields/{field_id}/yield/predictions
+  // GET /api/v1/fields/{fieldId}/yield/predictions
   const response = http.get(
-    `${BASEURL}/api/v1/fields/${field_id}/yield/predictions?limit=5&sort=predictiondate&order=desc`,
+    `${BASEURL}/api/v1/fields/${fieldId}/yield/predictions?limit=5&sort=predictiondate&order=desc`,
     { headers }
   );
 
@@ -201,7 +205,7 @@ function testYieldPredictionAPI(headers) {
     'Yield API: has success field': r => {
       try {
         const body = JSON.parse(r.body);
-        return body.hasOwnProperty('success');
+        return Object.prototype.hasOwnProperty.call(body, 'success');
       } catch (e) {
         return false;
       }
@@ -233,7 +237,7 @@ function testNotificationAPI(headers) {
     'Notification API: has data': r => {
       try {
         const body = JSON.parse(r.body);
-        return body.success && body.hasOwnProperty('data');
+        return body.success && Object.prototype.hasOwnProperty.call(body, 'data');
       } catch (e) {
         return false;
       }
@@ -288,6 +292,6 @@ export function handleSummary(data) {
 
   return {
     stdout: JSON.stringify(data, null, 2),
-    summaryon: JSON.stringify(data, null, 2),
+    'summary.json': JSON.stringify(data, null, 2),
   };
 }

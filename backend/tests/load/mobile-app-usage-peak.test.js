@@ -48,7 +48,7 @@ export function setup() {
   const testFields = [];
 
   // Create 10 test users with fields
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i += 1) {
     const userData = {
       email: `mobiletest_${new Date().getTime()}_${i}@skycrop.test`,
       password: 'TestPass123!',
@@ -72,7 +72,7 @@ export function setup() {
       );
 
       if (loginResponse.status === 200) {
-        const { token } = loginResponseon();
+        const { token } = loginResponse.json();
         testUsers.push({ email: userData.email, token });
 
         // Create a field for this user
@@ -101,7 +101,7 @@ export function setup() {
             `${BASEURL}/fields`,
             JSON.stringify({
               name: `Mobile Field ${i + 1}`,
-              boundary: boundaryResponseon().boundary,
+              boundary: boundaryResponse.json().boundary,
             }),
             {
               headers: {
@@ -114,7 +114,7 @@ export function setup() {
           if (fieldResponse.status === 201) {
             testFields.push({
               userEmail: userData.email,
-              field_id: fieldResponseon().field.id,
+              fieldId: fieldResponse.json().field.id,
               token,
             });
           }
@@ -141,7 +141,7 @@ export default function (data) {
   // Select random field and user
   const testField = testFields[Math.floor(Math.random() * testFields.length)];
   const { token } = testField;
-  const { field_id } = testField;
+  const { fieldId } = testField;
 
   // Random mobile user agent
   const userAgent = mobileUserAgents[Math.floor(Math.random() * mobileUserAgents.length)];
@@ -167,13 +167,13 @@ export default function (data) {
     sessionSuccess &&
     check(dashboardResponse, {
       'dashboard status is 200': r => r.status === 200,
-      'dashboard has fields array': r => Array.isArray(ron().fields),
+      'dashboard has fields array': r => Array.isArray(r.json().fields),
     });
 
   sleep(Math.random() * 2 + 1); // 1-3 second delay
 
   // 2. Get field details
-  const fieldResponse = http.get(`${BASEURL}/fields/${field_id}`, {
+  const fieldResponse = http.get(`${BASEURL}/fields/${fieldId}`, {
     headers: baseHeaders,
   });
 
@@ -181,13 +181,13 @@ export default function (data) {
     sessionSuccess &&
     check(fieldResponse, {
       'field details status is 200': r => r.status === 200,
-      'field has health data': r => ron().field.hasOwnProperty('health'),
+      'field has health data': r => Object.prototype.hasOwnProperty.call(r.json().field, 'health'),
     });
 
   sleep(Math.random() * 1 + 0.5); // 0.5-1.5 second delay
 
   // 3. Get recommendations
-  const recommendationsResponse = http.get(`${BASEURL}/fields/${field_id}/recommendations`, {
+  const recommendationsResponse = http.get(`${BASEURL}/fields/${fieldId}/recommendations`, {
     headers: baseHeaders,
   });
 
@@ -201,7 +201,7 @@ export default function (data) {
 
   // 4. Get weather forecast (30% of sessions)
   if (Math.random() < 0.3) {
-    const weatherResponse = http.get(`${BASEURL}/weather/forecast?field_id=${field_id}`, {
+    const weatherResponse = http.get(`${BASEURL}/weather/forecast?field_id=${fieldId}`, {
       headers: baseHeaders,
     });
 
@@ -216,7 +216,7 @@ export default function (data) {
 
   // 5. Get yield prediction (20% of sessions)
   if (Math.random() < 0.2) {
-    const yieldResponse = http.get(`${BASEURL}/fields/${field_id}/yield-prediction`, {
+    const yieldResponse = http.get(`${BASEURL}/fields/${fieldId}/yield-prediction`, {
       headers: baseHeaders,
     });
 
@@ -238,7 +238,7 @@ export default function (data) {
 
   // Log failures for debugging
   if (!sessionSuccess) {
-    console.log(`Mobile session failed for field ${field_id}: Incomplete session`);
+    console.log(`Mobile session failed for field ${fieldId}: Incomplete session`);
   }
 
   // Random delay between sessions (simulating user think time)
@@ -246,6 +246,6 @@ export default function (data) {
 }
 
 // Teardown function
-export function teardown(data) {
+export function teardown(_data) {
   console.log('Mobile app usage peak load test completed');
 }

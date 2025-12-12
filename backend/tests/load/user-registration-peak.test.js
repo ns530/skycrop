@@ -59,7 +59,7 @@ export function setup() {
 }
 
 // Main test function
-export default function (data) {
+export default function (_data) {
   const userData = generateUserData();
 
   const payload = JSON.stringify({
@@ -89,8 +89,9 @@ export default function (data) {
   // Check registration success
   const registrationSuccess = check(registerResponse, {
     'registration status is 201': r => r.status === 201,
-    'registration response has user data': r => ron().hasOwnProperty('user'),
-    'registration response has token': r => ron().hasOwnProperty('token'),
+    'registration response has user data': r =>
+      Object.prototype.hasOwnProperty.call(r.json(), 'user'),
+    'registration response has token': r => Object.prototype.hasOwnProperty.call(r.json(), 'token'),
     'registration completes within 3 seconds': r => r.timings.duration < 3000,
   });
 
@@ -106,6 +107,6 @@ export default function (data) {
 }
 
 // Teardown function - runs after the test
-export function teardown(data) {
+export function teardown(_data) {
   console.log('User registration peak load test completed');
 }

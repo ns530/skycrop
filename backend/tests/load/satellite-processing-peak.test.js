@@ -82,7 +82,7 @@ export function setup() {
     return;
   }
 
-  const { token } = loginResponseon();
+  const { token } = loginResponse.json();
   console.log('Test user authenticated successfully');
 
   return { token };
@@ -122,11 +122,13 @@ export default function (data) {
   // Check boundary detection success
   const boundarySuccess = check(boundaryResponse, {
     'boundary detection status is 200': r => r.status === 200,
-    'boundary detection response has boundary': r => ron().hasOwnProperty('boundary'),
-    'boundary detection response has area': r => ron().hasOwnProperty('area'),
+    'boundary detection response has boundary': r =>
+      Object.prototype.hasOwnProperty.call(r.json(), 'boundary'),
+    'boundary detection response has area': r =>
+      Object.prototype.hasOwnProperty.call(r.json(), 'area'),
     'boundary detection completes within 60 seconds': r => r.timings.duration < 60000,
     'boundary area is valid': r => {
-      const { area } = ron();
+      const { area } = r.json();
       return area >= 0.1 && area <= 50; // Valid hectare range
     },
   });
@@ -143,6 +145,6 @@ export default function (data) {
 }
 
 // Teardown function
-export function teardown(data) {
+export function teardown(_data) {
   console.log('Satellite processing peak load test completed');
 }
