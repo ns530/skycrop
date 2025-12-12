@@ -49,6 +49,18 @@ export const UserAnalyticsCard: React.FC<UserAnalyticsCardProps> = ({
           <span>Active today:</span>
           <span className="font-semibold">{activeUsersToday}</span>
         </div>
+        <div className="flex justify-between text-sm">
+          <span>Last activity:</span>
+          <span className="font-semibold">
+            {lastActivity ? new Date(lastActivity).toLocaleDateString() : "N/A"}
+          </span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span>Avg session:</span>
+          <span className="font-semibold">
+            {sessionDurationAvg ? `${sessionDurationAvg.toFixed(1)}min` : "N/A"}
+          </span>
+        </div>
       </div>
     </Card>
   );
