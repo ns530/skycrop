@@ -54,7 +54,7 @@ describe('POST /api/v1/ml/yield/predict', () => {
   });
 
   it('happy path: returns yield prediction with cache miss then hit', async () => {
-    const spy = jest.spyOn(axios, 'post').mockImplementation(async (url, body) => {
+    const spy = jest.spyOn(axios, 'post').mockImplementation(async (_url, _body) => {
       return {
         status: 200,
         headers: { 'x-model-version': 'rf-1.0.0' },

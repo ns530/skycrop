@@ -25,7 +25,7 @@ const fakeRedis = {
     fakeRedisStore.set(key, String(next));
     return next;
   },
-  async expire(key, ttl) {
+  async expire(_key, _ttl) {
     return 1;
   },
 };
@@ -39,7 +39,7 @@ const mockUser = {
   findByEmail: jest.fn(),
   create: jest.fn(),
   update: jest.fn(),
-  scope(name) {
+  scope(_name) {
     // for withSensitive or allStatuses just return same mock
     return this;
   },
@@ -48,6 +48,7 @@ jest.mock('../../src/models/user.model', () => mockUser);
 
 // Build app after mocks are set up
 const request = require('supertest');
+const bcrypt = require('bcrypt');
 const app = require('../../src/app');
 
 describe('Auth API Integration', () => {
@@ -117,7 +118,6 @@ describe('Auth API Integration', () => {
 
     test('returns 200 and token on successful login', async () => {
       // Use a bcrypt hash that will match 'Password1'
-      const bcrypt = require('bcrypt');
       const passwordhash = await bcrypt.hash('Password1', 10);
 
       const userObj = {

@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 const request = require('supertest');
 
 // Mock rate limiter to no-op for tests
@@ -42,9 +43,9 @@ const fakeRedisClient = {
   async del(keys) {
     if (Array.isArray(keys)) {
       let count = 0;
-      for (const k of keys) {
+      keys.forEach(k => {
         if (redisStore.delete(k)) count += 1;
-      }
+      });
       return count;
     }
     return redisStore.delete(keys) ? 1 : 0;
@@ -55,7 +56,7 @@ const fakeRedisClient = {
     redisStore.set(key, String(next));
     return next;
   },
-  async expire(key, ttl) {
+  async expire(_key, _ttl) {
     return 1;
   },
   async scan(cursor, opts = {}) {
@@ -147,7 +148,7 @@ describe('Fields API Integration', () => {
       });
 
     // Model methods
-    jest.spyOn(Field, 'findOne').mockImplementation(async args => null);
+    jest.spyOn(Field, 'findOne').mockImplementation(async _args => null);
     jest.spyOn(Field, 'create').mockImplementation(async payload => ({
       field_id: '11111111-1111-4111-8111-111111111111',
       user_id: payload.user_id,

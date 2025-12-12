@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 const request = require('supertest');
 
 // Create mock instances that we can control

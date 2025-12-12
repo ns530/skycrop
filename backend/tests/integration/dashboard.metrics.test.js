@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 const request = require('supertest');
 
 // Mock rate limiter to no-op for tests
@@ -172,7 +173,7 @@ jest.mock('sequelize', () => {
 });
 
 // Mock database queries
-const { QueryTypes } = require('sequelize');
+const { QueryTypes: _QueryTypes } = require('sequelize');
 const { sequelize } = require('../../src/config/database.config');
 
 process.env.NODE_ENV = 'test';

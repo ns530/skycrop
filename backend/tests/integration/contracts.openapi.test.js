@@ -15,13 +15,16 @@ const axios = require('axios');
 
 let assertApiSpec = () => {};
 try {
+  // eslint-disable-next-line global-require
   const path = require('path');
+  // eslint-disable-next-line global-require, import/no-unresolved
   const { matchers } = require('jest-openapi');
+  // eslint-disable-next-line global-require, import/no-unresolved
   const jestOpenAPI = require('jest-openapi').default || require('jest-openapi');
   expect.extend(matchers);
   // Load OpenAPI once for jest-openapi contract validation
   beforeAll(() => {
-    jestOpenAPI(path.join(dirname, '../../src/api/openapi.yaml'));
+    jestOpenAPI(path.join(__dirname, '../../src/api/openapi.yaml'));
   });
   assertApiSpec = res => {
     expect(res).toSatisfyApiSpec();
@@ -72,9 +75,9 @@ const fakeRedis = {
   async del(keys) {
     if (Array.isArray(keys)) {
       let count = 0;
-      for (const k of keys) {
+      keys.forEach(k => {
         if (redisStore.delete(k)) count += 1;
-      }
+      });
       return count;
     }
     return redisStore.delete(keys) ? 1 : 0;
@@ -85,7 +88,7 @@ const fakeRedis = {
     redisStore.set(key, String(next));
     return next;
   },
-  async expire(key, ttl) {
+  async expire(_key, _ttl) {
     return 1;
   },
   async scan(cursor, opts = {}) {
@@ -159,7 +162,7 @@ describe('OpenAPI Contract & Performance (Fields, Satellite, ML)', () => {
     redisStore.clear();
 
     // axios downstream mocks: Sentinel Hub OAuth/Process + ML service
-    jest.spyOn(axios, 'post').mockImplementation(async (url, data, config) => {
+    jest.spyOn(axios, 'post').mockImplementation(async (url, data, _config) => {
       // ML service predict
       if (
         String(url).includes('/v1/segmentation/predict') &&
@@ -276,7 +279,7 @@ describe('OpenAPI Contract & Performance (Fields, Satellite, ML)', () => {
         return [];
       });
 
-    jest.spyOn(Field, 'findOne').mockImplementation(async args => null);
+    jest.spyOn(Field, 'findOne').mockImplementation(async _args => null);
     jest.spyOn(Field, 'create').mockImplementation(async payload => ({
       field_id: '11111111-1111-4111-8111-111111111111',
       user_id: payload.user_id,
@@ -332,15 +335,15 @@ describe('OpenAPI Contract & Performance (Fields, Satellite, ML)', () => {
 
       expectSuccessBody(createRes.body);
       expect(createRes.body.data).toBeDefined();
-      const { field_id } = createRes.body.data;
-      expect(typeof field_id).toBe('string');
+      const fieldId = createRes.body.data.field_id;
+      expect(typeof fieldId).toBe('string');
 
       // Contract check against OpenAPI
       assertApiSpec(createRes);
 
       // GET by id
       const getRes = await request(app)
-        .get(`/api/v1/fields/${field_id}`)
+        .get(`/api/v1/fields/${fieldId}`)
         .set('Authorization', 'Bearer token')
         .expect(200);
       expectSuccessBody(getRes.body);
@@ -367,7 +370,7 @@ describe('OpenAPI Contract & Performance (Fields, Satellite, ML)', () => {
 
       // PATCH
       const patchRes = await request(app)
-        .patch(`/api/v1/fields/${field_id}`)
+        .patch(`/api/v1/fields/${fieldId}`)
         .set('Authorization', 'Bearer token')
         .send({ name: 'Renamed', status: 'archived' })
         .expect(200);
@@ -376,7 +379,7 @@ describe('OpenAPI Contract & Performance (Fields, Satellite, ML)', () => {
 
       // DELETE
       const delRes = await request(app)
-        .delete(`/api/v1/fields/${field_id}`)
+        .delete(`/api/v1/fields/${fieldId}`)
         .set('Authorization', 'Bearer token')
         .expect(200);
       expectSuccessBody(delRes.body);

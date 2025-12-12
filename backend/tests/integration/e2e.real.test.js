@@ -2,6 +2,7 @@
  * Real End-to-End Integration Tests
  * Tests complete workflows with actual service integration
  */
+/* eslint-disable camelcase, func-names */
 
 const request = require('supertest');
 
@@ -24,7 +25,6 @@ jest.mock('../../src/api/middleware/rateLimit.middleware', () => ({
 const app = require('../../src/app');
 
 describe('E2E Integration Tests - Real Workflows', () => {
-  const testuser_id = 'e2e-test-user-1';
   const testfield_id = 'e2e-field-123';
 
   beforeAll(() => {

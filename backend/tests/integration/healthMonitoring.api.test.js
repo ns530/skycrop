@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 const request = require('supertest');
 
 // Mock rate limiter to no-op for tests
@@ -32,9 +33,9 @@ const fakeRedisClient = {
   async del(keys) {
     if (Array.isArray(keys)) {
       let count = 0;
-      for (const k of keys) {
+      keys.forEach(k => {
         if (redisStore.delete(k)) count += 1;
-      }
+      });
       return count;
     }
     return redisStore.delete(keys) ? 1 : 0;
@@ -50,7 +51,7 @@ process.env.NODE_ENV = 'test';
 process.env.JWTSECRET = 'test-secret';
 
 const app = require('../../src/app');
-const { sequelize } = require('../../src/config/database.config');
+const { sequelize: _sequelize } = require('../../src/config/database.config');
 const HealthRecord = require('../../src/models/health.model');
 const Field = require('../../src/models/field.model');
 
@@ -85,7 +86,7 @@ describe('Health Monitoring API Integration Tests', () => {
 
       // Mock health records
       const mockRecords = [];
-      for (let i = 0; i < 30; i++) {
+      for (let i = 0; i < 30; i += 1) {
         const date = new Date();
         date.setDate(date.getDate() - (30 - i));
         mockRecords.push({

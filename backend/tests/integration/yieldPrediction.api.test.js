@@ -1,3 +1,4 @@
+/* eslint-disable camelcase, func-names, no-underscore-dangle */
 const request = require('supertest');
 
 // Mock auth middleware - must be before app import
@@ -157,12 +158,12 @@ describe('Yield Prediction API Integration Tests', () => {
       error.statusCode = 502;
       mockYieldService.predictYield.mockRejectedValue(error);
 
-      const response = await request(app)
+      const _response = await request(app)
         .post(`/api/v1/fields/${mockfield_id}/yield/predict`)
         .send({})
         .expect(502);
 
-      expect(response.body.success).toBe(false);
+      expect(_response.body.success).toBe(false);
     });
   });
 
@@ -247,7 +248,7 @@ describe('Yield Prediction API Integration Tests', () => {
         cacheHit: false,
       });
 
-      const response = await request(app)
+      const _response = await request(app)
         .get(`/api/v1/fields/${mockfield_id}/yield/predictions`)
         .query({ limit: 5, sort: 'predictedyieldperha', order: 'asc' })
         .expect(200);

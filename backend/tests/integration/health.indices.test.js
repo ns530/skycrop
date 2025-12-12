@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 const request = require('supertest');
 const axios = require('axios');
 
@@ -34,9 +35,9 @@ const fakeRedisClient = {
   async del(keys) {
     if (Array.isArray(keys)) {
       let count = 0;
-      for (const k of keys) {
+      keys.forEach(k => {
         if (redisStore.delete(k)) count += 1;
-      }
+      });
       return count;
     }
     return redisStore.delete(keys) ? 1 : 0;
@@ -47,7 +48,7 @@ const fakeRedisClient = {
     redisStore.set(key, String(next));
     return next;
   },
-  async expire(key, ttl) {
+  async expire(_key, _ttl) {
     return 1;
   },
   async scan(cursor, opts = {}) {
@@ -102,7 +103,7 @@ describe('Health Indices API (NDVI/NDWI/TDVI)', () => {
     }));
 
     // Axios: default happy path mocks (OAuth then Process returning JSON stats means)
-    axios.post.mockImplementation(async (url, data, config) => {
+    axios.post.mockImplementation(async (url, _data, _config) => {
       if (String(url).includes('/oauth/token')) {
         return {
           status: 200,

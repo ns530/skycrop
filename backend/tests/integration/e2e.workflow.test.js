@@ -8,6 +8,7 @@
  * - Yield Prediction API
  * - Notification Service
  */
+/* eslint-disable no-unused-vars, camelcase, func-names */
 
 const request = require('supertest');
 
