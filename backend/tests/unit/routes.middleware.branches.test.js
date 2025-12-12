@@ -7,14 +7,14 @@ describe('Routes middleware branch coverage lifts (ML and Satellite)', () => {
   function makeResCapture() {
     const res = {};
     res.statusCode = null;
-    resonBody = null;
+    responseBody = null;
     res.headers = {};
     res.status = code => {
       res.statusCode = code;
       return res;
     };
-    reson = body => {
-      resonBody = body;
+    response = body => {
+      responseBody = body;
       return res;
     };
     res.set = h => {
@@ -96,7 +96,7 @@ describe('Routes middleware branch coverage lifts (ML and Satellite)', () => {
 
     expect(calledNext).toBe(false);
     expect(res.statusCode).toBe(413);
-    expect(resonBody).toEqual(
+    expect(responseBody).toEqual(
       expect.objectContaining({
         success: false,
         error: expect.objectContaining({
@@ -128,7 +128,7 @@ describe('Routes middleware branch coverage lifts (ML and Satellite)', () => {
 
       expect(calledNext).toBe(false);
       expect(res.statusCode).toBe(413);
-      expect(resonBody).toEqual(
+      expect(responseBody).toEqual(
         expect.objectContaining({
           success: false,
           error: expect.objectContaining({ code: 'PAYLOADTOOLARGE' }),
@@ -159,7 +159,7 @@ describe('Routes middleware branch coverage lifts (ML and Satellite)', () => {
 
     expect(nextCalled).toBe(true);
     expect(res.statusCode).toBe(null);
-    expect(resonBody).toBe(null);
+    expect(responseBody).toBe(null);
   });
 
   test('Satellite preprocess enforceMaxBodySize: catch branch when JSON.stringify throws', () => {
@@ -184,6 +184,6 @@ describe('Routes middleware branch coverage lifts (ML and Satellite)', () => {
     // Should swallow and call next() with no 413 since error is caught
     expect(nextCalled).toBe(true);
     expect(res.statusCode).toBe(null);
-    expect(resonBody).toBe(null);
+    expect(responseBody).toBe(null);
   });
 });

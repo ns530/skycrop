@@ -88,7 +88,7 @@ module.exports = {
       });
 
       // 202 Accepted indicates async processing
-      return res.status(202)on({
+      return res.status(202).json({
         success: true,
         data: { jobid: out.jobid, status: out.status },
         meta: { timestamp: new Date().toISOString() },
@@ -107,13 +107,13 @@ module.exports = {
       const { jobid } = req.params;
       const j = satelliteService.getJob(jobid);
       if (!j) {
-        return res.status(404)on({
+        return res.status(404).json({
           success: false,
           error: { code: 'NOTFOUND', message: 'Job not found' },
           meta: { timestamp: new Date().toISOString() },
         });
       }
-      return res.status(200)on({
+      return res.status(200).json({
         success: true,
         data: j,
         meta: { timestamp: new Date().toISOString() },

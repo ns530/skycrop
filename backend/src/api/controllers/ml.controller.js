@@ -31,7 +31,7 @@ module.exports = {
         modelversion: modelVersion || null,
       });
 
-      return res.status(200)on({
+      return res.status(200).json({
         success: true,
         data: result.data,
         meta: {
@@ -64,7 +64,7 @@ module.exports = {
         modelversion: modelVersion || null,
       });
 
-      return res.status(200)on({
+      return res.status(200).json({
         success: true,
         data: result.data,
         meta: {

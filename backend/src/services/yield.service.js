@@ -3,10 +3,13 @@
 const { sequelize } = require('../config/database.config');
 const ActualYield = require('../models/actualYield.model');
 const Field = require('../models/field.model');
-const YieldPrediction = require('../models/yieldprediction.model');
+const YieldPrediction = require('../models/yield_prediction.model');
 const { getRedisClient, initRedis } = require('../config/redis.config');
 const { ValidationError, NotFoundError, ConflictError } = require('../errors/custom-errors');
 const { emitToField, emitToUser } = require('../websocket/server');
+const { getMLGatewayService } = require('./mlGateway.service');
+const HealthRepository = require('../repositories/health.repository');
+const { getWeatherService } = require('./weather.service');
 
 /**
  * Yield Service
@@ -283,11 +286,11 @@ async function update(user_id, yieldId, updates) {
     'season',
   ];
 
-  for (const key of Object.keys(updates)) {
+  Object.keys(updates).forEach(key => {
     if (allowedUpdates.includes(key)) {
       yieldEntry[key] = updates[key];
     }
-  }
+  });
 
   await yieldEntry.save();
 
@@ -380,9 +383,6 @@ async function getStatistics(user_id, field_id) {
  * @returns {Promise<object>} Prediction result
  */
 async function predictYield(user_id, field_id, predictionOptions = {}) {
-  const { getMLGatewayService } = require('./mlGateway.service');
-  const HealthRepository = require('../repositories/health.repository');
-  const { getWeatherService } = require('./weather.service');
 
   // Validate field exists and belongs to user
   const field = await Field.findOne({

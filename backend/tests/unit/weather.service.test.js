@@ -101,7 +101,7 @@ describe('WeatherService unit', () => {
     const mockResponse = { status: 200, data: { current: { temp: 25 } } };
     axios.get.mockResolvedValue(mockResponse);
     const result = await svc.requestWithRetry('http://test.com', 'test.label');
-    expect(resulton).toEqual({ current: { temp: 25 } });
+    expect(result).toEqual({ current: { temp: 25 } });
     expect(result.duration).toBeGreaterThanOrEqual(0);
   });
 
@@ -111,7 +111,7 @@ describe('WeatherService unit', () => {
       .mockResolvedValueOnce({ status: 200, data: { success: true } });
     const result = await svc.requestWithRetry('http://test.com', 'test.label');
     expect(axios.get).toHaveBeenCalledTimes(2);
-    expect(resulton).toEqual({ success: true });
+    expect(result).toEqual({ success: true });
   });
 
   test('requestWithRetry throws on 4xx errors without retry', async () => {

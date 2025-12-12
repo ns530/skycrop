@@ -1,7 +1,5 @@
 /* eslint-disable no-underscore-dangle */
 
-'use strict';
-
 describe('WeatherService branch coverage lifts', () => {
   const ORIGINALENV = { ...process.env };
 

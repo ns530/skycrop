@@ -7,14 +7,14 @@ describe('Field Controller additional branches', () => {
   function makeResCapture() {
     const res = {};
     res.statusCode = null;
-    resonBody = null;
+    responseBody = null;
     res.headers = {};
     res.status = code => {
       res.statusCode = code;
       return res;
     };
-    reson = body => {
-      resonBody = body;
+    response = body => {
+      responseBody = body;
       return res;
     };
     res.set = h => {
@@ -59,7 +59,7 @@ describe('Field Controller additional branches', () => {
 
       expect(next).not.toHaveBeenCalled();
       expect(res.statusCode).toBe(200);
-      expect(resonBody).toEqual(
+      expect(responseBody).toEqual(
         expect.objectContaining({
           success: true,
           data: expect.objectContaining({ ok: true, id: 'field-1' }),
@@ -111,7 +111,7 @@ describe('Field Controller additional branches', () => {
 
       expect(next).not.toHaveBeenCalled();
       expect(res.statusCode).toBe(200);
-      expect(resonBody).toEqual(
+      expect(responseBody).toEqual(
         expect.objectContaining({
           success: true,
           data: expect.objectContaining({ id: 'f2', status: 'active' }),

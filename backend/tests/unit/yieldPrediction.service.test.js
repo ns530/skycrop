@@ -2,7 +2,7 @@ const { getYieldService } = require('../../src/services/yield.service');
 
 // Mock dependencies
 jest.mock('../../src/models/field.model');
-jest.mock('../../src/models/yieldprediction.model');
+jest.mock('../../src/models/yield_prediction.model');
 jest.mock('../../src/repositories/health.repository');
 jest.mock('../../src/services/mlGateway.service');
 jest.mock('../../src/services/weather.service');
@@ -19,7 +19,7 @@ jest.mock('../../src/config/redis.config', () => ({
 }));
 
 const Field = require('../../src/models/field.model');
-const YieldPrediction = require('../../src/models/yieldprediction.model');
+const YieldPrediction = require('../../src/models/yield_prediction.model');
 const HealthRepository = require('../../src/repositories/health.repository');
 
 describe('Yield Prediction Service', () => {

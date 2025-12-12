@@ -30,7 +30,7 @@ module.exports = {
           user_id: user_id,
           correlationid: correlationId,
         });
-        return res.status(200)on({
+        return res.status(200).json({
           success: true,
           data: parsed,
           meta: {
@@ -55,7 +55,7 @@ module.exports = {
         cachehit: false,
       });
 
-      return res.status(200)on({
+      return res.status(200).json({
         success: true,
         data: metrics,
         meta: {

@@ -39,7 +39,7 @@ jest.mock('../../src/models/field.model', () => ({
   findByPk: jest.fn(),
 }));
 jest.mock('../../src/models/actualYield.model', () => ({}));
-jest.mock('../../src/models/yieldprediction.model', () => ({}));
+jest.mock('../../src/models/yield_prediction.model', () => ({}));
 
 const app = require('../../src/app');
 

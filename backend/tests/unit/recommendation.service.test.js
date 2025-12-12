@@ -1,7 +1,5 @@
 /* eslint-disable no-underscore-dangle */
 
-'use strict';
-
 process.env.NODE_ENV = 'test';
 process.env.WATERNDWITHRESHOLD = '0.1';
 process.env.WATERrain_mmMIN = '5';

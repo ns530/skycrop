@@ -5,7 +5,7 @@
  */
 
 const { getJobsStatus, triggerJob, jobScheduler } = require('../../jobs');
-const logger = require('../../config/logger.config');
+const { logger } = require('../../utils/logger');
 
 /**
  * Get status of all scheduled jobs
@@ -46,10 +46,10 @@ const getAllJobsStatus = async (req, res) => {
       },
     };
 
-    reson(response);
+    res.json(response);
   } catch (error) {
     logger.error('Error fetching jobs status:', error);
-    res.status(500)on({
+    res.status(500).json({
       success: false,
       error: {
         code: 'INTERNALERROR',
@@ -70,7 +70,7 @@ const getJobStatus = async (req, res) => {
     const job = jobScheduler.getJobStats(jobName);
 
     if (!job) {
-      return res.status(404)on({
+      return res.status(404).json({
         success: false,
         error: {
           code: 'JOBNOTFOUND',
@@ -79,13 +79,13 @@ const getJobStatus = async (req, res) => {
       });
     }
 
-    reson({
+    res.json({
       success: true,
       data: job,
     });
   } catch (error) {
     logger.error('Error fetching job status:', error);
-    res.status(500)on({
+    res.status(500).json({
       success: false,
       error: {
         code: 'INTERNALERROR',
@@ -112,7 +112,7 @@ const triggerJobManually = async (req, res) => {
     const resultPromise = triggerJob(jobName);
 
     // Respond immediately that job was triggered
-    reson({
+    res.json({
       success: true,
       message: `Job "${jobName}" triggered successfully`,
       data: {
@@ -133,7 +133,7 @@ const triggerJobManually = async (req, res) => {
     logger.error('Error triggering job:', error);
 
     if (error.message.includes('not found')) {
-      return res.status(404)on({
+      return res.status(404).json({
         success: false,
         error: {
           code: 'JOBNOTFOUND',
@@ -142,7 +142,7 @@ const triggerJobManually = async (req, res) => {
       });
     }
 
-    res.status(500)on({
+    res.status(500).json({
       success: false,
       error: {
         code: 'INTERNALERROR',
@@ -163,7 +163,7 @@ const enableJob = async (req, res) => {
     const success = jobScheduler.startJob(jobName);
 
     if (!success) {
-      return res.status(404)on({
+      return res.status(404).json({
         success: false,
         error: {
           code: 'JOBNOTFOUND',
@@ -176,13 +176,13 @@ const enableJob = async (req, res) => {
       adminId: req.user?.user_id,
     });
 
-    reson({
+    res.json({
       success: true,
       message: `Job "${jobName}" enabled successfully`,
     });
   } catch (error) {
     logger.error('Error enabling job:', error);
-    res.status(500)on({
+    res.status(500).json({
       success: false,
       error: {
         code: 'INTERNALERROR',
@@ -203,7 +203,7 @@ const disableJob = async (req, res) => {
     const success = jobScheduler.stopJob(jobName);
 
     if (!success) {
-      return res.status(404)on({
+      return res.status(404).json({
         success: false,
         error: {
           code: 'JOBNOTFOUND',
@@ -216,13 +216,13 @@ const disableJob = async (req, res) => {
       adminId: req.user?.user_id,
     });
 
-    reson({
+    res.json({
       success: true,
       message: `Job "${jobName}" disabled successfully`,
     });
   } catch (error) {
     logger.error('Error disabling job:', error);
-    res.status(500)on({
+    res.status(500).json({
       success: false,
       error: {
         code: 'INTERNALERROR',

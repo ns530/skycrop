@@ -13,7 +13,7 @@ function requirePermission(permission) {
   return (req, res, next) => {
     if (!req.user) {
       logger.warn('permissions.nouser', { permission, path: req.path });
-      return res.status(401)on({
+      return res.status(401).json({
         success: false,
         error: {
           code: 'UNAUTHORIZED',
@@ -33,7 +33,7 @@ function requirePermission(permission) {
         path: req.path,
       });
 
-      return res.status(403)on({
+      return res.status(403).json({
         success: false,
         error: {
           code: 'FORBIDDEN',
@@ -67,7 +67,7 @@ function requirePermission(permission) {
 function requireResourceAccess(resource, action, isOwnerFn) {
   return (req, res, next) => {
     if (!req.user) {
-      return res.status(401)on({
+      return res.status(401).json({
         success: false,
         error: {
           code: 'UNAUTHORIZED',
@@ -90,7 +90,7 @@ function requireResourceAccess(resource, action, isOwnerFn) {
         path: req.path,
       });
 
-      return res.status(403)on({
+      return res.status(403).json({
         success: false,
         error: {
           code: 'FORBIDDEN',
@@ -125,7 +125,7 @@ function requireRole(allowedRoles) {
 
   return (req, res, next) => {
     if (!req.user) {
-      return res.status(401)on({
+      return res.status(401).json({
         success: false,
         error: {
           code: 'UNAUTHORIZED',
@@ -145,7 +145,7 @@ function requireRole(allowedRoles) {
         path: req.path,
       });
 
-      return res.status(403)on({
+      return res.status(403).json({
         success: false,
         error: {
           code: 'FORBIDDEN',

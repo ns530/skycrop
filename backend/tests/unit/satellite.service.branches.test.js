@@ -1,7 +1,5 @@
 /* eslint-disable no-underscore-dangle */
 
-'use strict';
-
 describe('SatelliteService branch coverage lifts', () => {
   const ORIGINALENV = { ...process.env };
 

@@ -12,7 +12,7 @@ async function shareField(req, res, next) {
     const { email, permissionLevel = 'view', expiresAt } = req.body;
 
     if (!email) {
-      return res.status(400)on({
+      return res.status(400).json({
         success: false,
         error: {
           code: 'VALIDATIONERROR',
@@ -37,7 +37,7 @@ async function shareField(req, res, next) {
       permissionLevel,
     });
 
-    res.status(201)on({
+    res.status(201).json({
       success: true,
       data: share,
       message: 'Field shared successfully',
@@ -68,7 +68,7 @@ async function revokeShare(req, res, next) {
       revokeduser_id: user_id,
     });
 
-    reson({
+    res.json({
       success: true,
       message: 'Field share revoked successfully',
       meta: { timestamp: new Date().toISOString() },
@@ -98,7 +98,7 @@ async function getFieldShares(req, res, next) {
       count: shares.length,
     });
 
-    reson({
+    res.json({
       success: true,
       data: shares,
       meta: { timestamp: new Date().toISOString() },
@@ -125,7 +125,7 @@ async function getSharedWithMe(req, res, next) {
       count: shares.length,
     });
 
-    reson({
+    res.json({
       success: true,
       data: shares,
       meta: { timestamp: new Date().toISOString() },
@@ -148,7 +148,7 @@ async function checkFieldAccess(req, res, next) {
 
     const access = await fieldSharingService.checkFieldAccess(field_id, req.user.user_id);
 
-    reson({
+    res.json({
       success: true,
       data: access,
       meta: { timestamp: new Date().toISOString() },
