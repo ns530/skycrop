@@ -43,6 +43,12 @@ module.exports = {
         'no-undef': 'off', // ENV is defined by k6
       },
     },
+    {
+      files: ['src/errors/custom-errors.js'],
+      rules: {
+        'max-classes-per-file': 'off',
+      },
+    },
   ],
   ignorePatterns: ['node_modules/', 'coverage/', 'dist/', '*.log'],
 };
