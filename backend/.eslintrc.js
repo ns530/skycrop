@@ -57,6 +57,12 @@ module.exports = {
       },
     },
     {
+      files: ['tests/performance/**/*.js'],
+      rules: {
+        'no-console': 'off',
+      },
+    },
+    {
       files: ['src/services/**/*.js', 'src/websocket/**/*.js', 'src/app.js', 'src/server.js'],
       rules: {
         camelcase: [

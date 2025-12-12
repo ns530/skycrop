@@ -23,7 +23,7 @@ jest.mock('../../src/api/middleware/rateLimit.middleware', () => ({
 const app = require('../../src/app');
 
 describe('Performance Tests - Concurrent Load', () => {
-  const testfield_id = 'perf-field-123';
+  const testFieldId = 'perf-field-123';
 
   beforeAll(() => {
     process.env.NODE_ENV = 'test';
@@ -37,7 +37,7 @@ describe('Performance Tests - Concurrent Load', () => {
         .fill(null)
         .map(() =>
           request(app)
-            .get(`/api/v1/fields/${testfield_id}/health/history`)
+            .get(`/api/v1/fields/${testFieldId}/health/history`)
             .query({ start: '2024-01-01', end: '2024-01-31' })
         );
 
@@ -68,7 +68,7 @@ describe('Performance Tests - Concurrent Load', () => {
         .fill(null)
         .map(() =>
           request(app)
-            .get(`/api/v1/fields/${testfield_id}/recommendations`)
+            .get(`/api/v1/fields/${testFieldId}/recommendations`)
             .query({ page: 1, pageSize: 20 })
         );
 
@@ -124,14 +124,14 @@ describe('Performance Tests - Concurrent Load', () => {
           .fill(null)
           .map(() =>
             request(app)
-              .get(`/api/v1/fields/${testfield_id}/health/history`)
+              .get(`/api/v1/fields/${testFieldId}/health/history`)
               .query({ start: '2024-01-01', end: '2024-01-31' })
           ),
         // Recommendation API requests (15)
         ...Array(15)
           .fill(null)
           .map(() =>
-            request(app).get(`/api/v1/fields/${testfield_id}/recommendations`).query({ page: 1 })
+            request(app).get(`/api/v1/fields/${testFieldId}/recommendations`).query({ page: 1 })
           ),
         // Notification API requests (25)
         ...Array(25)
@@ -141,7 +141,7 @@ describe('Performance Tests - Concurrent Load', () => {
         ...Array(10)
           .fill(null)
           .map(() =>
-            request(app).get(`/api/v1/fields/${testfield_id}/yield/predictions`).query({ limit: 5 })
+            request(app).get(`/api/v1/fields/${testFieldId}/yield/predictions`).query({ limit: 5 })
           ),
       ];
 
