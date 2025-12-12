@@ -1,31 +1,5 @@
 import * as Sentry from '@sentry/node';
 
-// ========== Sentry Error Tracking (Must be first!) ==========
-
-// Initialize Sentry BEFORE importing anything else
-if (process.env.SENTRYDSN && process.env.NODE_ENV !== 'test') {
-  Sentry.init({
-    dsn: process.env.SENTRYDSN,
-    environment: process.env.NODE_ENV || 'development',
-    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0, // 10% in prod, 100% in dev
-    integrations: [new Sentry.Integrations.Http({ tracing: true })],
-    beforeSend(event, hint) {
-      // Don't send test errors to Sentry
-      if (process.env.NODE_ENV === 'test') {
-        return null;
-      }
-      // Filter out 404 errors (not really errors)
-      if (event.exception && hint.originalException) {
-        const error = hint.originalException;
-        if (error.statusCode === 404 || error.status === 404) {
-          return null;
-        }
-      }
-      return event;
-    },
-  });
-}
-
 import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -52,6 +26,32 @@ import debugRoutes from './api/routes/debug.routes'; // Debug routes for testing
 
 import { apiLimiter } from './api/middleware/rateLimit.middleware';
 import { logger, loggerStream } from './utils/logger';
+
+// ========== Sentry Error Tracking (Must be first!) ==========
+
+// Initialize Sentry BEFORE importing anything else
+if (process.env.SENTRYDSN && process.env.NODE_ENV !== 'test') {
+  Sentry.init({
+    dsn: process.env.SENTRYDSN,
+    environment: process.env.NODE_ENV || 'development',
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0, // 10% in prod, 100% in dev
+    integrations: [new Sentry.Integrations.Http({ tracing: true })],
+    beforeSend(event, hint) {
+      // Don't send test errors to Sentry
+      if (process.env.NODE_ENV === 'test') {
+        return null;
+      }
+      // Filter out 404 errors (not really errors)
+      if (event.exception && hint.originalException) {
+        const error = hint.originalException;
+        if (error.statusCode === 404 || error.status === 404) {
+          return null;
+        }
+      }
+      return event;
+    },
+  });
+}
 
 const app = express();
 

@@ -1,5 +1,3 @@
-'use strict';
-
 const { sequelize } = require('../config/database.config');
 const ActualYield = require('../models/actualYield.model');
 const Field = require('../models/field.model');

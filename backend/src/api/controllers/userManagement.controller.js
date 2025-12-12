@@ -1,5 +1,3 @@
-'use strict';
-
 const userManagementService = require('../../services/userManagement.service');
 const { getRoleHierarchy } = require('../../config/permissions.config');
 const { logger } = require('../../utils/logger');

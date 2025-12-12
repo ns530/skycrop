@@ -1,5 +1,3 @@
-'use strict';
-
 const { getMLGatewayService } = require('../../services/mlGateway.service');
 const { logger } = require('../../utils/logger');
 

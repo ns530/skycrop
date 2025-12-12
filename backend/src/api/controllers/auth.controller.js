@@ -1,5 +1,3 @@
-'use strict';
-
 const { getAuthService } = require('../../services/auth.service');
 
 const authService = getAuthService();

@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Role-Based Access Control (RBAC) Permissions
  * Defines what actions each role can perform

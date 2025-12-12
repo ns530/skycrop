@@ -8,7 +8,7 @@ module.exports = {
   plugins: ['prettier', 'import'],
   parserOptions: {
     ecmaVersion: 2022,
-    sourceType: 'script',
+    sourceType: 'module',
   },
   settings: {
     'import/resolver': {
@@ -29,5 +29,13 @@ module.exports = {
       { devDependencies: ['**/tests/**', '**/*.test.js', '**/jest.config.js'] },
     ],
   },
+  overrides: [
+    {
+      files: ['**/tests/**/*.js', '**/*.test.js'],
+      parserOptions: {
+        sourceType: 'module',
+      },
+    },
+  ],
   ignorePatterns: ['node_modules/', 'coverage/', 'dist/', '*.log'],
 };

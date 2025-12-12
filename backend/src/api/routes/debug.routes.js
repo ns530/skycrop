@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Debug Routes for Testing Error Tracking
  *

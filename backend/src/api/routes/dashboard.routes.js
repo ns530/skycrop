@@ -1,5 +1,3 @@
-'use strict';
-
 const express = require('express');
 const DashboardController = require('../controllers/dashboard.controller');
 const { authMiddleware } = require('../middleware/auth.middleware');

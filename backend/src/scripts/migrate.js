@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-'use strict';
-
 /**
  * Database migration script
  * Runs all SQL migrations in the database/migrations folder

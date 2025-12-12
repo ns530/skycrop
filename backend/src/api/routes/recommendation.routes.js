@@ -1,5 +1,3 @@
-'use strict';
-
 const express = require('express');
 const { authMiddleware } = require('../middleware/auth.middleware');
 const { apiLimiter } = require('../middleware/rateLimit.middleware');

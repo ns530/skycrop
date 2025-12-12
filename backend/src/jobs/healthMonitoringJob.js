@@ -111,13 +111,14 @@ async function runHealthMonitoring() {
       const batchResults = await Promise.all(batchPromises);
 
       // Update results
-      for (const result of batchResults) {
+      for (let j = 0; j < batchResults.length; j += 1) {
+        const result = batchResults[j];
         if (result.status === 'success') {
-          results.success++;
+          results.success += 1;
         } else if (result.status === 'skipped') {
-          results.skipped++;
+          results.skipped += 1;
         } else if (result.status === 'failed') {
-          results.failed++;
+          results.failed += 1;
           results.errors.push({
             field_id: result.field.field_id,
             fieldName: result.field.name,

@@ -1,5 +1,3 @@
-'use strict';
-
 const Sequelize = require('sequelize');
 const Recommendation = require('../models/recommendation.model');
 

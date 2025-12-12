@@ -160,8 +160,8 @@ describe('HealthService (vegetation indices) unit', () => {
   });
 
   test('computeIndicesForField builds Process API request with geometry and image size, populates cache', async () => {
-    const user_id = 'user-1';
-    const field_id = 'field-1';
+    const userId = 'user-1';
+    const fieldId = 'field-1';
     const date = '2025-01-15';
 
     // Axios calls: OAuth then Process returning JSON stats
@@ -198,7 +198,7 @@ describe('HealthService (vegetation indices) unit', () => {
 
     // second call should hit cache and not call axios process again
     const before = axios.post.mock.calls.length;
-    const cached = await svc.computeIndicesForField(user_id, field_id, date);
+    const cached = await svc.computeIndicesForField(userId, fieldId, date);
     expect(cached.cachehit).toBe(true);
     expect(cached.ndvi).toBeCloseTo(0.62, 5);
     expect(axios.post.mock.calls.length).toBe(before); // no extra calls
@@ -210,13 +210,13 @@ describe('HealthService (vegetation indices) unit', () => {
 
     // First insert (no existing) recompute=false
     const row1 = await svc.upsertSnapshot(
-      field_id,
+      fieldId,
       ts,
       { ndvi: 0.5, ndwi: 0.1, tdvi: 0.3, source: 'sentinel2' },
       false
     );
     expect(row1).toBeDefined();
-    expect(row1.field_id).toBe(field_id);
+    expect(row1.field_id).toBe(fieldId);
     expect(row1.timestamp).toBe(ts);
 
     // Recompute=true should "update"; our mock returns same select row structure
@@ -231,9 +231,9 @@ describe('HealthService (vegetation indices) unit', () => {
   });
 
   test('listSnapshots returns paginated results and respects range and page/pageSize defaults', async () => {
-    const user_id = 'user-1';
-    const field_id = 'field-1';
-    const res = await svc.listSnapshots(user_id, field_id, {
+    const userId = 'user-1';
+    const fieldId = 'field-1';
+    const res = await svc.listSnapshots(userId, fieldId, {
       from: '2025-01-01',
       to: '2025-01-31',
       page: 1,
@@ -264,7 +264,7 @@ describe('HealthService (vegetation indices) unit', () => {
       data: Buffer.from('{}', 'utf8'),
       headers: { 'content-type': 'application/json' },
     }));
-    await expect(svc.computeIndicesForField(user_id, field_id, date)).rejects.toMatchObject({
+    await expect(svc.computeIndicesForField(userId, fieldId, date)).rejects.toMatchObject({
       statusCode: 503,
     });
 

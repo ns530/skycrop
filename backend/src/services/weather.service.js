@@ -1,5 +1,3 @@
-'use strict';
-
 const axios = require('axios');
 const { ValidationError, NotFoundError } = require('../errors/custom-errors');
 const Field = require('../models/field.model');

@@ -1,5 +1,3 @@
-'use strict';
-
 const { DataTypes, Model } = require('sequelize');
 const { sequelize } = require('../config/database.config');
 

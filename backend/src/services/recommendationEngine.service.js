@@ -1,5 +1,3 @@
-'use strict';
-
 const { emitToField, emitToUser } = require('../websocket/server');
 
 /**

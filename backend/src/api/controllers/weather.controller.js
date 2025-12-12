@@ -12,7 +12,7 @@ export default {
   async current(req, res, next) {
     try {
       const { user_id } = req.user;
-      const field_id = req.query.field_id;
+      const { field_id } = req.query;
       if (!field_id) {
         throw new ValidationError('field_id query parameter is required', { field: 'field_id' });
       }

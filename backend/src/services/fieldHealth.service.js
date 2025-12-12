@@ -1,5 +1,3 @@
-'use strict';
-
 const Sequelize = require('sequelize');
 const { initRedis } = require('../config/redis.config');
 const Field = require('../models/field.model');

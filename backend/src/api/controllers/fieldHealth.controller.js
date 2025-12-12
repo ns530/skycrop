@@ -1,5 +1,3 @@
-'use strict';
-
 const { getFieldHealthService } = require('../../services/fieldHealth.service');
 
 const fieldHealthService = getFieldHealthService();

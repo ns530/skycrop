@@ -1,5 +1,3 @@
-'use strict';
-
 const Sequelize = require('sequelize');
 const FieldShare = require('../models/fieldShare.model');
 const Field = require('../models/field.model');

@@ -1,5 +1,3 @@
-'use strict';
-
 const crypto = require('crypto');
 const { sequelize } = require('../config/database.config');
 const Field = require('../models/field.model');

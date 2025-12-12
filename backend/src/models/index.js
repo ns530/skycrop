@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Models Index
  * Central export for all Sequelize models

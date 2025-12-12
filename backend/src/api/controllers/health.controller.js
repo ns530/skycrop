@@ -1,5 +1,3 @@
-'use strict';
-
 const { getHealthService } = require('../../services/health.service');
 const { logger } = require('../../utils/logger');
 

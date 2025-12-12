@@ -92,13 +92,13 @@ async function runWeatherForecastUpdate() {
               alerts,
               cachedAt: new Date(),
             });
-            results.fieldsUpdated++;
+            results.fieldsUpdated += 1;
           } catch (cacheError) {
             logger.error(`Error caching weather for field ${fieldInfo.field_id}:`, cacheError);
           }
         }
 
-        results.success++;
+        results.success += 1;
         logger.info(
           `Successfully updated weather for ${locationData.fields.length} fields at ${locationKey}`
         );

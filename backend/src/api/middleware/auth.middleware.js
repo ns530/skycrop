@@ -1,5 +1,3 @@
-'use strict';
-
 const jwt = require('jsonwebtoken');
 const { getRedisClient, initRedis } = require('../../config/redis.config');
 const { UnauthorizedError, ForbiddenError } = require('../../errors/custom-errors');

@@ -1,5 +1,3 @@
-'use strict';
-
 const { getFieldService } = require('../../services/field.service');
 const { logger } = require('../../utils/logger');
 

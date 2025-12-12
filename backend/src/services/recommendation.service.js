@@ -1,5 +1,3 @@
-'use strict';
-
 const crypto = require('crypto');
 const { QueryTypes } = require('sequelize');
 const { sequelize } = require('../config/database.config');

@@ -1,5 +1,3 @@
-'use strict';
-
 const { AppError } = require('../../errors/custom-errors');
 
 /**

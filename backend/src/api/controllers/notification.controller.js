@@ -1,5 +1,3 @@
-'use strict';
-
 const { getPushNotificationService } = require('../../services/pushNotification.service');
 const { getNotificationService } = require('../../services/notification.service');
 const { logger } = require('../../utils/logger');

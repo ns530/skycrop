@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-'use strict';
-
 /**
  * Test script to verify field creation works after geometry processing fixes
  * This creates a small test field and verifies the geometry processing

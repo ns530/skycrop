@@ -42,7 +42,7 @@ const failedRequests = new Counter('failedrequests');
 
 // ========== Test Options ==========
 
-export let options = {
+export const options = {
   stages: [
     { duration: '1m', target: 10 }, // Warm-up: Ramp up to 10 users
     { duration: '3m', target: 10 }, // Steady: Stay at 10 users
@@ -119,7 +119,7 @@ function testHealthMonitoringAPI(headers) {
   // GET /api/v1/fields/{field_id}/health/history
   const response = http.get(
     `${BASEURL}/api/v1/fields/${field_id}/health/history?start=2024-01-01&end=2024-01-31`,
-    { headers: headers }
+    { headers }
   );
 
   const duration = Date.now() - startTime;
@@ -154,7 +154,7 @@ function testRecommendationAPI(headers) {
   // GET /api/v1/fields/{field_id}/recommendations
   const response = http.get(
     `${BASEURL}/api/v1/fields/${field_id}/recommendations?page=1&pageSize=10&status=pending`,
-    { headers: headers }
+    { headers }
   );
 
   const duration = Date.now() - startTime;
@@ -189,7 +189,7 @@ function testYieldPredictionAPI(headers) {
   // GET /api/v1/fields/{field_id}/yield/predictions
   const response = http.get(
     `${BASEURL}/api/v1/fields/${field_id}/yield/predictions?limit=5&sort=predictiondate&order=desc`,
-    { headers: headers }
+    { headers }
   );
 
   const duration = Date.now() - startTime;
@@ -222,7 +222,7 @@ function testNotificationAPI(headers) {
   const startTime = Date.now();
 
   // GET /api/v1/notifications/queue/stats
-  const response = http.get(`${BASEURL}/api/v1/notifications/queue/stats`, { headers: headers });
+  const response = http.get(`${BASEURL}/api/v1/notifications/queue/stats`, { headers });
 
   const duration = Date.now() - startTime;
   notificationApiDuration.add(duration);

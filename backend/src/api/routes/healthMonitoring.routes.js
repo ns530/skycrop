@@ -1,5 +1,3 @@
-'use strict';
-
 const express = require('express');
 const { authMiddleware } = require('../middleware/auth.middleware');
 const HealthMonitoringController = require('../controllers/healthMonitoring.controller');

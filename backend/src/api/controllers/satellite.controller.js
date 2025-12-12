@@ -1,5 +1,3 @@
-'use strict';
-
 const { getSatelliteService } = require('../../services/satellite.service');
 const { logger } = require('../../utils/logger');
 

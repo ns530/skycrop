@@ -1,5 +1,3 @@
-'use strict';
-
 const { createClient } = require('redis');
 
 const { REDISURL, REDISENABLED = 'true', NODE_ENV = 'development' } = process.env;

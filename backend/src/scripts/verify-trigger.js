@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-'use strict';
-
 const { Pool } = require('pg');
 
 const { DATABASEURL, NODE_ENV = 'development' } = process.env;

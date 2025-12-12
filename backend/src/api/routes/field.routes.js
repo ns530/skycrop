@@ -1,5 +1,3 @@
-'use strict';
-
 const express = require('express');
 const Joi = require('joi');
 const FieldController = require('../controllers/field.controller');

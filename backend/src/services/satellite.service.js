@@ -1,5 +1,3 @@
-'use strict';
-
 const axios = require('axios');
 const crypto = require('crypto');
 const { initRedis, getRedisClient } = require('../config/redis.config');

@@ -67,7 +67,7 @@ export function setup() {
     return;
   }
 
-  const token = loginResponseon().token;
+  const { token } = loginResponseon();
 
   // Create multiple test fields
   const testFields = [];
@@ -129,8 +129,8 @@ export function setup() {
 
 // Main test function
 export default function (data) {
-  const token = data.token;
-  const testFields = data.testFields;
+  const { token } = data;
+  const { testFields } = data;
 
   if (!testFields || testFields.length === 0) {
     console.error('No test fields available');

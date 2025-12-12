@@ -99,10 +99,9 @@ async function runRecommendationsGeneration() {
               `Generated ${recommendations.length} recommendations for field: ${field.name}`
             );
             return { status: 'success', field, count: recommendations.length };
-          } else {
-            logger.warn(`No recommendations generated for field: ${field.name}`);
-            return { status: 'skipped', field };
           }
+          logger.warn(`No recommendations generated for field: ${field.name}`);
+          return { status: 'skipped', field };
         } catch (error) {
           logger.error(`Error generating recommendations for field ${field.field_id}:`, error);
           return {
@@ -119,11 +118,11 @@ async function runRecommendationsGeneration() {
       // Update results
       for (const result of batchResults) {
         if (result.status === 'success') {
-          results.success++;
+          results.success += 1;
         } else if (result.status === 'skipped') {
-          results.skipped++;
+          results.skipped += 1;
         } else if (result.status === 'failed') {
-          results.failed++;
+          results.failed += 1;
           results.errors.push({
             field_id: result.field.field_id,
             fieldName: result.field.name,

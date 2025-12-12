@@ -1,5 +1,3 @@
-'use strict';
-
 const fieldSharingService = require('../../services/fieldSharing.service');
 const { logger } = require('../../utils/logger');
 

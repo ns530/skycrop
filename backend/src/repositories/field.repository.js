@@ -1,5 +1,3 @@
-'use strict';
-
 const { Op } = require('sequelize');
 const Field = require('../models/field.model');
 

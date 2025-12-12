@@ -1,5 +1,3 @@
-'use strict';
-
 const { getEmailService } = require('./email.service');
 const { getPushNotificationService } = require('./pushNotification.service');
 const { getNotificationQueue } = require('../jobs/notificationQueue');

@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Health Monitoring Controller
  * Handles HTTP requests for field health time-series analysis

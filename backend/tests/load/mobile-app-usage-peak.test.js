@@ -72,7 +72,7 @@ export function setup() {
       );
 
       if (loginResponse.status === 200) {
-        const token = loginResponseon().token;
+        const { token } = loginResponseon();
         testUsers.push({ email: userData.email, token });
 
         // Create a field for this user
@@ -115,7 +115,7 @@ export function setup() {
             testFields.push({
               userEmail: userData.email,
               field_id: fieldResponseon().field.id,
-              token: token,
+              token,
             });
           }
         }
@@ -131,7 +131,7 @@ export function setup() {
 
 // Main test function - simulate mobile app usage patterns
 export default function (data) {
-  const testFields = data.testFields;
+  const { testFields } = data;
 
   if (!testFields || testFields.length === 0) {
     console.error('No test fields available');
@@ -140,8 +140,8 @@ export default function (data) {
 
   // Select random field and user
   const testField = testFields[Math.floor(Math.random() * testFields.length)];
-  const token = testField.token;
-  const field_id = testField.field_id;
+  const { token } = testField;
+  const { field_id } = testField;
 
   // Random mobile user agent
   const userAgent = mobileUserAgents[Math.floor(Math.random() * mobileUserAgents.length)];

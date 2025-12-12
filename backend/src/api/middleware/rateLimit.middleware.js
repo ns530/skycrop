@@ -1,5 +1,3 @@
-'use strict';
-
 const { initRedis, getRedisClient, isRedisAvailable } = require('../../config/redis.config');
 
 /**

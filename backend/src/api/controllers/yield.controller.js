@@ -1,5 +1,3 @@
-'use strict';
-
 const { getYieldService } = require('../../services/yield.service');
 const { logger } = require('../../utils/logger');
 

@@ -1,5 +1,3 @@
-'use strict';
-
 const { hasPermission, canAccessResource } = require('../../config/permissions.config');
 const { logger } = require('../../utils/logger');
 

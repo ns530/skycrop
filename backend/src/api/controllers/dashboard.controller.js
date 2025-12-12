@@ -1,5 +1,3 @@
-'use strict';
-
 const { sequelize } = require('../../config/database.config');
 const { getRedisClient, initRedis } = require('../../config/redis.config');
 const { getFieldHealthService } = require('../../services/fieldHealth.service');

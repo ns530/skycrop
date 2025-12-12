@@ -82,7 +82,7 @@ export function setup() {
     return;
   }
 
-  const token = loginResponseon().token;
+  const { token } = loginResponseon();
   console.log('Test user authenticated successfully');
 
   return { token };
@@ -90,7 +90,7 @@ export function setup() {
 
 // Main test function
 export default function (data) {
-  const token = data.token;
+  const { token } = data;
 
   // Select random coordinates
   const coords = testCoordinates[Math.floor(Math.random() * testCoordinates.length)];
@@ -126,7 +126,7 @@ export default function (data) {
     'boundary detection response has area': r => ron().hasOwnProperty('area'),
     'boundary detection completes within 60 seconds': r => r.timings.duration < 60000,
     'boundary area is valid': r => {
-      const area = ron().area;
+      const { area } = ron();
       return area >= 0.1 && area <= 50; // Valid hectare range
     },
   });

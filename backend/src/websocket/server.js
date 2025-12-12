@@ -1,5 +1,3 @@
-'use strict';
-
 const socketIO = require('socket.io');
 const jwt = require('jsonwebtoken');
 const { logger } = require('../utils/logger');
