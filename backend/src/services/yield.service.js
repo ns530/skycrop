@@ -383,7 +383,6 @@ async function getStatistics(user_id, field_id) {
  * @returns {Promise<object>} Prediction result
  */
 async function predictYield(user_id, field_id, predictionOptions = {}) {
-
   // Validate field exists and belongs to user
   const field = await Field.findOne({
     where: { field_id: field_id, user_id: user_id, status: 'active' },

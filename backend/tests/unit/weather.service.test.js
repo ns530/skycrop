@@ -71,8 +71,10 @@ describe('WeatherService unit', () => {
   });
 
   test('fieldCenterToLatLon throws for invalid field', () => {
-    expect(() => svc.fieldCenterToLatLon({})).toThrow('Field center point is missing');
-    expect(() => svc.fieldCenterToLatLon({ center: {} })).toThrow('Field center point is missing');
+    expect(() => svc.fieldCenterToLatL.json({})).toThrow('Field center point is missing');
+    expect(() => svc.fieldCenterToLatL.json({ center: {} })).toThrow(
+      'Field center point is missing'
+    );
   });
 
   test('cacheKey generates correct key', () => {

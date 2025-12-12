@@ -27,7 +27,7 @@ function enforceMaxBodySize(maxBytes) {
         ? parseInt(req.headers['content-length'], 10)
         : null;
       if (Number.isFinite(headerLen) && headerLen > maxBytes) {
-        return res.status(413)on({
+        return res.status(413).json({
           success: false,
           error: {
             code: 'PAYLOADTOOLARGE',
@@ -40,7 +40,7 @@ function enforceMaxBodySize(maxBytes) {
       if (!headerLen && req.body && typeof req.body === 'object') {
         const approx = Buffer.byteLength(JSON.stringify(req.body));
         if (approx > maxBytes) {
-          return res.status(413)on({
+          return res.status(413).json({
             success: false,
             error: {
               code: 'PAYLOADTOOLARGE',

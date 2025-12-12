@@ -46,7 +46,7 @@ module.exports = {
         latencyms: latency,
       });
 
-      return res.status(201)on({
+      return res.status(201).json({
         success: true,
         data: {
           deviceId: result.deviceId,
@@ -85,7 +85,7 @@ module.exports = {
         latencyms: latency,
       });
 
-      return res.status(200)on({
+      return res.status(200).json({
         success: true,
         data: result,
         meta: { correlationid: correlationId, latencyms: latency },
@@ -127,7 +127,7 @@ module.exports = {
         latencyms: latency,
       });
 
-      return res.status(200)on({
+      return res.status(200).json({
         success: true,
         data: result,
         meta: { correlationid: correlationId, latencyms: latency },
@@ -156,7 +156,7 @@ module.exports = {
         latencyms: latency,
       });
 
-      return res.status(200)on({
+      return res.status(200).json({
         success: true,
         data: stats,
         meta: { correlationid: correlationId, latencyms: latency },

@@ -47,7 +47,7 @@ function createRateLimiter({ windowMs, max, keyPrefix, keyGenerator, onLimitExce
           return onLimitExceeded(req, res);
         }
 
-        return res.status(429)on({
+        return res.status(429).json({
           success: false,
           error: {
             code: 'RATELIMITEXCEEDED',
@@ -103,7 +103,7 @@ const authLimiter = createRateLimiter({
   keyPrefix: 'rate-limit:auth',
   keyGenerator: ipOnly,
   onLimitExceeded: (req, res) => {
-    res.status(429)on({
+    res.status(429).json({
       success: false,
       error: {
         code: 'AUTHRATELIMITEXCEEDED',

@@ -288,6 +288,6 @@ export function handleSummary(data) {
 
   return {
     stdout: JSON.stringify(data, null, 2),
-    'summaryon': JSON.stringify(data, null, 2),
+    summaryon: JSON.stringify(data, null, 2),
   };
 }

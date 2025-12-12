@@ -1,4 +1,4 @@
- // Mirror file to satisfy path requirement in task scope:
+// Mirror file to satisfy path requirement in task scope:
 // Real executable tests live under backend/tests/unit/ml.gateway.service.segmentation.test to align with jest.config testMatch.
 // This file is intentionally skipped so it won't create duplicate runs if patterns change.
 

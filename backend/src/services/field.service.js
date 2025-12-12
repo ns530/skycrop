@@ -322,9 +322,7 @@ async function queryFieldsList(user_id, filters) {
     where.push(...conds);
   }
 
-  const sort = ['name', 'createdat', 'areasqm'].includes(filters.sort)
-    ? filters.sort
-    : 'createdat';
+  const sort = ['name', 'createdat', 'areasqm'].includes(filters.sort) ? filters.sort : 'createdat';
   const order = (filters.order || 'desc').toLowerCase() === 'asc' ? 'ASC' : 'DESC';
 
   const page = Math.max(parseInt(filters.page || '1', 10), 1);

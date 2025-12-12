@@ -27,7 +27,7 @@ class RecommendationController {
         user_id
       );
 
-      res.status(200)on({
+      res.status(200).json({
         success: true,
         data: result,
         meta: {
@@ -67,7 +67,7 @@ class RecommendationController {
 
       const stats = await this.recommendationRepository.getStatistics(field_id);
 
-      res.status(200)on({
+      res.status(200).json({
         success: true,
         data: {
           field_id,
@@ -99,7 +99,7 @@ class RecommendationController {
         validOnly: validOnly === 'true',
       });
 
-      res.status(200)on({
+      res.status(200).json({
         success: true,
         data: {
           recommendations: recommendations.map(r => this.formatRecommendation(r)),
@@ -153,7 +153,7 @@ class RecommendationController {
         notes
       );
 
-      res.status(200)on({
+      res.status(200).json({
         success: true,
         data: this.formatRecommendation(updated),
         meta: {
@@ -186,7 +186,7 @@ class RecommendationController {
 
       await this.recommendationRepository.delete(recommendationId);
 
-      res.status(200)on({
+      res.status(200).json({
         success: true,
         message: 'Recommendation deleted successfully',
         meta: {

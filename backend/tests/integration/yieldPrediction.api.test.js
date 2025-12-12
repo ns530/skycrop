@@ -274,12 +274,12 @@ describe('Yield Prediction API Integration Tests', () => {
         cacheHit: false,
       });
 
-      const response = await request(app)
+      const _response = await request(app)
         .get(`/api/v1/fields/${mockfield_id}/yield/predictions`)
         .query({ limit: 200 })
         .expect(400);
 
-      expect(response.body.success).toBe(false);
+      expect(_response.body.success).toBe(false);
     });
 
     it('should return cached results when available', async () => {

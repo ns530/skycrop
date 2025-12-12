@@ -24,7 +24,7 @@ class HealthMonitoringController {
       // 1. Verify field ownership
       const field = await this.Field.findByPk(field_id);
       if (!field) {
-        return res.status(404)on({
+        return res.status(404).json({
           success: false,
           error: {
             code: 'FIELDNOTFOUND',
@@ -34,7 +34,7 @@ class HealthMonitoringController {
       }
 
       if (field.user_id !== user_id) {
-        return res.status(403)on({
+        return res.status(403).json({
           success: false,
           error: {
             code: 'FORBIDDEN',
@@ -51,7 +51,7 @@ class HealthMonitoringController {
         end = new Date().toISOString().split('T')[0]; // Today
         const periodDays = this.parsePeriod(period);
         if (!periodDays) {
-          return res.status(400)on({
+          return res.status(400).json({
             success: false,
             error: {
               code: 'INVALIDPERIOD',
@@ -66,7 +66,7 @@ class HealthMonitoringController {
 
       // 3. Validate required parameters
       if (!start || !end) {
-        return res.status(400)on({
+        return res.status(400).json({
           success: false,
           error: {
             code: 'MISSINGPARAMETERS',
@@ -79,7 +79,7 @@ class HealthMonitoringController {
       const analysis = await this.healthMonitoringService.analyzeFieldHealth(field_id, start, end);
 
       // 5. Return response
-      return res.status(200)on({
+      return res.status(200).json({
         success: true,
         data: analysis,
         meta: {
@@ -90,7 +90,7 @@ class HealthMonitoringController {
     } catch (error) {
       // Handle known errors
       if (error.statusCode) {
-        return res.status(error.statusCode)on({
+        return res.status(error.statusCode).json({
           success: false,
           error: {
             code: error.message.toUpperCase().replace(/ /g, '_'),

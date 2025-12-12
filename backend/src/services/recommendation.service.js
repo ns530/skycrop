@@ -404,7 +404,13 @@ class RecommendationService {
     const offset = (pageNum - 1) * limit;
 
     // Cache lookup
-    const cacheKey = this.listCacheKey(field_id, { from, to, type, page: pageNum, pageSize: limit });
+    const cacheKey = this.listCacheKey(field_id, {
+      from,
+      to,
+      type,
+      page: pageNum,
+      pageSize: limit,
+    });
     const cached = await cacheGetJSON(cacheKey);
     if (cached && Array.isArray(cached.data)) {
       return cached;

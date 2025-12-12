@@ -27,7 +27,7 @@ async function getAllUsers(req, res, next) {
       total: result.pagination.total,
     });
 
-    reson({
+    res.json({
       success: true,
       data: result,
       meta: { timestamp: new Date().toISOString() },
@@ -56,7 +56,7 @@ async function getUserById(req, res, next) {
       targetId: user_id,
     });
 
-    reson({
+    res.json({
       success: true,
       data: user,
       meta: { timestamp: new Date().toISOString() },
@@ -80,7 +80,7 @@ async function updateUserRole(req, res, next) {
     const { role } = req.body;
 
     if (!role) {
-      return res.status(400)on({
+      return res.status(400).json({
         success: false,
         error: {
           code: 'VALIDATIONERROR',
@@ -103,7 +103,7 @@ async function updateUserRole(req, res, next) {
       newRole: role,
     });
 
-    reson({
+    res.json({
       success: true,
       data: updatedUser,
       message: 'User role updated successfully',
@@ -128,7 +128,7 @@ async function updateUserStatus(req, res, next) {
     const { status } = req.body;
 
     if (!status) {
-      return res.status(400)on({
+      return res.status(400).json({
         success: false,
         error: {
           code: 'VALIDATIONERROR',
@@ -151,7 +151,7 @@ async function updateUserStatus(req, res, next) {
       newStatus: status,
     });
 
-    reson({
+    res.json({
       success: true,
       data: updatedUser,
       message: 'User status updated successfully',
@@ -178,7 +178,7 @@ async function getUserStatistics(req, res, next) {
       user_id: req.user.user_id,
     });
 
-    reson({
+    res.json({
       success: true,
       data: stats,
       meta: { timestamp: new Date().toISOString() },
@@ -200,7 +200,7 @@ async function searchUsers(req, res, next) {
     const { q, limit = 10 } = req.query;
 
     if (!q) {
-      return reson({
+      return res.json({
         success: true,
         data: [],
         meta: { timestamp: new Date().toISOString() },
@@ -215,7 +215,7 @@ async function searchUsers(req, res, next) {
       results: users.length,
     });
 
-    reson({
+    res.json({
       success: true,
       data: users,
       meta: { timestamp: new Date().toISOString() },
@@ -239,7 +239,7 @@ function getRoles(req, res) {
     user_id: req.user.user_id,
   });
 
-  reson({
+  res.json({
     success: true,
     data: roles,
     meta: { timestamp: new Date().toISOString() },

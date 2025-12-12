@@ -29,7 +29,7 @@ if (process.env.NODE_ENV !== 'production') {
    */
   router.get('/sentry-message', (req, res) => {
     Sentry.captureMessage('Test Sentry Message - This is intentional!', 'info');
-    res.status(200)on({
+    res.status(200).json({
       success: true,
       message: 'Sentry message captured. Check your Sentry dashboard.',
     });
@@ -60,7 +60,7 @@ if (process.env.NODE_ENV !== 'production') {
 
       throw error;
     } catch (err) {
-      res.status(503)on({
+      res.status(503).json({
         success: false,
         error: {
           code: err.code,
@@ -97,7 +97,7 @@ if (process.env.NODE_ENV !== 'production') {
     // This will be caught by process.on('unhandledRejection')
     Promise.reject(new Error('Unhandled Promise Rejection - Test'));
 
-    res.status(200)on({
+    res.status(200).json({
       success: true,
       message: 'Unhandled rejection triggered. Check logs and Sentry.',
     });
@@ -105,7 +105,7 @@ if (process.env.NODE_ENV !== 'production') {
 } else {
   // In production, return 404 for all debug routes
   router.use((req, res) => {
-    res.status(404)on({
+    res.status(404).json({
       success: false,
       error: {
         code: 'NOTFOUND',

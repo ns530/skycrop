@@ -182,10 +182,7 @@ class FieldSharingService {
     const shares = await FieldShare.findAll({
       where: {
         sharedwithuser_id: user_id,
-        [Sequelize.Op.or]: [
-          { expiresat: null },
-          { expiresat: { [Sequelize.Op.gt]: new Date() } },
-        ],
+        [Sequelize.Op.or]: [{ expiresat: null }, { expiresat: { [Sequelize.Op.gt]: new Date() } }],
       },
       include: [
         {
@@ -233,10 +230,7 @@ class FieldSharingService {
       where: {
         field_id: field_id,
         sharedwithuser_id: user_id,
-        [Sequelize.Op.or]: [
-          { expiresat: null },
-          { expiresat: { [Sequelize.Op.gt]: new Date() } },
-        ],
+        [Sequelize.Op.or]: [{ expiresat: null }, { expiresat: { [Sequelize.Op.gt]: new Date() } }],
       },
     });
 

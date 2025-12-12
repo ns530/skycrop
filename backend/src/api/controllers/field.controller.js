@@ -35,7 +35,7 @@ module.exports = {
         cachehit: cacheHit,
       });
 
-      return res.status(200)on({
+      return res.status(200).json({
         success: true,
         data: items,
         pagination: { page, pagesize: pageSize, total },
@@ -64,7 +64,7 @@ module.exports = {
         latencyms: latency,
       });
 
-      return res.status(201)on({
+      return res.status(201).json({
         success: true,
         data,
         meta: { correlationid: correlationId, latencyms: latency },
@@ -93,7 +93,7 @@ module.exports = {
         latencyms: latency,
       });
 
-      return res.status(200)on({
+      return res.status(200).json({
         success: true,
         data,
         meta: { correlationid: correlationId, latencyms: latency },
@@ -121,7 +121,7 @@ module.exports = {
         correlationid: correlationId,
         latencyms: latency,
       });
-      return res.status(200)on({
+      return res.status(200).json({
         success: true,
         data,
         meta: { correlationid: correlationId, latencyms: latency },
@@ -138,7 +138,7 @@ module.exports = {
       const { id } = req.params;
       const { boundary } = req.body || {};
       const data = await fieldService.updateBoundary(user_id, id, boundary);
-      return res.status(200)on({ success: true, data });
+      return res.status(200).json({ success: true, data });
     } catch (err) {
       return next(err);
     }
@@ -150,7 +150,7 @@ module.exports = {
       const { user_id } = req.user;
       const { id } = req.params;
       const data = await fieldService.archive(user_id, id);
-      return res.status(200)on({ success: true, data });
+      return res.status(200).json({ success: true, data });
     } catch (err) {
       return next(err);
     }
@@ -175,7 +175,7 @@ module.exports = {
         latencyms: latency,
       });
 
-      return res.status(200)on({
+      return res.status(200).json({
         success: true,
         data,
         meta: { correlationid: correlationId, latencyms: latency },
@@ -191,7 +191,7 @@ module.exports = {
       const { user_id } = req.user;
       const { id } = req.params;
       const data = await fieldService.restore(user_id, id);
-      return res.status(200)on({ success: true, data });
+      return res.status(200).json({ success: true, data });
     } catch (err) {
       return next(err);
     }

@@ -269,12 +269,7 @@ class MLGatewayService {
 
     switch (code) {
       case 'INVALIDINPUT':
-        return new AppError(
-          'INVALIDINPUT',
-          err.message || 'Invalid input',
-          400,
-          err.details || {}
-        );
+        return new AppError('INVALIDINPUT', err.message || 'Invalid input', 400, err.details || {});
       case 'MODELNOTFOUND':
         return new AppError(
           'MODELNOTFOUND',

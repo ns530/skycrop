@@ -324,7 +324,9 @@ describe('RecommendationService unit', () => {
       mockMakeSnapshot(ts, 0.5, 0.2, 0.55),
       mockMakeSnapshot('2025-01-01T00:00:00.000Z', 0.495, 0.18, 0.3), // delta=0.005 < 0.01
     ];
-    let out = await svc.computeRecommendationsForField(user_id, field_id, date, { recompute: true });
+    let out = await svc.computeRecommendationsForField(user_id, field_id, date, {
+      recompute: true,
+    });
     let fert = out.recommendations.find(r => r.type === 'fertilizer');
     expect(fert).toBeDefined();
     expect(fert.severity).toBe('high');

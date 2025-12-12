@@ -24,10 +24,7 @@ class SatelliteService {
     this.redis = null;
 
     // Env config with sane defaults
-    this.SATELLITETILETTLSECONDS = parseInt(
-      process.env.SATELLITETILETTLSECONDS || '21600',
-      10
-    ); // 6h
+    this.SATELLITETILETTLSECONDS = parseInt(process.env.SATELLITETILETTLSECONDS || '21600', 10); // 6h
     this.SATELLITEPREPROCESSZOOM = parseInt(process.env.SATELLITEPREPROCESSZOOM || '12', 10);
     this.SATELLITEMAXPREPROCESSTILES = parseInt(
       process.env.SATELLITEMAXPREPROCESSTILES || '200',

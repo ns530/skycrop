@@ -46,7 +46,7 @@ module.exports = {
         total: result.total,
       });
 
-      return res.status(200)on({
+      return res.status(200).json({
         success: true,
         data: result.items,
         pagination: { page: result.page, pageSize: result.pageSize, total: result.total },
@@ -80,7 +80,7 @@ module.exports = {
             field_id: id,
             date,
           });
-          return res.status(200)on({
+          return res.status(200).json({
             success: true,
             data: existing,
             meta: { correlationid: corr, latencyms: latency, cachehit: true },
@@ -115,7 +115,7 @@ module.exports = {
       });
 
       const status = recompute ? 200 : 201;
-      return res.status(status)on({
+      return res.status(status).json({
         success: true,
         data: saved,
         meta: { correlationid: corr, latencyms: latency, cachehit: !!computed.cachehit },
@@ -132,7 +132,7 @@ module.exports = {
       const { id } = req.params;
       const { days, from, to } = req.query || {};
       const data = await healthService.getHistory(user_id, id, { days, from, to });
-      return res.status(200)on({ success: true, data });
+      return res.status(200).json({ success: true, data });
     } catch (err) {
       return next(err);
     }
@@ -144,7 +144,7 @@ module.exports = {
       const { user_id } = req.user;
       const { id } = req.params;
       const data = await healthService.refresh(user_id, id);
-      return res.status(202)on({ success: true, data });
+      return res.status(202).json({ success: true, data });
     } catch (err) {
       return next(err);
     }

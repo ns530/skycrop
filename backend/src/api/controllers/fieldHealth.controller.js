@@ -14,7 +14,7 @@ module.exports = {
       const { user_id } = req.user;
       const { id } = req.params;
       const data = await fieldHealthService.getFieldHealth(id, user_id);
-      return res.status(200)on({ success: true, data });
+      return res.status(200).json({ success: true, data });
     } catch (err) {
       return next(err);
     }

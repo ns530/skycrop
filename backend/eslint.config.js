@@ -10,7 +10,7 @@ module.exports = [
     files: ['**/*.js'],
     languageOptions: {
       ecmaVersion: 2022,
-      sourceType: 'script',
+      sourceType: 'module',
       globals: {
         ...globals.node,
         ...globals.es2022,
@@ -35,7 +35,14 @@ module.exports = [
 
       'import/no-extraneous-dependencies': [
         'error',
-        { devDependencies: ['**/tests/**', '**/*.test.js', '**/jest.config.js'] },
+        {
+          devDependencies: [
+            '**/tests/**',
+            '**/*.test.js',
+            '**/jest.config.js',
+            '**/eslint.config.js',
+          ],
+        },
       ],
     },
 
@@ -48,5 +55,11 @@ module.exports = [
     },
 
     ignores: ['node_modules/', 'coverage/', 'dist/', '*.log'],
+  },
+  {
+    files: ['**/*.test.js', 'tests/**/*.js'],
+    languageOptions: {
+      sourceType: 'module',
+    },
   },
 ];

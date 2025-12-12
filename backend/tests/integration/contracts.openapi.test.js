@@ -480,7 +480,7 @@ describe('OpenAPI Contract & Performance (Fields, Satellite, ML)', () => {
   describe('Satellite: payload too large 413 mapping', () => {
     test('preprocess returns 413 when JSON body exceeds 10MB parser limit', async () => {
       const pathUrl = '/api/v1/satellite/preprocess';
-      // Create a payload that exceeds the expresson({ limit: "10mb" }) limit defined in app
+      // Create a payload that exceeds the express.json({ limit: "10mb" }) limit defined in app
       const hugeBlob = 'x'.repeat(11 * 1024 * 1024); // ~11MB
       const res = await request(app)
         .post(pathUrl)

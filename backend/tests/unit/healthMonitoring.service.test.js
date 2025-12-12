@@ -119,9 +119,9 @@ describe('HealthMonitoringService', () => {
     });
 
     it('should throw 400 error when start date is after end date', async () => {
-      await expect(service.analyzeFieldHealth(field_id, '2025-02-01', '2025-01-01')).rejects.toThrow(
-        'Start date must be before end date'
-      );
+      await expect(
+        service.analyzeFieldHealth(field_id, '2025-02-01', '2025-01-01')
+      ).rejects.toThrow('Start date must be before end date');
     });
 
     it('should throw 400 error for future end date', async () => {
@@ -135,9 +135,9 @@ describe('HealthMonitoringService', () => {
     });
 
     it('should throw 400 error for date range exceeding 365 days', async () => {
-      await expect(service.analyzeFieldHealth(field_id, '2023-01-01', '2024-01-02')).rejects.toThrow(
-        'Date range cannot exceed 365 days'
-      );
+      await expect(
+        service.analyzeFieldHealth(field_id, '2023-01-01', '2024-01-02')
+      ).rejects.toThrow('Date range cannot exceed 365 days');
     });
   });
 
