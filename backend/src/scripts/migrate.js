@@ -11,10 +11,12 @@ const fs = require('fs');
 const path = require('path');
 const { Pool } = require('pg');
 
+const dirname = __dirname;
+
 const {
   DATABASEURL,
   DATABASEPRIVATEURL, // Railway internal connection (no SSL needed)
-  NODE_ENV = 'development',
+  _NODE_ENV = 'development',
 } = process.env;
 
 // Prefer private URL for internal connections (no SSL needed)
@@ -22,7 +24,7 @@ const DBCONNECTIONSTRING = DATABASEPRIVATEURL || DATABASEURL;
 
 // Retry helper with exponential backoff
 async function retryWithBackoff(fn, maxRetries = 5, initialDelay = 1000) {
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+  for (let attempt = 1; attempt <= maxRetries; attempt += 1) {
     try {
       return await fn();
     } catch (error) {
@@ -40,7 +42,9 @@ async function retryWithBackoff(fn, maxRetries = 5, initialDelay = 1000) {
       console.log(
         `⚠️  Connection error (attempt ${attempt}/${maxRetries}), retrying in ${delay}ms...`
       );
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise(resolve => {
+        setTimeout(() => resolve(), delay);
+      });
     }
   }
 }
@@ -54,9 +58,6 @@ async function runMigrations() {
   // Determine SSL requirement based on connection string
   // Railway internal connections (.railway.internal) don't need SSL
   // External connections (rlwy.net, railway.app, gondola.proxy) need SSL with rejectUnauthorized: false
-  const isInternal =
-    DBCONNECTIONSTRING.includes('.railway.internal') ||
-    DBCONNECTIONSTRING.includes('postgis.railway.internal');
   const isExternal =
     DBCONNECTIONSTRING.includes('rlwy.net') ||
     DBCONNECTIONSTRING.includes('railway.app') ||
@@ -92,7 +93,7 @@ async function runMigrations() {
     console.log('🔍 Checking PostGIS availability...');
     try {
       const postgisResult = await retryWithBackoff(async () => {
-        return await pool.query('SELECT PostGISversion()');
+        return pool.query('SELECT PostGISversion()');
       });
       console.log('✅ PostGIS available:', postgisResult.rows[0].postgisversion);
     } catch (postgisErr) {
@@ -136,14 +137,14 @@ async function runMigrations() {
 
       console.log(`📋 Found ${migrationFiles.length} migration files...`);
 
-      for (const file of migrationFiles) {
+      migrationFiles.forEach(async file => {
         const migrationPath = path.join(migrationsDir, file);
         console.log(`🚀 Running migration: ${file}...`);
 
         try {
           const migrationSql = fs.readFileSync(migrationPath, 'utf8');
           await retryWithBackoff(async () => {
-            await pool.query(migrationSql);
+            return pool.query(migrationSql);
           });
           console.log(`✅ ${file} completed`);
         } catch (error) {
@@ -157,7 +158,7 @@ async function runMigrations() {
             throw error;
           }
         }
-      }
+      });
     }
 
     console.log('✅ Migrations completed successfully');

@@ -11,19 +11,19 @@ class RecommendationRepository {
    * @returns {Promise<Recommendation>}
    */
   async create(data) {
-    return await Recommendation.create(data);
+    return Recommendation.create(data);
   }
 
   /**
    * Find recommendations by field ID
-   * @param {string} field_id - Field UUID
+   * @param {string} fieldId - Field UUID
    * @param {Object} options - Query options
    * @returns {Promise<Array<Recommendation>>}
    */
-  async findByfield_id(field_id, options = {}) {
+  async findByFieldId(fieldId, options = {}) {
     const { status, priority, validOnly = false, limit = 50 } = options;
 
-    const where = { field_id };
+    const where = { fieldId };
 
     if (status) {
       where.status = status;
@@ -39,7 +39,7 @@ class RecommendationRepository {
       };
     }
 
-    return await Recommendation.findAll({
+    return Recommendation.findAll({
       where,
       order: [
         ['urgencyscore', 'DESC'],
@@ -51,14 +51,14 @@ class RecommendationRepository {
 
   /**
    * Find recommendations by user ID
-   * @param {string} user_id - User UUID
+   * @param {string} userId - User UUID
    * @param {Object} options - Query options
    * @returns {Promise<Array<Recommendation>>}
    */
-  async findByuser_id(user_id, options = {}) {
+  async findByUserId(userId, options = {}) {
     const { status, priority, validOnly = false, limit = 100 } = options;
 
-    const where = { user_id };
+    const where = { userId };
 
     if (status) {
       where.status = status;
@@ -74,7 +74,7 @@ class RecommendationRepository {
       };
     }
 
-    return await Recommendation.findAll({
+    return Recommendation.findAll({
       where,
       order: [
         ['urgencyscore', 'DESC'],
@@ -90,7 +90,7 @@ class RecommendationRepository {
    * @returns {Promise<Recommendation|null>}
    */
   async findById(recommendationId) {
-    return await Recommendation.findByPk(recommendationId);
+    return Recommendation.findByPk(recommendationId);
   }
 
   /**
@@ -137,11 +137,11 @@ class RecommendationRepository {
 
   /**
    * Get statistics for a field
-   * @param {string} field_id - Field UUID
+   * @param {string} fieldId - Field UUID
    * @returns {Promise<Object>}
    */
-  async getStatistics(field_id) {
-    const all = await this.findByfield_id(field_id, { limit: 1000 });
+  async getStatistics(fieldId) {
+    const all = await this.findByFieldId(fieldId, { limit: 1000 });
 
     return {
       total: all.length,

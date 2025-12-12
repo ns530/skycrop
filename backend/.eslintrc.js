@@ -49,6 +49,13 @@ module.exports = {
         'max-classes-per-file': 'off',
       },
     },
+    {
+      files: ['src/scripts/**/*.js'],
+      rules: {
+        'no-console': 'off',
+        'no-await-in-loop': 'off',
+      },
+    },
   ],
   ignorePatterns: ['node_modules/', 'coverage/', 'dist/', '*.log'],
 };

@@ -7,15 +7,15 @@ const HealthRecord = require('../models/health.model');
 class HealthRepository {
   /**
    * Find health records by field ID and date range
-   * @param {string} field_id - Field UUID
+   * @param {string} fieldId - Field UUID
    * @param {string} startDate - Start date (YYYY-MM-DD)
    * @param {string} endDate - End date (YYYY-MM-DD)
    * @returns {Promise<Array<HealthRecord>>}
    */
-  async findByFieldAndDateRange(field_id, startDate, endDate) {
-    return await HealthRecord.findAll({
+  async findByFieldAndDateRange(fieldId, startDate, endDate) {
+    return HealthRecord.findAll({
       where: {
-        field_id,
+        fieldId,
         measurementdate: {
           [Sequelize.Op.between]: [startDate, endDate],
         },
@@ -26,12 +26,12 @@ class HealthRepository {
 
   /**
    * Find latest health record for a field
-   * @param {string} field_id - Field UUID
+   * @param {string} fieldId - Field UUID
    * @returns {Promise<HealthRecord|null>}
    */
-  async findLatestByField(field_id) {
-    return await HealthRecord.findOne({
-      where: { field_id },
+  async findLatestByField(fieldId) {
+    return HealthRecord.findOne({
+      where: { fieldId },
       order: [['measurementdate', 'DESC']],
     });
   }
@@ -42,7 +42,7 @@ class HealthRepository {
    * @returns {Promise<HealthRecord>}
    */
   async create(data) {
-    return await HealthRecord.create(data);
+    return HealthRecord.create(data);
   }
 
   /**
@@ -51,7 +51,7 @@ class HealthRepository {
    * @returns {Promise<Array<HealthRecord>>}
    */
   async bulkCreate(records) {
-    return await HealthRecord.bulkCreate(records);
+    return HealthRecord.bulkCreate(records);
   }
 
   /**
@@ -60,7 +60,7 @@ class HealthRepository {
    * @returns {Promise<HealthRecord|null>}
    */
   async findById(recordId) {
-    return await HealthRecord.findByPk(recordId);
+    return HealthRecord.findByPk(recordId);
   }
 
   /**
@@ -69,7 +69,7 @@ class HealthRepository {
    * @returns {Promise<number>} Number of deleted records
    */
   async deleteBeforeDate(beforeDate) {
-    return await HealthRecord.destroy({
+    return HealthRecord.destroy({
       where: {
         measurementdate: {
           [Sequelize.Op.lt]: beforeDate,
