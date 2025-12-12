@@ -23,7 +23,7 @@ module.exports = [
       import: importPlugin,
     },
 
-    extends: [js.configs.recommended],
+    ...js.configs.recommended,
 
     rules: {
       'prettier/prettier': 'error',
