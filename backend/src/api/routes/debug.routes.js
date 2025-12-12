@@ -16,7 +16,7 @@ if (process.env.NODE_ENV !== 'production') {
    * GET /debug/sentry
    * Test Sentry error tracking by throwing an intentional error
    */
-  router.get('/sentry', (req, res) => {
+  router.get('/sentry', (_req, _res) => {
     logger.warn('Triggering test Sentry error via /debug/sentry');
     throw new Error('Test Sentry Error Tracking - This is intentional!');
   });

@@ -18,9 +18,10 @@ router.use(express.json({ limit: '10mb' }));
 // eslint-disable-next-line no-unused-vars
 router.use((err, req, res, next) => {
   if (err && (err.type === 'entity.too.large' || err.status === 413)) {
-    err.statusCode = 413;
-    err.code = 'PAYLOADTOOLARGE';
-    err.message = 'Request entity too large';
+    const error = new Error('Request entity too large');
+    error.statusCode = 413;
+    error.code = 'PAYLOADTOOLARGE';
+    return next(error);
   }
   return next(err);
 });

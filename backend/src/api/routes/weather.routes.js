@@ -12,11 +12,6 @@ const fieldQuery = Joi.object({
     .required(),
 });
 
-const coordsQuery = Joi.object({
-  lat: Joi.number().min(-90).max(90).required(),
-  lon: Joi.number().min(-180).max(180).required(),
-});
-
 const forecastQuery = Joi.object({
   field_id: Joi.string().guid({ version: ['uuidv4', 'uuidv5', 'uuidv1'] }),
   lat: Joi.number().min(-90).max(90),
