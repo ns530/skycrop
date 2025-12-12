@@ -10,7 +10,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon --env-file .env src/server.js",
-    "lint": "eslint . --ext .js",
+    "lint": "eslint .",
     "format": "prettier --write \"**/*.{js,json,md,yml,yaml}\"",
     "test": "jest --config jest.config.js --runInBand",
     "test:coverage": "jest --config jest.config.js --coverage --runInBand",
