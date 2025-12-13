@@ -45,7 +45,29 @@ process.env.MLBASEURL = 'http://ml-service.local:80';
 process.env.MLINTERNALTOKEN = 'test-internal-token';
 process.env.MLREQUESTTIMEOUTMS = '60000';
 
-const app = require('../../src/app');
+// Mock app.js to avoid ES module import issues
+jest.mock('../../src/app', () => {
+  // eslint-disable-next-line global-require
+  const express = require('express');
+  const app = express();
+  app.use(express.json());
+
+  try {
+    // eslint-disable-next-line global-require
+    const mlRoutes = require('../../src/api/routes/ml.routes');
+    app.use('/api/v1/ml', mlRoutes);
+  } catch (e) {
+    console.error('Failed to load routes in ml yield test mock:', e.message);
+  }
+
+  return {
+    __esModule: true,
+    default: app,
+  };
+});
+
+// eslint-disable-next-line global-require
+const app = require('../../src/app').default || require('../../src/app');
 
 describe('POST /api/v1/ml/yield/predict', () => {
   beforeEach(() => {

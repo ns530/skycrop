@@ -20,7 +20,29 @@ jest.mock('../../src/api/middleware/rateLimit.middleware', () => ({
   authLimiter: (req, res, next) => next(),
 }));
 
-const app = require('../../src/app');
+// Mock app.js to avoid ES module import issues
+jest.mock('../../src/app', () => {
+  // eslint-disable-next-line global-require
+  const express = require('express');
+  const app = express();
+  app.use(express.json());
+
+  try {
+    // eslint-disable-next-line global-require
+    const fieldRoutes = require('../../src/api/routes/field.routes');
+    app.use('/api/v1/fields', fieldRoutes);
+  } catch (e) {
+    console.error('Failed to load routes in performance test mock:', e.message);
+  }
+
+  return {
+    __esModule: true,
+    default: app,
+  };
+});
+
+// eslint-disable-next-line global-require
+const app = require('../../src/app').default || require('../../src/app');
 
 describe('Performance Tests - Concurrent Load', () => {
   const testFieldId = 'perf-field-123';

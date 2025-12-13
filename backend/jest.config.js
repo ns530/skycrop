@@ -46,6 +46,10 @@ module.exports = {
   },
   coverageReporters: ['text-summary', 'lcov'],
   testMatch: ['**/tests/**/*.test.js'],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/tests/load/', // Exclude k6 load tests (they use ES modules for k6)
+  ],
   moduleFileExtensions: ['js', 'json'],
   verbose: false,
 };

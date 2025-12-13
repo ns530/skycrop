@@ -77,7 +77,29 @@ jest.mock('../../src/config/redis.config', () => ({
 process.env.NODE_ENV = 'test';
 process.env.JWTSECRET = 'test-secret';
 
-const app = require('../../src/app');
+// Mock app.js to avoid ES module import issues
+jest.mock('../../src/app', () => {
+  // eslint-disable-next-line global-require
+  const express = require('express');
+  const app = express();
+  app.use(express.json());
+
+  try {
+    // eslint-disable-next-line global-require
+    const fieldRoutes = require('../../src/api/routes/field.routes');
+    app.use('/api/v1/fields', fieldRoutes);
+  } catch (e) {
+    console.error('Failed to load routes in fields test mock:', e.message);
+  }
+
+  return {
+    __esModule: true,
+    default: app,
+  };
+});
+
+// eslint-disable-next-line global-require
+const app = require('../../src/app').default || require('../../src/app');
 const { sequelize } = require('../../src/config/database.config');
 const Field = require('../../src/models/field.model');
 

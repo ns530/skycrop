@@ -4,7 +4,17 @@ jest.mock('http');
 jest.mock('../../src/config/database.config');
 jest.mock('../../src/utils/logger');
 jest.mock('../../src/scripts/migrate');
-jest.mock('../../src/jobs');
+jest.mock('../../src/jobs', () => ({
+  _initializeJobs: jest.fn(),
+  _startJobs: jest.fn(),
+  stopJobs: jest.fn(),
+  __esModule: true,
+  default: {
+    _initializeJobs: jest.fn(),
+    _startJobs: jest.fn(),
+    stopJobs: jest.fn(),
+  },
+}));
 jest.mock('../../src/websocket/server');
 
 // Mock models to prevent database initialization

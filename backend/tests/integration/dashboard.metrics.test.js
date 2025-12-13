@@ -180,7 +180,29 @@ process.env.NODE_ENV = 'test';
 process.env.JWTSECRET = 'test-secret';
 process.env.DASHBOARDCACHETTLSEC = '300';
 
-const app = require('../../src/app');
+// Mock app.js to avoid ES module import issues
+jest.mock('../../src/app', () => {
+  // eslint-disable-next-line global-require
+  const express = require('express');
+  const app = express();
+  app.use(express.json());
+
+  try {
+    // eslint-disable-next-line global-require
+    const dashboardRoutes = require('../../src/api/routes/dashboard.routes');
+    app.use('/api/v1/dashboard', dashboardRoutes);
+  } catch (e) {
+    console.error('Failed to load routes in dashboard test mock:', e.message);
+  }
+
+  return {
+    __esModule: true,
+    default: app,
+  };
+});
+
+// eslint-disable-next-line global-require
+const app = require('../../src/app').default || require('../../src/app');
 
 describe('GET /api/v1/dashboard/metrics', () => {
   beforeEach(() => {

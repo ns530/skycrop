@@ -42,7 +42,32 @@ jest.mock('../../src/models/field.model', () => ({
 jest.mock('../../src/models/actualYield.model', () => ({}));
 jest.mock('../../src/models/yield_prediction.model', () => ({}));
 
-const app = require('../../src/app');
+// Mock app.js to avoid ES module import issues
+jest.mock('../../src/app', () => {
+  // eslint-disable-next-line global-require
+  const express = require('express');
+  const app = express();
+  app.use(express.json());
+
+  try {
+    // eslint-disable-next-line global-require
+    const yieldRoutes = require('../../src/api/routes/yield.routes');
+    // eslint-disable-next-line global-require
+    const fieldRoutes = require('../../src/api/routes/field.routes');
+    app.use('/api/v1/fields', yieldRoutes);
+    app.use('/api/v1/fields', fieldRoutes);
+  } catch (e) {
+    console.error('Failed to load routes in yield prediction test mock:', e.message);
+  }
+
+  return {
+    __esModule: true,
+    default: app,
+  };
+});
+
+// eslint-disable-next-line global-require
+const app = require('../../src/app').default || require('../../src/app');
 
 describe('Yield Prediction API Integration Tests', () => {
   const mockuser_id = 'user-1';

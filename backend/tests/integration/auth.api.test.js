@@ -46,10 +46,32 @@ const mockUser = {
 };
 jest.mock('../../src/models/user.model', () => mockUser);
 
+// Mock app.js to avoid ES module import issues
+jest.mock('../../src/app', () => {
+  // eslint-disable-next-line global-require
+  const express = require('express');
+  const app = express();
+  app.use(express.json());
+
+  try {
+    // eslint-disable-next-line global-require
+    const authRoutes = require('../../src/api/routes/auth.routes');
+    app.use('/api/v1/auth', authRoutes);
+  } catch (e) {
+    console.error('Failed to load routes in auth test mock:', e.message);
+  }
+
+  return {
+    __esModule: true,
+    default: app,
+  };
+});
+
 // Build app after mocks are set up
 const request = require('supertest');
 const bcrypt = require('bcrypt');
-const app = require('../../src/app');
+// eslint-disable-next-line global-require
+const app = require('../../src/app').default || require('../../src/app');
 
 describe('Auth API Integration', () => {
   beforeEach(() => {

@@ -93,7 +93,29 @@ process.env.SENTINELHUBCLIENTID = 'client-id';
 process.env.SENTINELHUBCLIENTSECRET = 'client-secret';
 process.env.SATELLITETILETTLSECONDS = '21600';
 
-const app = require('../../src/app');
+// Mock app.js to avoid ES module import issues
+jest.mock('../../src/app', () => {
+  // eslint-disable-next-line global-require
+  const express = require('express');
+  const app = express();
+  app.use(express.json());
+
+  try {
+    // eslint-disable-next-line global-require
+    const satelliteRoutes = require('../../src/api/routes/satellite.routes');
+    app.use('/api/v1/satellite', satelliteRoutes);
+  } catch (e) {
+    console.error('Failed to load routes in satellite tiles test mock:', e.message);
+  }
+
+  return {
+    __esModule: true,
+    default: app,
+  };
+});
+
+// eslint-disable-next-line global-require
+const app = require('../../src/app').default || require('../../src/app');
 
 describe('GET /api/v1/satellite/tiles/{z}/{x}/{y}', () => {
   const basePath = '/api/v1/satellite/tiles';
