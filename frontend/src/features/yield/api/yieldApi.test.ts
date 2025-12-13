@@ -2,43 +2,107 @@
  * Tests for yield API functions
  */
 
+import { httpClient } from "../../../shared/api/httpClient";
+
 import {
   getActualYieldRecords,
   submitActualYield,
   deleteYieldRecord,
 } from "./yieldApi";
 
+// Mock httpClient to prevent network requests
+jest.mock("../../../shared/api/httpClient", () => {
+  const mockHttpClient = {
+    get: jest.fn(),
+    post: jest.fn(),
+    delete: jest.fn(),
+    patch: jest.fn(),
+  };
+  return {
+    httpClient: mockHttpClient,
+    normalizeApiError: jest.fn((error) => error),
+  };
+});
+
 describe("yieldApi", () => {
+  const mockHttpClient = httpClient as jest.Mocked<typeof httpClient>;
+
   // Clear localStorage before each test
   beforeEach(() => {
     localStorage.clear();
+    jest.clearAllMocks();
   });
 
   describe("getActualYieldRecords", () => {
     it("returns empty array when no records exist", async () => {
+      mockHttpClient.get.mockResolvedValue({
+        data: {
+          success: true,
+          data: [],
+          pagination: {
+            page: 1,
+            page_size: 100,
+            total: 0,
+            total_pages: 0,
+          },
+        },
+        status: 200,
+        statusText: "OK",
+        headers: {},
+        config: {} as any,
+      });
+
       const records = await getActualYieldRecords("field-123");
       expect(records).toEqual([]);
+      expect(mockHttpClient.get).toHaveBeenCalledWith(
+        "/fields/field-123/yield",
+        expect.objectContaining({
+          params: expect.objectContaining({
+            page: 1,
+            page_size: 100,
+          }),
+        }),
+      );
     });
 
     it("returns records for specific field", async () => {
-      // Add some test data
-      const testData = [
+      const backendData = [
         {
-          id: "yield-1",
-          fieldId: "field-123",
-          harvestDate: "2024-05-15",
-          actualYieldKgPerHa: 4500,
-          createdAt: "2024-05-15T10:00:00Z",
+          yield_id: "yield-1",
+          field_id: "field-123",
+          harvest_date: "2024-05-15",
+          actual_yield_per_ha: 4500,
+          total_yield_kg: 11250,
+          created_at: "2024-05-15T10:00:00Z",
+          updated_at: "2024-05-15T10:00:00Z",
         },
         {
-          id: "yield-2",
-          fieldId: "field-456",
-          harvestDate: "2024-05-20",
-          actualYieldKgPerHa: 4800,
-          createdAt: "2024-05-20T10:00:00Z",
+          yield_id: "yield-2",
+          field_id: "field-456",
+          harvest_date: "2024-05-20",
+          actual_yield_per_ha: 4800,
+          total_yield_kg: 12000,
+          created_at: "2024-05-20T10:00:00Z",
+          updated_at: "2024-05-20T10:00:00Z",
         },
       ];
-      localStorage.setItem("skycrop_yield_records", JSON.stringify(testData));
+
+      mockHttpClient.get.mockResolvedValue({
+        data: {
+          success: true,
+          data: backendData,
+          pagination: {
+            page: 1,
+            page_size: 100,
+            total: 2,
+            total_pages: 1,
+          },
+        },
+        status: 200,
+        statusText: "OK",
+        headers: {},
+        config: {} as any,
+      });
 
       const records = await getActualYieldRecords("field-123");
 
@@ -48,34 +112,57 @@ describe("yieldApi", () => {
     });
 
     it("sorts records by harvest date descending", async () => {
-      const testData = [
+      const backendData = [
         {
-          id: "yield-1",
-          fieldId: "field-123",
-          harvestDate: "2024-03-15",
-          actualYieldKgPerHa: 4500,
-          createdAt: "2024-03-15T10:00:00Z",
+          yield_id: "yield-1",
+          field_id: "field-123",
+          harvest_date: "2024-03-15",
+          actual_yield_per_ha: 4500,
+          total_yield_kg: 11250,
+          created_at: "2024-03-15T10:00:00Z",
+          updated_at: "2024-03-15T10:00:00Z",
         },
         {
-          id: "yield-2",
-          fieldId: "field-123",
-          harvestDate: "2024-05-20",
-          actualYieldKgPerHa: 4800,
-          createdAt: "2024-05-20T10:00:00Z",
+          yield_id: "yield-2",
+          field_id: "field-123",
+          harvest_date: "2024-05-20",
+          actual_yield_per_ha: 4800,
+          total_yield_kg: 12000,
+          created_at: "2024-05-20T10:00:00Z",
+          updated_at: "2024-05-20T10:00:00Z",
         },
         {
-          id: "yield-3",
-          fieldId: "field-123",
-          harvestDate: "2024-01-10",
-          actualYieldKgPerHa: 4200,
-          createdAt: "2024-01-10T10:00:00Z",
+          yield_id: "yield-3",
+          field_id: "field-123",
+          harvest_date: "2024-01-10",
+          actual_yield_per_ha: 4200,
+          total_yield_kg: 10500,
+          created_at: "2024-01-10T10:00:00Z",
+          updated_at: "2024-01-10T10:00:00Z",
         },
       ];
-      localStorage.setItem("skycrop_yield_records", JSON.stringify(testData));
+
+      mockHttpClient.get.mockResolvedValue({
+        data: {
+          success: true,
+          data: backendData,
+          pagination: {
+            page: 1,
+            page_size: 100,
+            total: 3,
+            total_pages: 1,
+          },
+        },
+        status: 200,
+        statusText: "OK",
+        headers: {},
+        config: {} as any,
+      });
 
       const records = await getActualYieldRecords("field-123");
 
       expect(records).toHaveLength(3);
+      // Backend should return sorted by harvest_date desc
       expect(records[0].harvestDate).toBe("2024-05-20"); // Most recent first
       expect(records[1].harvestDate).toBe("2024-03-15");
       expect(records[2].harvestDate).toBe("2024-01-10");
@@ -92,61 +179,170 @@ describe("yieldApi", () => {
         notes: "Good harvest",
       };
 
+      const backendResponse = {
+        yield_id: "yield-new-1",
+        field_id: "field-123",
+        harvest_date: "2024-05-15",
+        actual_yield_per_ha: 4500,
+        total_yield_kg: 11250,
+        predicted_yield_per_ha: 4500,
+        accuracy_mape: 0,
+        notes: "Good harvest",
+        created_at: "2024-05-15T10:00:00Z",
+        updated_at: "2024-05-15T10:00:00Z",
+      };
+
+      mockHttpClient.post.mockResolvedValue({
+        data: {
+          success: true,
+          data: backendResponse,
+        },
+        status: 201,
+        statusText: "Created",
+        headers: {},
+        config: {} as any,
+      });
+
       const record = await submitActualYield(payload);
 
-      expect(record.id).toBeDefined();
+      expect(record.id).toBe("yield-new-1");
       expect(record.fieldId).toBe("field-123");
       expect(record.harvestDate).toBe("2024-05-15");
       expect(record.actualYieldKgPerHa).toBe(4500);
       expect(record.totalYieldKg).toBe(11250);
       expect(record.notes).toBe("Good harvest");
-      expect(record.predictedYieldKgPerHa).toBeDefined();
-      expect(record.accuracy).toBeDefined();
-      expect(record.createdAt).toBeDefined();
+      expect(record.predictedYieldKgPerHa).toBe(4500);
+      expect(record.accuracy).toBe(0);
+      expect(record.createdAt).toBe("2024-05-15T10:00:00Z");
     });
 
-    it("saves record to localStorage", async () => {
+    it("submits yield data to backend", async () => {
       const payload = {
         fieldId: "field-123",
         harvestDate: "2024-05-15",
         actualYieldKgPerHa: 4500,
       };
 
+      const backendResponse = {
+        yield_id: "yield-new-1",
+        field_id: "field-123",
+        harvest_date: "2024-05-15",
+        actual_yield_per_ha: 4500,
+        total_yield_kg: 0,
+        created_at: "2024-05-15T10:00:00Z",
+        updated_at: "2024-05-15T10:00:00Z",
+      };
+
+      mockHttpClient.post.mockResolvedValue({
+        data: {
+          success: true,
+          data: backendResponse,
+        },
+        status: 201,
+        statusText: "Created",
+        headers: {},
+        config: {} as any,
+      });
+
       await submitActualYield(payload);
 
-      const stored = localStorage.getItem("skycrop_yield_records");
-      expect(stored).toBeDefined();
-
-      const records = JSON.parse(stored!);
-      expect(records).toHaveLength(1);
-      expect(records[0].fieldId).toBe("field-123");
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        "/fields/field-123/yield",
+        expect.objectContaining({
+          actual_yield_per_ha: 4500,
+          total_yield_kg: 0,
+          harvest_date: "2024-05-15",
+        }),
+      );
     });
 
-    it("appends to existing records", async () => {
-      // Add initial record
-      await submitActualYield({
+    it("handles multiple submissions", async () => {
+      const payload1 = {
         fieldId: "field-123",
         harvestDate: "2024-03-15",
         actualYieldKgPerHa: 4200,
-      });
+      };
 
-      // Add second record
-      await submitActualYield({
+      const payload2 = {
         fieldId: "field-123",
         harvestDate: "2024-05-20",
         actualYieldKgPerHa: 4800,
-      });
+      };
 
-      const records = await getActualYieldRecords("field-123");
-      expect(records).toHaveLength(2);
+      mockHttpClient.post
+        .mockResolvedValueOnce({
+          data: {
+            success: true,
+            data: {
+              yield_id: "yield-1",
+              field_id: "field-123",
+              harvest_date: "2024-03-15",
+              actual_yield_per_ha: 4200,
+              total_yield_kg: 0,
+              created_at: "2024-03-15T10:00:00Z",
+              updated_at: "2024-03-15T10:00:00Z",
+            },
+          },
+          status: 201,
+          statusText: "Created",
+          headers: {},
+          config: {} as any,
+        })
+        .mockResolvedValueOnce({
+          data: {
+            success: true,
+            data: {
+              yield_id: "yield-2",
+              field_id: "field-123",
+              harvest_date: "2024-05-20",
+              actual_yield_per_ha: 4800,
+              total_yield_kg: 0,
+              created_at: "2024-05-20T10:00:00Z",
+              updated_at: "2024-05-20T10:00:00Z",
+            },
+          },
+          status: 201,
+          statusText: "Created",
+          headers: {},
+          config: {} as any,
+        });
+
+      await submitActualYield(payload1);
+      await submitActualYield(payload2);
+
+      expect(mockHttpClient.post).toHaveBeenCalledTimes(2);
     });
 
-    it("calculates accuracy correctly", async () => {
+    it("calculates accuracy correctly when predicted yield is provided", async () => {
       const payload = {
         fieldId: "field-123",
         harvestDate: "2024-05-15",
-        actualYieldKgPerHa: 4500, // Predicted is 4500 (mock)
+        actualYieldKgPerHa: 4500,
+        predictedYieldKgPerHa: 4500,
       };
+
+      const backendResponse = {
+        yield_id: "yield-new-1",
+        field_id: "field-123",
+        harvest_date: "2024-05-15",
+        actual_yield_per_ha: 4500,
+        total_yield_kg: 0,
+        predicted_yield_per_ha: 4500,
+        accuracy_mape: 0,
+        created_at: "2024-05-15T10:00:00Z",
+        updated_at: "2024-05-15T10:00:00Z",
+      };
+
+      mockHttpClient.post.mockResolvedValue({
+        data: {
+          success: true,
+          data: backendResponse,
+        },
+        status: 201,
+        statusText: "Created",
+        headers: {},
+        config: {} as any,
+      });
 
       const record = await submitActualYield(payload);
 
@@ -156,43 +352,47 @@ describe("yieldApi", () => {
 
   describe("deleteYieldRecord", () => {
     it("deletes specific record", async () => {
-      // Add test records
-      const record1 = await submitActualYield({
-        fieldId: "field-123",
-        harvestDate: "2024-03-15",
-        actualYieldKgPerHa: 4200,
+      mockHttpClient.delete.mockResolvedValue({
+        data: {},
+        status: 204,
+        statusText: "No Content",
+        headers: {},
+        config: {} as any,
       });
 
-      const record2 = await submitActualYield({
-        fieldId: "field-123",
-        harvestDate: "2024-05-20",
-        actualYieldKgPerHa: 4800,
-      });
+      await deleteYieldRecord("yield-1");
 
-      // Delete first record
-      await deleteYieldRecord(record1.id);
-
-      const records = await getActualYieldRecords("field-123");
-      expect(records).toHaveLength(1);
-      expect(records[0].id).toBe(record2.id);
+      expect(mockHttpClient.delete).toHaveBeenCalledWith("/yield/yield-1");
     });
 
     it("handles deletion of non-existent record gracefully", async () => {
-      await expect(deleteYieldRecord("non-existent-id")).resolves.not.toThrow();
-    });
-
-    it("removes record from localStorage", async () => {
-      const record = await submitActualYield({
-        fieldId: "field-123",
-        harvestDate: "2024-05-15",
-        actualYieldKgPerHa: 4500,
+      mockHttpClient.delete.mockResolvedValue({
+        data: {},
+        status: 204,
+        statusText: "No Content",
+        headers: {},
+        config: {} as any,
       });
 
-      await deleteYieldRecord(record.id);
+      await expect(deleteYieldRecord("non-existent-id")).resolves.not.toThrow();
+      expect(mockHttpClient.delete).toHaveBeenCalledWith(
+        "/yield/non-existent-id",
+      );
+    });
 
-      const stored = localStorage.getItem("skycrop_yield_records");
-      const records = JSON.parse(stored || "[]");
-      expect(records).toHaveLength(0);
+    it("calls delete endpoint with correct record ID", async () => {
+      mockHttpClient.delete.mockResolvedValue({
+        data: {},
+        status: 204,
+        statusText: "No Content",
+        headers: {},
+        config: {} as any,
+      });
+
+      await deleteYieldRecord("yield-123");
+
+      expect(mockHttpClient.delete).toHaveBeenCalledTimes(1);
+      expect(mockHttpClient.delete).toHaveBeenCalledWith("/yield/yield-123");
     });
   });
 });

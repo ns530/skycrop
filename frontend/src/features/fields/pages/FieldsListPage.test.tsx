@@ -4,6 +4,7 @@ import React from "react";
 import { MemoryRouter } from "react-router-dom";
 
 import type { PaginatedResponse, ListParams } from "../../../shared/api";
+import { ToastProvider } from "../../../shared/ui/Toast";
 import type { FieldSummary } from "../api/fieldsApi";
 
 import { FieldsListPage } from "./FieldsListPage";
@@ -70,7 +71,9 @@ const createWrapper = (
 
     return (
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>
+        <ToastProvider>
+          <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>
+        </ToastProvider>
       </QueryClientProvider>
     );
   };
