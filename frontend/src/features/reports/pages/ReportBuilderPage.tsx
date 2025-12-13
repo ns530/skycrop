@@ -366,9 +366,12 @@ export const ReportBuilderPage: React.FC = () => {
                 {fields.map((field) => (
                   <label
                     key={field.id}
+                    htmlFor={`field-${field.id}`}
                     className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
+                    aria-label={`Select field ${field.name}`}
                   >
                     <input
+                      id={`field-${field.id}`}
                       type="checkbox"
                       checked={selectedFieldIds.includes(field.id)}
                       onChange={() => handleFieldSelection(field.id)}
@@ -396,10 +399,14 @@ export const ReportBuilderPage: React.FC = () => {
               </h2>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="report-start-date"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Start Date
                   </label>
                   <input
+                    id="report-start-date"
                     type="date"
                     value={dateRange.start}
                     onChange={(e) =>
@@ -409,10 +416,14 @@ export const ReportBuilderPage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="report-end-date"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     End Date
                   </label>
                   <input
+                    id="report-end-date"
                     type="date"
                     value={dateRange.end}
                     onChange={(e) =>
@@ -477,7 +488,7 @@ export const ReportBuilderPage: React.FC = () => {
 
           <Card>
             <h3 className="text-sm font-semibold text-gray-900 mb-2">
-              What's Included
+              What&apos;s Included
             </h3>
             <ul className="text-sm text-gray-600 space-y-2">
               {reportType === "health" && (

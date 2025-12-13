@@ -275,7 +275,7 @@ export const YieldEntryForm: React.FC<YieldEntryFormProps> = ({
               </p>
             ) : (
               <p className="text-yellow-700 font-medium mt-2">
-                ⚠ Significant difference. We'll use this data to improve future
+                ⚠ Significant difference. We&apos;ll use this data to improve future
                 predictions.
               </p>
             )}

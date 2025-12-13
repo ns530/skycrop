@@ -94,6 +94,15 @@ export const calculateBounds = (boundary: FieldBoundary): MapBounds => {
 };
 
 /**
+ * Type guard to check if an object has a type property
+ */
+interface GeoJSONLike {
+  type?: string;
+  coordinates?: unknown;
+  geometry?: unknown;
+}
+
+/**
  * Convert backend GeoJSON to Leaflet format
  * Handles various GeoJSON formats and normalizes them
  */
@@ -102,19 +111,27 @@ export const normalizeGeoJson = (geoJson: unknown): FieldBoundary => {
     throw new Error("GeoJSON cannot be null or undefined");
   }
 
-  const data = geoJson as any;
+  const data = geoJson as GeoJSONLike;
 
   // If it's already in the correct format (Polygon or MultiPolygon)
   if (
     (data.type === "Polygon" || data.type === "MultiPolygon") &&
-    data.coordinates
+    data.coordinates &&
+    Array.isArray(data.coordinates)
   ) {
     return data as FieldBoundary;
   }
 
   // If it's wrapped in a Feature
   if (data.type === "Feature" && data.geometry) {
-    return data.geometry as FieldBoundary;
+    const geometry = data.geometry as GeoJSONLike;
+    if (
+      (geometry.type === "Polygon" || geometry.type === "MultiPolygon") &&
+      geometry.coordinates &&
+      Array.isArray(geometry.coordinates)
+    ) {
+      return geometry as FieldBoundary;
+    }
   }
 
   throw new Error("Invalid GeoJSON format");

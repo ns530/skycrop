@@ -1,8 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
+import { AxiosError, isAxiosError } from "axios";
 import { X, Mail, Send } from "lucide-react";
 import React, { useState } from "react";
 
-import { httpClient } from "../../../shared/api/httpClient";
+import type { ApiErrorPayload } from "../../../shared/api/httpClient";
 import { useToast } from "../../../shared/hooks/useToast";
 
 interface InviteUserModalProps {
@@ -47,12 +48,21 @@ export const InviteUserModal: React.FC<InviteUserModalProps> = ({
       onSuccess();
       handleClose();
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      let errorMessage = "Failed to send invitation";
+      if (isAxiosError<ApiErrorPayload>(error)) {
+        const axiosError = error as AxiosError<ApiErrorPayload>;
+        errorMessage =
+          axiosError.response?.data?.error?.message ||
+          axiosError.message ||
+          errorMessage;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
       showToast({
         variant: "error",
         title: "Invitation Failed",
-        description:
-          error.response?.data?.error?.message || "Failed to send invitation",
+        description: errorMessage,
       });
     },
   });

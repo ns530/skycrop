@@ -265,8 +265,8 @@ export const RootLayout: React.FC = () => {
                 className="h-2 w-2 rounded-full bg-amber-500 animate-pulse"
                 aria-hidden="true"
               />
-              you're offline. Data may be outdated. Changes will sync when
-              you're back online.
+              you&apos;re offline. Data may be outdated. Changes will sync when
+              you&apos;re back online.
             </p>
           </PageContainer>
         </div>

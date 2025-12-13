@@ -130,7 +130,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
             <BellIcon className="h-12 w-12 text-gray-300 mb-3" />
             <p className="text-gray-500 text-center">No notifications</p>
             <p className="text-gray-400 text-sm text-center mt-1">
-              You're all caught up!
+              You&apos;re all caught up!
             </p>
           </div>
         ) : (

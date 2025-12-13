@@ -62,11 +62,10 @@ const createTestQueryClient = () =>
     },
   });
 
-const createWrapper =
-  (
-    initialEntries: string[] = ["/fields"],
-  ): React.FC<{ children: React.ReactNode }> =>
-  ({ children }) => {
+const createWrapper = (
+  initialEntries: string[] = ["/fields"],
+): React.FC<{ children: React.ReactNode }> => {
+  const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const queryClient = createTestQueryClient();
 
     return (
@@ -76,7 +75,10 @@ const createWrapper =
     );
   };
 
-createWrapper.displayName = "TestFieldsWrapper";
+  Wrapper.displayName = "TestFieldsWrapper";
+
+  return Wrapper;
+};
 
 describe("FieldsListPage", () => {
   beforeEach(() => {
@@ -84,7 +86,7 @@ describe("FieldsListPage", () => {
   });
 
   it('renders fields from useFields and navigates to detail with current field set on "View"', () => {
-    const params: ListParams = {
+    const _params: ListParams = {
       page: 1,
       pageSize: 10,
     };

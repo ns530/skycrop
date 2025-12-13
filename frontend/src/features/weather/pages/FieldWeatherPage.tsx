@@ -128,7 +128,7 @@ export const FieldWeatherPage: React.FC = () => {
           Weather
         </h1>
         <p className="text-sm text-gray-600">
-          7-day forecast and active weather alerts for this field's location.
+          7-day forecast and active weather alerts for this field&apos;s location.
         </p>
         <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-500">
           {field && !isFieldLoading && !isFieldError && (

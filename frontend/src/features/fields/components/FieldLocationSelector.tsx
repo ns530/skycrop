@@ -20,7 +20,7 @@ import { Button } from "../../../shared/ui/Button";
 
 // Fix for default marker icons in Leaflet
 
-// @ts-ignore
+// @ts-expect-error - Leaflet internal API that needs to be deleted
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconUrl: markerIcon,

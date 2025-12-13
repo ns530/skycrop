@@ -55,11 +55,10 @@ const createTestQueryClient = () =>
     },
   });
 
-const createWrapper =
-  (
-    initialEntries: string[] = ["/fields/create"],
-  ): React.FC<{ children: React.ReactNode }> =>
-  ({ children }) => {
+const createWrapper = (
+  initialEntries: string[] = ["/fields/create"],
+): React.FC<{ children: React.ReactNode }> => {
+  const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const queryClient = createTestQueryClient();
 
     return (
@@ -73,7 +72,10 @@ const createWrapper =
     );
   };
 
-createWrapper.displayName = "TestRouterWrapper";
+  Wrapper.displayName = "TestRouterWrapper";
+
+  return Wrapper;
+};
 
 describe("CreateFieldPage", () => {
   beforeEach(() => {

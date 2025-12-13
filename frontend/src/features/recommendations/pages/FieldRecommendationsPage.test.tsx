@@ -66,8 +66,8 @@ const createTestQueryClient = () =>
 const createWrapper =
   (
     initialEntries: string[] = ["/fields/field-1/recommendations"],
-  ): React.FC<{ children: React.ReactNode }> =>
-  ({ children }) => {
+  ): React.FC<{ children: React.ReactNode }> => {
+  const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
     const queryClient = createTestQueryClient();
 
     return (
@@ -77,7 +77,9 @@ const createWrapper =
     );
   };
 
-createWrapper.displayName = "TestRecommendationsWrapper";
+  WrapperComponent.displayName = "TestRecommendationsWrapper";
+  return WrapperComponent;
+};
 
 describe("FieldRecommendationsPage", () => {
   const mutateMock = jest.fn();

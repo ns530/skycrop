@@ -1,8 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { AxiosError, isAxiosError } from "axios";
 import { X, Share2, Send } from "lucide-react";
 import React, { useState } from "react";
 
 import { httpClient } from "../../../shared/api/httpClient";
+import type { ApiErrorPayload } from "../../../shared/api/httpClient";
 import { useToast } from "../../../shared/hooks/useToast";
 
 interface ShareFieldModalProps {
@@ -53,12 +55,20 @@ export const ShareFieldModal: React.FC<ShareFieldModalProps> = ({
       handleClose();
     },
     onError: (error: unknown) => {
+      let errorMessage = "Failed to share field";
+      if (isAxiosError<ApiErrorPayload>(error)) {
+        const axiosError = error as AxiosError<ApiErrorPayload>;
+        errorMessage =
+          axiosError.response?.data?.error?.message ||
+          axiosError.message ||
+          errorMessage;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
       showToast({
         variant: "error",
         title: "Share Failed",
-        description:
-          (error as any)?.response?.data?.error?.message ||
-          "Failed to share field",
+        description: errorMessage,
       });
     },
   });

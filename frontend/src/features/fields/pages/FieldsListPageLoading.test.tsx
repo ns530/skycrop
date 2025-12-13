@@ -70,11 +70,10 @@ const createTestQueryClient = () =>
     },
   });
 
-const createWrapper =
-  (
-    initialEntries: string[] = ["/fields"],
-  ): React.FC<{ children: React.ReactNode }> =>
-  ({ children }) => {
+const createWrapper = (
+  initialEntries: string[] = ["/fields"],
+): React.FC<{ children: React.ReactNode }> => {
+  const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const queryClient = createTestQueryClient();
 
     return (
@@ -84,7 +83,10 @@ const createWrapper =
     );
   };
 
-createWrapper.displayName = "TestLoadingWrapper";
+  Wrapper.displayName = "TestLoadingWrapper";
+
+  return Wrapper;
+};
 
 describe("FieldsListPage loading/error/offline states", () => {
   beforeEach(() => {
@@ -139,7 +141,7 @@ describe("FieldsListPage loading/error/offline states", () => {
   it("shows offline hint when offline with cached data", () => {
     useOnlineStatusMock.mockReturnValue({ isOnline: false });
 
-    const params: ListParams = {
+    const _params: ListParams = {
       page: 1,
       pageSize: 10,
     };

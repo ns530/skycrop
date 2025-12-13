@@ -114,7 +114,7 @@ export const BoundaryDetectionProgress: React.FC<
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
           <p className="text-xs text-amber-900">
             <strong>💡 Tip:</strong> This process usually takes 30-60 seconds.
-            We're using satellite imagery from Sentinel to accurately detect
+            We&apos;re using satellite imagery from Sentinel to accurately detect
             your field boundaries.
           </p>
         </div>

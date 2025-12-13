@@ -383,7 +383,7 @@ export const FieldDetailPage: React.FC = () => {
           <div className="space-y-3">
             <p className="text-sm text-gray-600">
               After each harvest, record your actual yield to help improve
-              future predictions and track your field's performance over time.
+              future predictions and track your field&apos;s performance over time.
             </p>
             <Button
               size="sm"
@@ -454,7 +454,7 @@ export const FieldDetailPage: React.FC = () => {
         <div className="space-y-3 text-sm text-gray-800">
           <p>
             You are about to delete the field{" "}
-            <span className="font-semibold">"{field.name}"</span>. This action
+            <span className="font-semibold">{field.name}</span>. This action
             cannot be undone.
           </p>
           <p className="text-xs text-gray-600">

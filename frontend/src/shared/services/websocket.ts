@@ -65,7 +65,10 @@ class WebSocketService {
   private reconnectAttempts: number = 0;
   private maxReconnectAttempts: number = 5;
   private subscribedFields: Set<string> = new Set();
-  private eventCallbacks: Map<string, Set<Function>> = new Map();
+  private eventCallbacks: Map<
+    string,
+    Set<(...args: unknown[]) => void>
+  > = new Map();
 
   /**
    * Connect to WebSocket server
@@ -166,7 +169,7 @@ class WebSocketService {
    * @param event Event name
    * @param callback Callback function
    */
-  on(event: string, callback: (...args: any[]) => void): void {
+  on(event: string, callback: (...args: unknown[]) => void): void {
     if (!this.eventCallbacks.has(event)) {
       this.eventCallbacks.set(event, new Set());
     }
@@ -174,7 +177,7 @@ class WebSocketService {
 
     // Also attach to socket if connected
     if (this.socket) {
-      this.socket.on(event, callback as any);
+      this.socket.on(event, callback);
     }
   }
 
@@ -183,7 +186,7 @@ class WebSocketService {
    * @param event Event name
    * @param callback Callback function
    */
-  off(event: string, callback: (...args: any[]) => void): void {
+  off(event: string, callback: (...args: unknown[]) => void): void {
     const callbacks = this.eventCallbacks.get(event);
     if (callbacks) {
       callbacks.delete(callback);
@@ -194,7 +197,7 @@ class WebSocketService {
 
     // Also remove from socket
     if (this.socket) {
-      this.socket.off(event, callback as any);
+      this.socket.off(event, callback);
     }
   }
 
@@ -225,7 +228,7 @@ class WebSocketService {
 
     this.eventCallbacks.forEach((callbacks, event) => {
       callbacks.forEach((callback) => {
-        this.socket!.on(event, callback as (...args: any[]) => void);
+        this.socket!.on(event, callback);
       });
     });
   }

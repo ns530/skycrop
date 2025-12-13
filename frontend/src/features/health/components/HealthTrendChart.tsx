@@ -25,6 +25,15 @@ interface HealthTrendChartProps {
   height?: number;
 }
 
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    value: number;
+    stroke?: string;
+  }>;
+  label?: string;
+}
+
 /**
  * Custom tooltip for chart
  */
@@ -32,11 +41,7 @@ const CustomTooltip = ({
   active,
   payload,
   label,
-}: {
-  active?: boolean;
-  payload?: any[];
-  label?: string;
-}) => {
+}: CustomTooltipProps) => {
   if (!active || !payload || !payload.length) return null;
 
   const data = payload[0];

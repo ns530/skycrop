@@ -239,7 +239,7 @@ export const FieldsListPage: React.FC = () => {
                     colSpan={5}
                     className="px-4 py-6 text-center text-sm text-gray-500"
                   >
-                    You haven't added any fields yet. Use the "Add field" button
+                    You haven&apos;t added any fields yet. Use the Add field button
                     to register your first field.
                   </td>
                 </tr>

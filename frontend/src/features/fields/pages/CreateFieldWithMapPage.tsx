@@ -17,7 +17,7 @@ import { BoundaryDetectionProgress } from "../components/BoundaryDetectionProgre
 import { FieldForm, type FieldFormValues } from "../components/FieldForm";
 import { FieldLocationSelector } from "../components/FieldLocationSelector";
 import { useBoundaryDetection } from "../hooks/useBoundaryDetection";
-import { useCreateField, useUpdateField } from "../hooks/useFields";
+import { useCreateField } from "../hooks/useFields";
 
 /**
  * Workflow steps for field creation

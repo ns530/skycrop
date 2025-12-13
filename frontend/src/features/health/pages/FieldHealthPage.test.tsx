@@ -76,8 +76,8 @@ const createTestQueryClient = () =>
 const createWrapper =
   (
     initialEntries: string[] = ["/fields/field-1/health"],
-  ): React.FC<{ children: React.ReactNode }> =>
-  ({ children }) => {
+  ): React.FC<{ children: React.ReactNode }> => {
+  const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
     const queryClient = createTestQueryClient();
 
     return (
@@ -87,7 +87,9 @@ const createWrapper =
     );
   };
 
-createWrapper.displayName = "TestHealthWrapper";
+  WrapperComponent.displayName = "TestHealthWrapper";
+  return WrapperComponent;
+};
 
 describe("FieldHealthPage", () => {
   beforeEach(() => {

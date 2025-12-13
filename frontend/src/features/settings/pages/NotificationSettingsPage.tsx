@@ -341,7 +341,7 @@ export const NotificationSettingsPage: React.FC = () => {
           <div className="space-y-3 pt-2 border-t">
             <p className="text-sm font-medium text-gray-900">Quiet Hours</p>
             <p className="text-xs text-gray-600">
-              Don't send non-critical notifications during these hours
+              Don&apos;t send non-critical notifications during these hours
             </p>
 
             <div className="grid grid-cols-2 gap-4">

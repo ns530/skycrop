@@ -147,9 +147,14 @@ export const Drawer: React.FC<DrawerProps> = ({
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2",
         )}
         tabIndex={-1}
-        onClick={(e) => e.stopPropagation()}
       >
-        {title && (
+        <div
+          role="presentation"
+          onMouseDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
+          className="h-full"
+        >
+          {title && (
           <header className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
             <h2 id={titleId} className="text-sm font-semibold text-gray-900">
               {title}
@@ -165,6 +170,7 @@ export const Drawer: React.FC<DrawerProps> = ({
           </header>
         )}
         <div className="px-4 py-4 text-sm text-gray-800">{children}</div>
+        </div>
       </div>
     </div>,
     document.body,
