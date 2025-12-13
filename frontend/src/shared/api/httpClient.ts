@@ -3,6 +3,7 @@ import axios, {
   AxiosInstance,
   AxiosRequestConfig,
   AxiosResponse,
+  isAxiosError,
 } from "axios";
 
 export interface ApiErrorPayload {
@@ -187,7 +188,7 @@ httpClient.interceptors.response.use(
       retriedConfig.headers.Authorization = `Bearer ${refreshed.accessToken}`;
 
       return httpClient(retriedConfig);
-    } catch (_e) {
+    } catch {
       if (authState.onAuthError) {
         authState.onAuthError();
       }
@@ -204,7 +205,7 @@ export const normalizeApiError = (error: unknown): ApiError => {
     return error;
   }
 
-  if (axios.isAxiosError<ApiErrorPayload>(error)) {
+  if (isAxiosError<ApiErrorPayload>(error)) {
     const axiosError = error as AxiosError<ApiErrorPayload>;
     const status = axiosError.response?.status;
     const payload = axiosError.response?.data;

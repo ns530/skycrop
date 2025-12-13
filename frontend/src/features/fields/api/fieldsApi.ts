@@ -164,12 +164,11 @@ const mapBackendFieldToDetail = (field: BackendField): FieldDetail => {
 
 const mapBackendFieldToSummary = (field: BackendField): FieldSummary => {
   const detail = mapBackendFieldToDetail(field);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const {
-    geometry,
-    latestHealthStatus,
-    latestHealthIndex,
-    latestRecommendationSummary,
+    geometry: _geometry,
+    latestHealthStatus: _latestHealthStatus,
+    latestHealthIndex: _latestHealthIndex,
+    latestRecommendationSummary: _latestRecommendationSummary,
     ...summary
   } = detail;
   return summary;

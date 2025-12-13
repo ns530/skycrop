@@ -42,7 +42,7 @@ interface YieldHistoryCardProps {
 export const YieldHistoryCard: React.FC<YieldHistoryCardProps> = ({
   records,
   isLoading,
-  fieldAreaHa,
+  fieldAreaHa: _fieldAreaHa,
 }) => {
   if (isLoading) {
     return (

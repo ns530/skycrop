@@ -51,7 +51,7 @@ export const NotificationSettingsPage: React.FC = () => {
           variant: "error",
         });
       }
-    } catch (error) {
+    } catch {
       showToast({
         title: "Error",
         description: "Could not request notification permission.",

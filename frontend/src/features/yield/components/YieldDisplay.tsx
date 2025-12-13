@@ -27,7 +27,7 @@ export const YieldDisplay: React.FC<YieldDisplayProps> = ({
   yieldKgHa,
   totalYield,
   revenue,
-  pricePerKg,
+  pricePerKg: _pricePerKg,
 }) => {
   return (
     <div className="space-y-4">

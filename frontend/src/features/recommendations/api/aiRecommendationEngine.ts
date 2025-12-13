@@ -132,7 +132,7 @@ const reproductiveFertilizerRule: RecommendationRule = {
     input.growthStage === "reproductive" &&
     (input.lastFertilizerDays === undefined || input.lastFertilizerDays > 20),
   priority: "medium",
-  generate: (input) => ({
+  generate: (_input) => ({
     title: "🌾 Apply Phosphorus & Potassium",
     description:
       "Your paddy is flowering. Apply P&K fertilizer to boost grain formation. Recommended: 30kg/ha NPK (0-20-20).",

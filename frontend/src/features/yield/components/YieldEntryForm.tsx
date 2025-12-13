@@ -40,7 +40,7 @@ interface YieldEntryFormProps {
  * ```
  */
 export const YieldEntryForm: React.FC<YieldEntryFormProps> = ({
-  fieldId,
+  fieldId: _fieldId,
   fieldAreaHa,
   predictedYieldKgPerHa,
   onSubmit,

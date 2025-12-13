@@ -5,9 +5,7 @@
 
 import React from "react";
 import {
-  BarChart,
   Bar,
-  LineChart,
   Line,
   XAxis,
   YAxis,
@@ -17,18 +15,10 @@ import {
   ResponsiveContainer,
   ReferenceLine,
   ComposedChart,
-  TooltipProps,
 } from "recharts";
 
 import { Card } from "../../../shared/ui/Card";
 import type { ActualYieldRecord } from "../api/yieldApi";
-
-interface ChartDataPoint {
-  date: string;
-  actual: number;
-  predicted: number | null;
-  notes: string;
-}
 
 interface TooltipPayload {
   dataKey: string;

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { X, Shield, Check, Minus } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 import { httpClient } from "../../../shared/api/httpClient";
 

@@ -41,7 +41,7 @@ interface FieldMapViewProps {
  */
 export const FieldMapView: React.FC<FieldMapViewProps> = ({
   fieldId: propsFieldId,
-  showHealthOverlay = true,
+  showHealthOverlay: _showHealthOverlay = true,
   additionalFields = [],
   onFieldClick,
 }) => {

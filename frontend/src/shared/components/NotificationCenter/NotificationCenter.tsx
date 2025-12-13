@@ -12,7 +12,6 @@ import {
   notificationService,
   type StoredNotification,
 } from "../../services/notificationService";
-import { Button } from "../../ui/Button";
 
 interface NotificationCenterProps {
   isOpen: boolean;

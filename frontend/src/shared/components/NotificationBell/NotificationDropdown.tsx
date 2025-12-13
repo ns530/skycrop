@@ -30,7 +30,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   notifications,
   unreadCount,
   onClose,
-  onMarkAsRead,
+  onMarkAsRead: _onMarkAsRead,
   onMarkAllAsRead,
   onClearAll,
   onNotificationClick,

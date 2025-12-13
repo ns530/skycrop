@@ -2,7 +2,7 @@
  * Hook for managing map center and user location
  */
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 import type { MapCenter } from "../types/map.types";
 import { SRI_LANKA_CENTER } from "../utils/tileProviders";

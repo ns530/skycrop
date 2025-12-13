@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-named-as-default
 import clsx from "clsx";
 import React, { useEffect, useRef, useId } from "react";
 import ReactDOM from "react-dom";

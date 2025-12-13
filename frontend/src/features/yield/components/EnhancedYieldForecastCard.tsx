@@ -20,7 +20,7 @@ export interface EnhancedYieldForecastCardProps {
   className?: string;
 }
 
-const formatCurrency = (amount: number): string => {
+const _formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",

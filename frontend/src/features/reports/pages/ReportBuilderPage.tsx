@@ -3,21 +3,15 @@ import React, { useState } from "react";
 import { useToast } from "../../../shared/hooks/useToast";
 import { Button } from "../../../shared/ui/Button";
 import { Card } from "../../../shared/ui/Card";
-import {
-  exportRecommendationsToExcel,
-  exportRecommendationsSummaryToExcel,
-} from "../../../shared/utils/excelReports";
+import { exportRecommendationsToExcel } from "../../../shared/utils/excelReports";
 import {
   generateFieldHealthReportPDF,
   generateYieldForecastReportPDF,
   generateCombinedFieldReportPDF,
 } from "../../../shared/utils/pdfReports";
 import { useFields } from "../../fields/hooks/useFields";
-import { useFieldHealth } from "../../health/hooks/useFieldHealth";
-import { useRecommendations } from "../../recommendations/hooks/useRecommendations";
 
 type ReportType = "health" | "yield" | "recommendations" | "combined";
-type ReportFormat = "pdf" | "excel";
 
 /**
  * Report Builder Page

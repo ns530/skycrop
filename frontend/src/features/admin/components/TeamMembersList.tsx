@@ -1,5 +1,5 @@
 import { formatDistanceToNow } from "date-fns";
-import { MoreVertical, Mail, Shield, Ban, Trash2, Check } from "lucide-react";
+import { MoreVertical, Shield, Ban, Trash2, Check } from "lucide-react";
 import React, { useState } from "react";
 
 interface User {

@@ -41,7 +41,7 @@ interface YieldPredictionReadyEvent {
   message: string;
 }
 
-interface WebSocketEvents {
+interface _WebSocketEvents {
   health_updated: (data: HealthUpdatedEvent) => void;
   health_alert: (data: HealthAlertEvent) => void;
   recommendations_updated: (data: RecommendationsUpdatedEvent) => void;

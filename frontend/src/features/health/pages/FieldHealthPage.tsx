@@ -4,7 +4,6 @@ import { useParams } from "react-router-dom";
 import { useUiState } from "../../../shared/context/UiContext";
 import { useOnlineStatus } from "../../../shared/hooks/useOnlineStatus";
 import { useToast } from "../../../shared/hooks/useToast";
-import { Button } from "../../../shared/ui/Button";
 import { Card } from "../../../shared/ui/Card";
 import { ErrorState } from "../../../shared/ui/ErrorState";
 import { LoadingState } from "../../../shared/ui/LoadingState";

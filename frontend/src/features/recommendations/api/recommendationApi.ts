@@ -254,7 +254,7 @@ async function fetchHealthDataForAI(fieldId: string) {
 /**
  * Fetch weather data formatted for AI analysis
  */
-async function fetchWeatherDataForAI(fieldId: string) {
+async function fetchWeatherDataForAI(_fieldId: string) {
   try {
     // Use mock coordinates (Polonnaruwa district center)
     const weather = await getWeatherForecast(7.9403, 81.0188);

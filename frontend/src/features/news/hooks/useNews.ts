@@ -58,7 +58,7 @@ export const useNewsList = (params?: NewsListParams) => {
  * @returns Query result with article details
  */
 export const useNewsArticle = (id: string) => {
-  const queryClient = useQueryClient();
+  const _queryClient = useQueryClient();
 
   return useQuery<NewsArticle, ApiError>({
     queryKey: newsKeys.detail(id),

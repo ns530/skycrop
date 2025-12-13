@@ -4,13 +4,11 @@
  * Automatically sends notifications based on field data changes
  */
 
-import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 
 import type { FieldDetail } from "../../features/fields/api/fieldsApi";
 import {
   sendHealthAlert,
-  sendWeatherWarning,
   sendRecommendationNotification,
 } from "../services/notificationService";
 
@@ -36,8 +34,8 @@ export const useNotificationIntegration = ({
   enableRecommendationAlerts = true,
 }: NotificationTriggers = {}) => {
   const previousHealthStatus = useRef<string | null>(null);
-  const previousWeatherAlert = useRef<string | null>(null);
-  const notifiedRecommendations = useRef<Set<string>>(new Set());
+  const _previousWeatherAlert = useRef<string | null>(null);
+  const _notifiedRecommendations = useRef<Set<string>>(new Set());
 
   // Monitor field health
   useEffect(() => {

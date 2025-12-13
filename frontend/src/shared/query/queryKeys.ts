@@ -1,7 +1,7 @@
-import type { ListParams } from "../api";
-
 // Centralized React Query key factories for SkyCrop.
 // These keys should be used across all feature hooks to keep cache usage consistent.
+import type { YieldForecastRequest } from "../../features/yield/api/yieldApi";
+import type { ListParams } from "../api";
 
 export const authKeys = {
   session: ["auth", "session"] as const,
@@ -30,8 +30,6 @@ export const weatherKeys = {
     ["weather", "forecast", { lat, lon }] as const,
   alerts: ["weather", "alerts"] as const,
 };
-
-import type { YieldForecastRequest } from "../../features/yield/api/yieldApi";
 
 export const yieldKeys = {
   forecast: (request: YieldForecastRequest) =>

@@ -41,7 +41,7 @@ export const getEnvConfig = (): EnvConfig => {
       IS_DEV: meta?.DEV === true,
       IS_PROD: meta?.PROD === true,
     };
-  } catch (error) {
+  } catch {
     // Fallback for any errors
     return {
       API_BASE_URL: "/api/v1",
