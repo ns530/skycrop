@@ -28,14 +28,14 @@ async function getFieldMetrics(userId) {
 
   const metrics = result[0];
   return {
-    total: parseInt(metrics.totalfields, 10),
-    active: parseInt(metrics.activefields, 10),
-    totalareahectares: metrics.totalareasqm
-      ? Math.round((metrics.totalareasqm / 10000) * 100) / 100
-      : 0,
-    averagesizehectares: metrics.avgfieldsizesqm
-      ? Math.round((metrics.avgfieldsizesqm / 10000) * 100) / 100
-      : 0,
+    total: metrics.totalfields != null ? parseInt(metrics.totalfields, 10) : 0,
+    active: metrics.activefields != null ? parseInt(metrics.activefields, 10) : 0,
+    totalareahectares:
+      metrics.totalareasqm != null ? Math.round((metrics.totalareasqm / 10000) * 100) / 100 : 0,
+    averagesizehectares:
+      metrics.avgfieldsizesqm != null
+        ? Math.round((metrics.avgfieldsizesqm / 10000) * 100) / 100
+        : 0,
   };
 }
 
@@ -135,15 +135,15 @@ async function getAlertMetrics(userId) {
 
   const metrics = alerts[0];
   return {
-    total: parseInt(metrics.totalalerts, 10),
+    total: metrics.totalalerts != null ? parseInt(metrics.totalalerts, 10) : 0,
     byseverity: {
-      high: parseInt(metrics.highseverity, 10),
-      medium: parseInt(metrics.mediumseverity, 10),
-      low: parseInt(metrics.lowseverity, 10),
+      high: metrics.highseverity != null ? parseInt(metrics.highseverity, 10) : 0,
+      medium: metrics.mediumseverity != null ? parseInt(metrics.mediumseverity, 10) : 0,
+      low: metrics.lowseverity != null ? parseInt(metrics.lowseverity, 10) : 0,
     },
     bytype: {
-      water: parseInt(metrics.wateralerts, 10),
-      fertilizer: parseInt(metrics.fertilizeralerts, 10),
+      water: metrics.wateralerts != null ? parseInt(metrics.wateralerts, 10) : 0,
+      fertilizer: metrics.fertilizeralerts != null ? parseInt(metrics.fertilizeralerts, 10) : 0,
     },
   };
 }
@@ -311,7 +311,7 @@ async function getVegetationIndices(userId) {
     FROM healthrecords hr
     INNER JOIN fields f ON hr.field_id = f.field_id
     WHERE f.user_id = :userId AND f.status = 'active'
-    AND hr.measurementdate >= DATE('now', '-30 days')
+    AND hr.measurementdate >= CURRENT_DATE - INTERVAL '30 days'
     `,
     {
       type: sequelize.QueryTypes.SELECT,
@@ -321,10 +321,10 @@ async function getVegetationIndices(userId) {
 
   const metrics = result[0];
   return {
-    ndvi: metrics.avgndvi ? Number(metrics.avgndvi.toFixed(3)) : null,
-    ndwi: metrics.avgndwi ? Number(metrics.avgndwi.toFixed(3)) : null,
-    tdvi: metrics.avgtdvi ? Number(metrics.avgtdvi.toFixed(3)) : null,
-    totalrecords: parseInt(metrics.totalrecords, 10),
+    ndvi: metrics.avgndvi != null ? Number(metrics.avgndvi.toFixed(3)) : null,
+    ndwi: metrics.avgndwi != null ? Number(metrics.avgndwi.toFixed(3)) : null,
+    tdvi: metrics.avgtdvi != null ? Number(metrics.avgtdvi.toFixed(3)) : null,
+    totalrecords: metrics.totalrecords != null ? parseInt(metrics.totalrecords, 10) : 0,
   };
 }
 
@@ -424,9 +424,10 @@ async function getUserAnalytics(userId) {
 
   const metrics = result[0];
   return {
-    totalfields: parseInt(metrics.totalfields, 10),
-    totalassessments: parseInt(metrics.totalassessments, 10),
-    avghealthscore: metrics.avghealthscore ? Number(metrics.avghealthscore.toFixed(1)) : null,
+    totalfields: metrics.totalfields != null ? parseInt(metrics.totalfields, 10) : 0,
+    totalassessments: metrics.totalassessments != null ? parseInt(metrics.totalassessments, 10) : 0,
+    avghealthscore:
+      metrics.avghealthscore != null ? Number(metrics.avghealthscore.toFixed(1)) : null,
     lastactivity: metrics.lastactivity,
     activeuserstoday: 1, // mock
     sessiondurationavg: 15.5, // mock in minutes
