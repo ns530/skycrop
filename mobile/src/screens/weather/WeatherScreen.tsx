@@ -14,11 +14,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons as Icon } from '@expo/vector-icons';
 
 import { LoadingSpinner } from '../../components/LoadingSpinner';
-import { ErrorMessage } from '../../components/ErrorMessage';
 
 const WeatherScreen: React.FC = () => {
   const [refreshing, setRefreshing] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [isLoading] = React.useState(false);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -38,7 +37,13 @@ const WeatherScreen: React.FC = () => {
     uvIndex: 7,
   };
 
-  const forecast = [
+  const forecast: Array<{
+    day: string;
+    icon: React.ComponentProps<typeof Icon>['name'];
+    high: number;
+    low: number;
+    rain: number;
+  }> = [
     { day: 'Mon', icon: 'partly-sunny', high: 30, low: 24, rain: 20 },
     { day: 'Tue', icon: 'rainy', high: 28, low: 23, rain: 80 },
     { day: 'Wed', icon: 'thunderstorm', high: 27, low: 22, rain: 90 },
@@ -46,12 +51,18 @@ const WeatherScreen: React.FC = () => {
     { day: 'Fri', icon: 'partly-sunny', high: 31, low: 25, rain: 30 },
   ];
 
-  const alerts = [
+  const alerts: Array<{
+    type: string;
+    title: string;
+    message: string;
+    icon: React.ComponentProps<typeof Icon>['name'];
+    color: string;
+  }> = [
     {
       type: 'warning',
       title: 'Heavy Rain Expected',
       message: 'Rainfall expected Tuesday - Wednesday. Delay irrigation.',
-      icon: 'warning',
+      icon: 'warning-outline',
       color: '#f59e0b',
     },
   ];
@@ -81,7 +92,7 @@ const WeatherScreen: React.FC = () => {
           </View>
           
           <View style={styles.temperatureContainer}>
-            <Icon name="partly-sunny" size={80} color="#fff" />
+            <Icon name="partly-sunny-outline" size={80} color="#fff" />
             <View style={styles.temperatureContent}>
               <Text style={styles.temperature}>{currentWeather.temperature}°C</Text>
               <Text style={styles.condition}>{currentWeather.condition}</Text>

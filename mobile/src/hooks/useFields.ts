@@ -3,8 +3,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fieldsApi, type Field, type FieldSummary, type CreateFieldPayload, type UpdateFieldPayload, type ListFieldsParams } from '../api/fieldsApi';
-import { handleApiError, type ApiError } from '../api/client';
+import { fieldsApi, type CreateFieldPayload, type UpdateFieldPayload, type ListFieldsParams } from '../api/fieldsApi';
 
 // Query keys
 export const fieldKeys = {

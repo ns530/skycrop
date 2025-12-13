@@ -40,10 +40,27 @@ const DashboardScreen: React.FC = () => {
     limit: 100,
   });
 
+  // Debug logging for testing
+  React.useEffect(() => {
+    if (__DEV__) {
+      console.log('[Dashboard] Component mounted');
+      console.log('[Dashboard] User:', user?.name || 'Not logged in');
+      console.log('[Dashboard] Loading:', isLoading);
+      console.log('[Dashboard] Error:', isError, error?.message);
+      console.log('[Dashboard] Fields data:', fieldsData ? `${fieldsData.data?.length || 0} fields` : 'No data');
+    }
+  }, [user, isLoading, isError, error, fieldsData]);
+
   const handleRefresh = async () => {
+    if (__DEV__) {
+      console.log('[Dashboard] Refreshing...');
+    }
     setRefreshing(true);
     await refetch();
     setRefreshing(false);
+    if (__DEV__) {
+      console.log('[Dashboard] Refresh complete');
+    }
   };
 
   if (isLoading) {
@@ -61,7 +78,7 @@ const DashboardScreen: React.FC = () => {
 
   const fields = fieldsData?.data || [];
   const totalFields = fields.length;
-  const totalArea = fields.reduce((sum, field) => sum + field.area_ha, 0);
+  const totalArea = fields.reduce((sum, field) => sum + (field.area_ha || 0), 0);
   
   // Calculate health summary
   const healthCounts = fields.reduce((counts, field) => {
@@ -76,6 +93,15 @@ const DashboardScreen: React.FC = () => {
   const poorFields = healthCounts.poor || 0;
 
   const greeting = getGreeting();
+
+  // Debug logging for calculated values
+  if (__DEV__) {
+    console.log('[Dashboard] Calculated stats:', {
+      totalFields,
+      totalArea: totalArea.toFixed(2),
+      healthCounts: { excellentFields, goodFields, fairFields, poorFields },
+    });
+  }
 
   return (
     <SafeAreaView style={styles.container}>

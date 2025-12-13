@@ -4,13 +4,13 @@
  * Centralized environment variables and configuration
  */
 
-import { Platform } from 'react-native';
+// Platform import removed - not used in this file
 
 // Determine API base URL based on platform and environment
 const getApiBaseUrl = (): string => {
   // Use Railway backend for both development and production
   // Note: Don't include /api/v1 here - it's added in individual API calls
-  return 'https://skycrop-staging-production.up.railway.app';
+  return 'https://backend-production-9e94.up.railway.app';
 };
 
 export const API_BASE_URL = getApiBaseUrl();

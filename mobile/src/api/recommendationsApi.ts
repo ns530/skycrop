@@ -30,7 +30,7 @@ export interface RecommendationSummary {
  * Get all recommendations for a field
  */
 export const getFieldRecommendations = async (
-  fieldId: number,
+  fieldId: string | number,
   params?: {
     category?: string;
     priority?: string;
@@ -38,8 +38,8 @@ export const getFieldRecommendations = async (
     limit?: number;
   }
 ): Promise<Recommendation[]> => {
-  const response = await apiClient.get(`/fields/${fieldId}/recommendations`, { params });
-  return response.data.data;
+  const response = await apiClient.get(`/api/v1/fields/${fieldId}/recommendations`, { params });
+  return response.data.data || response.data;
 };
 
 /**
@@ -65,21 +65,21 @@ export const getRecommendationsSummary = async (fieldId: number): Promise<Recomm
  * Update recommendation status
  */
 export const updateRecommendationStatus = async (
-  fieldId: number,
+  fieldId: string | number,
   recommendationId: number,
   status: 'pending' | 'in_progress' | 'completed' | 'dismissed'
 ): Promise<Recommendation> => {
-  const response = await apiClient.patch(`/fields/${fieldId}/recommendations/${recommendationId}`, { status });
-  return response.data.data;
+  const response = await apiClient.patch(`/api/v1/fields/${fieldId}/recommendations/${recommendationId}`, { status });
+  return response.data.data || response.data;
 };
 
 /**
  * Trigger new recommendations generation for a field
  */
 export const generateRecommendations = async (
-  fieldId: number
+  fieldId: string | number
 ): Promise<{ message: string; job_id: string }> => {
-  const response = await apiClient.post(`/fields/${fieldId}/recommendations/generate`);
-  return response.data;
+  const response = await apiClient.post(`/api/v1/fields/${fieldId}/recommendations/generate`);
+  return response.data.data || response.data;
 };
 

@@ -224,12 +224,12 @@ export const CreateFieldScreen: React.FC = () => {
               center={mapCenter}
               boundary={fieldBoundary}
               editable={true}
-              onBoundaryChange={(boundary) => {
+              onBoundaryChange={(boundary: GeoJSON.Polygon) => {
                 setFieldBoundary(boundary);
                 // Update location from boundary center
                 const centerCoords = boundary.coordinates[0];
-                const centerLng = centerCoords.reduce((sum, [lng]) => sum + lng, 0) / centerCoords.length;
-                const centerLat = centerCoords.reduce((sum, [, lat]) => sum + lat, 0) / centerCoords.length;
+                const centerLng = centerCoords.reduce((sum: number, coord: GeoJSON.Position) => sum + coord[0], 0) / centerCoords.length;
+                const centerLat = centerCoords.reduce((sum: number, coord: GeoJSON.Position) => sum + coord[1], 0) / centerCoords.length;
                 setMapCenter({ latitude: centerLat, longitude: centerLng });
                 updateFormData('location', `${centerLat.toFixed(6)}, ${centerLng.toFixed(6)}`);
               }}

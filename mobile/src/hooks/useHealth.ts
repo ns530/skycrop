@@ -12,7 +12,7 @@ import {
 /**
  * Hook to fetch current health analysis for a field
  */
-export const useFieldHealth = (fieldId: number) => {
+export const useFieldHealth = (fieldId: string | number) => {
   return useQuery<HealthAnalysis, Error>({
     queryKey: ['fieldHealth', fieldId],
     queryFn: () => getFieldHealth(fieldId),
@@ -25,7 +25,7 @@ export const useFieldHealth = (fieldId: number) => {
  * Hook to fetch health history for a field
  */
 export const useFieldHealthHistory = (
-  fieldId: number,
+  fieldId: string | number,
   params?: {
     limit?: number;
     start_date?: string;
@@ -43,7 +43,7 @@ export const useFieldHealthHistory = (
 /**
  * Hook to fetch health summary (current + history + trends)
  */
-export const useFieldHealthSummary = (fieldId: number) => {
+export const useFieldHealthSummary = (fieldId: string | number) => {
   return useQuery<HealthSummary, Error>({
     queryKey: ['fieldHealthSummary', fieldId],
     queryFn: () => getFieldHealthSummary(fieldId),
@@ -59,7 +59,7 @@ export const useTriggerHealthAnalysis = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (fieldId: number) => triggerHealthAnalysis(fieldId),
+    mutationFn: (fieldId: string | number) => triggerHealthAnalysis(fieldId),
     onSuccess: (_, fieldId) => {
       // Invalidate health queries to refetch
       queryClient.invalidateQueries({ queryKey: ['fieldHealth', fieldId] });

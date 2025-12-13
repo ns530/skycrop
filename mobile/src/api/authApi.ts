@@ -53,7 +53,7 @@ export const authApi = {
    * Note: Backend doesn't have a profile endpoint, so we'll use the user data from the token
    * This is a placeholder - the user data is already available after login/signup
    */
-  getProfile: async (token: string): Promise<User> => {
+  getProfile: async (_token: string): Promise<User> => {
     // For now, return a promise that rejects since there's no profile endpoint
     // The user data should be stored locally after login/signup
     throw new Error('Profile endpoint not available. User data is stored locally after login.');

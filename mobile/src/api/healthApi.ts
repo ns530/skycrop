@@ -41,39 +41,39 @@ export interface HealthSummary {
 /**
  * Get current health analysis for a field
  */
-export const getFieldHealth = async (fieldId: number): Promise<HealthAnalysis> => {
-  const response = await apiClient.get(`/fields/${fieldId}/health`);
-  return response.data.data;
+export const getFieldHealth = async (fieldId: string | number): Promise<HealthAnalysis> => {
+  const response = await apiClient.get(`/api/v1/fields/${fieldId}/health`);
+  return response.data.data || response.data;
 };
 
 /**
  * Get health history for a field
  */
 export const getFieldHealthHistory = async (
-  fieldId: number,
+  fieldId: string | number,
   params?: {
     limit?: number;
     start_date?: string;
     end_date?: string;
   }
 ): Promise<HealthHistory[]> => {
-  const response = await apiClient.get(`/fields/${fieldId}/health/history`, { params });
-  return response.data.data;
+  const response = await apiClient.get(`/api/v1/fields/${fieldId}/health/history`, { params });
+  return response.data.data || response.data;
 };
 
 /**
  * Get health summary (current + history + trends)
  */
-export const getFieldHealthSummary = async (fieldId: number): Promise<HealthSummary> => {
-  const response = await apiClient.get(`/fields/${fieldId}/health/summary`);
-  return response.data.data;
+export const getFieldHealthSummary = async (fieldId: string | number): Promise<HealthSummary> => {
+  const response = await apiClient.get(`/api/v1/fields/${fieldId}/health/summary`);
+  return response.data.data || response.data;
 };
 
 /**
  * Trigger new health analysis for a field
  */
-export const triggerHealthAnalysis = async (fieldId: number): Promise<{ message: string; job_id: string }> => {
-  const response = await apiClient.post(`/fields/${fieldId}/health/analyze`);
-  return response.data;
+export const triggerHealthAnalysis = async (fieldId: string | number): Promise<{ message: string; job_id: string }> => {
+  const response = await apiClient.post(`/api/v1/fields/${fieldId}/health/analyze`);
+  return response.data.data || response.data;
 };
 

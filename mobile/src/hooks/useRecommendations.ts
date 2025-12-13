@@ -13,7 +13,7 @@ import {
  * Hook to fetch recommendations for a field
  */
 export const useFieldRecommendations = (
-  fieldId: number,
+  fieldId: string | number,
   params?: {
     category?: string;
     priority?: string;
@@ -65,7 +65,7 @@ export const useUpdateRecommendationStatus = () => {
       recommendationId,
       status,
     }: {
-      fieldId: number;
+      fieldId: string | number;
       recommendationId: number;
       status: 'pending' | 'in_progress' | 'completed' | 'dismissed';
     }) => updateRecommendationStatus(fieldId, recommendationId, status),
@@ -84,7 +84,7 @@ export const useGenerateRecommendations = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (fieldId: number) => generateRecommendations(fieldId),
+    mutationFn: (fieldId: string | number) => generateRecommendations(fieldId),
     onSuccess: (_, fieldId) => {
       // Invalidate recommendations queries to refetch
       queryClient.invalidateQueries({ queryKey: ['fieldRecommendations', fieldId] });

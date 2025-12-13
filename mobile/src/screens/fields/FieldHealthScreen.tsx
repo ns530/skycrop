@@ -7,7 +7,6 @@ import {
   RefreshControl,
   TouchableOpacity,
   Image,
-  Dimensions,
   Alert,
 } from 'react-native';
 import { useRoute, RouteProp } from '@react-navigation/native';
@@ -15,9 +14,7 @@ import { useFieldHealthSummary, useTriggerHealthAnalysis } from '../../hooks/use
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 
-type FieldHealthScreenRouteProp = RouteProp<{ params: { fieldId: number } }, 'params'>;
-
-const { width } = Dimensions.get('window');
+type FieldHealthScreenRouteProp = RouteProp<{ params: { fieldId: string } }, 'params'>;
 
 export const FieldHealthScreen: React.FC = () => {
   const route = useRoute<FieldHealthScreenRouteProp>();

@@ -20,7 +20,7 @@ import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { EmptyState } from '../../components/EmptyState';
 
-type FieldRecommendationsScreenRouteProp = RouteProp<{ params: { fieldId: number } }, 'params'>;
+type FieldRecommendationsScreenRouteProp = RouteProp<{ params: { fieldId: string } }, 'params'>;
 
 export const FieldRecommendationsScreen: React.FC = () => {
   const route = useRoute<FieldRecommendationsScreenRouteProp>();
@@ -112,20 +112,6 @@ export const FieldRecommendationsScreen: React.FC = () => {
     );
   }
 
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'irrigation':
-        return '#3b82f6';
-      case 'fertilization':
-        return '#22c55e';
-      case 'pest_control':
-        return '#ef4444';
-      case 'harvest':
-        return '#f59e0b';
-      default:
-        return '#6b7280';
-    }
-  };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -211,7 +197,6 @@ export const FieldRecommendationsScreen: React.FC = () => {
                 key={rec.id}
                 recommendation={rec}
                 onPress={() => openRecommendationDetail(rec)}
-                getCategoryColor={getCategoryColor}
                 getPriorityColor={getPriorityColor}
                 getStatusColor={getStatusColor}
                 getCategoryIcon={getCategoryIcon}
@@ -231,7 +216,6 @@ export const FieldRecommendationsScreen: React.FC = () => {
                 key={rec.id}
                 recommendation={rec}
                 onPress={() => openRecommendationDetail(rec)}
-                getCategoryColor={getCategoryColor}
                 getPriorityColor={getPriorityColor}
                 getStatusColor={getStatusColor}
                 getCategoryIcon={getCategoryIcon}
@@ -251,7 +235,6 @@ export const FieldRecommendationsScreen: React.FC = () => {
                 key={rec.id}
                 recommendation={rec}
                 onPress={() => openRecommendationDetail(rec)}
-                getCategoryColor={getCategoryColor}
                 getPriorityColor={getPriorityColor}
                 getStatusColor={getStatusColor}
                 getCategoryIcon={getCategoryIcon}
@@ -271,7 +254,6 @@ export const FieldRecommendationsScreen: React.FC = () => {
                 key={rec.id}
                 recommendation={rec}
                 onPress={() => openRecommendationDetail(rec)}
-                getCategoryColor={getCategoryColor}
                 getPriorityColor={getPriorityColor}
                 getStatusColor={getStatusColor}
                 getCategoryIcon={getCategoryIcon}
@@ -388,7 +370,6 @@ export const FieldRecommendationsScreen: React.FC = () => {
 interface RecommendationCardProps {
   recommendation: Recommendation;
   onPress: () => void;
-  getCategoryColor: (category: string) => string;
   getPriorityColor: (priority: string) => string;
   getStatusColor: (status: string) => string;
   getCategoryIcon: (category: string) => string;
@@ -397,7 +378,6 @@ interface RecommendationCardProps {
 const RecommendationCard: React.FC<RecommendationCardProps> = ({
   recommendation,
   onPress,
-  getCategoryColor,
   getPriorityColor,
   getStatusColor,
   getCategoryIcon,
