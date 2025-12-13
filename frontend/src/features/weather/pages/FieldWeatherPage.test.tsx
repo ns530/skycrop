@@ -190,11 +190,13 @@ describe("FieldWeatherPage", () => {
     expect(screen.getByText(/test field/i)).toBeInTheDocument();
     expect(screen.getByText(/area: 1\.23 ha/i)).toBeInTheDocument();
 
-    // Risk badge for heavy rain day
-    expect(screen.getByText(/heavy rain/i)).toBeInTheDocument();
+    // Risk badge for heavy rain day (may appear multiple times)
+    const heavyRainElements = screen.getAllByText(/heavy rain/i);
+    expect(heavyRainElements.length).toBeGreaterThan(0);
 
     // Primary alert title surfaced somewhere in the banner or cards
-    expect(screen.getByText(/severe rain/i)).toBeInTheDocument();
+    const severeRainElements = screen.getAllByText(/severe rain/i);
+    expect(severeRainElements.length).toBeGreaterThan(0);
 
     // UiContext setCurrentField is called with the route field id
     expect(setCurrentFieldMock).toHaveBeenCalledWith("field-1");

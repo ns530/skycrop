@@ -143,9 +143,13 @@ describe("FieldRecommendationsPage", () => {
     ).toBeInTheDocument();
 
     // Status / priority labels from RecommendationCard
-    expect(screen.getByText(/overdue/i)).toBeInTheDocument();
-    expect(screen.getByText(/high/i)).toBeInTheDocument();
-    expect(screen.getByText(/history/i)).toBeInTheDocument();
+    // Use getAllByText since these labels may appear multiple times
+    const overdueElements = screen.getAllByText(/overdue/i);
+    expect(overdueElements.length).toBeGreaterThan(0);
+    const highElements = screen.getAllByText(/high/i);
+    expect(highElements.length).toBeGreaterThan(0);
+    const historyElements = screen.getAllByText(/history/i);
+    expect(historyElements.length).toBeGreaterThan(0);
 
     // "Mark as applied" button for active item (overdue / planned)
     const applyButton = screen.getByRole("button", {
