@@ -109,7 +109,7 @@ jest.mock('../../src/config/database.config', () => {
         // Count existing for date (controller helper)
         if (/SELECT\s+COUNT\(\*\)::int\s+AS\s+cnt\s+FROM\s+recommendations/i.test(s)) {
           const rows = mockListByWhere({
-            field_id: replacements.field_id,
+            fieldId: replacements.field_id,
             fromISO: replacements.from,
             toISO: replacements.to,
           });
@@ -180,7 +180,7 @@ jest.mock('../../src/config/database.config', () => {
         // Paginated list with COUNT(*) OVER()
         if (/FROM\s+recommendations/i.test(s) && /COUNT\(\*\)\s+OVER\(\)/i.test(s)) {
           const rows = mockListByWhere({
-            field_id: replacements.field_id,
+            fieldId: replacements.field_id,
             fromISO: replacements.from,
             toISO: replacements.to,
             type: replacements.type,

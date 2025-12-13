@@ -78,9 +78,10 @@ describe('Field Controller', () => {
           expect.objectContaining({
             route: '/api/v1/fields',
             method: 'GET',
-            user_id: 'test-user-id',
+            userId: 'test-user-id',
             correlationid: 'test-correlation-id',
             cachehit: false,
+            latencyms: expect.any(Number),
           })
         );
         expect(mockRes.status).toHaveBeenCalledWith(200);
@@ -148,8 +149,9 @@ describe('Field Controller', () => {
         expect.objectContaining({
           route: '/api/v1/fields',
           method: 'POST',
-          user_id: 'test-user-id',
+          userId: 'test-user-id',
           correlationid: 'create-correlation-id',
+          latencyms: expect.any(Number),
         })
       );
       expect(mockRes.status).toHaveBeenCalledWith(201);
@@ -188,9 +190,10 @@ describe('Field Controller', () => {
         expect.objectContaining({
           route: '/api/v1/fields/{id}',
           method: 'GET',
-          user_id: 'test-user-id',
-          field_id: 'field123',
+          userId: 'test-user-id',
+          fieldId: 'field123',
           correlationid: 'get-correlation-id',
+          latencyms: expect.any(Number),
         })
       );
       expect(mockRes.status).toHaveBeenCalledWith(200);
@@ -233,9 +236,10 @@ describe('Field Controller', () => {
         expect.objectContaining({
           route: '/api/v1/fields/{id}',
           method: 'PATCH',
-          user_id: 'test-user-id',
-          field_id: 'field123',
+          userId: 'test-user-id',
+          fieldId: 'field123',
           correlationid: 'update-correlation-id',
+          latencyms: expect.any(Number),
         })
       );
       expect(mockRes.status).toHaveBeenCalledWith(200);
@@ -334,9 +338,10 @@ describe('Field Controller', () => {
         expect.objectContaining({
           route: '/api/v1/fields/{id}',
           method: 'DELETE',
-          user_id: 'test-user-id',
-          field_id: 'field123',
+          userId: 'test-user-id',
+          fieldId: 'field123',
           correlationid: 'delete-correlation-id',
+          latencyms: expect.any(Number),
         })
       );
       expect(mockRes.status).toHaveBeenCalledWith(200);

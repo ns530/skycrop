@@ -26,6 +26,10 @@ describe('Field Controller additional branches', () => {
       res.statusCode = code;
       return res;
     };
+    res.json = body => {
+      responseBody = body;
+      return res;
+    };
     _response = body => {
       responseBody = body;
       return res;

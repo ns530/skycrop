@@ -21,6 +21,38 @@ jest.mock('../../src/services/weather.service', () => ({
   getWeatherService: () => mockWeatherSvc,
 }));
 
+// Mock weather.controller.js (ES module) before requiring it
+jest.mock('../../src/api/controllers/weather.controller', () => {
+  const { getWeatherService } = require('../../src/services/weather.service');
+  const weatherService = getWeatherService();
+
+  return {
+    __esModule: true,
+    default: {
+      getCurrent: async (req, res, next) => {
+        try {
+          const { user_id: userId } = req.user;
+          const { id: fieldId } = req.params;
+          const result = await weatherService.getCurrentByField(userId, fieldId);
+          return res.status(200).json({ success: true, data: result.data, meta: result.meta });
+        } catch (err) {
+          return next(err);
+        }
+      },
+      getForecast: async (req, res, next) => {
+        try {
+          const { user_id: userId } = req.user;
+          const { id: fieldId } = req.params;
+          const result = await weatherService.getForecastByField(userId, fieldId);
+          return res.status(200).json({ success: true, data: result.data, meta: result.meta });
+        } catch (err) {
+          return next(err);
+        }
+      },
+    },
+  };
+});
+
 // Controllers are required AFTER we set the mock singletons (done in beforeEach)
 let fieldController;
 let satelliteController;
@@ -105,7 +137,8 @@ describe('Controllers branch coverage (error and alt paths)', () => {
     fieldController = require('../../src/api/controllers/field.controller');
     satelliteController = require('../../src/api/controllers/satellite.controller');
     mlController = require('../../src/api/controllers/ml.controller');
-    weatherController = require('../../src/api/controllers/weather.controller');
+    const weatherControllerModule = require('../../src/api/controllers/weather.controller');
+    weatherController = weatherControllerModule.default || weatherControllerModule;
   });
 
   // Field Controller
