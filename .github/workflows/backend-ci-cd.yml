@@ -47,18 +47,26 @@ jobs:
         cache-dependency-path: backend/package-lock.json
     - name: Install dependencies
       run: cd backend && npm ci
+    - name: Install PostgreSQL client
+      run: sudo apt-get update && sudo apt-get install -y postgresql-client
     - name: Lint
       run: cd backend && npm run lint
+    - name: Setup test database
+      run: |
+        PGPASSWORD=test_pass psql -h localhost -U test_user -d skycrop_test -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+        PGPASSWORD=test_pass psql -h localhost -U test_user -d skycrop_test -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
+      env:
+        PGPASSWORD: test_pass
     - name: Test
       run: cd backend && npm test
       env:
         NODE_ENV: test
         JWTSECRET: test-secret-key
-        DB_HOST: localhost
-        DB_PORT: 5432
-        DB_NAME: skycrop_test
-        DB_USER: test_user
-        DB_PASSWORD: test_pass
+        DBHOST: localhost
+        DBPORT: '5432'
+        DBNAME: skycrop_test
+        DBUSER: test_user
+        DBPASSWORD: test_pass
         REDISURL: redis://localhost:6379
         REDISENABLED: 'false'
     # Build step skipped as backend is Node.js without build script
