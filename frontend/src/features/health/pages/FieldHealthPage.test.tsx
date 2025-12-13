@@ -3,12 +3,12 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import React from "react";
 import { MemoryRouter } from "react-router-dom";
 
+import { ToastProvider } from "../../../shared/ui/Toast";
 import type {
   FieldHealthResponse,
   FieldHealthTimeSeries,
   HealthIndexType,
 } from "../api/healthApi";
-import { ToastProvider } from "../../../shared/ui/Toast";
 
 import { FieldHealthPage } from "./FieldHealthPage";
 

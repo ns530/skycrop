@@ -3,8 +3,8 @@ import { render, screen } from "@testing-library/react";
 import React from "react";
 import { MemoryRouter } from "react-router-dom";
 
-import type { FieldDetail } from "../../fields/api/fieldsApi";
 import { ToastProvider } from "../../../shared/ui/Toast";
+import type { FieldDetail } from "../../fields/api/fieldsApi";
 import type { WeatherForecastResponse, WeatherAlert } from "../api/weatherApi";
 
 import { FieldWeatherPage } from "./FieldWeatherPage";
