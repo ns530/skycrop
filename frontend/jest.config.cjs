@@ -5,7 +5,10 @@ module.exports = {
   setupFilesAfterEnv: ["<rootDir>/src/test/setupTests.ts"],
   moduleNameMapper: {
     "\\.(css|less|scss|sass)$": "<rootDir>/src/test/__mocks__/styleMock.ts",
+    "\\.(jpg|jpeg|png|gif|svg|webp)$": "<rootDir>/src/test/__mocks__/styleMock.ts",
     "^@/(.*)$": "<rootDir>/src/$1",
+    "^react-leaflet$": "<rootDir>/src/test/__mocks__/react-leaflet.tsx",
+    "^leaflet$": "<rootDir>/src/test/__mocks__/leaflet.ts",
   },
   testMatch: [
     "<rootDir>/src/**/__tests__/**/*.(ts|tsx|js)",
