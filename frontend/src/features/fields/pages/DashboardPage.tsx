@@ -86,6 +86,10 @@ export const DashboardPage: React.FC = () => {
   }
 
   if (error) {
+    // Log error details in development for debugging
+    if (import.meta.env.DEV) {
+      console.error("[Dashboard] Error loading dashboard:", error);
+    }
     return (
       <section aria-labelledby="farmer-dashboard-heading" className="space-y-4">
         <header className="space-y-1">
@@ -101,7 +105,11 @@ export const DashboardPage: React.FC = () => {
         </header>
         <ErrorState
           title="Failed to load dashboard"
-          message="Unable to load your farm data. Please try again."
+          message={
+            error.message ||
+            "Unable to load your farm data. Please try again."
+          }
+          onRetry={() => window.location.reload()}
         />
       </section>
     );

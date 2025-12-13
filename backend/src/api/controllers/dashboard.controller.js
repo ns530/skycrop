@@ -338,15 +338,17 @@ async function getSystemMetrics() {
   const uptimeHours = Math.floor(process.uptime() / 3600);
 
   // API performance from Redis (average response time over last hour)
-  const perfKey = 'api:performance:lasthour';
-  const perfData = await redis.get(perfKey);
   let avgResponseTime = null;
-  if (perfData) {
-    try {
-      const parsed = JSON.parse(perfData);
-      avgResponseTime = parsed.avgresponsetimems || null;
-    } catch (e) {
-      // ignore
+  if (redis) {
+    const perfKey = 'api:performance:lasthour';
+    const perfData = await redis.get(perfKey);
+    if (perfData) {
+      try {
+        const parsed = JSON.parse(perfData);
+        avgResponseTime = parsed.avgresponsetimems || null;
+      } catch (e) {
+        // ignore
+      }
     }
   }
 
@@ -550,29 +552,33 @@ module.exports = {
 
       // Try cache first
       const redis = await initRedis();
-      const cached = await redis.get(cacheKey);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        logger.info('dashboard.metrics.cachehit', {
-          userId,
-          correlationid: correlationId,
-        });
-        return res.status(200).json({
-          success: true,
-          data: parsed,
-          meta: {
+      if (redis) {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          logger.info('dashboard.metrics.cachehit', {
+            userId,
             correlationid: correlationId,
-            cachehit: true,
-            latencyms: Date.now() - started,
-          },
-        });
+          });
+          return res.status(200).json({
+            success: true,
+            data: parsed,
+            meta: {
+              correlationid: correlationId,
+              cachehit: true,
+              latencyms: Date.now() - started,
+            },
+          });
+        }
       }
 
       // Aggregate metrics
       const metrics = await aggregateDashboardMetrics(userId);
 
-      // Cache the result
-      await redis.setEx(cacheKey, DASHBOARDCACHETTLSEC, JSON.stringify(metrics));
+      // Cache the result (if Redis is available)
+      if (redis) {
+        await redis.setEx(cacheKey, DASHBOARDCACHETTLSEC, JSON.stringify(metrics));
+      }
 
       const latency = Date.now() - started;
       logger.info('dashboard.metrics', {

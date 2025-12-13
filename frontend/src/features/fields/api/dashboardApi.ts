@@ -145,6 +145,10 @@ export const getDashboardMetrics = async (): Promise<DashboardMetrics> => {
       );
     return res.data.data;
   } catch (error) {
+    // Log error details in development for debugging
+    if (import.meta.env.DEV) {
+      console.error("[Dashboard API] Failed to fetch metrics:", error);
+    }
     throw normalizeApiError(error);
   }
 };
