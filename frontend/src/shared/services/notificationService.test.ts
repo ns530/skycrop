@@ -209,6 +209,9 @@ describe("Notification Service", () => {
           system: true,
           general: true,
         },
+        doNotDisturb: false,
+        quietHoursStart: undefined,
+        quietHoursEnd: undefined,
       });
     });
 
@@ -293,6 +296,22 @@ describe("Notification Service", () => {
       // Clear any existing notifications first
       notificationService.clearAll();
       
+      // Ensure quiet hours are disabled
+      notificationService.savePreferences({
+        enabled: true,
+        types: {
+          "health-alert": true,
+          "weather-warning": true,
+          recommendation: true,
+          "yield-update": true,
+          system: true,
+          general: true,
+        },
+        doNotDisturb: false,
+        quietHoursStart: undefined,
+        quietHoursEnd: undefined,
+      });
+      
       await notificationService.send({
         type: "system",
         priority: "medium",
@@ -332,6 +351,9 @@ describe("Notification Service", () => {
           system: true,
           general: true,
         },
+        doNotDisturb: false,
+        quietHoursStart: undefined,
+        quietHoursEnd: undefined,
       });
       // Clear any existing notifications
       notificationService.clearAll();

@@ -68,9 +68,10 @@ describe("LoginPage", () => {
     // Password input
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
 
-    // Submit button
-    expect(
-      screen.getByRole("button", { name: /continue/i }),
-    ).toBeInTheDocument();
+    // Submit button (there are two buttons with "continue" - submit and Google OAuth)
+    const continueButtons = screen.getAllByRole("button", { name: /continue/i });
+    expect(continueButtons.length).toBeGreaterThanOrEqual(1);
+    // The submit button should be the first one
+    expect(continueButtons[0]).toBeInTheDocument();
   });
 });
