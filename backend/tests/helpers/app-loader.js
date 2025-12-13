@@ -16,6 +16,7 @@ async function loadApp() {
     appInstance = appModule.default;
   } catch (e) {
     // Fallback: create a basic Express app
+    // eslint-disable-next-line global-require
     const express = require('express');
     appInstance = express();
     appInstance.use(express.json());
@@ -31,4 +32,3 @@ function getApp() {
 }
 
 module.exports = { loadApp, getApp };
-
