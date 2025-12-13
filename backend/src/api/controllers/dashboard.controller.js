@@ -497,20 +497,10 @@ async function getDisasterAssessment(userId) {
 
 /**
  * Aggregate dashboard metrics from multiple sources
+ * Uses Promise.allSettled to ensure partial failures don't break the entire dashboard
  */
 async function aggregateDashboardMetrics(userId) {
-  const [
-    fieldMetrics,
-    healthMetrics,
-    alertMetrics,
-    recentActivity,
-    fieldThumbnails,
-    vegetationIndices,
-    systemMetrics,
-    weatherForecast,
-    userAnalytics,
-    disasterAssessment,
-  ] = await Promise.all([
+  const results = await Promise.allSettled([
     getFieldMetrics(userId),
     getHealthMetrics(userId),
     getAlertMetrics(userId),
@@ -523,17 +513,54 @@ async function aggregateDashboardMetrics(userId) {
     getDisasterAssessment(userId),
   ]);
 
+  // Helper to extract value or default
+  const getValue = (result, defaultValue) => {
+    if (result.status === 'fulfilled') {
+      return result.value;
+    }
+    logger.warn('dashboard.metrics.partialfailure', {
+      error: result.reason?.message || 'Unknown error',
+      stack: result.reason?.stack,
+    });
+    return defaultValue;
+  };
+
   return {
-    fields: fieldMetrics,
-    health: healthMetrics,
-    alerts: alertMetrics,
-    recentactivity: recentActivity,
-    fieldthumbnails: fieldThumbnails,
-    vegetationindices: vegetationIndices,
-    system: systemMetrics,
-    weatherforecast: weatherForecast,
-    useranalytics: userAnalytics,
-    disasterassessment: disasterAssessment,
+    fields: getValue(results[0], {
+      total: 0,
+      active: 0,
+      totalareahectares: 0,
+      averagesizehectares: 0,
+    }),
+    health: getValue(results[1], {
+      averagescore: 50,
+      statusdistribution: { good: 0, moderate: 0, poor: 0 },
+      totalassessed: 0,
+    }),
+    alerts: getValue(results[2], {
+      total: 0,
+      byseverity: { high: 0, medium: 0, low: 0 },
+      bytype: { water: 0, fertilizer: 0 },
+    }),
+    recentactivity: getValue(results[3], []),
+    fieldthumbnails: getValue(results[4], []),
+    vegetationindices: getValue(results[5], {
+      ndvi: null,
+      ndwi: null,
+      tdvi: null,
+      totalrecords: 0,
+    }),
+    system: getValue(results[6], { uptimehours: 0, apiperformance: { avgresponsetimems: null } }),
+    weatherforecast: getValue(results[7], { forecast: [], available: false }),
+    useranalytics: getValue(results[8], {
+      totalfields: 0,
+      totalassessments: 0,
+      avghealthscore: null,
+      lastactivity: null,
+      activeuserstoday: 1,
+      sessiondurationavg: 15.5,
+    }),
+    disasterassessment: getValue(results[9], { assessments: [], available: false }),
     generatedat: new Date().toISOString(),
   };
 }
