@@ -1,4 +1,5 @@
 module.exports = {
+  preset: "ts-jest",
   testEnvironment: "jsdom",
   setupFiles: ["<rootDir>/src/test/setupEnv.ts"],
   setupFilesAfterEnv: ["<rootDir>/src/test/setupTests.ts"],
@@ -24,15 +25,12 @@ module.exports = {
           jsx: "react-jsx",
           esModuleInterop: true,
           allowSyntheticDefaultImports: true,
+          module: "commonjs",
         },
+        isolatedModules: true,
       },
     ],
   },
-  moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json"],
+  moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
   extensionsToTreatAsEsm: [],
-  globals: {
-    "ts-jest": {
-      useESM: false,
-    },
-  },
 };

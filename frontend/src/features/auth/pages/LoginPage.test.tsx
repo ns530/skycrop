@@ -7,6 +7,17 @@ import { ToastProvider } from "../../../shared/ui/Toast";
 
 import { LoginPage } from "./LoginPage";
 
+// Mock useAuth to avoid requiring AuthProvider
+jest.mock("../context/AuthContext", () => {
+  return {
+    useAuth: jest.fn(),
+  };
+});
+
+const { useAuth } = jest.requireMock("../context/AuthContext") as {
+  useAuth: jest.Mock;
+};
+
 const createTestQueryClient = () =>
   new QueryClient({
     defaultOptions: {
@@ -31,6 +42,17 @@ const createWrapper = (): React.FC<{ children: React.ReactNode }> => {
 };
 
 describe("LoginPage", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // Mock useAuth to return required functions
+    useAuth.mockReturnValue({
+      loginWithEmail: jest.fn(),
+      startGoogleOAuth: jest.fn(),
+      status: "unauthenticated",
+      user: null,
+    });
+  });
+
   it("renders heading and core form fields", () => {
     const wrapper = createWrapper();
     render(<LoginPage />, { wrapper });
