@@ -15,6 +15,8 @@ describe("App", () => {
     // We do not assert on specific routes here because RequireAuth currently
     // treats the user as unauthenticated by default. This is a smoke test
     // that ensures the tree renders without throwing.
-    expect(screen.getByText(/SkyCrop/i)).toBeInTheDocument();
+    // Use getAllByText since SkyCrop might appear multiple times (header, title, etc.)
+    const skycropElements = screen.getAllByText(/SkyCrop/i);
+    expect(skycropElements.length).toBeGreaterThan(0);
   });
 });

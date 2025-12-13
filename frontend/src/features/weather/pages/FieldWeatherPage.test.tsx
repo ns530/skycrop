@@ -4,6 +4,7 @@ import React from "react";
 import { MemoryRouter } from "react-router-dom";
 
 import type { FieldDetail } from "../../fields/api/fieldsApi";
+import { ToastProvider } from "../../../shared/ui/Toast";
 import type { WeatherForecastResponse, WeatherAlert } from "../api/weatherApi";
 
 import { FieldWeatherPage } from "./FieldWeatherPage";
@@ -84,7 +85,9 @@ const createWrapper =
 
     return (
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>
+        <ToastProvider>
+          <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>
+        </ToastProvider>
       </QueryClientProvider>
     );
   };

@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import React from "react";
 import { MemoryRouter } from "react-router-dom";
 
+import { ToastProvider } from "../../../shared/ui/Toast";
 import type { Recommendation } from "../api/recommendationApi";
 
 import { FieldRecommendationsPage } from "./FieldRecommendationsPage";
@@ -72,7 +73,9 @@ const createWrapper =
 
     return (
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>
+        <ToastProvider>
+          <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>
+        </ToastProvider>
       </QueryClientProvider>
     );
   };

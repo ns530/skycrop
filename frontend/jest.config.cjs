@@ -30,7 +30,6 @@ module.exports = {
           allowSyntheticDefaultImports: true,
           module: "commonjs",
         },
-        isolatedModules: true,
       },
     ],
   },

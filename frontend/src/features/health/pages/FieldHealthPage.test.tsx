@@ -8,6 +8,7 @@ import type {
   FieldHealthTimeSeries,
   HealthIndexType,
 } from "../api/healthApi";
+import { ToastProvider } from "../../../shared/ui/Toast";
 
 import { FieldHealthPage } from "./FieldHealthPage";
 
@@ -82,7 +83,9 @@ const createWrapper =
 
     return (
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>
+        <ToastProvider>
+          <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>
+        </ToastProvider>
       </QueryClientProvider>
     );
   };

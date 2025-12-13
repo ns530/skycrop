@@ -221,6 +221,7 @@ describe("Notification Service", () => {
       });
 
       const stored = notificationService.getStoredNotifications();
+      expect(stored.length).toBeGreaterThan(0);
       const id = stored[0].id;
 
       notificationService.markAsRead(id);
@@ -289,6 +290,9 @@ describe("Notification Service", () => {
     });
 
     it("should return count of unread notifications", async () => {
+      // Clear any existing notifications first
+      notificationService.clearAll();
+      
       await notificationService.send({
         type: "system",
         priority: "medium",
@@ -303,9 +307,10 @@ describe("Notification Service", () => {
         body: "Test",
       });
 
+      const stored = notificationService.getStoredNotifications();
+      expect(stored.length).toBe(2);
       expect(notificationService.getUnreadCount()).toBe(2);
 
-      const stored = notificationService.getStoredNotifications();
       notificationService.markAsRead(stored[0].id);
 
       expect(notificationService.getUnreadCount()).toBe(1);
@@ -328,11 +333,16 @@ describe("Notification Service", () => {
           general: true,
         },
       });
+      // Clear any existing notifications
+      notificationService.clearAll();
     });
 
     it("sendNotification should send a notification", async () => {
       const notification = await sendNotification("Title", "Body");
       expect(notification).toBeTruthy();
+      
+      const stored = notificationService.getStoredNotifications();
+      expect(stored.length).toBeGreaterThan(0);
     });
 
     it("sendHealthAlert should send health alert notification", async () => {
@@ -358,6 +368,7 @@ describe("Notification Service", () => {
       expect(notification).toBeTruthy();
 
       const stored = notificationService.getStoredNotifications();
+      expect(stored.length).toBeGreaterThan(0);
       expect(stored[0].type).toBe("weather-warning");
     });
 

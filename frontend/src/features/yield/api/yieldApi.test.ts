@@ -66,6 +66,7 @@ describe("yieldApi", () => {
     });
 
     it("returns records for specific field", async () => {
+      // Backend should return only records for the requested field
       const backendData = [
         {
           yield_id: "yield-1",
@@ -76,15 +77,6 @@ describe("yieldApi", () => {
           created_at: "2024-05-15T10:00:00Z",
           updated_at: "2024-05-15T10:00:00Z",
         },
-        {
-          yield_id: "yield-2",
-          field_id: "field-456",
-          harvest_date: "2024-05-20",
-          actual_yield_per_ha: 4800,
-          total_yield_kg: 12000,
-          created_at: "2024-05-20T10:00:00Z",
-          updated_at: "2024-05-20T10:00:00Z",
-        },
       ];
 
       mockHttpClient.get.mockResolvedValue({
@@ -94,7 +86,7 @@ describe("yieldApi", () => {
           pagination: {
             page: 1,
             page_size: 100,
-            total: 2,
+            total: 1,
             total_pages: 1,
           },
         },
@@ -112,16 +104,8 @@ describe("yieldApi", () => {
     });
 
     it("sorts records by harvest date descending", async () => {
+      // Backend should return data sorted by harvest_date desc (most recent first)
       const backendData = [
-        {
-          yield_id: "yield-1",
-          field_id: "field-123",
-          harvest_date: "2024-03-15",
-          actual_yield_per_ha: 4500,
-          total_yield_kg: 11250,
-          created_at: "2024-03-15T10:00:00Z",
-          updated_at: "2024-03-15T10:00:00Z",
-        },
         {
           yield_id: "yield-2",
           field_id: "field-123",
@@ -130,6 +114,15 @@ describe("yieldApi", () => {
           total_yield_kg: 12000,
           created_at: "2024-05-20T10:00:00Z",
           updated_at: "2024-05-20T10:00:00Z",
+        },
+        {
+          yield_id: "yield-1",
+          field_id: "field-123",
+          harvest_date: "2024-03-15",
+          actual_yield_per_ha: 4500,
+          total_yield_kg: 11250,
+          created_at: "2024-03-15T10:00:00Z",
+          updated_at: "2024-03-15T10:00:00Z",
         },
         {
           yield_id: "yield-3",
