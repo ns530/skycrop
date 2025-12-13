@@ -25,6 +25,16 @@ jobs:
       run: cd backend && npm run lint
     - name: Test
       run: cd backend && npm test
+      env:
+        NODE_ENV: test
+        JWTSECRET: test-secret-key
+        DB_HOST: localhost
+        DB_PORT: 5432
+        DB_NAME: skycrop_test
+        DB_USER: test_user
+        DB_PASSWORD: test_pass
+        REDISURL: redis://localhost:6379
+        REDISENABLED: 'false'
     # Build step skipped as backend is Node.js without build script
 
   cd:
@@ -37,3 +47,4 @@ jobs:
       uses: railwayapp/actions-deploy@v1
       with:
         railway-token: ${{ secrets.RAILWAY_TOKEN }}
+        service: backend

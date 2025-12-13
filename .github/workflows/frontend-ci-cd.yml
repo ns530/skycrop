@@ -25,8 +25,12 @@ jobs:
       run: cd frontend && npm run lint
     - name: Test
       run: cd frontend && npm test
+      env:
+        NODE_ENV: test
     - name: Build
       run: cd frontend && npm run build
+      env:
+        NODE_ENV: production
 
   cd:
     needs: ci
