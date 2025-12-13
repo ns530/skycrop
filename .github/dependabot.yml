@@ -4,18 +4,28 @@ updates:
     directory: "/backend"
     schedule:
       interval: "weekly"
+    open-pull-requests-limit: 10
+
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
 
   - package-ecosystem: "pip"
     directory: "/ml-service"
     schedule:
       interval: "weekly"
+    open-pull-requests-limit: 10
 
   - package-ecosystem: "pip"
     directory: "/ml-training"
     schedule:
       interval: "weekly"
+    open-pull-requests-limit: 10
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    open-pull-requests-limit: 5
