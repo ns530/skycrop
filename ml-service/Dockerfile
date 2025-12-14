@@ -25,6 +25,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application
 COPY . /opt/ml-service
 
+# Verify model files are copied (helps debug build issues)
+RUN ls -la /opt/ml-service/ml-training/models/unet/1.0.0/ 2>/dev/null || echo "WARNING: Model directory not found"
+RUN test -f /opt/ml-service/ml-training/models/unet/1.0.0/model.onnx && echo "✅ UNet model file found" || echo "❌ UNet model file NOT found"
+RUN ls -la /opt/ml-service/ml-training/models/yield_rf/1.0.0/ 2>/dev/null || echo "WARNING: Yield model directory not found"
+
 # Runtime env defaults (can be overridden by compose)
 ENV ML_PORT=80 \
     MODEL_NAME=unet \
