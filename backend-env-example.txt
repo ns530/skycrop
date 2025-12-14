@@ -87,6 +87,14 @@ OPENWEATHER_API_KEY=your-openweather-api-key
 WEATHER_API_URL=https://api.openweathermap.org/data/2.5
 SATELLITE_API_KEY=your-satellite-api-key
 
+# ============ SENTINEL HUB API ============
+# Get these from: https://www.sentinel-hub.com/ → Dashboard → OAuth clients
+SENTINELHUBCLIENTID=your-sentinel-hub-client-id
+SENTINELHUBCLIENTSECRET=your-sentinel-hub-client-secret
+# Optional (usually don't need to change):
+# SENTINELHUBBASEURL=https://services.sentinel-hub.com
+# SENTINELHUBTOKENURL=https://services.sentinel-hub.com/oauth/token
+
 # ============ SENTRY ERROR TRACKING (Optional) ============
 # SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
 # SENTRY_ENVIRONMENT=production

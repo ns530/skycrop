@@ -4,10 +4,9 @@
  * @format
  */
 
-import { AppRegistry } from 'react-native';
+import { registerRootComponent } from 'expo';
 import App from './src/App';
 
-// Register the component as "main" for Expo Go
-// Expo Go expects the component to be registered with this name
-AppRegistry.registerComponent('main', () => App);
+// Register the root component for Expo
+registerRootComponent(App);
 

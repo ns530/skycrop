@@ -17,7 +17,28 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 // Configure LogBox for debugging
 if (__DEV__) {
   LogBox.ignoreAllLogs(false); // Show all logs in development
-  console.log('SkyCrop Mobile App starting...');
+  
+  // Enhanced error logging
+  const originalError = console.error;
+  console.error = (...args) => {
+    originalError('[APP ERROR]', ...args);
+  };
+  
+  // Log app startup
+  console.log('🚀 SkyCrop Mobile App starting...');
+  console.log('📱 Platform:', require('react-native').Platform.OS);
+  console.log('🔧 Dev Mode:', __DEV__);
+  
+  // Log unhandled promise rejections
+  if (typeof global !== 'undefined') {
+    const originalUnhandledRejection = global.onunhandledrejection;
+    global.onunhandledrejection = (event) => {
+      console.error('[UNHANDLED PROMISE REJECTION]', event.reason);
+      if (originalUnhandledRejection) {
+        originalUnhandledRejection(event);
+      }
+    };
+  }
 }
 
 // Configure React Query

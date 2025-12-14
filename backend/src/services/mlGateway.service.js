@@ -8,14 +8,21 @@ class MLGatewayService {
   constructor() {
     this.redis = null;
 
-    this.MLBASEURL = (process.env.MLBASEURL || 'http://localhost:80').replace(/\/+$/, '');
-    this.MLINTERNALTOKEN = process.env.MLINTERNALTOKEN || 'change-me';
+    this.MLBASEURL = (
+      process.env.MLBASEURL ||
+      process.env.ML_BASE_URL ||
+      'http://localhost:80'
+    ).replace(/\/+$/, '');
+    this.MLINTERNALTOKEN =
+      process.env.MLINTERNALTOKEN || process.env.ML_INTERNAL_TOKEN || 'change-me';
     this.CACHETTL = parseInt(process.env.MLPREDICTCACHETTLSECONDS || '86400', 10);
     this.TIMEOUTMS = parseInt(process.env.MLREQUESTTIMEOUTMS || '60000', 10);
 
     // New: alternate service/env keys used by detectBoundaries()
+    // Support both MLSERVICEURL (legacy) and ML_SERVICE_URL (Railway standard)
     this.MLSERVICEURL = (
       process.env.MLSERVICEURL ||
+      process.env.ML_SERVICE_URL ||
       this.MLBASEURL ||
       'http://localhost:80'
     ).replace(/\/+$/, '');

@@ -25,6 +25,22 @@ export const FieldHealthScreen: React.FC = () => {
 
   const [refreshing, setRefreshing] = useState(false);
 
+  // Debug logging
+  React.useEffect(() => {
+    if (__DEV__) {
+      console.log('[FieldHealthScreen] Health data:', healthData);
+      console.log('[FieldHealthScreen] Loading:', isLoading);
+      console.log('[FieldHealthScreen] Error:', error);
+      if (healthData?.current) {
+        console.log('[FieldHealthScreen] Current health:', {
+          ndvi_mean: healthData.current.ndvi_mean,
+          ndwi_mean: healthData.current.ndwi_mean,
+          tdvi_mean: healthData.current.tdvi_mean,
+        });
+      }
+    }
+  }, [healthData, isLoading, error]);
+
   const onRefresh = async () => {
     setRefreshing(true);
     await refetch();
@@ -64,16 +80,29 @@ export const FieldHealthScreen: React.FC = () => {
 
   if (!healthData?.current) {
     return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>No health data available</Text>
-        <TouchableOpacity style={styles.analyzeButton} onPress={handleTriggerAnalysis}>
-          <Text style={styles.analyzeButtonText}>Request Analysis</Text>
-        </TouchableOpacity>
-      </View>
+      <ScrollView style={styles.container}>
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyTitle}>No Health Data Available</Text>
+          <Text style={styles.emptyText}>
+            This field doesn't have satellite-derived health data yet. Request an analysis to get NDVI, NDWI, and TDVI indices.
+          </Text>
+          <TouchableOpacity style={styles.analyzeButton} onPress={handleTriggerAnalysis}>
+            <Text style={styles.analyzeButtonText}>
+              {triggerAnalysis.isPending ? 'Requesting...' : 'Request Health Analysis'}
+            </Text>
+          </TouchableOpacity>
+          <Text style={styles.emptySubtext}>
+            Analysis may take a few minutes to complete. Check back soon!
+          </Text>
+        </View>
+      </ScrollView>
     );
   }
 
   const { current, history, trends } = healthData;
+  
+  // Check if we have actual health index data
+  const hasHealthData = current.ndvi_mean !== undefined && current.ndvi_mean !== null && current.ndvi_mean !== 0;
 
   const getHealthColor = (status: string) => {
     switch (status) {
@@ -134,45 +163,128 @@ export const FieldHealthScreen: React.FC = () => {
         </View>
       </View>
 
-      {/* NDVI Analysis Card */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>NDVI Analysis</Text>
-        <View style={styles.ndviGrid}>
-          <View style={styles.ndviItem}>
-            <Text style={styles.ndviLabel}>Mean</Text>
-            <Text style={styles.ndviValue}>{current.ndvi_mean.toFixed(3)}</Text>
-          </View>
-          <View style={styles.ndviItem}>
-            <Text style={styles.ndviLabel}>Min</Text>
-            <Text style={styles.ndviValue}>{current.ndvi_min.toFixed(3)}</Text>
-          </View>
-          <View style={styles.ndviItem}>
-            <Text style={styles.ndviLabel}>Max</Text>
-            <Text style={styles.ndviValue}>{current.ndvi_max.toFixed(3)}</Text>
-          </View>
-          <View style={styles.ndviItem}>
-            <Text style={styles.ndviLabel}>Std Dev</Text>
-            <Text style={styles.ndviValue}>{current.ndvi_std.toFixed(3)}</Text>
-          </View>
+      {/* No Data Message */}
+      {!hasHealthData && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>⚠️ No Detailed Health Data</Text>
+          <Text style={styles.emptyText}>
+            Health summary is available, but detailed NDVI/NDWI/TDVI indices are not yet computed. Request a health analysis to get detailed vegetation indices.
+          </Text>
+          <TouchableOpacity
+            style={[styles.analyzeButton, triggerAnalysis.isPending && styles.analyzeButtonDisabled]}
+            onPress={handleTriggerAnalysis}
+            disabled={triggerAnalysis.isPending}
+          >
+            <Text style={styles.analyzeButtonText}>
+              {triggerAnalysis.isPending ? 'Requesting...' : 'Request Health Analysis'}
+            </Text>
+          </TouchableOpacity>
         </View>
+      )}
 
-        {/* Progress Bar for Vegetation Cover */}
-        <View style={styles.progressSection}>
-          <Text style={styles.progressLabel}>Vegetation Cover</Text>
-          <View style={styles.progressBar}>
-            <View
-              style={[
-                styles.progressFill,
-                {
-                  width: `${current.vegetation_cover_percentage}%`,
-                  backgroundColor: getHealthColor(current.health_status),
-                },
-              ]}
-            />
+      {/* NDVI Analysis Card */}
+      {hasHealthData && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>🌱 NDVI Analysis (Vegetation Health)</Text>
+          <View style={styles.ndviGrid}>
+            <View style={styles.ndviItem}>
+              <Text style={styles.ndviLabel}>Mean</Text>
+              <Text style={styles.ndviValue}>{current.ndvi_mean.toFixed(3)}</Text>
+            </View>
+            {current.ndvi_min !== undefined && current.ndvi_min !== null && (
+              <View style={styles.ndviItem}>
+                <Text style={styles.ndviLabel}>Min</Text>
+                <Text style={styles.ndviValue}>{current.ndvi_min.toFixed(3)}</Text>
+              </View>
+            )}
+            {current.ndvi_max !== undefined && current.ndvi_max !== null && (
+              <View style={styles.ndviItem}>
+                <Text style={styles.ndviLabel}>Max</Text>
+                <Text style={styles.ndviValue}>{current.ndvi_max.toFixed(3)}</Text>
+              </View>
+            )}
+            {current.ndvi_std !== undefined && current.ndvi_std !== null && (
+              <View style={styles.ndviItem}>
+                <Text style={styles.ndviLabel}>Std Dev</Text>
+                <Text style={styles.ndviValue}>{current.ndvi_std.toFixed(3)}</Text>
+              </View>
+            )}
           </View>
-          <Text style={styles.progressText}>{current.vegetation_cover_percentage.toFixed(1)}%</Text>
+
+          {/* Progress Bar for Vegetation Cover */}
+          {current.vegetation_cover_percentage !== undefined && current.vegetation_cover_percentage !== null && (
+            <View style={styles.progressSection}>
+              <Text style={styles.progressLabel}>Vegetation Cover</Text>
+              <View style={styles.progressBar}>
+                <View
+                  style={[
+                    styles.progressFill,
+                    {
+                      width: `${current.vegetation_cover_percentage}%`,
+                      backgroundColor: getHealthColor(current.health_status),
+                    },
+                  ]}
+                />
+              </View>
+              <Text style={styles.progressText}>{current.vegetation_cover_percentage.toFixed(1)}%</Text>
+            </View>
+          )}
         </View>
-      </View>
+      )}
+
+      {/* NDWI Analysis Card */}
+      {(current.ndwi_mean !== undefined && current.ndwi_mean !== null) && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>💧 NDWI Analysis (Water Content)</Text>
+          <View style={styles.ndviGrid}>
+            <View style={styles.ndviItem}>
+              <Text style={styles.ndviLabel}>Mean</Text>
+              <Text style={styles.ndviValue}>{current.ndwi_mean.toFixed(3)}</Text>
+            </View>
+            {current.ndwi_min !== undefined && current.ndwi_min !== null && (
+              <View style={styles.ndviItem}>
+                <Text style={styles.ndviLabel}>Min</Text>
+                <Text style={styles.ndviValue}>{current.ndwi_min.toFixed(3)}</Text>
+              </View>
+            )}
+            {current.ndwi_max !== undefined && current.ndwi_max !== null && (
+              <View style={styles.ndviItem}>
+                <Text style={styles.ndviLabel}>Max</Text>
+                <Text style={styles.ndviValue}>{current.ndwi_max.toFixed(3)}</Text>
+              </View>
+            )}
+            {current.ndwi_std !== undefined && current.ndwi_std !== null && (
+              <View style={styles.ndviItem}>
+                <Text style={styles.ndviLabel}>Std Dev</Text>
+                <Text style={styles.ndviValue}>{current.ndwi_std.toFixed(3)}</Text>
+              </View>
+            )}
+          </View>
+          <View style={styles.infoBox}>
+            <Text style={styles.infoText}>
+              💡 NDWI indicates water content. Values below 0.1 suggest water stress.
+            </Text>
+          </View>
+        </View>
+      )}
+
+      {/* TDVI Analysis Card */}
+      {(current.tdvi_mean !== undefined && current.tdvi_mean !== null) && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>🌿 TDVI Analysis (Stress Detection)</Text>
+          <View style={styles.ndviGrid}>
+            <View style={styles.ndviItem}>
+              <Text style={styles.ndviLabel}>Mean</Text>
+              <Text style={styles.ndviValue}>{current.tdvi_mean.toFixed(3)}</Text>
+            </View>
+          </View>
+          <View style={styles.infoBox}>
+            <Text style={styles.infoText}>
+              💡 TDVI detects plant stress. Higher values (greater than 0.5) may indicate stress conditions.
+            </Text>
+          </View>
+        </View>
+      )}
 
       {/* Stress Areas Card */}
       {current.stress_areas_count > 0 && (
@@ -298,11 +410,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    minHeight: 400,
+  },
+  emptyTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1f2937',
+    marginBottom: 12,
+    textAlign: 'center',
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
-    marginBottom: 20,
+    color: '#6b7280',
+    marginBottom: 24,
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#9ca3af',
+    marginTop: 16,
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
   card: {
     backgroundColor: '#fff',
@@ -532,5 +661,18 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  infoBox: {
+    backgroundColor: '#f0f9ff',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#3b82f6',
+  },
+  infoText: {
+    fontSize: 13,
+    color: '#1e40af',
+    lineHeight: 18,
   },
 });

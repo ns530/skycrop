@@ -70,10 +70,12 @@ export const FieldCard: React.FC<FieldCardProps> = ({ field, onPress }) => {
       </View>
 
       <View style={styles.details}>
-        <View style={styles.detailItem}>
-          <Icon name="resize" size={16} color="#6b7280" />
-          <Text style={styles.detailText}>{field.area_ha.toFixed(2)} ha</Text>
-        </View>
+        {field.area_ha !== undefined && field.area_ha !== null && (
+          <View style={styles.detailItem}>
+            <Icon name="resize" size={16} color="#6b7280" />
+            <Text style={styles.detailText}>{Number(field.area_ha).toFixed(2)} ha</Text>
+          </View>
+        )}
 
         {field.health_score !== undefined && (
           <View style={styles.detailItem}>

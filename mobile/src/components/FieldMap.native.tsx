@@ -100,11 +100,93 @@ export const FieldMap: React.FC<FieldMapProps> = ({
   };
 
   // Convert GeoJSON coordinates to map coordinates
-  const getPolygonCoordinates = (polygon: GeoJSON.Polygon) => {
-    return polygon.coordinates[0].map(([lng, lat]) => ({
-      latitude: lat,
-      longitude: lng,
-    }));
+  const getPolygonCoordinates = (polygon: GeoJSON.Polygon | GeoJSON.MultiPolygon | undefined) => {
+    if (!polygon) {
+      return [];
+    }
+    try {
+      // Handle Polygon
+      if (polygon.type === 'Polygon' && 'coordinates' in polygon) {
+        const polygonData = polygon as GeoJSON.Polygon;
+        if (!polygonData.coordinates || !Array.isArray(polygonData.coordinates) || polygonData.coordinates.length === 0) {
+          console.warn('[FieldMap] Invalid Polygon coordinates');
+          return [];
+        }
+        
+        const outerRing = polygonData.coordinates[0];
+        if (!Array.isArray(outerRing) || outerRing.length === 0) {
+          console.warn('[FieldMap] Invalid outer ring');
+          return [];
+        }
+
+        return outerRing.map((coord) => {
+          // Handle both [lng, lat] and [lng, lat, elevation] formats
+          if (!Array.isArray(coord) || coord.length < 2) {
+            console.warn('[FieldMap] Invalid coordinate:', coord);
+            return { latitude: 0, longitude: 0 };
+          }
+          
+          const [lng, lat] = coord;
+          // Validate coordinates are numbers
+          if (typeof lng !== 'number' || typeof lat !== 'number' || isNaN(lng) || isNaN(lat)) {
+            console.warn('[FieldMap] Invalid coordinate values:', coord);
+            return { latitude: 0, longitude: 0 };
+          }
+          
+          return {
+            latitude: lat,
+            longitude: lng,
+          };
+        });
+      }
+      
+      // Handle MultiPolygon - take first polygon
+      if (polygon.type === 'MultiPolygon' && 'coordinates' in polygon) {
+        const multiPolygonData = polygon as GeoJSON.MultiPolygon;
+        if (!multiPolygonData.coordinates || !Array.isArray(multiPolygonData.coordinates) || multiPolygonData.coordinates.length === 0) {
+          console.warn('[FieldMap] Invalid MultiPolygon coordinates');
+          return [];
+        }
+        
+        const firstPolygon = multiPolygonData.coordinates[0];
+        if (!Array.isArray(firstPolygon) || firstPolygon.length === 0) {
+          console.warn('[FieldMap] Invalid first polygon in MultiPolygon');
+          return [];
+        }
+        
+        const outerRing = firstPolygon[0];
+        if (!Array.isArray(outerRing) || outerRing.length === 0) {
+          console.warn('[FieldMap] Invalid outer ring in MultiPolygon');
+          return [];
+        }
+
+        return outerRing.map((coord) => {
+          if (!Array.isArray(coord) || coord.length < 2) {
+            console.warn('[FieldMap] Invalid coordinate:', coord);
+            return { latitude: 0, longitude: 0 };
+          }
+          
+          const [lng, lat] = coord;
+          if (typeof lng !== 'number' || typeof lat !== 'number' || isNaN(lng) || isNaN(lat)) {
+            console.warn('[FieldMap] Invalid coordinate values:', coord);
+            return { latitude: 0, longitude: 0 };
+          }
+          
+          return {
+            latitude: lat,
+            longitude: lng,
+          };
+        });
+      }
+      
+      // Fallback for unsupported types
+      const geometryType = (polygon as any).type || 'unknown';
+      console.warn('[FieldMap] Unsupported geometry type:', geometryType);
+      return [];
+    } catch (error) {
+      console.error('[FieldMap] Error converting polygon coordinates:', error);
+      return [];
+    }
   };
 
   return (
@@ -127,14 +209,21 @@ export const FieldMap: React.FC<FieldMapProps> = ({
           />
         )}
         
-        {currentBoundary && (
-          <Polygon
-            coordinates={getPolygonCoordinates(currentBoundary)}
-            fillColor="rgba(22, 163, 74, 0.3)"
-            strokeColor="#16A34A"
-            strokeWidth={2}
-          />
-        )}
+        {currentBoundary && (() => {
+          const polygonCoords = getPolygonCoordinates(currentBoundary);
+          // Only render if we have valid coordinates
+          if (polygonCoords.length >= 3) {
+            return (
+              <Polygon
+                coordinates={polygonCoords}
+                fillColor="rgba(22, 163, 74, 0.3)"
+                strokeColor="#16A34A"
+                strokeWidth={2}
+              />
+            );
+          }
+          return null;
+        })()}
       </MapView>
 
       {editable && (

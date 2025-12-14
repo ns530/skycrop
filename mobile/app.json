@@ -51,12 +51,16 @@
             "targetSdkVersion": 35,
             "buildToolsVersion": "35.0.0",
             "kotlinVersion": "1.9.25",
+            "jsEngine": "hermes",
             "extraPropertiesGradle": {
               "android.useAndroidX": "true",
               "android.enableJetifier": "true",
               "kotlin.version": "1.9.25",
               "android.suppressUnsupportedCompileSdk": "35"
             }
+          },
+          "ios": {
+            "jsEngine": "hermes"
           }
         }
       ],

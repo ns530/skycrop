@@ -86,6 +86,9 @@ const FieldDetailScreen: React.FC = () => {
     day: 'numeric',
   });
 
+  const center = field.center?.coordinates;
+  const hasCenter = center && center.length >= 2;
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
@@ -109,25 +112,35 @@ const FieldDetailScreen: React.FC = () => {
               <Icon name="resize" size={24} color="#6b7280" />
               <View style={styles.statContent}>
                 <Text style={styles.statLabel}>Area</Text>
-                <Text style={styles.statValue}>{field.area_ha.toFixed(2)} ha</Text>
-                <Text style={styles.statSubtext}>
-                  ({field.area_sqm.toLocaleString()} m²)
-                </Text>
+                {field.area_ha !== undefined && field.area_ha !== null ? (
+                  <>
+                    <Text style={styles.statValue}>{Number(field.area_ha).toFixed(2)} ha</Text>
+                    {field.area_sqm !== undefined && field.area_sqm !== null && (
+                      <Text style={styles.statSubtext}>
+                        ({Number(field.area_sqm).toLocaleString()} m²)
+                      </Text>
+                    )}
+                  </>
+                ) : (
+                  <Text style={styles.statValue}>N/A</Text>
+                )}
               </View>
             </View>
           </View>
 
-          <View style={styles.statRow}>
-            <View style={styles.statItem}>
-              <Icon name="location" size={24} color="#6b7280" />
-              <View style={styles.statContent}>
-                <Text style={styles.statLabel}>Center Point</Text>
-                <Text style={styles.statValue}>
-                  {field.center.coordinates[1].toFixed(6)}°, {field.center.coordinates[0].toFixed(6)}°
-                </Text>
+          {hasCenter && (
+            <View style={styles.statRow}>
+              <View style={styles.statItem}>
+                <Icon name="location" size={24} color="#6b7280" />
+                <View style={styles.statContent}>
+                  <Text style={styles.statLabel}>Center Point</Text>
+                  <Text style={styles.statValue}>
+                    {center![1].toFixed(6)}°, {center![0].toFixed(6)}°
+                  </Text>
+                </View>
               </View>
             </View>
-          </View>
+          )}
 
           <View style={styles.statRow}>
             <View style={styles.statItem}>
@@ -143,18 +156,22 @@ const FieldDetailScreen: React.FC = () => {
         </View>
 
         {/* Field Map */}
-        <View style={styles.mapCard}>
-          <Text style={styles.sectionTitle}>Field Location</Text>
-          <FieldMap
-            center={{
-              latitude: field.center.coordinates[1],
-              longitude: field.center.coordinates[0],
-            }}
-            boundary={field.boundary}
-            editable={false}
-            height={250}
-          />
-        </View>
+        {hasCenter && (
+          <View style={styles.mapCard}>
+            <Text style={styles.sectionTitle}>Field Location</Text>
+            <FieldMap
+              center={{
+                latitude: center![1],
+                longitude: center![0],
+              }}
+              boundary={field.boundary && (field.boundary.type === 'Polygon' || field.boundary.type === 'MultiPolygon') 
+                ? field.boundary 
+                : undefined}
+              editable={false}
+              height={250}
+            />
+          </View>
+        )}
 
         {/* Quick Actions */}
         <View style={styles.actionsCard}>

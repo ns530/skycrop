@@ -11,10 +11,10 @@ export interface Field {
   field_id: string;
   user_id: string;
   name: string;
-  boundary: GeoJSON.Polygon;
-  area_sqm: number;
-  area_ha: number;
-  center: GeoJSON.Point;
+  boundary?: GeoJSON.Polygon; // Optional - may not always be present
+  area_sqm?: number; // Optional - may not always be present
+  area_ha?: number; // Optional - may not always be present
+  center?: GeoJSON.Point; // Optional - may not always be present
   created_at: string;
   updated_at: string;
   status: 'active' | 'archived' | 'deleted';
@@ -23,11 +23,11 @@ export interface Field {
 export interface FieldSummary {
   field_id: string;
   name: string;
-  area_ha: number;
+  area_ha?: number; // Optional - may not always be present
   health_status?: 'excellent' | 'good' | 'fair' | 'poor';
   health_score?: number;
   last_health_update?: string;
-  center: GeoJSON.Point;
+  center?: GeoJSON.Point; // Optional - may not always be present
 }
 
 export interface CreateFieldPayload {

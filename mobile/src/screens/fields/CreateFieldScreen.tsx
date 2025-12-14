@@ -154,7 +154,13 @@ export const CreateFieldScreen: React.FC = () => {
         finalBoundary = fieldBoundary;
       } else if (formData.location.trim()) {
         // Convert location string to coordinates
-        const [lat, lng] = formData.location.split(',').map(coord => parseFloat(coord.trim()));
+        const coords = formData.location.split(',').map(coord => parseFloat(coord.trim()));
+        if (coords.length !== 2) {
+          Alert.alert('Invalid Location', 'Please enter coordinates in format: latitude, longitude');
+          return;
+        }
+        
+        const [lat, lng] = coords;
         
         // Validate coordinates
         if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
@@ -162,7 +168,7 @@ export const CreateFieldScreen: React.FC = () => {
           return;
         }
         
-        // Create boundary from coordinates
+        // Create boundary from coordinates (GeoJSON format: [longitude, latitude])
         finalBoundary = {
           type: 'Polygon',
           coordinates: [[
@@ -170,7 +176,7 @@ export const CreateFieldScreen: React.FC = () => {
             [lng + 0.001, lat - 0.001],
             [lng + 0.001, lat + 0.001],
             [lng - 0.001, lat + 0.001],
-            [lng - 0.001, lat - 0.001],
+            [lng - 0.001, lat - 0.001], // Close the polygon
           ]],
         };
       } else {
@@ -178,16 +184,71 @@ export const CreateFieldScreen: React.FC = () => {
         return;
       }
 
+      // Validate boundary structure
+      if (!finalBoundary || !finalBoundary.type || !finalBoundary.coordinates) {
+        Alert.alert('Invalid Boundary', 'Field boundary is missing required data');
+        return;
+      }
+
+      // Validate boundary type
+      if (finalBoundary.type !== 'Polygon' && finalBoundary.type !== 'MultiPolygon') {
+        Alert.alert('Invalid Boundary', 'Boundary must be a Polygon or MultiPolygon');
+        return;
+      }
+
       // Validate boundary has at least 4 points (closed polygon)
-      if (!finalBoundary.coordinates[0] || finalBoundary.coordinates[0].length < 4) {
+      if (!Array.isArray(finalBoundary.coordinates)) {
+        Alert.alert('Invalid Boundary', 'Boundary coordinates must be an array');
+        return;
+      }
+
+      // For Polygon, coordinates is an array of rings (first is outer ring)
+      const rings = finalBoundary.type === 'Polygon' 
+        ? finalBoundary.coordinates 
+        : finalBoundary.coordinates[0]; // For MultiPolygon, take first polygon
+
+      if (!Array.isArray(rings) || rings.length === 0) {
+        Alert.alert('Invalid Boundary', 'Boundary must have at least one ring');
+        return;
+      }
+
+      const outerRing = rings[0];
+      if (!Array.isArray(outerRing) || outerRing.length < 4) {
         Alert.alert('Invalid Boundary', 'Field boundary must have at least 4 points');
         return;
       }
 
-      await createFieldMutation.mutateAsync({
-        name: formData.name,
-        boundary: finalBoundary,
-      });
+      // Ensure coordinates are properly formatted (each point should be [lng, lat])
+      for (let i = 0; i < outerRing.length; i++) {
+        const point = outerRing[i];
+        if (!Array.isArray(point) || point.length !== 2) {
+          Alert.alert('Invalid Boundary', `Point ${i + 1} is invalid. Coordinates must be in format [longitude, latitude]`);
+          return;
+        }
+        const [lng, lat] = point;
+        if (typeof lng !== 'number' || typeof lat !== 'number' || 
+            isNaN(lng) || isNaN(lat) ||
+            lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+          Alert.alert('Invalid Boundary', `Point ${i + 1} has invalid coordinates`);
+          return;
+        }
+      }
+
+      // Ensure boundary is properly formatted before sending
+      const payload = {
+        name: formData.name.trim(),
+        boundary: {
+          type: finalBoundary.type,
+          coordinates: finalBoundary.coordinates,
+        } as GeoJSON.Polygon,
+      };
+
+      // Debug log in development
+      if (__DEV__) {
+        console.log('[CreateField] Sending payload:', JSON.stringify(payload, null, 2));
+      }
+
+      await createFieldMutation.mutateAsync(payload);
 
       Alert.alert('Success', 'Field created successfully!', [
         {
@@ -195,9 +256,41 @@ export const CreateFieldScreen: React.FC = () => {
           onPress: () => navigation.goBack(),
         },
       ]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating field:', error);
-      Alert.alert('Error', 'Failed to create field. Please try again.');
+      
+      // Handle specific error types
+      let errorMessage = 'Failed to create field. Please try again.';
+      
+      if (error?.response?.status === 409) {
+        // Conflict - duplicate field name
+        const errorData = error.response?.data;
+        if (errorData?.error?.message) {
+          errorMessage = errorData.error.message;
+        } else {
+          errorMessage = `A field with the name "${formData.name}" already exists. Please choose a different name.`;
+        }
+      } else if (error?.response?.status === 400) {
+        // Validation error
+        const errorData = error.response?.data;
+        if (errorData?.error?.message) {
+          errorMessage = errorData.error.message;
+        } else {
+          errorMessage = 'Invalid field data. Please check your input and try again.';
+        }
+      } else if (error?.response?.status >= 500) {
+        // Server error
+        const errorData = error.response?.data;
+        if (errorData?.error?.message) {
+          errorMessage = `Server error: ${errorData.error.message}`;
+        } else {
+          errorMessage = 'Server error. Please try again later.';
+        }
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      Alert.alert('Error', errorMessage);
     }
   };
 
