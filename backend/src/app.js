@@ -68,9 +68,15 @@ app.set('trust proxy', 1);
 app.use(helmet());
 
 // CORS
+// Support comma-separated origins for multiple allowed origins
+const corsOrigin = process.env.CORSORIGIN || '*';
+const corsOrigins = corsOrigin.includes(',')
+  ? corsOrigin.split(',').map(o => o.trim())
+  : corsOrigin;
+
 app.use(
   cors({
-    origin: process.env.CORSORIGIN || '*',
+    origin: corsOrigins,
     credentials: true,
   })
 );
