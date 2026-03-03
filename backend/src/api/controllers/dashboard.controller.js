@@ -15,8 +15,8 @@ async function getFieldMetrics(userId) {
     SELECT
       COUNT(*) as totalfields,
       COUNT(CASE WHEN status = 'active' THEN 1 END) as activefields,
-      SUM(areasqm) as totalareasqm,
-      AVG(areasqm) as avgfieldsizesqm
+      SUM(area_sqm) as totalareasqm,
+      AVG(area_sqm) as avgfieldsizesqm
     FROM fields
     WHERE user_id = :userId AND status != 'deleted'
     `,
@@ -47,19 +47,19 @@ async function getHealthMetrics(userId) {
   const healthRecords = await sequelize.query(
     `
     SELECT
-      hr.healthscore,
-      hr.healthstatus,
-      hr.ndvimean,
-      hr.ndwimean,
-      hr.measurementdate,
+      hr.health_score AS healthscore,
+      hr.health_status AS healthstatus,
+      hr.ndvi_mean AS ndvimean,
+      hr.ndwi_mean AS ndwimean,
+      hr.measurement_date AS measurementdate,
       f.field_id,
       f.name as fieldname
-    FROM healthrecords hr
+    FROM health_records hr
     INNER JOIN fields f ON hr.field_id = f.field_id
     WHERE f.user_id = :userId AND f.status = 'active'
-    AND hr.measurementdate = (
-      SELECT MAX(hr2.measurementdate)
-      FROM healthrecords hr2
+    AND hr.measurement_date = (
+      SELECT MAX(hr2.measurement_date)
+      FROM health_records hr2
       WHERE hr2.field_id = hr.field_id
     )
     `,
@@ -122,7 +122,7 @@ async function getAlertMetrics(userId) {
     FROM recommendations r
     INNER JOIN fields f ON r.field_id = f.field_id
     WHERE f.user_id = :userId AND f.status = 'active'
-    AND r.timestamp >= :sevenDaysAgo
+    AND r."timestamp" >= :sevenDaysAgo
     `,
     {
       type: sequelize.QueryTypes.SELECT,
@@ -160,15 +160,15 @@ async function getRecentActivity(userId) {
     `
     SELECT
       'healthassessment' as activitytype,
-      hr.measurementdate as activitydate,
+      hr.measurement_date as activitydate,
       f.name as fieldname,
-      hr.healthstatus,
-      hr.healthscore
-    FROM healthrecords hr
+      hr.health_status AS healthstatus,
+      hr.health_score AS healthscore
+    FROM health_records hr
     INNER JOIN fields f ON hr.field_id = f.field_id
     WHERE f.user_id = :userId AND f.status = 'active'
-    AND hr.createdat >= :sevenDaysAgo
-    ORDER BY hr.createdat DESC
+    AND hr.created_at >= :sevenDaysAgo
+    ORDER BY hr.created_at DESC
     LIMIT 10
     `,
     {
@@ -182,15 +182,15 @@ async function getRecentActivity(userId) {
     `
     SELECT
       'recommendation' as activitytype,
-      r.timestamp as activitydate,
+      r."timestamp" as activitydate,
       f.name as fieldname,
       r.type,
       r.severity
     FROM recommendations r
     INNER JOIN fields f ON r.field_id = f.field_id
     WHERE f.user_id = :userId AND f.status = 'active'
-    AND r.createdat >= :sevenDaysAgo
-    ORDER BY r.createdat DESC
+    AND r.created_at >= :sevenDaysAgo
+    ORDER BY r.created_at DESC
     LIMIT 10
     `,
     {
@@ -225,11 +225,11 @@ async function getFieldThumbnails(userId) {
     SELECT
       f.field_id,
       f.name,
-      STAsGeoJSON(f.center)::json as center,
-      f.areasqm
+      ST_AsGeoJSON(f.center)::json as center,
+      f.area_sqm AS areasqm
     FROM fields f
     WHERE f.user_id = :userId AND f.status = 'active'
-    ORDER BY f.createdat DESC
+    ORDER BY f.created_at DESC
     LIMIT 12
     `,
     {
@@ -262,9 +262,9 @@ async function getFieldThumbnails(userId) {
         const y = Math.floor(
           ((1 -
             Math.log(Math.tan((lat * Math.PI) / 180) + 1 / Math.cos((lat * Math.PI) / 180)) /
-              Math.PI) /
+            Math.PI) /
             2) *
-            n
+          n
         );
 
         // Get today's date for recent imagery
@@ -304,14 +304,14 @@ async function getVegetationIndices(userId) {
   const result = await sequelize.query(
     `
     SELECT
-      AVG(hr.ndvimean) as avgndvi,
-      AVG(hr.ndwimean) as avgndwi,
-      AVG(hr.tdvimean) as avgtdvi,
+      AVG(hr.ndvi_mean) as avgndvi,
+      AVG(hr.ndwi_mean) as avgndwi,
+      AVG(hr.tdvi_mean) as avgtdvi,
       COUNT(*) as totalrecords
-    FROM healthrecords hr
+    FROM health_records hr
     INNER JOIN fields f ON hr.field_id = f.field_id
     WHERE f.user_id = :userId AND f.status = 'active'
-    AND hr.measurementdate >= CURRENT_DATE - INTERVAL '30 days'
+    AND hr.measurement_date >= CURRENT_DATE - INTERVAL '30 days'
     `,
     {
       type: sequelize.QueryTypes.SELECT,
@@ -373,7 +373,7 @@ async function getWeatherForecast(userId) {
       SELECT field_id
       FROM fields
       WHERE user_id = :userId AND status = 'active'
-      ORDER BY createdat ASC
+      ORDER BY created_at ASC
       LIMIT 1
       `,
       {
@@ -409,11 +409,11 @@ async function getUserAnalytics(userId) {
     `
     SELECT
       COUNT(DISTINCT f.field_id) as totalfields,
-      COUNT(hr.healthrecordid) as totalassessments,
-      AVG(hr.healthscore) as avghealthscore,
-      MAX(hr.createdat) as lastactivity
+      COUNT(hr.record_id) as totalassessments,
+      AVG(hr.health_score) as avghealthscore,
+      MAX(hr.created_at) as lastactivity
     FROM fields f
-    LEFT JOIN healthrecords hr ON f.field_id = hr.field_id
+    LEFT JOIN health_records hr ON f.field_id = hr.field_id
     WHERE f.user_id = :userId AND f.status = 'active'
     `,
     {

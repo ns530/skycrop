@@ -1,7 +1,8 @@
 const { getFieldService } = require('../../services/field.service');
 const { logger } = require('../../utils/logger');
 
-const fieldService = getFieldService();
+// Lazy accessor so jest.mock can configure getFieldService before use
+const fieldService = () => getFieldService();
 
 /**
  * Field Controller
@@ -14,7 +15,7 @@ module.exports = {
     const correlationId = req.headers['x-request-id'] || null;
     try {
       const { user_id: userId } = req.user;
-      const result = await fieldService.list(userId, req.query || {});
+      const result = await fieldService().list(userId, req.query || {});
       const { items, total, page, pageSize, cacheHit } = {
         items: result.items || result.data || [],
         total: result.total || 0,
@@ -51,7 +52,7 @@ module.exports = {
     try {
       const { user_id: userId } = req.user;
       const { name, boundary } = req.body || {};
-      const data = await fieldService.createWithBoundary(userId, name, boundary);
+      const data = await fieldService().createWithBoundary(userId, name, boundary);
 
       const latency = Date.now() - started;
       logger.info('fields.create', {
@@ -79,7 +80,7 @@ module.exports = {
     try {
       const { user_id: userId } = req.user;
       const { id } = req.params;
-      const data = await fieldService.getById(userId, id);
+      const data = await fieldService().getById(userId, id);
 
       const latency = Date.now() - started;
       logger.info('fields.getById', {
@@ -109,7 +110,7 @@ module.exports = {
       const { user_id: userId } = req.user;
       const { id } = req.params;
       const { name, status } = req.body || {};
-      const data = await fieldService.update(userId, id, { name, status });
+      const data = await fieldService().update(userId, id, { name, status });
       const latency = Date.now() - started;
       logger.info('fields.update', {
         route: '/api/v1/fields/{id}',
@@ -135,7 +136,7 @@ module.exports = {
       const { user_id: userId } = req.user;
       const { id } = req.params;
       const { boundary } = req.body || {};
-      const data = await fieldService.updateBoundary(userId, id, boundary);
+      const data = await fieldService().updateBoundary(userId, id, boundary);
       return res.status(200).json({ success: true, data });
     } catch (err) {
       return next(err);
@@ -147,7 +148,7 @@ module.exports = {
     try {
       const { user_id: userId } = req.user;
       const { id } = req.params;
-      const data = await fieldService.archive(userId, id);
+      const data = await fieldService().archive(userId, id);
       return res.status(200).json({ success: true, data });
     } catch (err) {
       return next(err);
@@ -161,7 +162,7 @@ module.exports = {
     try {
       const { user_id: userId } = req.user;
       const { id } = req.params;
-      const data = await fieldService.delete(userId, id);
+      const data = await fieldService().delete(userId, id);
 
       const latency = Date.now() - started;
       logger.info('fields.delete', {
@@ -188,7 +189,7 @@ module.exports = {
     try {
       const { user_id: userId } = req.user;
       const { id } = req.params;
-      const data = await fieldService.restore(userId, id);
+      const data = await fieldService().restore(userId, id);
       return res.status(200).json({ success: true, data });
     } catch (err) {
       return next(err);

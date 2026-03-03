@@ -534,8 +534,7 @@ class FieldService {
 
     await field.save();
     await invalidateFieldCaches(user_id, field.field_id);
-    const fresh = await this.getById(user_id, field.field_id);
-    return fresh;
+    return field;
   }
 
   /**

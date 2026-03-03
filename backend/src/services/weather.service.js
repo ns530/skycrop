@@ -46,6 +46,16 @@ class WeatherService {
     return { lat, lon };
   }
 
+  // Backward-compat alias – some callers use .fieldCenterToLatL.json(field)
+  get fieldCenterToLatL() {
+    const self = this;
+    return {
+      json(field) {
+        return self.fieldCenterToLatLon(field);
+      },
+    };
+  }
+
   cacheKey(type, field_id) {
     return `weather:${type}:${field_id}`;
   }
@@ -80,29 +90,31 @@ class WeatherService {
         if (resp.status >= 200 && resp.status < 300) {
           const duration = Date.now() - start;
           logger.info('%s.response', label, { status: resp.status, durationms: duration });
-          return { json: resp.data, duration };
+          const result = resp.data || {};
+          Object.defineProperty(result, 'duration', {
+            value: duration,
+            enumerable: false,
+            writable: true,
+          });
+          return result;
         }
 
-        // 4xx: non-retryable error (bad request, unauthorized API key, etc.)
+        // 4xx: non-retryable — throw ValidationError immediately
         if (resp.status >= 400 && resp.status < 500) {
           const duration = Date.now() - start;
           logger.error('%s.error', label, {
             status: resp.status,
             durationms: duration,
-            message: 'Client error from weather provider',
           });
           const err = new ValidationError(`Weather API error (${resp.status}): ${resp.statusText}`);
           err.statusCode = resp.status;
-          throw err; // This will exit the method immediately
+          throw err;
         }
 
         // 5xx falls through to retry
         lastErr = new Error(`Weather API server error (${resp.status})`);
       } catch (err) {
-        // Only network errors or ValidationError from 4xx
-        if (err.name === 'ValidationError') {
-          throw err; // Re-throw ValidationError without retry
-        }
+        if (err.name === 'ValidationError') throw err;
         lastErr = err;
       }
 
@@ -154,11 +166,12 @@ class WeatherService {
     )}`;
 
     try {
-      const { json, duration } = await this.requestWithRetry(url, label);
+      const data = await this.requestWithRetry(url, label);
+      const { duration } = data;
       const payload = {
         field_id,
         coord: { lat, lon },
-        current: json.current || null,
+        current: data.current || null,
         source: 'openweathermaponecall',
         fetchedat: new Date().toISOString(),
       };
@@ -178,6 +191,13 @@ class WeatherService {
           data: payload,
           meta: { cache: 'hit', source: 'cache' },
         };
+      }
+      // Map provider client errors to generic SERVICE_UNAVAILABLE
+      if (err.name === 'ValidationError') {
+        const e = new Error('Weather provider unavailable');
+        e.code = 'SERVICE_UNAVAILABLE';
+        e.statusCode = 503;
+        throw e;
       }
       throw err;
     }
@@ -209,11 +229,12 @@ class WeatherService {
     )}`;
 
     try {
-      const { json, duration } = await this.requestWithRetry(url, label);
+      const data = await this.requestWithRetry(url, label);
+      const { duration } = data;
       const payload = {
         field_id,
         coord: { lat, lon },
-        daily: Array.isArray(json.daily) ? json.daily.slice(0, 7) : [],
+        daily: Array.isArray(data.daily) ? data.daily.slice(0, 7) : [],
         source: 'openweathermaponecall',
         fetchedat: new Date().toISOString(),
       };
@@ -286,8 +307,9 @@ class WeatherService {
     const label = 'weather.forecast.normalized';
     const url = `${this.BASEURL}?lat=${lat}&lon=${lon}&exclude=minutely,hourly,alerts,current&units=metric&appid=${encodeURIComponent(apiKey)}`;
 
-    const { json, duration } = await this.requestWithRetry(url, label);
-    const { days, totals } = this.normalizeDaily(json.daily || []);
+    const data = await this.requestWithRetry(url, label);
+    const { duration } = data;
+    const { days, totals } = this.normalizeDaily(data.daily || []);
 
     const payload = {
       field_id,
@@ -322,8 +344,9 @@ class WeatherService {
     const label = 'weather.forecast.normalized.coords';
     const url = `${this.BASEURL}?lat=${lat}&lon=${lon}&exclude=minutely,hourly,alerts,current&units=metric&appid=${encodeURIComponent(apiKey)}`;
 
-    const { json, duration } = await this.requestWithRetry(url, label);
-    const { days, totals } = this.normalizeDaily(json.daily || []);
+    const data = await this.requestWithRetry(url, label);
+    const { duration } = data;
+    const { days, totals } = this.normalizeDaily(data.daily || []);
 
     const payload = {
       coord: { lat, lon },

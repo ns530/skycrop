@@ -265,43 +265,110 @@ class HealthService {
     }
 
     const geometry = await this.getFieldGeometry(user_id, field_id);
-    const processBody = this.buildProcessBodyForGeometry(geometry, date, HEALTHDEFAULTIMAGESIZE);
 
-    const token = await this.getOAuthToken();
-    const url = `${SENTINELHUBBASEURL}/api/v1/process`;
+    // Check if an explicit ML service URL is configured for GEE
+    const ML_SERVICE_URL_RAW = process.env.ML_SERVICE_URL || process.env.MLSERVICEURL || '';
+    const ML_AUTH_TOKEN =
+      process.env.ML_SERVICE_INTERNAL_AUTH_TOKEN || process.env.MLINTERNALAUTHTOKEN;
 
     const start = Date.now();
-    const resp = await axios.post(url, processBody, {
-      responseType: 'arraybuffer',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'image/tiff,application/json',
-        'Content-Type': 'application/json',
-      },
-      timeout: 20000,
-      validateStatus: s => s >= 200 && s < 500,
-    });
+    let ndvi;
+    let ndwi;
+    let tdvi;
+    let source = 'sentinel2';
 
-    if (resp.status < 200 || resp.status >= 300) {
-      const duration = Date.now() - start;
-      logger.error('health.indices.process.error', {
-        status: resp.status,
-        durationms: duration,
-        route: '/api/v1/fields/:id/health/compute',
-        field_id,
-        date,
-      });
-      const e = new Error(`Sentinel Hub process error (${resp.status})`);
-      e.statusCode = resp.status >= 500 ? 503 : 400;
-      throw e;
+    // Try Google Earth Engine first, only when an explicit ML service URL is configured
+    if (ML_SERVICE_URL_RAW) {
+      try {
+        const resp = await axios.post(
+          `${ML_SERVICE_URL_RAW.replace(/\/+$/, '')}/api/gee/compute-indices`,
+          {
+            geometry,
+            date,
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              ...(ML_AUTH_TOKEN && { 'X-Internal-Auth': ML_AUTH_TOKEN }),
+            },
+            timeout: 120000,
+            validateStatus: s => s >= 200 && s < 500,
+          }
+        );
+
+        if (resp.status >= 200 && resp.status < 300) {
+          const indices = resp.data.indices || resp.data;
+          ndvi = indices.ndvi;
+          ndwi = indices.ndwi;
+          tdvi = indices.tdvi;
+          source = 'sentinel2-gee';
+
+          if (typeof ndvi !== 'number' || typeof ndwi !== 'number' || typeof tdvi !== 'number') {
+            throw new Error('Invalid indices returned from GEE service');
+          }
+        } else {
+          const e = new Error(`Google Earth Engine computation error (${resp.status})`);
+          e.statusCode = resp.status >= 500 ? 503 : 400;
+          throw e;
+        }
+      } catch (error) {
+        const duration = Date.now() - start;
+        logger.error('health.indices.gee.error', {
+          error: error.message,
+          durationms: duration,
+          route: '/api/v1/fields/:id/health/compute',
+          field_id,
+          date,
+        });
+
+        // If GEE fails, fall back to SentinelHub if credentials are available
+        if (SENTINELHUBCLIENTID && SENTINELHUBCLIENTSECRET) {
+          logger.warn('Falling back to SentinelHub due to GEE error');
+          // Fall through to SentinelHub path below
+        } else {
+          throw error;
+        }
+      }
     }
 
-    const { ndvi, ndwi, tdvi } = this.parseProcessResponse(resp.data, resp.headers);
+    // SentinelHub path: used when GEE is not configured or GEE failed with SH credentials
+    if (typeof ndvi !== 'number') {
+      const processBody = this.buildProcessBodyForGeometry(
+        geometry,
+        date,
+        HEALTHDEFAULTIMAGESIZE
+      );
+      const token = await this.getOAuthToken();
+      const url = `${SENTINELHUBBASEURL}/api/v1/process`;
+
+      const resp = await axios.post(url, processBody, {
+        responseType: 'arraybuffer',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'image/tiff,application/json',
+          'Content-Type': 'application/json',
+        },
+        timeout: 120000,
+        validateStatus: s => s >= 200 && s < 500,
+      });
+
+      if (resp.status < 200 || resp.status >= 300) {
+        const e = new Error(`Sentinel Hub process error (${resp.status})`);
+        e.statusCode = resp.status >= 500 ? 503 : 400;
+        throw e;
+      }
+
+      const parsed = this.parseProcessResponse(resp.data, resp.headers);
+      ndvi = parsed.ndvi;
+      ndwi = parsed.ndwi;
+      tdvi = parsed.tdvi;
+      source = 'sentinel2';
+    }
 
     const payload = {
       field_id,
       timestamp: `${date}T00:00:00.000Z`,
-      source: 'sentinel2',
+      source,
       ndvi,
       ndwi,
       tdvi,
