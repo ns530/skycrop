@@ -150,6 +150,8 @@ jest.mock('sequelize', () => {
     QueryTypes: OriginalQueryTypes,
   };
 
+  attachErrorHandler(app);
+
   return {
     Sequelize: jest.fn(() => mockSequelize),
     Model: MockModel,

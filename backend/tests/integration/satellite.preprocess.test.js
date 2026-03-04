@@ -68,6 +68,7 @@ jest.mock('../../src/config/redis.config', () => ({
 // Mock axios.post for Sentinel Hub OAuth and Process API
 jest.spyOn(axios, 'post').mockImplementation(async (url, _data, _config) => {
   if (url.includes('/oauth/token')) {
+    attachErrorHandler(app);
     return {
       status: 200,
       data: { accesstoken: 'test-access-token', expiresin: 3600 },

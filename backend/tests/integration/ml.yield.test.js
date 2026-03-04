@@ -48,6 +48,8 @@ process.env.MLREQUESTTIMEOUTMS = '60000';
 // Mock app.js to avoid ES module import issues
 jest.mock('../../src/app', () => {
   // eslint-disable-next-line global-require
+  const { attachErrorHandler } = require('../helpers/errorHandler');
+  // eslint-disable-next-line global-require
   const express = require('express');
   const app = express();
   app.use(express.json());
@@ -59,6 +61,8 @@ jest.mock('../../src/app', () => {
   } catch (e) {
     console.error('Failed to load routes in ml yield test mock:', e.message);
   }
+
+  attachErrorHandler(app);
 
   return {
     __esModule: true,

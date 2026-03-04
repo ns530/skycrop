@@ -118,6 +118,7 @@ jest.mock('../../src/jobs/notificationQueue', () => {
     on: jest.fn(),
     close: jest.fn(),
   };
+  attachErrorHandler(app);
   return {
     notificationQueue: mockQueue,
   };

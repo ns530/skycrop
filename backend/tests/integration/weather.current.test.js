@@ -41,6 +41,7 @@ const Field = require('../../src/models/field.model');
 
 jest.spyOn(Field, 'findOne').mockImplementation(async ({ where }) => {
   if (where.user_id === 'user-1' && where.field_id && where.status === 'active') {
+    attachErrorHandler(app);
     return {
       field_id: where.field_id,
       user_id: 'user-1',
