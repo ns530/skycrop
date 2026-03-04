@@ -13,6 +13,8 @@
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{js,json,md,yml,yaml}\"",
     "test": "jest --config jest.config.js --runInBand",
+    "test:unit": "jest --config jest.config.js --runInBand --testPathPattern=tests/unit --no-coverage",
+    "test:integration": "jest --config jest.config.js --runInBand --testPathPattern=tests/integration --no-coverage",
     "test:coverage": "jest --config jest.config.js --coverage --runInBand",
     "smoke-test": "bash scripts/smoke-tests.sh",
     "monitor": "bash scripts/monitor-deployment.sh",

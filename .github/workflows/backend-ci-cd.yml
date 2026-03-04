@@ -57,8 +57,8 @@ jobs:
         PGPASSWORD=test_pass psql -h localhost -U test_user -d skycrop_test -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
       env:
         PGPASSWORD: test_pass
-    - name: Test
-      run: cd backend && npm test
+    - name: Unit Tests
+      run: cd backend && npm run test:unit
       env:
         NODE_ENV: test
         JWTSECRET: test-secret-key
