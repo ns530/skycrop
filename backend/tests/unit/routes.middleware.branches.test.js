@@ -20,6 +20,7 @@ describe('Routes middleware branch coverage lifts (ML and Satellite)', () => {
       responseBody = body;
       return res;
     };
+    res.json = _response;
     res.set = h => {
       res.headers = { ...res.headers, ...h };
       return res;

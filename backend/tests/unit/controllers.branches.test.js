@@ -21,34 +21,41 @@ jest.mock('../../src/services/weather.service', () => ({
   getWeatherService: () => mockWeatherSvc,
 }));
 
-// Mock weather.controller.js (ES module) before requiring it
+// Mock weather.controller.js (CommonJS) - matches actual export shape
 jest.mock('../../src/api/controllers/weather.controller', () => {
   const { getWeatherService } = require('../../src/services/weather.service');
   const weatherService = getWeatherService();
 
   return {
-    __esModule: true,
-    default: {
-      getCurrent: async (req, res, next) => {
-        try {
-          const { user_id: userId } = req.user;
-          const { id: fieldId } = req.params;
-          const result = await weatherService.getCurrentByField(userId, fieldId);
-          return res.status(200).json({ success: true, data: result.data, meta: result.meta });
-        } catch (err) {
-          return next(err);
+    current: async (req, res, next) => {
+      try {
+        const { user_id: userId } = req.user;
+        const { field_id: fieldId } = req.query;
+        if (!fieldId) {
+          const { ValidationError } = require('../../src/errors/custom-errors');
+          throw new ValidationError('field_id query parameter is required', {
+            field: 'field_id',
+          });
         }
-      },
-      getForecast: async (req, res, next) => {
-        try {
-          const { user_id: userId } = req.user;
-          const { id: fieldId } = req.params;
-          const result = await weatherService.getForecastByField(userId, fieldId);
-          return res.status(200).json({ success: true, data: result.data, meta: result.meta });
-        } catch (err) {
-          return next(err);
+        const result = await weatherService.getCurrentByField(userId, fieldId);
+        return res.status(200).json({ success: true, data: result.data, meta: result.meta });
+      } catch (err) {
+        return next(err);
+      }
+    },
+    forecast: async (req, res, next) => {
+      try {
+        const { user_id: userId } = req.user;
+        const { field_id: fieldId } = req.query;
+        if (!fieldId) {
+          const { ValidationError } = require('../../src/errors/custom-errors');
+          throw new ValidationError('field_id or lat/lon required', { field: 'query' });
         }
-      },
+        const result = await weatherService.getForecastByField(userId, fieldId);
+        return res.status(200).json({ success: true, data: result.data, meta: result.meta });
+      } catch (err) {
+        return next(err);
+      }
     },
   };
 });
