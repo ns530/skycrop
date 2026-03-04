@@ -43,6 +43,7 @@ const Field = sequelize.define(
       allowNull: false,
       // Default value for Sequelize validation - trigger will override
       defaultValue: 0,
+      field: 'area_sqm',
     },
     center: {
       // geometry(Point, 4326)
@@ -60,11 +61,13 @@ const Field = sequelize.define(
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: literal('NOW()'),
+      field: 'created_at',
     },
     updatedat: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: literal('NOW()'),
+      field: 'updated_at',
     },
   },
   {

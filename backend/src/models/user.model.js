@@ -22,6 +22,7 @@ const User = sequelize.define(
     passwordhash: {
       type: DataTypes.STRING(255),
       allowNull: true, // null for OAuth users
+      field: 'password_hash',
     },
     name: {
       type: DataTypes.STRING(100),
@@ -39,15 +40,18 @@ const User = sequelize.define(
     authprovider: {
       type: DataTypes.ENUM('google', 'email'),
       allowNull: false,
+      field: 'auth_provider',
     },
     emailverified: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false,
+      field: 'email_verified',
     },
     profilephotourl: {
       type: DataTypes.STRING(500),
       allowNull: true,
+      field: 'profile_photo_url',
       validate: {
         isUrl: true,
       },
@@ -65,15 +69,18 @@ const User = sequelize.define(
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
+      field: 'created_at',
     },
     updatedat: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
+      field: 'updated_at',
     },
     lastlogin: {
       type: DataTypes.DATE,
       allowNull: true,
+      field: 'last_login',
     },
   },
   {

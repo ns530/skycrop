@@ -9,6 +9,7 @@ Recommendation.init(
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
+      field: 'id',
     },
     field_id: {
       type: DataTypes.UUID,
@@ -47,6 +48,7 @@ Recommendation.init(
       type: DataTypes.INTEGER,
       allowNull: false,
       defaultValue: 50,
+      field: 'urgency_score',
       validate: {
         min: 0,
         max: 100,
@@ -68,15 +70,18 @@ Recommendation.init(
       type: DataTypes.TEXT,
       allowNull: true,
       comment: 'JSON array of action steps',
+      field: 'action_steps',
     },
     estimatedcost: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: true,
       comment: 'Estimated cost in LKR',
+      field: 'estimated_cost',
     },
     expectedbenefit: {
       type: DataTypes.STRING(200),
       allowNull: true,
+      field: 'expected_benefit',
     },
     timing: {
       type: DataTypes.STRING(100),
@@ -86,6 +91,7 @@ Recommendation.init(
     validuntil: {
       type: DataTypes.DATE,
       allowNull: true,
+      field: 'valid_until',
     },
     status: {
       type: DataTypes.ENUM('pending', 'inprogress', 'completed', 'dismissed'),
@@ -96,10 +102,12 @@ Recommendation.init(
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
+      field: 'generated_at',
     },
     actionedat: {
       type: DataTypes.DATE,
       allowNull: true,
+      field: 'actioned_at',
     },
     notes: {
       type: DataTypes.TEXT,

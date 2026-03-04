@@ -32,6 +32,7 @@ const YieldPrediction = sequelize.define(
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
+      field: 'prediction_id',
     },
     field_id: {
       type: DataTypes.UUID,
@@ -40,59 +41,71 @@ const YieldPrediction = sequelize.define(
     predictiondate: {
       type: DataTypes.DATEONLY,
       allowNull: false,
+      field: 'prediction_date',
     },
     predictedyieldperha: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
       validate: { min: 0 },
+      field: 'predicted_yield_per_ha',
     },
     predictedtotalyield: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
       validate: { min: 0 },
+      field: 'predicted_total_yield',
     },
     confidencelower: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
+      field: 'confidence_lower',
     },
     confidenceupper: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
+      field: 'confidence_upper',
     },
     expectedrevenue: {
       type: DataTypes.DECIMAL(12, 2),
       allowNull: false,
       validate: { min: 0 },
+      field: 'expected_revenue',
     },
     harvestdateestimate: {
       type: DataTypes.DATEONLY,
       allowNull: true,
+      field: 'harvest_date_estimate',
     },
     modelversion: {
       type: DataTypes.STRING(20),
       allowNull: false,
+      field: 'model_version',
     },
     featuresused: {
       type: DataTypes.JSONB,
       allowNull: false,
+      field: 'features_used',
     },
     actualyield: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: true,
       validate: { min: 0 },
+      field: 'actual_yield',
     },
     accuracymape: {
       type: DataTypes.DECIMAL(5, 2),
       allowNull: true,
+      field: 'accuracy_mape',
     },
     createdat: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: literal('NOW()'),
+      field: 'created_at',
     },
   },
   {
-    tableName: 'yieldpredictions',
+    tableName: 'yield_predictions',
     timestamps: false, // only createdat is present
     underscored: true,
     freezeTableName: true,

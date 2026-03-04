@@ -29,6 +29,7 @@ const HealthRecord = sequelize.define(
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
+      field: 'record_id',
     },
     field_id: {
       type: DataTypes.UUID,
@@ -37,50 +38,62 @@ const HealthRecord = sequelize.define(
     measurementdate: {
       type: DataTypes.DATEONLY,
       allowNull: false,
+      field: 'measurement_date',
     },
     ndvimean: {
       type: DataTypes.DECIMAL(5, 4),
       allowNull: false,
+      field: 'ndvi_mean',
     },
     ndvimin: {
       type: DataTypes.DECIMAL(5, 4),
       allowNull: false,
+      field: 'ndvi_min',
     },
     ndvimax: {
       type: DataTypes.DECIMAL(5, 4),
       allowNull: false,
+      field: 'ndvi_max',
     },
     ndvistd: {
       type: DataTypes.DECIMAL(5, 4),
       allowNull: false,
+      field: 'ndvi_std',
     },
     ndwimean: {
       type: DataTypes.DECIMAL(5, 4),
       allowNull: false,
+      field: 'ndwi_mean',
     },
     ndwimin: {
       type: DataTypes.DECIMAL(5, 4),
       allowNull: false,
+      field: 'ndwi_min',
     },
     ndwimax: {
       type: DataTypes.DECIMAL(5, 4),
       allowNull: false,
+      field: 'ndwi_max',
     },
     ndwistd: {
       type: DataTypes.DECIMAL(5, 4),
       allowNull: false,
+      field: 'ndwi_std',
     },
     tdvimean: {
       type: DataTypes.DECIMAL(5, 4),
       allowNull: false,
+      field: 'tdvi_mean',
     },
     healthstatus: {
       type: DataTypes.ENUM('excellent', 'good', 'fair', 'poor'),
       allowNull: false,
+      field: 'health_status',
     },
     healthscore: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      field: 'health_score',
       validate: {
         min: 0,
         max: 100,
@@ -93,19 +106,22 @@ const HealthRecord = sequelize.define(
     satelliteimageid: {
       type: DataTypes.STRING(100),
       allowNull: false,
+      field: 'satellite_image_id',
     },
     cloudcover: {
       type: DataTypes.DECIMAL(5, 2),
       allowNull: false,
+      field: 'cloud_cover',
     },
     createdat: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: literal('NOW()'),
+      field: 'created_at',
     },
   },
   {
-    tableName: 'healthrecords',
+    tableName: 'health_records',
     timestamps: false, // createdat managed, no updatedat in schema
     underscored: true,
     freezeTableName: true,
