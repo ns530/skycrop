@@ -30,9 +30,9 @@ async function getFieldMetrics(userId) {
   return {
     total: metrics.totalfields != null ? parseInt(metrics.totalfields, 10) : 0,
     active: metrics.activefields != null ? parseInt(metrics.activefields, 10) : 0,
-    totalareahectares:
+    total_area_hectares:
       metrics.totalareasqm != null ? Math.round((metrics.totalareasqm / 10000) * 100) / 100 : 0,
-    averagesizehectares:
+    average_size_hectares:
       metrics.avgfieldsizesqm != null
         ? Math.round((metrics.avgfieldsizesqm / 10000) * 100) / 100
         : 0,
@@ -71,9 +71,9 @@ async function getHealthMetrics(userId) {
 
   if (healthRecords.length === 0) {
     return {
-      averagescore: 50,
-      statusdistribution: { good: 0, moderate: 0, poor: 0 },
-      totalassessed: 0,
+      average_score: 50,
+      status_distribution: { good: 0, moderate: 0, poor: 0 },
+      total_assessed: 0,
     };
   }
 
@@ -97,9 +97,9 @@ async function getHealthMetrics(userId) {
   );
 
   return {
-    averagescore: averageScore,
-    statusdistribution: statusCount,
-    totalassessed: healthRecords.length,
+    average_score: averageScore,
+    status_distribution: statusCount,
+    total_assessed: healthRecords.length,
   };
 }
 
@@ -136,12 +136,12 @@ async function getAlertMetrics(userId) {
   const metrics = alerts[0];
   return {
     total: metrics.totalalerts != null ? parseInt(metrics.totalalerts, 10) : 0,
-    byseverity: {
+    by_severity: {
       high: metrics.highseverity != null ? parseInt(metrics.highseverity, 10) : 0,
       medium: metrics.mediumseverity != null ? parseInt(metrics.mediumseverity, 10) : 0,
       low: metrics.lowseverity != null ? parseInt(metrics.lowseverity, 10) : 0,
     },
-    bytype: {
+    by_type: {
       water: metrics.wateralerts != null ? parseInt(metrics.wateralerts, 10) : 0,
       fertilizer: metrics.fertilizeralerts != null ? parseInt(metrics.fertilizeralerts, 10) : 0,
     },
@@ -205,9 +205,10 @@ async function getRecentActivity(userId) {
     .slice(0, 15);
 
   return allActivity.map(activity => ({
-    type: activity.activitytype,
+    type:
+      activity.activitytype === 'healthassessment' ? 'health_assessment' : activity.activitytype,
     date: activity.activitydate,
-    fieldname: activity.fieldname,
+    field_name: activity.fieldname,
     details:
       activity.activitytype === 'healthassessment'
         ? { status: activity.healthstatus, score: activity.healthscore }
@@ -244,10 +245,10 @@ async function getFieldThumbnails(userId) {
         const { center } = field;
         if (!center || !center.coordinates) {
           return {
-            fieldId: field.field_id,
-            fieldname: field.name,
-            thumbnailurl: null,
-            areahectares: Math.round((field.areasqm / 10000) * 100) / 100,
+            field_id: field.field_id,
+            field_name: field.name,
+            thumbnail_url: null,
+            area_hectares: Math.round((field.areasqm / 10000) * 100) / 100,
           };
         }
 
@@ -274,10 +275,10 @@ async function getFieldThumbnails(userId) {
         const thumbnailurl = `/api/v1/satellite/tiles/${zoom}/${x}/${y}?date=${today}&bands=RGB`;
 
         return {
-          fieldId: field.field_id,
-          fieldname: field.name,
-          thumbnailurl,
-          areahectares: Math.round((field.areasqm / 10000) * 100) / 100,
+          field_id: field.field_id,
+          field_name: field.name,
+          thumbnail_url: thumbnailurl,
+          area_hectares: Math.round((field.areasqm / 10000) * 100) / 100,
         };
       } catch (error) {
         logger.warn('dashboard.thumbnail.error', {
@@ -285,10 +286,10 @@ async function getFieldThumbnails(userId) {
           error: error.message,
         });
         return {
-          fieldId: field.field_id,
-          fieldname: field.name,
-          thumbnailurl: null,
-          areahectares: Math.round((field.areasqm / 10000) * 100) / 100,
+          field_id: field.field_id,
+          field_name: field.name,
+          thumbnail_url: null,
+          area_hectares: Math.round((field.areasqm / 10000) * 100) / 100,
         };
       }
     })
@@ -321,10 +322,10 @@ async function getVegetationIndices(userId) {
 
   const metrics = result[0];
   return {
-    ndvi: metrics.avgndvi != null ? Number(metrics.avgndvi.toFixed(3)) : null,
-    ndwi: metrics.avgndwi != null ? Number(metrics.avgndwi.toFixed(3)) : null,
-    tdvi: metrics.avgtdvi != null ? Number(metrics.avgtdvi.toFixed(3)) : null,
-    totalrecords: metrics.totalrecords != null ? parseInt(metrics.totalrecords, 10) : 0,
+    ndvi: metrics.avgndvi != null ? Number(Number(metrics.avgndvi).toFixed(3)) : 0,
+    ndwi: metrics.avgndwi != null ? Number(Number(metrics.avgndwi).toFixed(3)) : 0,
+    tdvi: metrics.avgtdvi != null ? Number(Number(metrics.avgtdvi).toFixed(3)) : 0,
+    total_records: metrics.totalrecords != null ? parseInt(metrics.totalrecords, 10) : 0,
   };
 }
 
@@ -353,9 +354,9 @@ async function getSystemMetrics() {
   }
 
   return {
-    uptimehours: uptimeHours,
-    apiperformance: {
-      avgresponsetimems: avgResponseTime,
+    uptime_hours: uptimeHours,
+    api_performance: {
+      avg_response_time_ms: avgResponseTime != null ? avgResponseTime : 0,
     },
   };
 }
@@ -424,13 +425,14 @@ async function getUserAnalytics(userId) {
 
   const metrics = result[0];
   return {
-    totalfields: metrics.totalfields != null ? parseInt(metrics.totalfields, 10) : 0,
-    totalassessments: metrics.totalassessments != null ? parseInt(metrics.totalassessments, 10) : 0,
-    avghealthscore:
-      metrics.avghealthscore != null ? Number(metrics.avghealthscore.toFixed(1)) : null,
-    lastactivity: metrics.lastactivity,
-    activeuserstoday: 1, // mock
-    sessiondurationavg: 15.5, // mock in minutes
+    total_fields: metrics.totalfields != null ? parseInt(metrics.totalfields, 10) : 0,
+    total_assessments:
+      metrics.totalassessments != null ? parseInt(metrics.totalassessments, 10) : 0,
+    avg_health_score:
+      metrics.avghealthscore != null ? Number(Number(metrics.avghealthscore).toFixed(1)) : 0,
+    last_activity: metrics.lastactivity || null,
+    active_users_today: 1, // mock
+    session_duration_avg: 15.5, // mock in minutes
   };
 }
 
@@ -464,21 +466,21 @@ async function getDisasterAssessment(userId) {
         try {
           const assessment = await mlService.getDisasterAssessment(field.field_id);
           return {
-            fieldId: field.field_id,
-            fieldname: field.name,
-            risklevel: assessment.risklevel,
-            disastertypes: assessment.disastertypes,
+            field_id: field.field_id,
+            field_name: field.name,
+            risk_level: assessment.risklevel,
+            disaster_types: assessment.disastertypes,
             confidence: assessment.confidence,
-            assessedat: assessment.assessedat,
+            assessed_at: assessment.assessedat,
           };
         } catch (error) {
           return {
-            fieldId: field.field_id,
-            fieldname: field.name,
-            risklevel: 'unknown',
-            disastertypes: [],
+            field_id: field.field_id,
+            field_name: field.name,
+            risk_level: 'unknown',
+            disaster_types: [],
             confidence: 0,
-            assessedat: null,
+            assessed_at: null,
           };
         }
       })
@@ -487,7 +489,7 @@ async function getDisasterAssessment(userId) {
     return {
       assessments,
       available: true,
-      highriskcount: assessments.filter(a => a.risklevel === 'high').length,
+      high_risk_count: assessments.filter(a => a.risk_level === 'high').length,
     };
   } catch (error) {
     logger.warn('dashboard.disasterassessment.error', { error: error.message });
@@ -529,39 +531,43 @@ async function aggregateDashboardMetrics(userId) {
     fields: getValue(results[0], {
       total: 0,
       active: 0,
-      totalareahectares: 0,
-      averagesizehectares: 0,
+      total_area_hectares: 0,
+      average_size_hectares: 0,
     }),
     health: getValue(results[1], {
-      averagescore: 50,
-      statusdistribution: { good: 0, moderate: 0, poor: 0 },
-      totalassessed: 0,
+      average_score: 50,
+      status_distribution: { good: 0, moderate: 0, poor: 0 },
+      total_assessed: 0,
     }),
     alerts: getValue(results[2], {
       total: 0,
-      byseverity: { high: 0, medium: 0, low: 0 },
-      bytype: { water: 0, fertilizer: 0 },
+      by_severity: { high: 0, medium: 0, low: 0 },
+      by_type: { water: 0, fertilizer: 0 },
     }),
-    recentactivity: getValue(results[3], []),
-    fieldthumbnails: getValue(results[4], []),
-    vegetationindices: getValue(results[5], {
-      ndvi: null,
-      ndwi: null,
-      tdvi: null,
-      totalrecords: 0,
+    recent_activity: getValue(results[3], []),
+    field_thumbnails: getValue(results[4], []),
+    vegetation_indices: getValue(results[5], {
+      ndvi: 0,
+      ndwi: 0,
+      tdvi: 0,
+      total_records: 0,
     }),
-    system: getValue(results[6], { uptimehours: 0, apiperformance: { avgresponsetimems: null } }),
-    weatherforecast: getValue(results[7], { forecast: [], available: false }),
-    useranalytics: getValue(results[8], {
-      totalfields: 0,
-      totalassessments: 0,
-      avghealthscore: null,
-      lastactivity: null,
-      activeuserstoday: 1,
-      sessiondurationavg: 15.5,
+    system: getValue(results[6], { uptime_hours: 0, api_performance: { avg_response_time_ms: 0 } }),
+    weather_forecast: getValue(results[7], { forecast: [], available: false }),
+    user_analytics: getValue(results[8], {
+      total_fields: 0,
+      total_assessments: 0,
+      avg_health_score: 0,
+      last_activity: null,
+      active_users_today: 1,
+      session_duration_avg: 15.5,
     }),
-    disasterassessment: getValue(results[9], { assessments: [], available: false }),
-    generatedat: new Date().toISOString(),
+    disaster_assessment: getValue(results[9], {
+      assessments: [],
+      available: false,
+      high_risk_count: 0,
+    }),
+    generated_at: new Date().toISOString(),
   };
 }
 
