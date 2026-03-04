@@ -28,16 +28,18 @@ async function authMiddleware(req, res, next) {
       throw new UnauthorizedError('No authorization token provided');
     }
 
-    // Ensure Redis connection (lazy)
+    // Check Redis blacklist if Redis is available
     const redis = getRedisClient();
-    if (!redis.isOpen) {
-      await initRedis();
+    if (redis) {
+      if (!redis.isOpen) {
+        await initRedis();
+      }
+      const isBlacklisted = await redis.get(`blacklist:${token}`);
+      if (isBlacklisted) {
+        throw new UnauthorizedError('Token invalidated');
+      }
     }
-
-    const isBlacklisted = await redis.get(`blacklist:${token}`);
-    if (isBlacklisted) {
-      throw new UnauthorizedError('Token invalidated');
-    }
+    // If Redis is not available, skip blacklist check (token is still JWT-verified below)
 
     let decoded;
     try {
