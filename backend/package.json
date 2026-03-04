@@ -2,7 +2,6 @@
   "name": "skycrop-backend",
   "version": "0.1.0",
   "private": true,
-  "type": "commonjs",
   "description": "SkyCrop Backend API (Modular Monolith) - Node.js/Express",
   "main": "src/server.js",
   "engines": {

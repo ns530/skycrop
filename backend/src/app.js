@@ -1,31 +1,31 @@
-import * as Sentry from '@sentry/node';
+const Sentry = require('@sentry/node');
 
-import express from 'express';
-import helmet from 'helmet';
-import morgan from 'morgan';
-import cors from 'cors';
-import compression from 'compression';
+const express = require('express');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const cors = require('cors');
+const compression = require('compression');
 
-import authRoutes from './api/routes/auth.routes';
-import fieldRoutes from './api/routes/field.routes';
-import fieldSharingRoutes from './api/routes/fieldSharing.routes';
-import healthRoutes from './api/routes/health.routes';
-import weatherRoutes from './api/routes/weather.routes';
-import fieldHealthRoutes from './api/routes/fieldHealth.routes';
-import satelliteRoutes from './api/routes/satellite.routes';
-import mlRoutes from './api/routes/ml.routes';
-import recommendationRoutes from './api/routes/recommendation.routes';
-import dashboardRoutes from './api/routes/dashboard.routes';
-import yieldRoutes from './api/routes/yield.routes';
-import jobsRoutes from './api/routes/jobs.routes';
-import notificationRoutes from './api/routes/notification.routes';
-import healthMonitoringRoutes from './api/routes/healthMonitoring.routes';
-import userManagementRoutes from './api/routes/userManagement.routes'; // User management (admin)
-import adminContentRoutes from './api/routes/adminContent.routes'; // Admin content management
-import debugRoutes from './api/routes/debug.routes'; // Debug routes for testing
+const authRoutes = require('./api/routes/auth.routes');
+const fieldRoutes = require('./api/routes/field.routes');
+const fieldSharingRoutes = require('./api/routes/fieldSharing.routes');
+const healthRoutes = require('./api/routes/health.routes');
+const weatherRoutes = require('./api/routes/weather.routes');
+const fieldHealthRoutes = require('./api/routes/fieldHealth.routes');
+const satelliteRoutes = require('./api/routes/satellite.routes');
+const mlRoutes = require('./api/routes/ml.routes');
+const recommendationRoutes = require('./api/routes/recommendation.routes');
+const dashboardRoutes = require('./api/routes/dashboard.routes');
+const yieldRoutes = require('./api/routes/yield.routes');
+const jobsRoutes = require('./api/routes/jobs.routes');
+const notificationRoutes = require('./api/routes/notification.routes');
+const healthMonitoringRoutes = require('./api/routes/healthMonitoring.routes');
+const userManagementRoutes = require('./api/routes/userManagement.routes'); // User management (admin)
+const adminContentRoutes = require('./api/routes/adminContent.routes'); // Admin content management
+const debugRoutes = require('./api/routes/debug.routes'); // Debug routes for testing
 
-import { apiLimiter } from './api/middleware/rateLimit.middleware';
-import { logger, loggerStream } from './utils/logger';
+const { apiLimiter } = require('./api/middleware/rateLimit.middleware');
+const { logger, loggerStream } = require('./utils/logger');
 
 // ========== Sentry Error Tracking (Must be first!) ==========
 
@@ -193,4 +193,4 @@ app.use((err, req, res, next) => {
   });
 });
 
-export default app;
+module.exports = app;

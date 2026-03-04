@@ -1,5 +1,5 @@
-# SkyCrop Backend - Dockerfile for AWS ECS
-FROM node:20-alpine
+# SkyCrop Backend - Dockerfile for Railway
+FROM node:18-alpine
 
 # Install curl for health checks
 RUN apk add --no-cache curl
@@ -10,7 +10,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci --omit=dev && npm cache clean --force
 
 # Copy application code
 COPY . .

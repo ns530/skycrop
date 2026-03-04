@@ -1,8 +1,13 @@
 const { Sequelize } = require('sequelize');
 
 const {
+  // Railway standard naming (with underscores)
+  DATABASE_URL,
+  DATABASE_PRIVATE_URL,
+  // Legacy naming (no underscores) - for backward compatibility
   DATABASEURL,
-  DATABASEPRIVATEURL, // Railway internal connection (no SSL needed)
+  DATABASEPRIVATEURL,
+  // Individual connection parameters (for local dev)
   DBHOST = 'localhost',
   DBPORT = '5432',
   DBNAME = 'skycropdev',
@@ -17,7 +22,9 @@ const {
 } = process.env;
 
 // Prefer private URL for internal connections (no SSL needed)
-const DBCONNECTIONSTRING = DATABASEPRIVATEURL || DATABASEURL;
+// Support both Railway standard naming and legacy naming
+const DBCONNECTIONSTRING =
+  DATABASE_PRIVATE_URL || DATABASEPRIVATEURL || DATABASE_URL || DATABASEURL;
 
 // Create Sequelize instance
 // Prefer DATABASEURL (Railway/Cloud) over individual variables (local dev)

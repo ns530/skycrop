@@ -5,9 +5,9 @@
  * Runs every 6 hours
  */
 
-import logger from '../config/logger.config';
-import { Field } from '../models/index';
-import weatherService from '../services/weather.service';
+const logger = require('../config/logger.config');
+const { Field } = require('../models/index');
+const weatherService = require('../services/weather.service');
 
 /**
  * Update weather forecasts for all active fields
@@ -34,25 +34,40 @@ async function runWeatherForecastUpdate() {
     // Group fields by location to avoid duplicate API calls
     const locationGroups = new Map();
 
+    const safeParseCenter = value => {
+      if (!value) return null;
+      if (typeof value === 'object') return value;
+      try {
+        return JSON.parse(value);
+      } catch (_e) {
+        logger.warn('Could not parse field center JSON', { value });
+        return null;
+      }
+    };
+
     for (let i = 0; i < fields.length; i += 1) {
       const field = fields[i];
-      const center = JSON.parse(field.center);
-      const latitude = center.coordinates[1].toFixed(2); // Round to 2 decimals
-      const longitude = center.coordinates[0].toFixed(2);
-      const locationKey = `${latitude},${longitude}`;
+      const center = safeParseCenter(field.center);
+      if (!center || !center.coordinates || center.coordinates.length < 2) {
+        logger.warn('Skipping field with invalid center', { field_id: field.field_id, center });
+      } else {
+        const latitude = Number(center.coordinates[1]).toFixed(2); // Round to 2 decimals
+        const longitude = Number(center.coordinates[0]).toFixed(2);
+        const locationKey = `${latitude},${longitude}`;
 
-      if (!locationGroups.has(locationKey)) {
-        locationGroups.set(locationKey, {
-          latitude: center.coordinates[1],
-          longitude: center.coordinates[0],
-          fields: [],
+        if (!locationGroups.has(locationKey)) {
+          locationGroups.set(locationKey, {
+            latitude: center.coordinates[1],
+            longitude: center.coordinates[0],
+            fields: [],
+          });
+        }
+
+        locationGroups.get(locationKey).fields.push({
+          field_id: field.field_id,
+          name: field.name,
         });
       }
-
-      locationGroups.get(locationKey).fields.push({
-        field_id: field.field_id,
-        name: field.name,
-      });
     }
 
     logger.info(`Grouped ${fields.length} fields into ${locationGroups.size} unique locations`);
@@ -171,10 +186,10 @@ async function runWeatherForecastUpdate() {
   }
 }
 
-export default {
+module.exports = {
   runWeatherForecastUpdate,
   schedule: '0 */6 * * *', // Every 6 hours
   description: 'Update weather forecasts for all active field locations',
-  enabled: true,
+  enabled: false, // Disabled due to missing weatherService.getForecast implementation
   critical: false,
 };

@@ -1,5 +1,5 @@
-import { getWeatherService } from '../../services/weather.service';
-import { ValidationError } from '../../errors/custom-errors';
+const { getWeatherService } = require('../../services/weather.service');
+const { ValidationError } = require('../../errors/custom-errors');
 
 const weatherService = getWeatherService();
 
@@ -8,7 +8,7 @@ const weatherService = getWeatherService();
  * - current: GET /api/v1/weather/current?field_id=UUID
  * - forecast: GET /api/v1/weather/forecast?field_id=UUID
  */
-export default {
+module.exports = {
   async current(req, res, next) {
     try {
       const { user_id: userId } = req.user;

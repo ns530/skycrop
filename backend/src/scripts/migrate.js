@@ -51,8 +51,8 @@ async function retryWithBackoff(fn, maxRetries = 5, initialDelay = 1000) {
 
 async function runMigrations() {
   if (!DBCONNECTIONSTRING) {
-    console.error('❌ DATABASEURL or DATABASEPRIVATEURL not set. Cannot run migrations.');
-    process.exit(1);
+    console.warn('⚠️  DATABASEURL not set. Skipping migrations (development/test mode).');
+    return;
   }
 
   // Determine SSL requirement based on connection string
@@ -137,7 +137,8 @@ async function runMigrations() {
 
       console.log(`📋 Found ${migrationFiles.length} migration files...`);
 
-      migrationFiles.forEach(async file => {
+      for (let i = 0; i < migrationFiles.length; i += 1) {
+        const file = migrationFiles[i];
         const migrationPath = path.join(migrationsDir, file);
         console.log(`🚀 Running migration: ${file}...`);
 
@@ -158,7 +159,7 @@ async function runMigrations() {
             throw error;
           }
         }
-      });
+      }
     }
 
     console.log('✅ Migrations completed successfully');
@@ -166,11 +167,11 @@ async function runMigrations() {
     console.log('📊 Checking tables...');
 
     const result = await pool.query(`
-      SELECT tablename 
-      FROM informationschema.tables 
-      WHERE tableschema = 'public' 
-      AND tabletype = 'BASE TABLE'
-      ORDER BY tablename;
+      SELECT table_name as tablename
+      FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      AND table_type = 'BASE TABLE'
+      ORDER BY table_name;
     `);
 
     console.log(`✅ Found ${result.rows.length} tables:`);

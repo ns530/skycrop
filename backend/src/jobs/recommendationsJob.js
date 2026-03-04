@@ -5,11 +5,11 @@
  * Runs every 7 days (adjustable)
  */
 
-import logger from '../config/logger.config';
-import { Field } from '../models/index';
-import recommendationService from '../services/recommendation.service';
-import healthService from '../services/fieldHealth.service';
-import weatherService from '../services/weather.service';
+const logger = require('../config/logger.config');
+const { Field } = require('../models/index');
+const recommendationService = require('../services/recommendation.service');
+const healthService = require('../services/fieldHealth.service');
+const weatherService = require('../services/weather.service');
 
 /**
  * Generate recommendations for all active fields
@@ -169,7 +169,7 @@ async function runRecommendationsGeneration() {
   }
 }
 
-export default {
+module.exports = {
   runRecommendationsGeneration,
   schedule: '0 7 */7 * *', // Every 7 days at 7:00 AM
   description: 'Generate farming recommendations for all active fields',

@@ -333,11 +333,7 @@ class HealthService {
 
     // SentinelHub path: used when GEE is not configured or GEE failed with SH credentials
     if (typeof ndvi !== 'number') {
-      const processBody = this.buildProcessBodyForGeometry(
-        geometry,
-        date,
-        HEALTHDEFAULTIMAGESIZE
-      );
+      const processBody = this.buildProcessBodyForGeometry(geometry, date, HEALTHDEFAULTIMAGESIZE);
       const token = await this.getOAuthToken();
       const url = `${SENTINELHUBBASEURL}/api/v1/process`;
 

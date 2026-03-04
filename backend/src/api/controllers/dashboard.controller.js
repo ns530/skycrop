@@ -262,9 +262,9 @@ async function getFieldThumbnails(userId) {
         const y = Math.floor(
           ((1 -
             Math.log(Math.tan((lat * Math.PI) / 180) + 1 / Math.cos((lat * Math.PI) / 180)) /
-            Math.PI) /
+              Math.PI) /
             2) *
-          n
+            n
         );
 
         // Get today's date for recent imagery

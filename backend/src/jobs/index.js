@@ -4,11 +4,11 @@
  * Central entry point for all background jobs
  */
 
-import jobScheduler from './jobScheduler';
-import healthMonitoringJob from './healthMonitoringJob';
-import recommendationsJob from './recommendationsJob';
-import weatherForecastJob from './weatherForecastJob';
-import logger from '../config/logger.config';
+const jobScheduler = require('./jobScheduler');
+const healthMonitoringJob = require('./healthMonitoringJob');
+const recommendationsJob = require('./recommendationsJob');
+const weatherForecastJob = require('./weatherForecastJob');
+const logger = require('../config/logger.config');
 
 /**
  * Initialize all scheduled jobs
@@ -125,7 +125,7 @@ async function triggerJob(jobName) {
   return jobFn();
 }
 
-export default {
+module.exports = {
   initializeJobs,
   startJobs,
   stopJobs,
