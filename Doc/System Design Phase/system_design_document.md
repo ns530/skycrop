@@ -1,4 +1,3 @@
-
 # SYSTEM DESIGN DOCUMENT (SDD)
 
 ## SkyCrop: Satellite-Based Paddy Field Management & Monitoring System
@@ -7,18 +6,18 @@
 
 ## DOCUMENT CONTROL
 
-| **Item** | **Details** |
-|----------|-------------|
-| **Document Title** | System Design Document (SDD) |
-| **Project Name** | SkyCrop - Intelligent Paddy Field Monitoring System |
-| **Document Code** | SKYCROP-SDD-2025-001 |
-| **Version** | 1.0 |
-| **Date** | October 29, 2025 |
-| **Prepared By** | System Architect |
-| **Reviewed By** | Technical Lead, ML Engineer |
-| **Approved By** | Project Sponsor, Product Manager |
-| **Status** | Approved |
-| **Confidentiality** | Internal - For Development Team |
+| **Item**            | **Details**                                         |
+| ------------------- | --------------------------------------------------- |
+| **Document Title**  | System Design Document (SDD)                        |
+| **Project Name**    | SkyCrop - Intelligent Paddy Field Monitoring System |
+| **Document Code**   | SKYCROP-SDD-2025-001                                |
+| **Version**         | 1.0                                                 |
+| **Date**            | October 29, 2025                                    |
+| **Prepared By**     | System Architect                                    |
+| **Reviewed By**     | Technical Lead, ML Engineer                         |
+| **Approved By**     | Project Sponsor, Product Manager                    |
+| **Status**          | Approved                                            |
+| **Confidentiality** | Internal - For Development Team                     |
 
 ---
 
@@ -31,6 +30,7 @@ SkyCrop is a cloud-native, AI-powered agricultural intelligence platform that tr
 ### Architecture Approach
 
 The system follows a **hybrid architecture** combining:
+
 - **Microservices-inspired modular design** for backend services (loosely coupled, independently deployable)
 - **Monolithic deployment** for MVP (simplified operations, cost-effective for small scale)
 - **Event-driven patterns** for asynchronous processing (satellite image processing, ML inference)
@@ -47,14 +47,14 @@ The system follows a **hybrid architecture** combining:
 
 ### Architecture Quality Attributes
 
-| **Quality Attribute** | **Target** | **Design Strategy** |
-|----------------------|------------|---------------------|
-| **Performance** | API <3s (p95), AI <60s | Caching (Redis), CDN, async processing, optimized queries |
-| **Scalability** | 1,000+ concurrent users | Horizontal scaling, load balancing, connection pooling |
-| **Availability** | 99% uptime | Health monitoring, auto-restart, graceful degradation |
-| **Security** | OWASP Top 10 compliant | OAuth 2.0, JWT, TLS 1.3, input validation, rate limiting |
-| **Maintainability** | 80%+ test coverage | Modular design, clean code, comprehensive documentation |
-| **Usability** | <3 taps to insights | Mobile-first UI, progressive disclosure, visual feedback |
+| **Quality Attribute** | **Target**              | **Design Strategy**                                       |
+| --------------------- | ----------------------- | --------------------------------------------------------- |
+| **Performance**       | API <3s (p95), AI <60s  | Caching (Redis), CDN, async processing, optimized queries |
+| **Scalability**       | 1,000+ concurrent users | Horizontal scaling, load balancing, connection pooling    |
+| **Availability**      | 99% uptime              | Health monitoring, auto-restart, graceful degradation     |
+| **Security**          | OWASP Top 10 compliant  | OAuth 2.0, JWT, TLS 1.3, input validation, rate limiting  |
+| **Maintainability**   | 80%+ test coverage      | Modular design, clean code, comprehensive documentation   |
+| **Usability**         | <3 taps to insights     | Mobile-first UI, progressive disclosure, visual feedback  |
 
 ---
 
@@ -94,10 +94,10 @@ The system follows a **hybrid architecture** combining:
 └───────────┼─────────────────────┼──────────────────────┼────────────────────┘
             │                     │                      │
             │                     ▼                      │
-            │          ┌──────────────────┐             │
-            │          │  Firebase FCM    │             │
-            │          │ (Push Notif.)    │             │
-            │          └──────────────────┘             │
+            │          ┌──────────────────┐              │
+            │          │  Firebase FCM    │              │
+            │          │ (Push Notif.)    │              │
+            │          └──────────────────┘              │
             │                                            │
             └────────────────────┬───────────────────────┘
                                  │ HTTPS/REST
@@ -196,15 +196,18 @@ The system follows a **hybrid architecture** combining:
 ### 1.2 System Components Overview
 
 **Presentation Layer:**
+
 - **Web Application:** React.js 18 with responsive design for desktop/tablet access
 - **Mobile Application:** React Native for cross-platform Android/iOS support
 - **Admin Dashboard:** React.js admin interface for content and user management
 
 **API Gateway Layer:**
+
 - **Express.js Gateway:** Single entry point for all client requests
 - **Middleware Stack:** Authentication, validation, rate limiting, logging, error handling
 
 **Application Layer (Business Logic):**
+
 - **Auth Service:** User authentication, authorization, session management
 - **Field Service:** Field CRUD operations, boundary management, area calculation
 - **Satellite Service:** Image retrieval, caching, preprocessing
@@ -215,14 +218,17 @@ The system follows a **hybrid architecture** combining:
 - **Content Service:** News management, search, analytics
 
 **Data Access Layer:**
+
 - **Repository Pattern:** Abstract database operations, enable testing, support multiple databases
 
 **Persistence Layer:**
+
 - **PostgreSQL:** Relational data with PostGIS for spatial operations
 - **MongoDB:** Flexible documents (news, analytics, logs)
 - **Redis:** In-memory caching for performance optimization
 
 **External Services:**
+
 - **Sentinel Hub:** Satellite imagery provider (Sentinel-2, 10m resolution)
 - **OpenWeatherMap:** Weather forecasts and historical data
 - **Google OAuth:** User authentication and SSO
@@ -231,41 +237,44 @@ The system follows a **hybrid architecture** combining:
 ### 1.3 Component Interaction Patterns
 
 **Synchronous Interactions (Request-Response):**
+
 - Frontend ↔ API Gateway ↔ Services (REST API, HTTPS)
 - Services ↔ Repositories ↔ Databases (SQL/NoSQL queries)
 - Backend ↔ External APIs (Sentinel Hub, Weather, OAuth)
 
 **Asynchronous Interactions (Event-Driven):**
+
 - Scheduled Jobs → Services (cron-based health updates, weather refreshes)
 - Services → Message Queue → AI/ML Service (boundary detection, yield prediction)
 - Services → Firebase FCM → Mobile Devices (push notifications)
 
 **Data Flow Patterns:**
+
 - **Read-Heavy:** Health monitoring, weather forecasts (caching critical)
 - **Write-Heavy:** Analytics events, logs (batch processing, time-series optimization)
 - **Compute-Heavy:** AI boundary detection, ML yield prediction (async processing, GPU acceleration)
 
 ### 1.4 Technology Stack Overview
 
-| **Layer** | **Technology** | **Version** | **Rationale** |
-|-----------|---------------|-------------|---------------|
-| **Frontend (Web)** | React.js | 18.x | Component-based, large ecosystem, excellent performance |
-| **Frontend (Mobile)** | React Native | 0.72.x | Cross-platform (Android/iOS), code reuse with web, native performance |
-| **Backend API** | Node.js + Express | 20.x LTS + 4.x | JavaScript full-stack, async I/O, large ecosystem, easy deployment |
-| **AI/ML** | Python + TensorFlow/PyTorch | 3.11 + 2.x | Industry standard for ML, rich libraries, pre-trained models |
-| **Database (Relational)** | PostgreSQL + PostGIS | 15.x | ACID compliance, spatial data support, open-source, mature |
-| **Database (Document)** | MongoDB | 7.x | Flexible schema, time-series, horizontal scaling, JSON-native |
-| **Cache** | Redis | 7.x | In-memory speed, pub/sub, session storage, rate limiting |
-| **Storage** | AWS S3 | - | Scalable object storage, CDN integration, cost-effective |
-| **Authentication** | Google OAuth 2.0 + JWT | - | Secure, user-friendly, no password management burden |
-| **Push Notifications** | Firebase Cloud Messaging | - | Free, reliable, cross-platform, rich features |
-| **Satellite Data** | Sentinel Hub API | v3 | Free academic tier, 10m resolution, 5-day revisit, multispectral |
-| **Weather Data** | OpenWeatherMap API | v2.5 | Free tier (1M calls/month), accurate, comprehensive |
-| **Containerization** | Docker | 24.x | Consistent environments, easy deployment, scalability |
-| **Orchestration** | Docker Compose (MVP) | 2.x | Simple multi-container management, local development |
-| **CI/CD** | GitHub Actions | - | Free for public repos, integrated with GitHub, flexible workflows |
-| **Hosting** | Railway (MVP) / AWS (Scale) | - | Railway: Free tier, easy deployment; AWS: Scalable, enterprise-grade |
-| **Monitoring** | Prometheus + Grafana | - | Open-source, powerful metrics, customizable dashboards |
+| **Layer**                 | **Technology**              | **Version**    | **Rationale**                                                         |
+| ------------------------- | --------------------------- | -------------- | --------------------------------------------------------------------- |
+| **Frontend (Web)**        | React.js                    | 18.x           | Component-based, large ecosystem, excellent performance               |
+| **Frontend (Mobile)**     | React Native                | 0.72.x         | Cross-platform (Android/iOS), code reuse with web, native performance |
+| **Backend API**           | Node.js + Express           | 20.x LTS + 4.x | JavaScript full-stack, async I/O, large ecosystem, easy deployment    |
+| **AI/ML**                 | Python + TensorFlow/PyTorch | 3.11 + 2.x     | Industry standard for ML, rich libraries, pre-trained models          |
+| **Database (Relational)** | PostgreSQL + PostGIS        | 15.x           | ACID compliance, spatial data support, open-source, mature            |
+| **Database (Document)**   | MongoDB                     | 7.x            | Flexible schema, time-series, horizontal scaling, JSON-native         |
+| **Cache**                 | Redis                       | 7.x            | In-memory speed, pub/sub, session storage, rate limiting              |
+| **Storage**               | AWS S3                      | -              | Scalable object storage, CDN integration, cost-effective              |
+| **Authentication**        | Google OAuth 2.0 + JWT      | -              | Secure, user-friendly, no password management burden                  |
+| **Push Notifications**    | Firebase Cloud Messaging    | -              | Free, reliable, cross-platform, rich features                         |
+| **Satellite Data**        | Sentinel Hub API            | v3             | Free academic tier, 10m resolution, 5-day revisit, multispectral      |
+| **Weather Data**          | OpenWeatherMap API          | v2.5           | Free tier (1M calls/month), accurate, comprehensive                   |
+| **Containerization**      | Docker                      | 24.x           | Consistent environments, easy deployment, scalability                 |
+| **Orchestration**         | Docker Compose (MVP)        | 2.x            | Simple multi-container management, local development                  |
+| **CI/CD**                 | GitHub Actions              | -              | Free for public repos, integrated with GitHub, flexible workflows     |
+| **Hosting**               | Railway (MVP) / AWS (Scale) | -              | Railway: Free tier, easy deployment; AWS: Scalable, enterprise-grade  |
+| **Monitoring**            | Prometheus + Grafana        | -              | Open-source, powerful metrics, customizable dashboards                |
 
 ---
 
@@ -276,6 +285,7 @@ The system follows a **hybrid architecture** combining:
 **Hybrid Architecture: Modular Monolith → Microservices Evolution**
 
 **Phase 1 (MVP - Months 1-4): Modular Monolith**
+
 ```
 ┌─────────────────────────────────────────────────────────┐
 │              Single Deployable Unit                      │
@@ -295,6 +305,7 @@ The system follows a **hybrid architecture** combining:
 ```
 
 **Rationale:**
+
 - ✅ **Simplicity:** Single codebase, easier to develop and debug
 - ✅ **Cost-Effective:** Single deployment, minimal infrastructure
 - ✅ **Fast Development:** No distributed system complexity
@@ -302,6 +313,7 @@ The system follows a **hybrid architecture** combining:
 - ✅ **Clear Boundaries:** Modules designed for future extraction
 
 **Phase 2+ (Scale - Year 2): Microservices**
+
 ```
 ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐
 │   Auth   │  │  Field   │  │  Health  │  │   AI/ML  │
@@ -317,6 +329,7 @@ The system follows a **hybrid architecture** combining:
 ```
 
 **Migration Path:**
+
 1. Extract AI/ML service first (compute-intensive, independent)
 2. Extract Satellite service (external API dependency)
 3. Extract other services as needed (based on scaling requirements)
@@ -326,26 +339,25 @@ The system follows a **hybrid architecture** combining:
 **Creational Patterns:**
 
 **1. Factory Pattern (Service Creation)**
+
 ```javascript
 // Service Factory for dependency injection
 class ServiceFactory {
   static createFieldService(db, cache, aiService) {
-    return new FieldService(
-      new FieldRepository(db),
-      cache,
-      aiService
-    );
+    return new FieldService(new FieldRepository(db), cache, aiService);
   }
 }
 ```
+
 **Use Case:** Create services with dependencies, enable testing with mocks
 
 **2. Singleton Pattern (Database Connections)**
+
 ```javascript
 // Database connection singleton
 class DatabaseConnection {
   static instance = null;
-  
+
   static getInstance() {
     if (!this.instance) {
       this.instance = new PostgresClient(config);
@@ -354,24 +366,38 @@ class DatabaseConnection {
   }
 }
 ```
+
 **Use Case:** Single database connection pool, prevent connection leaks
 
 **Structural Patterns:**
 
 **3. Repository Pattern (Data Access)**
+
 ```javascript
 // Abstract data access from business logic
 class FieldRepository {
-  async findById(fieldId) { /* SQL query */ }
-  async findByUserId(userId) { /* SQL query */ }
-  async create(fieldData) { /* INSERT */ }
-  async update(fieldId, data) { /* UPDATE */ }
-  async delete(fieldId) { /* DELETE */ }
+  async findById(fieldId) {
+    /* SQL query */
+  }
+  async findByUserId(userId) {
+    /* SQL query */
+  }
+  async create(fieldData) {
+    /* INSERT */
+  }
+  async update(fieldId, data) {
+    /* UPDATE */
+  }
+  async delete(fieldId) {
+    /* DELETE */
+  }
 }
 ```
+
 **Use Case:** Decouple business logic from database, enable testing, support multiple databases
 
 **4. Adapter Pattern (External APIs)**
+
 ```javascript
 // Adapt external API to internal interface
 class SentinelHubAdapter {
@@ -381,9 +407,11 @@ class SentinelHubAdapter {
   }
 }
 ```
+
 **Use Case:** Isolate external API changes, enable API switching (Sentinel Hub → Google Earth Engine)
 
 **5. Facade Pattern (Complex Subsystems)**
+
 ```javascript
 // Simplify complex AI/ML operations
 class BoundaryDetectionFacade {
@@ -396,11 +424,13 @@ class BoundaryDetectionFacade {
   }
 }
 ```
+
 **Use Case:** Hide complexity of multi-step AI pipeline, provide simple interface
 
 **Behavioral Patterns:**
 
 **6. Strategy Pattern (Recommendation Algorithms)**
+
 ```javascript
 // Pluggable recommendation strategies
 class WaterRecommendationStrategy {
@@ -415,75 +445,94 @@ class RecommendationEngine {
   constructor(strategy) {
     this.strategy = strategy;
   }
-  
+
   getRecommendation(data) {
     return this.strategy.recommend(data);
   }
 }
 ```
+
 **Use Case:** Swap recommendation algorithms, A/B testing, personalization
 
 **7. Observer Pattern (Event Notifications)**
+
 ```javascript
 // Notify subscribers of health updates
 class HealthMonitor {
   observers = [];
-  
+
   subscribe(observer) {
     this.observers.push(observer);
   }
-  
+
   notifyHealthUpdate(fieldId, healthData) {
-    this.observers.forEach(obs => obs.update(fieldId, healthData));
+    this.observers.forEach((obs) => obs.update(fieldId, healthData));
   }
 }
 
 // Observers: PushNotificationService, EmailService, AnalyticsService
 ```
+
 **Use Case:** Decouple health monitoring from notification delivery, extensible
 
 **8. Chain of Responsibility (Middleware)**
+
 ```javascript
 // Request processing pipeline
-app.use(authMiddleware);      // 1. Authenticate
+app.use(authMiddleware); // 1. Authenticate
 app.use(validationMiddleware); // 2. Validate
-app.use(rateLimitMiddleware);  // 3. Rate limit
-app.use(loggingMiddleware);    // 4. Log
-app.use(errorMiddleware);      // 5. Handle errors
+app.use(rateLimitMiddleware); // 3. Rate limit
+app.use(loggingMiddleware); // 4. Log
+app.use(errorMiddleware); // 5. Handle errors
 ```
+
 **Use Case:** Modular request processing, easy to add/remove middleware
 
 ### 2.3 SOLID Principles Application
 
 **Single Responsibility Principle (SRP):**
+
 - Each service has one responsibility (Auth, Field, Health, etc.)
 - Each repository manages one entity (UserRepository, FieldRepository)
 - Each controller handles one resource (UserController, FieldController)
 
 **Example:**
+
 ```javascript
 // ✅ Good: Single responsibility
 class FieldService {
-  async createField(userId, boundary) { /* Only field creation logic */ }
+  async createField(userId, boundary) {
+    /* Only field creation logic */
+  }
 }
 
 class HealthService {
-  async calculateNDVI(fieldId) { /* Only health calculation logic */ }
+  async calculateNDVI(fieldId) {
+    /* Only health calculation logic */
+  }
 }
 
 // ❌ Bad: Multiple responsibilities
 class FieldService {
-  async createField() { /* Field creation */ }
-  async calculateNDVI() { /* Health calculation - should be separate */ }
-  async sendNotification() { /* Notification - should be separate */ }
+  async createField() {
+    /* Field creation */
+  }
+  async calculateNDVI() {
+    /* Health calculation - should be separate */
+  }
+  async sendNotification() {
+    /* Notification - should be separate */
+  }
 }
 ```
 
 **Open/Closed Principle (OCP):**
+
 - Services open for extension (add new recommendation strategies) but closed for modification
 - Use interfaces/abstract classes for extensibility
 
 **Example:**
+
 ```javascript
 // Base recommendation strategy (open for extension)
 class RecommendationStrategy {
@@ -494,38 +543,58 @@ class RecommendationStrategy {
 
 // Extend without modifying base
 class WaterRecommendationStrategy extends RecommendationStrategy {
-  recommend(ndwi, weather) { /* Water-specific logic */ }
+  recommend(ndwi, weather) {
+    /* Water-specific logic */
+  }
 }
 
 class FertilizerRecommendationStrategy extends RecommendationStrategy {
-  recommend(ndvi, growthStage) { /* Fertilizer-specific logic */ }
+  recommend(ndvi, growthStage) {
+    /* Fertilizer-specific logic */
+  }
 }
 ```
 
 **Liskov Substitution Principle (LSP):**
+
 - Derived classes can replace base classes without breaking functionality
 - All repositories implement common interface (CRUD operations)
 
 **Example:**
+
 ```javascript
 // Base repository interface
 class BaseRepository {
-  async findById(id) { /* ... */ }
-  async create(data) { /* ... */ }
-  async update(id, data) { /* ... */ }
-  async delete(id) { /* ... */ }
+  async findById(id) {
+    /* ... */
+  }
+  async create(data) {
+    /* ... */
+  }
+  async update(id, data) {
+    /* ... */
+  }
+  async delete(id) {
+    /* ... */
+  }
 }
 
 // Substitutable implementations
-class PostgresFieldRepository extends BaseRepository { /* ... */ }
-class MongoFieldRepository extends BaseRepository { /* ... */ }
+class PostgresFieldRepository extends BaseRepository {
+  /* ... */
+}
+class MongoFieldRepository extends BaseRepository {
+  /* ... */
+}
 ```
 
 **Interface Segregation Principle (ISP):**
+
 - Clients depend only on interfaces they use
 - Separate interfaces for different user roles (Farmer, Admin)
 
 **Example:**
+
 ```javascript
 // ✅ Good: Segregated interfaces
 interface FarmerAPI {
@@ -549,14 +618,17 @@ interface API {
 ```
 
 **Dependency Inversion Principle (DIP):**
+
 - High-level modules depend on abstractions, not concrete implementations
 - Use dependency injection for testability
 
 **Example:**
+
 ```javascript
 // ✅ Good: Depend on abstraction
 class FieldService {
-  constructor(fieldRepository, aiService) {  // Inject dependencies
+  constructor(fieldRepository, aiService) {
+    // Inject dependencies
     this.fieldRepository = fieldRepository;
     this.aiService = aiService;
   }
@@ -565,8 +637,8 @@ class FieldService {
 // ❌ Bad: Depend on concrete implementation
 class FieldService {
   constructor() {
-    this.fieldRepository = new PostgresFieldRepository();  // Hard-coded
-    this.aiService = new UNetService();                    // Hard-coded
+    this.fieldRepository = new PostgresFieldRepository(); // Hard-coded
+    this.aiService = new UNetService(); // Hard-coded
   }
 }
 ```
@@ -612,6 +684,7 @@ class FieldService {
 ```
 
 **Cross-Cutting Concerns:**
+
 - **Logging:** Winston (structured logging, multiple transports)
 - **Error Handling:** Centralized error middleware, custom error classes
 - **Security:** Authentication middleware, input validation, rate limiting
@@ -624,6 +697,7 @@ class FieldService {
 ### 3.1 Web Application Architecture (React.js)
 
 **Technology Stack:**
+
 - **Framework:** React.js 18.2 (functional components, hooks)
 - **State Management:** Redux Toolkit 1.9 (global state) + React Query 4.x (server state)
 - **Routing:** React Router 6.x (client-side routing, lazy loading)
@@ -766,6 +840,7 @@ App
 **State Management Strategy:**
 
 **Redux Store (Global Application State):**
+
 ```javascript
 {
   auth: {
@@ -785,33 +860,40 @@ App
 ```
 
 **React Query (Server State - Cached):**
+
 ```javascript
 // Automatic caching, refetching, background updates
-const { data: fields } = useQuery('fields', fetchFields, {
-  staleTime: 5 * 60 * 1000,  // 5 minutes
-  cacheTime: 30 * 60 * 1000  // 30 minutes
+const { data: fields } = useQuery("fields", fetchFields, {
+  staleTime: 5 * 60 * 1000, // 5 minutes
+  cacheTime: 30 * 60 * 1000, // 30 minutes
 });
 
-const { data: health } = useQuery(['health', fieldId], () => fetchHealth(fieldId), {
-  refetchInterval: 5 * 60 * 1000  // Refetch every 5 minutes
-});
+const { data: health } = useQuery(
+  ["health", fieldId],
+  () => fetchHealth(fieldId),
+  {
+    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
+  }
+);
 ```
 
 **Component State (Local UI State):**
+
 ```javascript
 // Use useState for component-specific state
 const [isMapExpanded, setIsMapExpanded] = useState(false);
-const [selectedIndex, setSelectedIndex] = useState('ndvi');
+const [selectedIndex, setSelectedIndex] = useState("ndvi");
 ```
 
 **Routing Strategy:**
 
 **Code Splitting (Lazy Loading):**
+
 ```javascript
 // Lazy load routes for better performance
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const FieldDetails = lazy(() => import('./pages/FieldDetails'));
-const AddField = lazy(() => import('./pages/AddField'));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const FieldDetails = lazy(() => import("./pages/FieldDetails"));
+const AddField = lazy(() => import("./pages/AddField"));
 
 <Suspense fallback={<LoadingSpinner />}>
   <Routes>
@@ -819,10 +901,11 @@ const AddField = lazy(() => import('./pages/AddField'));
     <Route path="/fields/:id" element={<FieldDetails />} />
     <Route path="/fields/new" element={<AddField />} />
   </Routes>
-</Suspense>
+</Suspense>;
 ```
 
 **Protected Routes:**
+
 ```javascript
 // Require authentication for certain routes
 <Route element={<ProtectedRoute />}>
@@ -839,6 +922,7 @@ const AddField = lazy(() => import('./pages/AddField'));
 ### 3.2 Mobile Application Architecture (React Native)
 
 **Technology Stack:**
+
 - **Framework:** React Native 0.72 (cross-platform)
 - **Navigation:** React Navigation 6.x (stack, tab, drawer)
 - **State Management:** Redux Toolkit + React Query (same as web)
@@ -922,42 +1006,44 @@ const AddField = lazy(() => import('./pages/AddField'));
 **Offline-First Strategy:**
 
 **Data Synchronization:**
+
 ```javascript
 // WatermelonDB schema for offline storage
 const fieldSchema = {
-  name: 'fields',
+  name: "fields",
   columns: [
-    { name: 'field_id', type: 'string', isIndexed: true },
-    { name: 'name', type: 'string' },
-    { name: 'boundary', type: 'string' },  // GeoJSON
-    { name: 'area', type: 'number' },
-    { name: 'synced', type: 'boolean' },
-    { name: 'updated_at', type: 'number' }
-  ]
+    { name: "field_id", type: "string", isIndexed: true },
+    { name: "name", type: "string" },
+    { name: "boundary", type: "string" }, // GeoJSON
+    { name: "area", type: "number" },
+    { name: "synced", type: "boolean" },
+    { name: "updated_at", type: "number" },
+  ],
 };
 
 // Sync strategy
 class SyncManager {
   async syncFields() {
     // 1. Upload local changes to server
-    const unsyncedFields = await db.fields.query(Q.where('synced', false));
-    await Promise.all(unsyncedFields.map(field => api.updateField(field)));
-    
+    const unsyncedFields = await db.fields.query(Q.where("synced", false));
+    await Promise.all(unsyncedFields.map((field) => api.updateField(field)));
+
     // 2. Download server changes
     const serverFields = await api.getFields();
     await db.write(async () => {
-      serverFields.forEach(field => db.fields.create(field));
+      serverFields.forEach((field) => db.fields.create(field));
     });
-    
+
     // 3. Mark as synced
     await db.write(async () => {
-      unsyncedFields.forEach(field => field.update({ synced: true }));
+      unsyncedFields.forEach((field) => field.update({ synced: true }));
     });
   }
 }
 ```
 
 **Offline Capabilities:**
+
 - ✅ View cached health data (last 30 days)
 - ✅ View cached weather forecast (last update)
 - ✅ View cached news articles (last 50 articles)
@@ -968,6 +1054,7 @@ class SyncManager {
 **Platform-Specific Adaptations:**
 
 **Android (Material Design):**
+
 ```javascript
 // Android-specific components
 <FloatingActionButton onPress={addField} />
@@ -976,6 +1063,7 @@ class SyncManager {
 ```
 
 **iOS (Human Interface Guidelines):**
+
 ```javascript
 // iOS-specific components
 <TabBar style="iOS" />
@@ -991,11 +1079,15 @@ class SyncManager {
 // Container (Smart Component) - handles logic, state
 const FieldDetailsContainer = () => {
   const { fieldId } = useParams();
-  const { data: field, isLoading } = useQuery(['field', fieldId], () => fetchField(fieldId));
-  const { data: health } = useQuery(['health', fieldId], () => fetchHealth(fieldId));
-  
+  const { data: field, isLoading } = useQuery(["field", fieldId], () =>
+    fetchField(fieldId)
+  );
+  const { data: health } = useQuery(["health", fieldId], () =>
+    fetchHealth(fieldId)
+  );
+
   if (isLoading) return <LoadingSpinner />;
-  
+
   return <FieldDetailsView field={field} health={health} />;
 };
 
@@ -1040,48 +1132,49 @@ const FieldDetailsView = ({ field, health }) => (
 ### 3.4 Performance Optimization
 
 **Code Splitting:**
+
 ```javascript
 // Split by route (lazy loading)
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const FieldDetails = lazy(() => import('./pages/FieldDetails'));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const FieldDetails = lazy(() => import("./pages/FieldDetails"));
 
 // Split by feature (dynamic imports)
-const loadMapLibrary = () => import('leaflet');
+const loadMapLibrary = () => import("leaflet");
 ```
 
 **Memoization:**
+
 ```javascript
 // Prevent unnecessary re-renders
-const FieldCard = memo(({ field }) => {
-  return <Card>{field.name}</Card>;
-}, (prevProps, nextProps) => prevProps.field.id === nextProps.field.id);
+const FieldCard = memo(
+  ({ field }) => {
+    return <Card>{field.name}</Card>;
+  },
+  (prevProps, nextProps) => prevProps.field.id === nextProps.field.id
+);
 
 // Memoize expensive calculations
 const healthScore = useMemo(() => calculateHealthScore(ndvi), [ndvi]);
 ```
 
 **Virtual Scrolling:**
+
 ```javascript
 // Render only visible items (large lists)
-import { FixedSizeList } from 'react-window';
+import { FixedSizeList } from "react-window";
 
-<FixedSizeList
-  height={600}
-  itemCount={fields.length}
-  itemSize={100}
->
-  {({ index, style }) => (
-    <FieldCard field={fields[index]} style={style} />
-  )}
-</FixedSizeList>
+<FixedSizeList height={600} itemCount={fields.length} itemSize={100}>
+  {({ index, style }) => <FieldCard field={fields[index]} style={style} />}
+</FixedSizeList>;
 ```
 
 **Image Optimization:**
+
 ```javascript
 // Lazy load images, use WebP format
-<img 
-  src={field.thumbnail} 
-  loading="lazy" 
+<img
+  src={field.thumbnail}
+  loading="lazy"
   srcSet={`${field.thumbnail}.webp 1x, ${field.thumbnail}@2x.webp 2x`}
   alt={field.name}
 />
@@ -1094,6 +1187,7 @@ import { FixedSizeList } from 'react-window';
 ### 4.1 API Architecture (RESTful Design)
 
 **API Design Principles:**
+
 - **Resource-Oriented:** URLs represent resources (nouns, not verbs)
 - **HTTP Methods:** GET (read), POST (create), PUT (update), DELETE (delete)
 - **Stateless:** Each request contains all necessary information (JWT token)
@@ -1177,6 +1271,7 @@ GET    /admin/system/health       - Get system health metrics
 **Request/Response Format:**
 
 **Standard Success Response:**
+
 ```json
 {
   "success": true,
@@ -1194,6 +1289,7 @@ GET    /admin/system/health       - Get system health metrics
 ```
 
 **Standard Error Response:**
+
 ```json
 {
   "success": false,
@@ -1213,6 +1309,7 @@ GET    /admin/system/health       - Get system health metrics
 ```
 
 **Pagination Response:**
+
 ```json
 {
   "success": true,
@@ -1342,24 +1439,27 @@ class FieldService {
     this.satelliteService = satelliteService;
     this.cacheService = cacheService;
   }
-  
+
   async createField(userId, location, name) {
     // 1. Validate inputs
     this.validateLocation(location);
     this.validateFieldName(name);
-    
+
     // 2. Check user field limit (5 fields max in Phase 1)
     const userFields = await this.fieldRepository.findByUserId(userId);
     if (userFields.length >= 5) {
-      throw new BusinessError('MAX_FIELDS_REACHED', 'You have reached the maximum of 5 fields');
+      throw new BusinessError(
+        "MAX_FIELDS_REACHED",
+        "You have reached the maximum of 5 fields"
+      );
     }
-    
+
     // 3. Detect boundary using AI
     const boundary = await this.aiService.detectBoundary(location);
-    
+
     // 4. Calculate area
     const area = this.calculateArea(boundary);
-    
+
     // 5. Save field to database
     const field = await this.fieldRepository.create({
       user_id: userId,
@@ -1367,34 +1467,40 @@ class FieldService {
       boundary,
       area,
       center: location,
-      status: 'active'
+      status: "active",
     });
-    
+
     // 6. Initiate first health monitoring (async)
     this.initiateHealthMonitoring(field.field_id);
-    
+
     // 7. Return field
     return field;
   }
-  
+
   validateLocation(location) {
     // Sri Lanka bounding box: 5.9°N-9.9°N, 79.5°E-82.0°E
     if (location.lat < 5.9 || location.lat > 9.9) {
-      throw new ValidationError('INVALID_LOCATION', 'Location must be within Sri Lanka');
+      throw new ValidationError(
+        "INVALID_LOCATION",
+        "Location must be within Sri Lanka"
+      );
     }
     if (location.lon < 79.5 || location.lon > 82.0) {
-      throw new ValidationError('INVALID_LOCATION', 'Location must be within Sri Lanka');
+      throw new ValidationError(
+        "INVALID_LOCATION",
+        "Location must be within Sri Lanka"
+      );
     }
   }
-  
+
   calculateArea(boundary) {
     // Use Shoelace formula for polygon area
     return GISUtils.calculatePolygonArea(boundary);
   }
-  
+
   async initiateHealthMonitoring(fieldId) {
     // Queue async job for health monitoring
-    await this.jobQueue.add('health-monitoring', { fieldId });
+    await this.jobQueue.add("health-monitoring", { fieldId });
   }
 }
 ```
@@ -1404,6 +1510,7 @@ class FieldService {
 **Service Responsibilities:**
 
 **Auth Service:**
+
 - User registration (OAuth, email/password)
 - Login/logout
 - JWT token generation and validation
@@ -1412,6 +1519,7 @@ class FieldService {
 - Account security (lock after failed attempts)
 
 **Field Service:**
+
 - Field CRUD operations
 - Boundary validation and storage
 - Area calculation (GIS operations)
@@ -1419,6 +1527,7 @@ class FieldService {
 - Field archival and deletion
 
 **Satellite Service:**
+
 - Sentinel Hub API integration
 - Image retrieval and caching
 - Cloud masking
@@ -1426,6 +1535,7 @@ class FieldService {
 - Cache management (30-day retention)
 
 **Health Service:**
+
 - Vegetation indices calculation (NDVI, NDWI, TDVI)
 - Health status classification
 - Trend analysis
@@ -1433,6 +1543,7 @@ class FieldService {
 - Scheduled health updates
 
 **Recommendation Service:**
+
 - Water recommendation generation (NDWI-based)
 - Fertilizer recommendation generation (NDVI-based)
 - Alert detection (critical conditions)
@@ -1440,24 +1551,28 @@ class FieldService {
 - Recommendation history tracking
 
 **AI/ML Service:**
+
 - Boundary detection (U-Net model)
 - Yield prediction (Random Forest model)
 - Disaster damage analysis
 - Model versioning and monitoring
 
 **Weather Service:**
+
 - OpenWeatherMap API integration
 - Forecast retrieval and caching
 - Weather alert detection
 - Historical weather data
 
 **Content Service:**
+
 - News article management (CRUD)
 - Search and filtering
 - Category management
 - Analytics tracking (views, shares)
 
 **Analytics Service:**
+
 - User event tracking
 - System metrics collection
 - Business metrics calculation
@@ -1473,28 +1588,28 @@ class BaseRepository {
   constructor(model) {
     this.model = model;
   }
-  
+
   async findById(id) {
     return await this.model.findByPk(id);
   }
-  
+
   async findAll(where = {}, options = {}) {
     return await this.model.findAll({ where, ...options });
   }
-  
+
   async create(data) {
     return await this.model.create(data);
   }
-  
+
   async update(id, data) {
     const record = await this.findById(id);
-    if (!record) throw new NotFoundError('Record not found');
+    if (!record) throw new NotFoundError("Record not found");
     return await record.update(data);
   }
-  
+
   async delete(id) {
     const record = await this.findById(id);
-    if (!record) throw new NotFoundError('Record not found');
+    if (!record) throw new NotFoundError("Record not found");
     return await record.destroy();
   }
 }
@@ -1502,33 +1617,41 @@ class BaseRepository {
 // field.repository.js - Field-specific repository
 class FieldRepository extends BaseRepository {
   constructor() {
-    super(FieldModel);  // Sequelize model
+    super(FieldModel); // Sequelize model
   }
-  
+
   async findByUserId(userId) {
     return await this.model.findAll({
-      where: { user_id: userId, status: 'active' },
-      order: [['created_at', 'DESC']]
+      where: { user_id: userId, status: "active" },
+      order: [["created_at", "DESC"]],
     });
   }
-  
+
   async findWithinBoundingBox(bbox) {
     // PostGIS spatial query
     return await this.model.findAll({
       where: sequelize.where(
-        sequelize.fn('ST_Intersects', 
-          sequelize.col('boundary'), 
-          sequelize.fn('ST_MakeEnvelope', bbox.minLon, bbox.minLat, bbox.maxLon, bbox.maxLat, 4326)
+        sequelize.fn(
+          "ST_Intersects",
+          sequelize.col("boundary"),
+          sequelize.fn(
+            "ST_MakeEnvelope",
+            bbox.minLon,
+            bbox.minLat,
+            bbox.maxLon,
+            bbox.maxLat,
+            4326
+          )
         ),
         true
-      )
+      ),
     });
   }
-  
+
   async calculateTotalArea(userId) {
     // Aggregate query
-    const result = await this.model.sum('area', {
-      where: { user_id: userId, status: 'active' }
+    const result = await this.model.sum("area", {
+      where: { user_id: userId, status: "active" },
     });
     return result || 0;
   }
@@ -1541,20 +1664,20 @@ class FieldRepository extends BaseRepository {
 // Use transactions for data consistency
 async createFieldWithHealthMonitoring(userId, fieldData) {
   const transaction = await sequelize.transaction();
-  
+
   try {
     // 1. Create field
     const field = await FieldModel.create(fieldData, { transaction });
-    
+
     // 2. Create initial health record
     const health = await HealthModel.create({
       field_id: field.field_id,
       status: 'pending'
     }, { transaction });
-    
+
     // 3. Commit transaction
     await transaction.commit();
-    
+
     return { field, health };
   } catch (error) {
     // Rollback on error
@@ -1573,36 +1696,36 @@ async createFieldWithHealthMonitoring(userId, fieldData) {
 const authMiddleware = async (req, res, next) => {
   try {
     // 1. Extract token from header
-    const token = req.headers.authorization?.replace('Bearer ', '');
+    const token = req.headers.authorization?.replace("Bearer ", "");
     if (!token) {
-      return res.status(401).json({ error: 'No token provided' });
+      return res.status(401).json({ error: "No token provided" });
     }
-    
+
     // 2. Verify JWT token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
+
     // 3. Check token blacklist (logged out users)
     const isBlacklisted = await redis.get(`blacklist:${token}`);
     if (isBlacklisted) {
-      return res.status(401).json({ error: 'Token invalidated' });
+      return res.status(401).json({ error: "Token invalidated" });
     }
-    
+
     // 4. Attach user to request
     req.user = {
       userId: decoded.user_id,
       email: decoded.email,
-      role: decoded.role
+      role: decoded.role,
     };
-    
+
     // 5. Update last seen
     await redis.set(`user:${decoded.user_id}:last_seen`, Date.now());
-    
+
     next();
   } catch (error) {
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ error: 'Token expired' });
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ error: "Token expired" });
     }
-    return res.status(401).json({ error: 'Invalid token' });
+    return res.status(401).json({ error: "Invalid token" });
   }
 };
 ```
@@ -1611,26 +1734,26 @@ const authMiddleware = async (req, res, next) => {
 
 ```javascript
 // rateLimit.middleware.js
-const rateLimit = require('express-rate-limit');
-const RedisStore = require('rate-limit-redis');
+const rateLimit = require("express-rate-limit");
+const RedisStore = require("rate-limit-redis");
 
 const limiter = rateLimit({
   store: new RedisStore({
     client: redisClient,
-    prefix: 'rate-limit:'
+    prefix: "rate-limit:",
   }),
-  windowMs: 60 * 60 * 1000,  // 1 hour
-  max: 1000,                  // 1000 requests per hour per user
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 1000, // 1000 requests per hour per user
   keyGenerator: (req) => req.user?.userId || req.ip,
   handler: (req, res) => {
     res.status(429).json({
       error: {
-        code: 'RATE_LIMIT_EXCEEDED',
-        message: 'Too many requests. Please try again later.',
-        retry_after: 3600
-      }
+        code: "RATE_LIMIT_EXCEEDED",
+        message: "Too many requests. Please try again later.",
+        retry_after: 3600,
+      },
     });
-  }
+  },
 });
 ```
 
@@ -1638,30 +1761,30 @@ const limiter = rateLimit({
 
 ```javascript
 // validation.middleware.js
-const Joi = require('joi');
+const Joi = require("joi");
 
 const validateRequest = (schema) => {
   return (req, res, next) => {
     const { error, value } = schema.validate(req.body, {
-      abortEarly: false,  // Return all errors
-      stripUnknown: true  // Remove unknown fields
+      abortEarly: false, // Return all errors
+      stripUnknown: true, // Remove unknown fields
     });
-    
+
     if (error) {
-      const errors = error.details.map(detail => ({
-        field: detail.path.join('.'),
-        message: detail.message
+      const errors = error.details.map((detail) => ({
+        field: detail.path.join("."),
+        message: detail.message,
       }));
-      
+
       return res.status(400).json({
         error: {
-          code: 'VALIDATION_ERROR',
-          message: 'Invalid request data',
-          details: errors
-        }
+          code: "VALIDATION_ERROR",
+          message: "Invalid request data",
+          details: errors,
+        },
       });
     }
-    
+
     req.validatedBody = value;
     next();
   };
@@ -1672,11 +1795,15 @@ const createFieldSchema = Joi.object({
   name: Joi.string().min(1).max(50).required(),
   location: Joi.object({
     lat: Joi.number().min(5.9).max(9.9).required(),
-    lon: Joi.number().min(79.5).max(82.0).required()
-  }).required()
+    lon: Joi.number().min(79.5).max(82.0).required(),
+  }).required(),
 });
 
-router.post('/fields', validateRequest(createFieldSchema), fieldController.create);
+router.post(
+  "/fields",
+  validateRequest(createFieldSchema),
+  fieldController.create
+);
 ```
 
 **Error Handling Middleware:**
@@ -1694,19 +1821,19 @@ class AppError extends Error {
 
 class ValidationError extends AppError {
   constructor(message, details) {
-    super('VALIDATION_ERROR', message, 400, details);
+    super("VALIDATION_ERROR", message, 400, details);
   }
 }
 
 class NotFoundError extends AppError {
   constructor(message) {
-    super('NOT_FOUND', message, 404);
+    super("NOT_FOUND", message, 404);
   }
 }
 
 class UnauthorizedError extends AppError {
   constructor(message) {
-    super('UNAUTHORIZED', message, 401);
+    super("UNAUTHORIZED", message, 401);
   }
 }
 
@@ -1719,21 +1846,21 @@ const errorHandler = (err, req, res, next) => {
     code: err.code,
     user: req.user?.userId,
     endpoint: req.path,
-    method: req.method
+    method: req.method,
   });
-  
+
   // Send error response
   res.status(err.statusCode || 500).json({
     success: false,
     error: {
-      code: err.code || 'INTERNAL_ERROR',
-      message: err.message || 'Something went wrong',
-      details: err.details || {}
+      code: err.code || "INTERNAL_ERROR",
+      message: err.message || "Something went wrong",
+      details: err.details || {},
     },
     meta: {
       timestamp: new Date().toISOString(),
-      request_id: req.id
-    }
+      request_id: req.id,
+    },
   });
 };
 ```
@@ -1822,6 +1949,7 @@ const errorHandler = (err, req, res, next) => {
 **U-Net Boundary Detection Model:**
 
 **Architecture:**
+
 ```
 Input: 256×256×4 (RGB + NIR)
     ↓
@@ -1846,6 +1974,7 @@ Output:
 ```
 
 **Training Configuration:**
+
 ```python
 # training_config.py
 TRAINING_CONFIG = {
@@ -1874,6 +2003,7 @@ TRAINING_CONFIG = {
 ```
 
 **Training Script:**
+
 ```python
 # train_boundary_detection.py
 import tensorflow as tf
@@ -1919,12 +2049,13 @@ model.save('models/unet_v1.0.0')
 **Random Forest Yield Prediction Model:**
 
 **Feature Engineering:**
+
 ```python
 # features.py
 def extract_features(field_data):
     """Extract features for yield prediction"""
     features = {}
-    
+
     # NDVI time series features (last 60 days)
     ndvi_series = field_data['ndvi_history']
     features['ndvi_mean'] = np.mean(ndvi_series)
@@ -1933,25 +2064,26 @@ def extract_features(field_data):
     features['ndvi_std'] = np.std(ndvi_series)
     features['ndvi_trend'] = calculate_trend(ndvi_series)  # Linear regression slope
     features['ndvi_peak_day'] = np.argmax(ndvi_series)
-    
+
     # Weather features (last 30 days)
     weather = field_data['weather_history']
     features['total_rainfall'] = np.sum(weather['rainfall'])
     features['avg_temperature'] = np.mean(weather['temperature'])
     features['max_temperature'] = np.max(weather['temperature'])
     features['avg_humidity'] = np.mean(weather['humidity'])
-    
+
     # Field features
     features['field_area'] = field_data['area']
     features['days_since_planting'] = field_data['growth_stage']
-    
+
     # Location features (district encoding)
     features['district'] = encode_district(field_data['location'])
-    
+
     return features
 ```
 
 **Training Script:**
+
 ```python
 # train_yield_prediction.py
 from sklearn.ensemble import RandomForestRegressor
@@ -2015,16 +2147,16 @@ def detect_boundary():
         # 1. Parse request
         data = request.json
         image = np.array(data['image'])  # 256×256×4
-        
+
         # 2. Preprocess
         image = preprocess_image(image)
-        
+
         # 3. Run inference
         mask = unet_model.predict(np.expand_dims(image, axis=0))[0]
-        
+
         # 4. Post-process
         polygon = extract_polygon(mask)
-        
+
         # 5. Return result
         return jsonify({
             'success': True,
@@ -2041,15 +2173,15 @@ def predict_yield():
         # 1. Parse request
         data = request.json
         features = extract_features(data)
-        
+
         # 2. Run inference
         prediction = yield_model.predict([features])[0]
-        
+
         # 3. Calculate confidence interval
         predictions = [tree.predict([features])[0] for tree in yield_model.estimators_]
         confidence_lower = np.percentile(predictions, 2.5)
         confidence_upper = np.percentile(predictions, 97.5)
-        
+
         # 4. Return result
         return jsonify({
             'success': True,
@@ -2067,6 +2199,7 @@ if __name__ == '__main__':
 ```
 
 **Rationale for Flask API:**
+
 - ✅ Simple to implement and deploy
 - ✅ Python ecosystem (TensorFlow, scikit-learn)
 - ✅ Easy to scale (multiple instances behind load balancer)
@@ -2074,6 +2207,7 @@ if __name__ == '__main__':
 - ✅ Cost-effective (single container)
 
 **Alternative: TensorFlow Serving (Phase 2+)**
+
 - ⚡ Higher performance (C++ backend)
 - ⚡ Built-in model versioning
 - ⚡ gRPC support (faster than HTTP)
@@ -2089,7 +2223,7 @@ if __name__ == '__main__':
 def create_ndvi_features(ndvi_history):
     """Create features from NDVI time series"""
     features = {}
-    
+
     # Statistical features
     features['ndvi_mean'] = np.mean(ndvi_history)
     features['ndvi_median'] = np.median(ndvi_history)
@@ -2097,21 +2231,21 @@ def create_ndvi_features(ndvi_history):
     features['ndvi_min'] = np.min(ndvi_history)
     features['ndvi_max'] = np.max(ndvi_history)
     features['ndvi_range'] = features['ndvi_max'] - features['ndvi_min']
-    
+
     # Trend features
     features['ndvi_trend'] = calculate_linear_trend(ndvi_history)
     features['ndvi_acceleration'] = calculate_acceleration(ndvi_history)
-    
+
     # Peak features
     features['ndvi_peak_value'] = np.max(ndvi_history)
     features['ndvi_peak_day'] = np.argmax(ndvi_history)
     features['days_since_peak'] = len(ndvi_history) - features['ndvi_peak_day']
-    
+
     # Growth stage features
     features['vegetative_ndvi'] = np.mean(ndvi_history[:20])  # First 20 days
     features['reproductive_ndvi'] = np.mean(ndvi_history[20:40])  # Days 20-40
     features['maturity_ndvi'] = np.mean(ndvi_history[40:])  # Days 40+
-    
+
     return features
 ```
 
@@ -2121,24 +2255,24 @@ def create_ndvi_features(ndvi_history):
 def create_weather_features(weather_history):
     """Create features from weather data"""
     features = {}
-    
+
     # Rainfall features
     features['total_rainfall'] = np.sum(weather_history['rainfall'])
     features['avg_rainfall'] = np.mean(weather_history['rainfall'])
     features['max_rainfall_day'] = np.max(weather_history['rainfall'])
     features['rainy_days'] = np.sum(weather_history['rainfall'] > 1)  # Days with >1mm rain
     features['drought_days'] = calculate_max_consecutive_dry_days(weather_history['rainfall'])
-    
+
     # Temperature features
     features['avg_temperature'] = np.mean(weather_history['temperature'])
     features['max_temperature'] = np.max(weather_history['temperature'])
     features['min_temperature'] = np.min(weather_history['temperature'])
     features['temperature_range'] = features['max_temperature'] - features['min_temperature']
     features['extreme_heat_days'] = np.sum(weather_history['temperature'] > 35)
-    
+
     # Humidity features
     features['avg_humidity'] = np.mean(weather_history['humidity'])
-    
+
     return features
 ```
 
@@ -2150,21 +2284,21 @@ def create_weather_features(weather_history):
 # model_registry.py
 class ModelRegistry:
     """Manage model versions and metadata"""
-    
+
     def __init__(self, storage_path='models/'):
         self.storage_path = storage_path
         self.metadata_db = {}  # In production: use database
-    
+
     def register_model(self, model_name, version, model, metrics):
         """Register new model version"""
         model_path = f"{self.storage_path}/{model_name}_v{version}"
-        
+
         # Save model
         if model_name == 'unet':
             model.save(f"{model_path}.h5")
         elif model_name == 'yield_rf':
             joblib.dump(model, f"{model_path}.pkl")
-        
+
         # Save metadata
         self.metadata_db[f"{model_name}_v{version}"] = {
             'model_name': model_name,
@@ -2173,18 +2307,18 @@ class ModelRegistry:
             'metrics': metrics,
             'status': 'registered'
         }
-    
+
     def get_latest_model(self, model_name):
         """Get latest version of model"""
         versions = [k for k in self.metadata_db.keys() if k.startswith(model_name)]
         latest = max(versions, key=lambda v: parse_version(v))
         return self.load_model(latest)
-    
+
     def load_model(self, model_key):
         """Load model from storage"""
         metadata = self.metadata_db[model_key]
         model_path = f"{self.storage_path}/{model_key}"
-        
+
         if metadata['model_name'] == 'unet':
             return tf.keras.models.load_model(f"{model_path}.h5")
         elif metadata['model_name'] == 'yield_rf':
@@ -2197,11 +2331,11 @@ class ModelRegistry:
 # model_monitoring.py
 class ModelMonitor:
     """Monitor model performance in production"""
-    
+
     def __init__(self, model_name):
         self.model_name = model_name
         self.metrics_db = []  # In production: use time-series database
-    
+
     def log_prediction(self, input_data, prediction, actual=None):
         """Log prediction for monitoring"""
         self.metrics_db.append({
@@ -2212,11 +2346,11 @@ class ModelMonitor:
             'latency': input_data.get('latency'),
             'confidence': input_data.get('confidence')
         })
-    
+
     def calculate_metrics(self, time_window='7d'):
         """Calculate performance metrics"""
         recent = self.get_recent_predictions(time_window)
-        
+
         # Accuracy (if actuals available)
         if any(p['actual'] for p in recent):
             predictions = [p['prediction'] for p in recent if p['actual']]
@@ -2224,29 +2358,29 @@ class ModelMonitor:
             mape = np.mean(np.abs((actuals - predictions) / actuals)) * 100
         else:
             mape = None
-        
+
         # Latency
         latencies = [p['latency'] for p in recent if p['latency']]
         avg_latency = np.mean(latencies)
         p95_latency = np.percentile(latencies, 95)
-        
+
         return {
             'mape': mape,
             'avg_latency': avg_latency,
             'p95_latency': p95_latency,
             'prediction_count': len(recent)
         }
-    
+
     def detect_drift(self):
         """Detect model performance degradation"""
         current_metrics = self.calculate_metrics('7d')
         baseline_metrics = self.get_baseline_metrics()
-        
+
         # Alert if MAPE increased >5% or latency increased >20%
         if current_metrics['mape'] and baseline_metrics['mape']:
             if current_metrics['mape'] > baseline_metrics['mape'] * 1.05:
                 self.send_alert('Model accuracy degraded', current_metrics)
-        
+
         if current_metrics['p95_latency'] > baseline_metrics['p95_latency'] * 1.2:
             self.send_alert('Model latency increased', current_metrics)
 ```
@@ -2259,11 +2393,11 @@ class ModelMonitor:
 
 **Polyglot Persistence Strategy:**
 
-| **Database** | **Use Case** | **Rationale** |
-|--------------|-------------|---------------|
+| **Database**             | **Use Case**                               | **Rationale**                                                                                                                                        |
+| ------------------------ | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **PostgreSQL + PostGIS** | Users, Fields, Health Records, Predictions | • ACID compliance (data integrity)<br>• Spatial data support (PostGIS)<br>• Complex queries (JOINs, aggregations)<br>• Mature, reliable, open-source |
-| **MongoDB** | News Articles, Analytics Events, Logs | • Flexible schema (evolving content)<br>• Time-series optimization<br>• Horizontal scaling (sharding)<br>• JSON-native (easy integration) |
-| **Redis** | Sessions, Cache, Rate Limiting | • In-memory speed (sub-millisecond)<br>• TTL support (auto-expiry)<br>• Pub/Sub (real-time updates)<br>• Simple data structures |
+| **MongoDB**              | News Articles, Analytics Events, Logs      | • Flexible schema (evolving content)<br>• Time-series optimization<br>• Horizontal scaling (sharding)<br>• JSON-native (easy integration)            |
+| **Redis**                | Sessions, Cache, Rate Limiting             | • In-memory speed (sub-millisecond)<br>• TTL support (auto-expiry)<br>• Pub/Sub (real-time updates)<br>• Simple data structures                      |
 
 ### 6.2 Data Modeling Approach
 
@@ -2286,7 +2420,7 @@ CREATE TABLE users (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     last_login TIMESTAMP,
     status VARCHAR(20) NOT NULL DEFAULT 'active',  -- 'active', 'suspended', 'deleted'
-    
+
     CHECK (role IN ('farmer', 'admin')),
     CHECK (auth_provider IN ('google', 'email')),
     CHECK (status IN ('active', 'suspended', 'deleted'))
@@ -2309,7 +2443,7 @@ CREATE TABLE fields (
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     status VARCHAR(20) NOT NULL DEFAULT 'active',  -- 'active', 'archived', 'deleted'
-    
+
     UNIQUE (user_id, name),  -- No duplicate field names per user
     CHECK (area >= 0.1 AND area <= 50),
     CHECK (ST_IsValid(boundary)),  -- Valid polygon geometry
@@ -2340,7 +2474,7 @@ CREATE TABLE health_records (
     satellite_image_id VARCHAR(100) NOT NULL,
     cloud_cover DECIMAL(5, 2) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    
+
     UNIQUE (field_id, measurement_date),  -- One record per field per date
     CHECK (ndvi_mean >= -1 AND ndvi_mean <= 1),
     CHECK (ndwi_mean >= -1 AND ndwi_mean <= 1),
@@ -2368,7 +2502,7 @@ CREATE TABLE recommendations (
     expires_at TIMESTAMP,
     status VARCHAR(20) NOT NULL DEFAULT 'pending',  -- 'pending', 'done', 'ignored', 'expired'
     user_action_at TIMESTAMP,
-    
+
     CHECK (type IN ('water', 'fertilizer', 'alert', 'general')),
     CHECK (severity IN ('critical', 'high', 'medium', 'low')),
     CHECK (status IN ('pending', 'done', 'ignored', 'expired'))
@@ -2393,7 +2527,7 @@ CREATE TABLE yield_predictions (
     actual_yield DECIMAL(10, 2),  -- User-reported after harvest
     accuracy_mape DECIMAL(5, 2),  -- Calculated after actual yield entered
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    
+
     CHECK (predicted_yield_per_ha > 0),
     CHECK (confidence_lower <= predicted_yield_per_ha),
     CHECK (confidence_upper >= predicted_yield_per_ha)
@@ -2418,7 +2552,7 @@ CREATE TABLE disaster_assessments (
     financial_loss DECIMAL(12, 2) NOT NULL,
     report_pdf_url VARCHAR(500),
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    
+
     CHECK (disaster_type IN ('flood', 'drought', 'storm', 'other')),
     CHECK (before_date < after_date),
     CHECK (damage_percentage >= 0 AND damage_percentage <= 100)
@@ -2440,7 +2574,7 @@ CREATE TABLE weather_forecasts (
     wind_speed DECIMAL(5, 2) NOT NULL,  -- km/h
     is_extreme BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    
+
     UNIQUE (field_id, forecast_date),
     CHECK (rainfall_probability >= 0 AND rainfall_probability <= 100),
     CHECK (humidity >= 0 AND humidity <= 100)
@@ -2551,7 +2685,7 @@ class CacheService {
   constructor(redisClient) {
     this.redis = redisClient;
   }
-  
+
   // Cache-aside pattern (lazy loading)
   async get(key, fetchFunction, ttl = 3600) {
     // 1. Try to get from cache
@@ -2559,16 +2693,16 @@ class CacheService {
     if (cached) {
       return JSON.parse(cached);
     }
-    
+
     // 2. Cache miss - fetch from source
     const data = await fetchFunction();
-    
+
     // 3. Store in cache
     await this.redis.setex(key, ttl, JSON.stringify(data));
-    
+
     return data;
   }
-  
+
   // Invalidate cache on data update
   async invalidate(pattern) {
     const keys = await this.redis.keys(pattern);
@@ -2576,7 +2710,7 @@ class CacheService {
       await this.redis.del(...keys);
     }
   }
-  
+
   // Example: Invalidate field cache when field updated
   async invalidateFieldCache(fieldId) {
     await this.invalidate(`field:${fieldId}*`);
@@ -2590,13 +2724,13 @@ class FieldService {
     return await cacheService.get(
       `field:${fieldId}`,
       () => fieldRepository.findById(fieldId),
-      3600  // 1 hour TTL
+      3600 // 1 hour TTL
     );
   }
-  
+
   async updateField(fieldId, data) {
     const field = await fieldRepository.update(fieldId, data);
-    await cacheService.invalidateFieldCache(fieldId);  // Invalidate cache
+    await cacheService.invalidateFieldCache(fieldId); // Invalidate cache
     return field;
   }
 }
@@ -2713,15 +2847,15 @@ User (Mobile App)
 
 **Retention Policy:**
 
-| **Data Type** | **Hot Storage** | **Warm Storage** | **Cold Storage** | **Deletion** |
-|---------------|-----------------|------------------|------------------|--------------|
-| **User Data** | Active users (PostgreSQL) | - | - | 30 days after account deletion |
-| **Field Data** | Active fields (PostgreSQL) | Archived fields (PostgreSQL) | - | 1 year after archival |
-| **Health Records** | Last 6 months (PostgreSQL) | 6-12 months (PostgreSQL) | 1-3 years (S3 Glacier) | After 3 years |
-| **Satellite Images** | Last 30 days (Redis) | - | - | After 30 days |
-| **Weather Data** | Last 6 hours (Redis) | Last 30 days (PostgreSQL) | - | After 30 days |
-| **Analytics Events** | Last 90 days (MongoDB) | - | Aggregated (MongoDB) | Raw events after 90 days |
-| **Logs** | Last 30 days (MongoDB) | - | - | After 30 days |
+| **Data Type**        | **Hot Storage**            | **Warm Storage**             | **Cold Storage**       | **Deletion**                   |
+| -------------------- | -------------------------- | ---------------------------- | ---------------------- | ------------------------------ |
+| **User Data**        | Active users (PostgreSQL)  | -                            | -                      | 30 days after account deletion |
+| **Field Data**       | Active fields (PostgreSQL) | Archived fields (PostgreSQL) | -                      | 1 year after archival          |
+| **Health Records**   | Last 6 months (PostgreSQL) | 6-12 months (PostgreSQL)     | 1-3 years (S3 Glacier) | After 3 years                  |
+| **Satellite Images** | Last 30 days (Redis)       | -                            | -                      | After 30 days                  |
+| **Weather Data**     | Last 6 hours (Redis)       | Last 30 days (PostgreSQL)    | -                      | After 30 days                  |
+| **Analytics Events** | Last 90 days (MongoDB)     | -                            | Aggregated (MongoDB)   | Raw events after 90 days       |
+| **Logs**             | Last 30 days (MongoDB)     | -                            | -                      | After 30 days                  |
 
 **Archival Strategy:**
 
@@ -2733,30 +2867,30 @@ class ArchivalJob {
     const oldRecords = await HealthModel.findAll({
       where: {
         measurement_date: {
-          [Op.lt]: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000)  // 6 months
-        }
-      }
+          [Op.lt]: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000), // 6 months
+        },
+      },
     });
-    
+
     // 2. Export to CSV
     const csv = this.convertToCSV(oldRecords);
-    
+
     // 3. Compress (gzip)
     const compressed = gzip(csv);
-    
+
     // 4. Upload to S3 Glacier
     await s3.upload({
-      Bucket: 'skycrop-archive',
+      Bucket: "skycrop-archive",
       Key: `health-records/${new Date().toISOString()}.csv.gz`,
       Body: compressed,
-      StorageClass: 'GLACIER'
+      StorageClass: "GLACIER",
     });
-    
+
     // 5. Delete from PostgreSQL (keep metadata only)
     await HealthModel.destroy({
-      where: { record_id: { [Op.in]: oldRecords.map(r => r.record_id) } }
+      where: { record_id: { [Op.in]: oldRecords.map((r) => r.record_id) } },
     });
-    
+
     logger.info(`Archived ${oldRecords.length} health records to S3 Glacier`);
   }
 }
@@ -2778,35 +2912,35 @@ class SentinelHubAdapter {
     this.circuitBreaker = circuitBreaker;
     this.cache = cache;
   }
-  
+
   async getImage(bbox, dateRange, bands) {
     // 1. Check cache first
     const cacheKey = `satellite:${bbox}:${dateRange}`;
     const cached = await this.cache.get(cacheKey);
     if (cached) return cached;
-    
+
     // 2. Call API with circuit breaker
     const image = await this.circuitBreaker
-  
+
   static sanitizeGeoJSON(geojson) {
     // Validate GeoJSON structure
     if (geojson.type !== 'Polygon') {
       throw new ValidationError('Invalid GeoJSON type. Expected Polygon.');
     }
-    
+
     // Validate coordinates
     const coords = geojson.coordinates[0];
     if (coords.length < 4) {
       throw new ValidationError('Polygon must have at least 3 vertices (4 coordinates including closing point)');
     }
-    
+
     // Validate coordinate ranges (Sri Lanka bounding box)
     coords.forEach(([lon, lat]) => {
       if (lat < 5.9 || lat > 9.9 || lon < 79.5 || lon > 82.0) {
         throw new ValidationError('Coordinates must be within Sri Lanka');
       }
     });
-    
+
     return geojson;
   }
 }
@@ -2815,7 +2949,7 @@ class SentinelHubAdapter {
 const getUserByEmail = async (email) => {
   // ✅ Good: Parameterized query
   return await db.query('SELECT * FROM users WHERE email = $1', [email]);
-  
+
   // ❌ Bad: String concatenation (SQL injection risk)
   // return await db.query(`SELECT * FROM users WHERE email = '${email}'`);
 };
@@ -2825,27 +2959,27 @@ const getUserByEmail = async (email) => {
 
 ```javascript
 // csrf.middleware.js
-const csrf = require('csurf');
+const csrf = require("csurf");
 
 // CSRF protection for state-changing operations
 const csrfProtection = csrf({
   cookie: {
     httpOnly: true,
-    secure: true,  // HTTPS only
-    sameSite: 'strict'
-  }
+    secure: true, // HTTPS only
+    sameSite: "strict",
+  },
 });
 
 // Apply to POST/PUT/DELETE routes
-app.use('/api/v1/', (req, res, next) => {
-  if (['POST', 'PUT', 'DELETE'].includes(req.method)) {
+app.use("/api/v1/", (req, res, next) => {
+  if (["POST", "PUT", "DELETE"].includes(req.method)) {
     return csrfProtection(req, res, next);
   }
   next();
 });
 
 // Send CSRF token to frontend
-app.get('/api/v1/csrf-token', csrfProtection, (req, res) => {
+app.get("/api/v1/csrf-token", csrfProtection, (req, res) => {
   res.json({ csrfToken: req.csrfToken() });
 });
 ```
@@ -2854,30 +2988,45 @@ app.get('/api/v1/csrf-token', csrfProtection, (req, res) => {
 
 ```javascript
 // Content Security Policy (CSP)
-app.use(helmet.contentSecurityPolicy({
-  directives: {
-    defaultSrc: ["'self'"],
-    scriptSrc: ["'self'", "'unsafe-inline'"],  // Avoid 'unsafe-inline' in production
-    styleSrc: ["'self'", "'unsafe-inline'"],
-    imgSrc: ["'self'", "data:", "https:"],
-    connectSrc: ["'self'", "https://api.skycrop.com"],
-    fontSrc: ["'self'"],
-    objectSrc: ["'none'"],
-    mediaSrc: ["'self'"],
-    frameSrc: ["'none'"]
-  }
-}));
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"], // Avoid 'unsafe-inline' in production
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "https://api.skycrop.com"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+    },
+  })
+);
 
 // Sanitize user input (prevent XSS)
-const sanitizeHtml = require('sanitize-html');
+const sanitizeHtml = require("sanitize-html");
 
 const sanitizeUserContent = (html) => {
   return sanitizeHtml(html, {
-    allowedTags: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'a'],
+    allowedTags: [
+      "p",
+      "br",
+      "strong",
+      "em",
+      "u",
+      "h1",
+      "h2",
+      "h3",
+      "ul",
+      "ol",
+      "li",
+      "a",
+    ],
     allowedAttributes: {
-      'a': ['href', 'target']
+      a: ["href", "target"],
     },
-    allowedSchemes: ['http', 'https']
+    allowedSchemes: ["http", "https"],
   });
 };
 ```
@@ -2893,7 +3042,7 @@ const config = {
   jwtSecret: process.env.JWT_SECRET,
   dbPassword: process.env.DB_PASSWORD,
   sentinelHubApiKey: process.env.SENTINEL_HUB_API_KEY,
-  weatherApiKey: process.env.WEATHER_API_KEY
+  weatherApiKey: process.env.WEATHER_API_KEY,
 };
 
 // ❌ Bad: Hardcoded secrets
@@ -2903,9 +3052,9 @@ const config = {
 
 // Use .env file (not committed to Git)
 // .env
-JWT_SECRET=randomly-generated-256-bit-key
-DB_PASSWORD=secure-database-password
-SENTINEL_HUB_API_KEY=your-api-key
+JWT_SECRET = randomly - generated - 256 - bit - key;
+DB_PASSWORD = secure - database - password;
+SENTINEL_HUB_API_KEY = your - api - key;
 ```
 
 **Security Headers:**
@@ -2914,20 +3063,23 @@ SENTINEL_HUB_API_KEY=your-api-key
 // Security headers middleware
 app.use((req, res, next) => {
   // Prevent clickjacking
-  res.setHeader('X-Frame-Options', 'DENY');
-  
+  res.setHeader("X-Frame-Options", "DENY");
+
   // Prevent MIME sniffing
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  
+  res.setHeader("X-Content-Type-Options", "nosniff");
+
   // Enable XSS filter
-  res.setHeader('X-XSS-Protection', '1; mode=block');
-  
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+
   // Referrer policy
-  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+
   // Permissions policy
-  res.setHeader('Permissions-Policy', 'geolocation=(self), camera=(), microphone=()');
-  
+  res.setHeader(
+    "Permissions-Policy",
+    "geolocation=(self), camera=(), microphone=()"
+  );
+
   next();
 });
 ```
@@ -2938,19 +3090,25 @@ app.use((req, res, next) => {
 // audit.service.js
 class AuditService {
   async logSecurityEvent(event) {
-    await db.query(`
+    await db.query(
+      `
       INSERT INTO security_logs (event_type, user_id, ip_address, user_agent, details, timestamp)
       VALUES ($1, $2, $3, $4, $5, NOW())
-    `, [
-      event.type,      // 'login_success', 'login_failed', 'password_reset', 'account_locked'
-      event.userId,
-      event.ipAddress,
-      event.userAgent,
-      JSON.stringify(event.details)
-    ]);
-    
+    `,
+      [
+        event.type, // 'login_success', 'login_failed', 'password_reset', 'account_locked'
+        event.userId,
+        event.ipAddress,
+        event.userAgent,
+        JSON.stringify(event.details),
+      ]
+    );
+
     // Alert on suspicious activity
-    if (event.type === 'account_locked' || event.type === 'unauthorized_access') {
+    if (
+      event.type === "account_locked" ||
+      event.type === "unauthorized_access"
+    ) {
       await this.sendSecurityAlert(event);
     }
   }
@@ -2958,11 +3116,11 @@ class AuditService {
 
 // Usage
 await auditService.logSecurityEvent({
-  type: 'login_failed',
-  userId: 'uuid-123',
+  type: "login_failed",
+  userId: "uuid-123",
   ipAddress: req.ip,
-  userAgent: req.headers['user-agent'],
-  details: { reason: 'invalid_password', attempt: 3 }
+  userAgent: req.headers["user-agent"],
+  details: { reason: "invalid_password", attempt: 3 },
 });
 ```
 
@@ -3007,26 +3165,26 @@ await auditService.logSecurityEvent({
 ```yaml
 # AWS Auto Scaling Group configuration
 AutoScalingGroup:
-  MinSize: 2              # Minimum 2 instances (high availability)
-  MaxSize: 10             # Maximum 10 instances (cost control)
-  DesiredCapacity: 2      # Start with 2 instances
-  
+  MinSize: 2 # Minimum 2 instances (high availability)
+  MaxSize: 10 # Maximum 10 instances (cost control)
+  DesiredCapacity: 2 # Start with 2 instances
+
   ScalingPolicies:
     - PolicyName: ScaleUpOnCPU
       MetricName: CPUUtilization
-      Threshold: 70%        # Scale up if CPU > 70%
+      Threshold: 70% # Scale up if CPU > 70%
       ScalingAdjustment: +2 # Add 2 instances
-      Cooldown: 300         # Wait 5 minutes before next scale
-    
+      Cooldown: 300 # Wait 5 minutes before next scale
+
     - PolicyName: ScaleDownOnCPU
       MetricName: CPUUtilization
-      Threshold: 30%        # Scale down if CPU < 30%
+      Threshold: 30% # Scale down if CPU < 30%
       ScalingAdjustment: -1 # Remove 1 instance
-      Cooldown: 600         # Wait 10 minutes before next scale
-    
+      Cooldown: 600 # Wait 10 minutes before next scale
+
     - PolicyName: ScaleUpOnRequests
       MetricName: RequestCount
-      Threshold: 1000       # Scale up if >1000 req/min
+      Threshold: 1000 # Scale up if >1000 req/min
       ScalingAdjustment: +1
       Cooldown: 300
 ```
@@ -3036,22 +3194,22 @@ AutoScalingGroup:
 ```javascript
 // Load balancer configuration
 const loadBalancerConfig = {
-  algorithm: 'round-robin',  // Distribute requests evenly
+  algorithm: "round-robin", // Distribute requests evenly
   healthCheck: {
-    path: '/health',
-    interval: 30,            // Check every 30 seconds
-    timeout: 5,              // 5-second timeout
-    unhealthyThreshold: 3,   // Mark unhealthy after 3 failures
-    healthyThreshold: 2      // Mark healthy after 2 successes
+    path: "/health",
+    interval: 30, // Check every 30 seconds
+    timeout: 5, // 5-second timeout
+    unhealthyThreshold: 3, // Mark unhealthy after 3 failures
+    healthyThreshold: 2, // Mark healthy after 2 successes
   },
   stickySession: {
-    enabled: false,          // Stateless API (no sticky sessions needed)
-    cookieName: 'AWSALB'
+    enabled: false, // Stateless API (no sticky sessions needed)
+    cookieName: "AWSALB",
   },
   connectionDraining: {
     enabled: true,
-    timeout: 300             // 5 minutes to complete in-flight requests
-  }
+    timeout: 300, // 5 minutes to complete in-flight requests
+  },
 };
 ```
 
@@ -3092,27 +3250,27 @@ const loadBalancerConfig = {
 
 ```javascript
 // Set appropriate cache headers
-app.use('/api/v1/fields', (req, res, next) => {
+app.use("/api/v1/fields", (req, res, next) => {
   // Cache field data for 1 hour
-  res.setHeader('Cache-Control', 'private, max-age=3600');
+  res.setHeader("Cache-Control", "private, max-age=3600");
   next();
 });
 
-app.use('/api/v1/health', (req, res, next) => {
+app.use("/api/v1/health", (req, res, next) => {
   // Cache health data for 1 hour
-  res.setHeader('Cache-Control', 'private, max-age=3600');
+  res.setHeader("Cache-Control", "private, max-age=3600");
   next();
 });
 
-app.use('/api/v1/weather', (req, res, next) => {
+app.use("/api/v1/weather", (req, res, next) => {
   // Cache weather for 6 hours
-  res.setHeader('Cache-Control', 'private, max-age=21600');
+  res.setHeader("Cache-Control", "private, max-age=21600");
   next();
 });
 
-app.use('/static/', (req, res, next) => {
+app.use("/static/", (req, res, next) => {
   // Cache static assets for 1 year
-  res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
   next();
 });
 ```
@@ -3130,7 +3288,7 @@ CREATE INDEX CONCURRENTLY idx_fields_user_status ON fields(user_id, status) WHER
 CREATE INDEX idx_active_fields ON fields(user_id) WHERE status = 'active';
 
 -- Covering indexes (include frequently accessed columns)
-CREATE INDEX idx_health_covering ON health_records(field_id, measurement_date DESC) 
+CREATE INDEX idx_health_covering ON health_records(field_id, measurement_date DESC)
   INCLUDE (ndvi_mean, health_status, health_score);
 
 -- Connection pooling
@@ -3160,7 +3318,7 @@ WHERE f.user_id = 'uuid-123' AND f.status = 'active';
 
 -- Materialized views for expensive queries
 CREATE MATERIALIZED VIEW field_summary AS
-SELECT 
+SELECT
   f.field_id,
   f.name,
   f.area,
@@ -3185,29 +3343,36 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY field_summary;
 
 ```javascript
 // Aggregation pipeline optimization
-db.analytics_events.aggregate([
-  // 1. Match stage (use index)
-  { $match: { 
-    event_type: 'field_view',
-    timestamp: { $gte: new Date('2025-10-01') }
-  }},
-  
-  // 2. Group stage (calculate metrics)
-  { $group: {
-    _id: '$user_id',
-    view_count: { $sum: 1 },
-    avg_duration: { $avg: '$metadata.duration' }
-  }},
-  
-  // 3. Sort stage
-  { $sort: { view_count: -1 }},
-  
-  // 4. Limit stage
-  { $limit: 100 }
-], {
-  allowDiskUse: true,  // Allow disk usage for large datasets
-  hint: { event_type: 1, timestamp: -1 }  // Force index usage
-});
+db.analytics_events.aggregate(
+  [
+    // 1. Match stage (use index)
+    {
+      $match: {
+        event_type: "field_view",
+        timestamp: { $gte: new Date("2025-10-01") },
+      },
+    },
+
+    // 2. Group stage (calculate metrics)
+    {
+      $group: {
+        _id: "$user_id",
+        view_count: { $sum: 1 },
+        avg_duration: { $avg: "$metadata.duration" },
+      },
+    },
+
+    // 3. Sort stage
+    { $sort: { view_count: -1 } },
+
+    // 4. Limit stage
+    { $limit: 100 },
+  ],
+  {
+    allowDiskUse: true, // Allow disk usage for large datasets
+    hint: { event_type: 1, timestamp: -1 }, // Force index usage
+  }
+);
 
 // Sharding strategy (Phase 2+)
 sh.enableSharding("skycrop");
@@ -3223,44 +3388,44 @@ sh.shardCollection("skycrop.analytics_events", { user_id: "hashed" });
 const cdnConfig = {
   origins: [
     {
-      id: 'S3-skycrop-static',
-      domainName: 'skycrop-static.s3.amazonaws.com',
+      id: "S3-skycrop-static",
+      domainName: "skycrop-static.s3.amazonaws.com",
       s3OriginConfig: {
-        originAccessIdentity: 'origin-access-identity/cloudfront/...'
-      }
-    }
+        originAccessIdentity: "origin-access-identity/cloudfront/...",
+      },
+    },
   ],
   defaultCacheBehavior: {
-    targetOriginId: 'S3-skycrop-static',
-    viewerProtocolPolicy: 'redirect-to-https',
-    allowedMethods: ['GET', 'HEAD', 'OPTIONS'],
-    cachedMethods: ['GET', 'HEAD'],
-    compress: true,  // Gzip compression
+    targetOriginId: "S3-skycrop-static",
+    viewerProtocolPolicy: "redirect-to-https",
+    allowedMethods: ["GET", "HEAD", "OPTIONS"],
+    cachedMethods: ["GET", "HEAD"],
+    compress: true, // Gzip compression
     minTTL: 0,
-    defaultTTL: 86400,      // 1 day
-    maxTTL: 31536000,       // 1 year
+    defaultTTL: 86400, // 1 day
+    maxTTL: 31536000, // 1 year
     forwardedValues: {
       queryString: false,
-      cookies: { forward: 'none' }
-    }
+      cookies: { forward: "none" },
+    },
   },
   cacheBehaviors: [
     {
-      pathPattern: '/static/js/*',
-      minTTL: 31536000,     // 1 year (immutable)
-      defaultTTL: 31536000
+      pathPattern: "/static/js/*",
+      minTTL: 31536000, // 1 year (immutable)
+      defaultTTL: 31536000,
     },
     {
-      pathPattern: '/static/images/*',
-      minTTL: 2592000,      // 30 days
-      defaultTTL: 2592000
+      pathPattern: "/static/images/*",
+      minTTL: 2592000, // 30 days
+      defaultTTL: 2592000,
     },
     {
-      pathPattern: '/api/*',
-      minTTL: 0,            // No caching for API
-      defaultTTL: 0
-    }
-  ]
+      pathPattern: "/api/*",
+      minTTL: 0, // No caching for API
+      defaultTTL: 0,
+    },
+  ],
 };
 ```
 
@@ -3268,23 +3433,23 @@ const cdnConfig = {
 
 ```javascript
 // Image processing pipeline
-const sharp = require('sharp');
+const sharp = require("sharp");
 
 async function optimizeImage(inputPath, outputPath) {
   await sharp(inputPath)
-    .resize(1200, 800, { fit: 'inside', withoutEnlargement: true })
-    .webp({ quality: 80 })  // Convert to WebP (better compression)
+    .resize(1200, 800, { fit: "inside", withoutEnlargement: true })
+    .webp({ quality: 80 }) // Convert to WebP (better compression)
     .toFile(outputPath);
 }
 
 // Responsive images (multiple sizes)
 async function generateResponsiveImages(inputPath) {
   const sizes = [
-    { width: 400, suffix: 'sm' },
-    { width: 800, suffix: 'md' },
-    { width: 1200, suffix: 'lg' }
+    { width: 400, suffix: "sm" },
+    { width: 800, suffix: "md" },
+    { width: 1200, suffix: "lg" },
   ];
-  
+
   const outputs = await Promise.all(
     sizes.map(({ width, suffix }) =>
       sharp(inputPath)
@@ -3293,7 +3458,7 @@ async function generateResponsiveImages(inputPath) {
         .toFile(`${inputPath}-${suffix}.webp`)
     )
   );
-  
+
   return outputs;
 }
 ```
@@ -3410,6 +3575,7 @@ async function generateResponsiveImages(inputPath) {
 ```
 
 **Rationale for Railway (MVP):**
+
 - ✅ **Free Tier:** $5/month credit (sufficient for 100 users)
 - ✅ **Easy Deployment:** Git push to deploy
 - ✅ **Managed Services:** PostgreSQL, Redis included
@@ -3438,108 +3604,108 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
-          cache: 'npm'
-      
+          node-version: "20"
+          cache: "npm"
+
       - name: Install dependencies
         run: npm ci
         working-directory: ./backend
-      
+
       - name: Run linter
         run: npm run lint
         working-directory: ./backend
-      
+
       - name: Run unit tests
         run: npm run test:unit
         working-directory: ./backend
-      
+
       - name: Run integration tests
         run: npm run test:integration
         working-directory: ./backend
-      
+
       - name: Check code coverage
         run: npm run test:coverage
         working-directory: ./backend
-      
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
           files: ./backend/coverage/lcov.info
-  
+
   # Job 2: Test ML Service
   test-ml:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
-          cache: 'pip'
-      
+          python-version: "3.11"
+          cache: "pip"
+
       - name: Install dependencies
         run: pip install -r requirements.txt
         working-directory: ./ml-service
-      
+
       - name: Run linter (Pylint)
         run: pylint **/*.py
         working-directory: ./ml-service
-      
+
       - name: Run tests
         run: pytest --cov=. --cov-report=xml
         working-directory: ./ml-service
-  
+
   # Job 3: Test Frontend
   test-frontend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
-          cache: 'npm'
-      
+          node-version: "20"
+          cache: "npm"
+
       - name: Install dependencies
         run: npm ci
         working-directory: ./frontend
-      
+
       - name: Run linter
         run: npm run lint
         working-directory: ./frontend
-      
+
       - name: Run tests
         run: npm run test
         working-directory: ./frontend
-      
+
       - name: Build production bundle
         run: npm run build
         working-directory: ./frontend
-      
+
       - name: Check bundle size
         run: npm run analyze
         working-directory: ./frontend
-  
+
   # Job 4: Security Scan
   security-scan:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Run Snyk security scan
         uses: snyk/actions/node@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      
+
       - name: Run OWASP dependency check
         run: npm audit --audit-level=moderate
-  
+
   # Job 5: Deploy to Staging
   deploy-staging:
     needs: [test-backend, test-ml, test-frontend, security-scan]
@@ -3547,14 +3713,14 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Deploy to Railway (Staging)
         run: |
           npm install -g @railway/cli
           railway up --service api-server --environment staging
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-  
+
   # Job 6: Deploy to Production
   deploy-production:
     needs: [test-backend, test-ml, test-frontend, security-scan]
@@ -3562,24 +3728,24 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Deploy to Railway (Production)
         run: |
           npm install -g @railway/cli
           railway up --service api-server --environment production
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-      
+
       - name: Run smoke tests
         run: npm run test:smoke
         env:
           API_URL: https://api.skycrop.com
-      
+
       - name: Notify team (Slack)
         uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
-          text: 'Deployment to production completed'
+          text: "Deployment to production completed"
           webhook_url: ${{ secrets.SLACK_WEBHOOK }}
 ```
 
@@ -3587,11 +3753,11 @@ jobs:
 
 **Environment Configuration:**
 
-| **Environment** | **Purpose** | **Infrastructure** | **Data** | **Access** |
-|-----------------|-------------|-------------------|----------|------------|
-| **Development** | Local development | Docker Compose | Seed data | Developers |
-| **Staging** | Pre-production testing | Railway (separate project) | Anonymized production data | Developers, QA |
-| **Production** | Live system | Railway/AWS | Real user data | Admins only |
+| **Environment** | **Purpose**            | **Infrastructure**         | **Data**                   | **Access**     |
+| --------------- | ---------------------- | -------------------------- | -------------------------- | -------------- |
+| **Development** | Local development      | Docker Compose             | Seed data                  | Developers     |
+| **Staging**     | Pre-production testing | Railway (separate project) | Anonymized production data | Developers, QA |
+| **Production**  | Live system            | Railway/AWS                | Real user data             | Admins only    |
 
 **Environment Variables:**
 
@@ -3707,18 +3873,18 @@ LOG_LEVEL=warn
 
 ```javascript
 // logger.js - Winston configuration
-const winston = require('winston');
+const winston = require("winston");
 
 const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || 'info',
+  level: process.env.LOG_LEVEL || "info",
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.errors({ stack: true }),
     winston.format.json()
   ),
   defaultMeta: {
-    service: 'skycrop-api',
-    environment: process.env.NODE_ENV
+    service: "skycrop-api",
+    environment: process.env.NODE_ENV,
   },
   transports: [
     // Console (development)
@@ -3726,39 +3892,39 @@ const logger = winston.createLogger({
       format: winston.format.combine(
         winston.format.colorize(),
         winston.format.simple()
-      )
+      ),
     }),
-    
+
     // File (all logs)
     new winston.transports.File({
-      filename: 'logs/combined.log',
-      maxsize: 10485760,  // 10 MB
-      maxFiles: 5
+      filename: "logs/combined.log",
+      maxsize: 10485760, // 10 MB
+      maxFiles: 5,
     }),
-    
+
     // File (errors only)
     new winston.transports.File({
-      filename: 'logs/error.log',
-      level: 'error',
+      filename: "logs/error.log",
+      level: "error",
       maxsize: 10485760,
-      maxFiles: 5
-    })
-  ]
+      maxFiles: 5,
+    }),
+  ],
 });
 
 // Structured logging
-logger.info('User logged in', {
-  user_id: 'uuid-123',
-  email: 'farmer@example.com',
-  ip_address: '192.168.1.1',
-  user_agent: 'Mozilla/5.0...'
+logger.info("User logged in", {
+  user_id: "uuid-123",
+  email: "farmer@example.com",
+  ip_address: "192.168.1.1",
+  user_agent: "Mozilla/5.0...",
 });
 
-logger.error('Database query failed', {
+logger.error("Database query failed", {
   error: error.message,
   stack: error.stack,
-  query: 'SELECT * FROM fields WHERE user_id = $1',
-  params: ['uuid-123']
+  query: "SELECT * FROM fields WHERE user_id = $1",
+  params: ["uuid-123"],
 });
 ```
 
@@ -3789,112 +3955,121 @@ Admins (View logs, troubleshoot)
 class BackupJob {
   async performDailyBackup() {
     const timestamp = new Date().toISOString();
-    
+
     // 1. PostgreSQL backup
     await this.backupPostgreSQL(timestamp);
-    
+
     // 2. MongoDB backup
     await this.backupMongoDB(timestamp);
-    
+
     // 3. Redis snapshot (automatic RDB)
     // Redis handles this automatically
-    
+
     // 4. Upload to S3
     await this.uploadToS3(timestamp);
-    
+
     // 5. Verify backup integrity
     await this.verifyBackup(timestamp);
-    
+
     // 6. Cleanup old backups (retain 30 days)
     await this.cleanupOldBackups();
-    
-    logger.info('Daily backup completed', { timestamp });
+
+    logger.info("Daily backup completed", { timestamp });
   }
-  
+
   async backupPostgreSQL(timestamp) {
-    const { exec } = require('child_process');
+    const { exec } = require("child_process");
     const backupFile = `backups/postgres-${timestamp}.sql.gz`;
-    
+
     // Use pg_dump with compression
     await exec(`
       pg_dump -h ${DB_HOST} -U ${DB_USER} -d ${DB_NAME} | gzip > ${backupFile}
     `);
-    
+
     return backupFile;
   }
-  
+
   async backupMongoDB(timestamp) {
-    const { exec } = require('child_process');
+    const { exec } = require("child_process");
     const backupDir = `backups/mongodb-${timestamp}`;
-    
+
     // Use mongodump
     await exec(`
       mongodump --uri="${MONGO_URI}" --out=${backupDir} --gzip
     `);
-    
+
     return backupDir;
   }
-  
+
   async uploadToS3(timestamp) {
     const s3 = new AWS.S3();
-    
+
     // Upload PostgreSQL backup
-    await s3.upload({
-      Bucket: 'skycrop-backups',
-      Key: `postgres/${timestamp}.sql.gz`,
-      Body: fs.createReadStream(`backups/postgres-${timestamp}.sql.gz`),
-      StorageClass: 'STANDARD_IA'  // Infrequent Access (cheaper)
-    }).promise();
-    
+    await s3
+      .upload({
+        Bucket: "skycrop-backups",
+        Key: `postgres/${timestamp}.sql.gz`,
+        Body: fs.createReadStream(`backups/postgres-${timestamp}.sql.gz`),
+        StorageClass: "STANDARD_IA", // Infrequent Access (cheaper)
+      })
+      .promise();
+
     // Upload MongoDB backup
-    await s3.upload({
-      Bucket: 'skycrop-backups',
-      Key: `mongodb/${timestamp}.tar.gz`,
-      Body: fs.createReadStream(`backups/mongodb-${timestamp}.tar.gz`),
-      StorageClass: 'STANDARD_IA'
-    }).promise();
+    await s3
+      .upload({
+        Bucket: "skycrop-backups",
+        Key: `mongodb/${timestamp}.tar.gz`,
+        Body: fs.createReadStream(`backups/mongodb-${timestamp}.tar.gz`),
+        StorageClass: "STANDARD_IA",
+      })
+      .promise();
   }
-  
+
   async verifyBackup(timestamp) {
     // Verify backup file exists and is not corrupted
     const backupFile = `backups/postgres-${timestamp}.sql.gz`;
     const stats = fs.statSync(backupFile);
-    
-    if (stats.size < 1000) {  // Backup too small (likely failed)
-      throw new Error('Backup verification failed: File too small');
+
+    if (stats.size < 1000) {
+      // Backup too small (likely failed)
+      throw new Error("Backup verification failed: File too small");
     }
-    
-    logger.info('Backup verified', { timestamp, size: stats.size });
+
+    logger.info("Backup verified", { timestamp, size: stats.size });
   }
-  
+
   async cleanupOldBackups() {
     // Delete backups older than 30 days
     const s3 = new AWS.S3();
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    
-    const objects = await s3.listObjectsV2({
-      Bucket: 'skycrop-backups'
-    }).promise();
-    
-    const oldObjects = objects.Contents.filter(obj => 
-      new Date(obj.LastModified) < thirtyDaysAgo
+
+    const objects = await s3
+      .listObjectsV2({
+        Bucket: "skycrop-backups",
+      })
+      .promise();
+
+    const oldObjects = objects.Contents.filter(
+      (obj) => new Date(obj.LastModified) < thirtyDaysAgo
     );
-    
+
     await Promise.all(
-      oldObjects.map(obj =>
-        s3.deleteObject({
-          Bucket: 'skycrop-backups',
-          Key: obj.Key
-        }).promise()
+      oldObjects.map((obj) =>
+        s3
+          .deleteObject({
+            Bucket: "skycrop-backups",
+            Key: obj.Key,
+          })
+          .promise()
       )
     );
-    
-    logger.info('Cleaned up old backups', { deleted: oldObjects.length });
+
+    logger.info("Cleaned up old backups", { deleted: oldObjects.length });
   }
 }
 
 // Schedule daily backup (2 AM)
-cron.schedule('0 2 * * *', async () => {
+cron.schedule("0 2 * * *", async () => {
   await new BackupJob().performDailyBackup();
 });
 ```
@@ -3905,6 +4080,7 @@ cron.schedule('0 2 * * *', async () => {
 **Recovery Point Objective (RPO):** 24 hours (daily backups)
 
 **Recovery Procedure:**
+
 1. **Detect Failure:** Monitoring alerts trigger (uptime <99%, database unavailable)
 2. **Assess Impact:** Determine scope (single service, database, entire system)
 3. **Initiate Recovery:**
@@ -3935,6 +4111,7 @@ cron.schedule('0 2 * * *', async () => {
 **Decision:** Start with modular monolith, migrate to microservices in Phase 2+
 
 **Rationale:**
+
 - ✅ **Team Size:** 1-2 developers (monolith easier to manage)
 - ✅ **Timeline:** 16 weeks (microservices add complexity)
 - ✅ **Cost:** Single deployment (cheaper than multiple services)
@@ -3942,11 +4119,13 @@ cron.schedule('0 2 * * *', async () => {
 - ✅ **Future-Proof:** Clear module boundaries enable future extraction
 
 **Trade-offs:**
+
 - ➕ **Pros:** Faster development, simpler operations, lower cost
 - ➖ **Cons:** Harder to scale individual components, single point of failure
 - 🔄 **Mitigation:** Design modules with clear boundaries, use interfaces for future extraction
 
 **Alternatives Considered:**
+
 - **Pure Microservices:** Rejected (too complex for MVP, overkill for 100 users)
 - **Serverless (AWS Lambda):** Rejected (cold start latency, harder to debug, vendor lock-in)
 
@@ -3957,16 +4136,19 @@ cron.schedule('0 2 * * *', async () => {
 **Decision:** Use PostgreSQL for relational data, MongoDB for flexible documents
 
 **Rationale:**
+
 - ✅ **PostgreSQL:** ACID compliance (critical for user/field data), PostGIS (spatial queries), mature and reliable
 - ✅ **MongoDB:** Flexible schema (news articles evolve), time-series optimization (analytics), horizontal scaling
 - ✅ **Best Tool for Job:** Each database optimized for its use case
 
 **Trade-offs:**
+
 - ➕ **Pros:** Optimal performance for each data type, flexibility
 - ➖ **Cons:** Operational complexity (two databases to manage), no cross-database transactions
 - 🔄 **Mitigation:** Use PostgreSQL as primary (critical data), MongoDB for non-critical (news, analytics)
 
 **Alternatives Considered:**
+
 - **PostgreSQL Only:** Rejected (JSONB not as flexible as MongoDB for evolving schemas)
 - **MongoDB Only:** Rejected (no spatial data support, weaker ACID guarantees)
 - **MySQL:** Rejected (PostGIS equivalent less mature, licensing concerns)
@@ -3978,17 +4160,20 @@ cron.schedule('0 2 * * *', async () => {
 **Decision:** Use Redis for all caching needs (sessions, API responses, rate limiting)
 
 **Rationale:**
+
 - ✅ **Performance:** In-memory speed (sub-millisecond latency)
 - ✅ **Features:** TTL (auto-expiry), pub/sub (real-time updates), atomic operations
 - ✅ **Simplicity:** Single cache solution for all use cases
 - ✅ **Cost:** Free tier sufficient for MVP (512 MB)
 
 **Trade-offs:**
+
 - ➕ **Pros:** Excellent performance, simple to use, well-documented
 - ➖ **Cons:** Data loss if Redis crashes (not persistent by default)
 - 🔄 **Mitigation:** Enable RDB snapshots (periodic persistence), use for non-critical data only
 
 **Alternatives Considered:**
+
 - **Memcached:** Rejected (no persistence, no TTL, simpler data structures)
 - **In-Memory (Node.js):** Rejected (lost on restart, not shared across instances)
 
@@ -3999,17 +4184,20 @@ cron.schedule('0 2 * * *', async () => {
 **Decision:** Use React.js for web, React Native for mobile (code reuse)
 
 **Rationale:**
+
 - ✅ **Code Reuse:** Share business logic, utilities, API clients (60-70% code reuse)
 - ✅ **Developer Productivity:** Single language (JavaScript), similar patterns
 - ✅ **Performance:** React Native compiles to native code (better than hybrid apps)
 - ✅ **Ecosystem:** Large community, rich libraries, excellent tooling
 
 **Trade-offs:**
+
 - ➕ **Pros:** Fast development, code reuse, native performance
 - ➖ **Cons:** React Native has learning curve, platform-specific bugs
 - 🔄 **Mitigation:** Use Expo for easier development, test on real devices
 
 **Alternatives Considered:**
+
 - **Flutter:** Rejected (Dart language, team has JavaScript expertise)
 - **Native (Swift/Kotlin):** Rejected (2x development effort, no code reuse)
 - **Ionic/Cordova:** Rejected (poor performance, webview-based)
@@ -4021,6 +4209,7 @@ cron.schedule('0 2 * * *', async () => {
 **Decision:** Use Node.js with Express framework for backend API
 
 **Rationale:**
+
 - ✅ **Full-Stack JavaScript:** Same language as frontend (easier for small team)
 - ✅ **Async I/O:** Non-blocking, handles concurrent requests efficiently
 - ✅ **Ecosystem:** npm has 2M+ packages, mature libraries for all needs
@@ -4028,11 +4217,13 @@ cron.schedule('0 2 * * *', async () => {
 - ✅ **Deployment:** Easy to containerize, works on all platforms
 
 **Trade-offs:**
+
 - ➕ **Pros:** Fast development, large ecosystem, good performance
 - ➖ **Cons:** Single-threaded (CPU-bound tasks block), callback hell (mitigated with async/await)
 - 🔄 **Mitigation:** Offload CPU-intensive tasks to Python ML service, use worker threads if needed
 
 **Alternatives Considered:**
+
 - **Python (Django/Flask):** Rejected (slower for I/O, team has JavaScript expertise)
 - **Go:** Rejected (learning curve, smaller ecosystem)
 - **Java (Spring Boot):** Rejected (verbose, heavyweight, overkill for MVP)
@@ -4044,17 +4235,20 @@ cron.schedule('0 2 * * *', async () => {
 **Decision:** Use U-Net deep learning architecture for field boundary detection
 
 **Rationale:**
+
 - ✅ **Proven:** State-of-art for image segmentation (medical imaging, satellite imagery)
 - ✅ **Accuracy:** Achieves 85%+ IoU on agricultural datasets (DeepGlobe)
 - ✅ **Pre-trained:** Transfer learning from ImageNet (faster training)
 - ✅ **Efficient:** Relatively small model (20M parameters), fast inference (<60s)
 
 **Trade-offs:**
+
 - ➕ **Pros:** High accuracy, proven architecture, pre-trained weights available
 - ➖ **Cons:** Requires GPU for training (use Google Colab free tier), 30-60s inference time
 - 🔄 **Mitigation:** Train on Google Colab (free GPU), optimize inference (TensorFlow Lite)
 
 **Alternatives Considered:**
+
 - **DeepLab v3+:** Rejected (more complex, similar accuracy)
 - **Mask R-CNN:** Rejected (overkill for binary segmentation, slower)
 - **Traditional CV (edge detection):** Rejected (lower accuracy, not robust to variations)
@@ -4066,6 +4260,7 @@ cron.schedule('0 2 * * *', async () => {
 **Decision:** Use Random Forest regression for yield prediction
 
 **Rationale:**
+
 - ✅ **Accuracy:** Achieves 85%+ accuracy on agricultural datasets
 - ✅ **Interpretability:** Feature importance (understand what drives yield)
 - ✅ **Robustness:** Handles missing data, outliers, non-linear relationships
@@ -4073,11 +4268,13 @@ cron.schedule('0 2 * * *', async () => {
 - ✅ **Small Model:** <10 MB (easy to deploy, fast inference)
 
 **Trade-offs:**
+
 - ➕ **Pros:** High accuracy, interpretable, fast, robust
 - ➖ **Cons:** Not as accurate as deep learning for very large datasets
 - 🔄 **Mitigation:** Sufficient for MVP (500+ training samples), can upgrade to neural network in Phase 2
 
 **Alternatives Considered:**
+
 - **Linear Regression:** Rejected (too simple, lower accuracy)
 - **Neural Network (LSTM):** Rejected (requires more data, harder to interpret, overkill for MVP)
 - **XGBoost:** Considered (similar accuracy, slightly faster), but Random Forest chosen for simplicity
@@ -4089,6 +4286,7 @@ cron.schedule('0 2 * * *', async () => {
 **Decision:** Deploy MVP on Railway, migrate to AWS in Phase 2+
 
 **Rationale:**
+
 - ✅ **Cost:** Free tier ($5/month credit) sufficient for 100 users
 - ✅ **Simplicity:** Git push to deploy, no DevOps expertise needed
 - ✅ **Managed Services:** PostgreSQL, Redis included (no setup)
@@ -4096,11 +4294,13 @@ cron.schedule('0 2 * * *', async () => {
 - ✅ **SSL:** Free automatic certificates
 
 **Trade-offs:**
+
 - ➕ **Pros:** Zero cost, easy deployment, managed services
 - ➖ **Cons:** Limited to 512 MB RAM per service, vendor lock-in
 - 🔄 **Mitigation:** Design for portability (Docker, environment variables), migrate to AWS when scale requires
 
 **Alternatives Considered:**
+
 - **AWS (from start):** Rejected (complex setup, higher cost, overkill for MVP)
 - **Heroku:** Rejected (more expensive than Railway, similar features)
 - **DigitalOcean:** Rejected (requires more DevOps, not fully managed)
@@ -4113,17 +4313,20 @@ cron.schedule('0 2 * * *', async () => {
 **Decision:** Use RESTful API architecture
 
 **Rationale:**
+
 - ✅ **Simplicity:** Easier to implement, test, document
 - ✅ **Caching:** HTTP caching works out-of-box (CDN, browser, Redis)
 - ✅ **Tooling:** Excellent tooling (Postman, Swagger, curl)
 - ✅ **Team Expertise:** Team familiar with REST
 
 **Trade-offs:**
+
 - ➕ **Pros:** Simple, cacheable, well-understood, excellent tooling
 - ➖ **Cons:** Over-fetching (get more data than needed), multiple requests for related data
 - 🔄 **Mitigation:** Design endpoints to return complete data (reduce round-trips), use query parameters for filtering
 
 **Alternatives Considered:**
+
 - **GraphQL:** Rejected (learning curve, caching complexity, overkill for simple CRUD)
 - **gRPC:** Rejected (binary protocol, harder to debug, not browser-friendly)
 
@@ -4134,17 +4337,20 @@ cron.schedule('0 2 * * *', async () => {
 **Decision:** Use Sentinel Hub API for satellite imagery
 
 **Rationale:**
+
 - ✅ **Free Tier:** Academic account (3,000 requests/month, sufficient for MVP)
 - ✅ **API Quality:** RESTful API, excellent documentation, reliable
 - ✅ **Performance:** Fast image retrieval (<10s), on-demand processing
 - ✅ **Features:** Cloud masking, atmospheric correction, custom evalscripts
 
 **Trade-offs:**
+
 - ➕ **Pros:** Free, fast, reliable, excellent API
 - ➖ **Cons:** Rate limit (3,000 req/month), academic account approval required
 - 🔄 **Mitigation:** Aggressive caching (30 days), fallback to Google Earth Engine if needed
 
 **Alternatives Considered:**
+
 - **Google Earth Engine:** Considered (free, unlimited), but API more complex, slower
 - **AWS Ground Station:** Rejected (expensive, overkill)
 - **Direct Sentinel-2 Download:** Rejected (large files, slow, requires processing infrastructure)
@@ -4155,13 +4361,13 @@ cron.schedule('0 2 * * *', async () => {
 
 **Performance vs. Cost:**
 
-| **Aspect** | **High Performance Option** | **Cost-Effective Option** | **Decision** |
-|------------|----------------------------|---------------------------|--------------|
-| **Hosting** | AWS EC2 (dedicated instances) | Railway (shared infrastructure) | Railway (MVP), AWS (Phase 2) |
-| **Database** | AWS RDS (Multi-AZ, read replicas) | Railway PostgreSQL (single instance) | Railway (MVP), RDS (Phase 2) |
-| **CDN** | CloudFront (global edge locations) | No CDN (direct from server) | CloudFront (static assets only) |
-| **Caching** | Redis Cluster (high availability) | Redis single instance | Single instance (MVP), Cluster (Phase 2) |
-| **ML Inference** | GPU instances (faster inference) | CPU instances (slower but cheaper) | CPU (MVP), GPU (Phase 2) |
+| **Aspect**       | **High Performance Option**        | **Cost-Effective Option**            | **Decision**                             |
+| ---------------- | ---------------------------------- | ------------------------------------ | ---------------------------------------- |
+| **Hosting**      | AWS EC2 (dedicated instances)      | Railway (shared infrastructure)      | Railway (MVP), AWS (Phase 2)             |
+| **Database**     | AWS RDS (Multi-AZ, read replicas)  | Railway PostgreSQL (single instance) | Railway (MVP), RDS (Phase 2)             |
+| **CDN**          | CloudFront (global edge locations) | No CDN (direct from server)          | CloudFront (static assets only)          |
+| **Caching**      | Redis Cluster (high availability)  | Redis single instance                | Single instance (MVP), Cluster (Phase 2) |
+| **ML Inference** | GPU instances (faster inference)   | CPU instances (slower but cheaper)   | CPU (MVP), GPU (Phase 2)                 |
 
 **Decision:** Prioritize cost for MVP (100 users), invest in performance for scale (1,000+ users)
 
@@ -4169,12 +4375,12 @@ cron.schedule('0 2 * * *', async () => {
 
 **Scalability vs. Simplicity:**
 
-| **Aspect** | **Scalable Option** | **Simple Option** | **Decision** |
-|------------|---------------------|-------------------|--------------|
-| **Architecture** | Microservices | Modular monolith | Modular monolith (MVP) |
-| **Database** | Sharded (horizontal scaling) | Single instance | Single instance (MVP) |
-| **Message Queue** | RabbitMQ/Kafka (async processing) | Direct function calls | Direct calls (MVP), Queue (Phase 2) |
-| **Load Balancing** | Multiple instances + ALB | Single instance | Single instance (MVP), ALB (Phase 2) |
+| **Aspect**         | **Scalable Option**               | **Simple Option**     | **Decision**                         |
+| ------------------ | --------------------------------- | --------------------- | ------------------------------------ |
+| **Architecture**   | Microservices                     | Modular monolith      | Modular monolith (MVP)               |
+| **Database**       | Sharded (horizontal scaling)      | Single instance       | Single instance (MVP)                |
+| **Message Queue**  | RabbitMQ/Kafka (async processing) | Direct function calls | Direct calls (MVP), Queue (Phase 2)  |
+| **Load Balancing** | Multiple instances + ALB          | Single instance       | Single instance (MVP), ALB (Phase 2) |
 
 **Decision:** Start simple, add complexity only when needed (YAGNI principle)
 
@@ -4182,11 +4388,11 @@ cron.schedule('0 2 * * *', async () => {
 
 **Accuracy vs. Speed:**
 
-| **Aspect** | **High Accuracy Option** | **Fast Option** | **Decision** |
-|------------|-------------------------|-----------------|--------------|
-| **Boundary Detection** | Ensemble models (multiple models) | Single U-Net model | Single U-Net (85% IoU sufficient) |
-| **Yield Prediction** | Deep learning (LSTM) | Random Forest | Random Forest (85% accuracy sufficient) |
-| **Satellite Resolution** | 3m (Planet Labs, paid) | 10m (Sentinel-2, free) | 10m (free, sufficient for paddy fields) |
+| **Aspect**               | **High Accuracy Option**          | **Fast Option**        | **Decision**                            |
+| ------------------------ | --------------------------------- | ---------------------- | --------------------------------------- |
+| **Boundary Detection**   | Ensemble models (multiple models) | Single U-Net model     | Single U-Net (85% IoU sufficient)       |
+| **Yield Prediction**     | Deep learning (LSTM)              | Random Forest          | Random Forest (85% accuracy sufficient) |
+| **Satellite Resolution** | 3m (Planet Labs, paid)            | 10m (Sentinel-2, free) | 10m (free, sufficient for paddy fields) |
 
 **Decision:** Balance accuracy and speed based on user needs (85% accuracy acceptable, <60s processing critical)
 
@@ -4195,6 +4401,7 @@ cron.schedule('0 2 * * *', async () => {
 ### 11.3 Technology Selection Matrix
 
 **Evaluation Criteria:**
+
 1. **Cost:** Free tier availability, pricing at scale
 2. **Performance:** Speed, latency, throughput
 3. **Scalability:** Horizontal scaling, limits
@@ -4204,15 +4411,15 @@ cron.schedule('0 2 * * *', async () => {
 
 **Backend Framework Comparison:**
 
-| **Criteria** | **Node.js/Express** | **Python/Django** | **Go/Gin** | **Decision** |
-|--------------|---------------------|-------------------|------------|--------------|
-| **Cost** | ⭐⭐⭐⭐⭐ (free, low resource) | ⭐⭐⭐⭐ (free, moderate resource) | ⭐⭐⭐⭐⭐ (free, very low resource) | Node.js |
-| **Performance** | ⭐⭐⭐⭐ (fast I/O) | ⭐⭐⭐ (slower I/O) | ⭐⭐⭐⭐⭐ (fastest) | Node.js |
-| **Scalability** | ⭐⭐⭐⭐ (horizontal) | ⭐⭐⭐⭐ (horizontal) | ⭐⭐⭐⭐⭐ (excellent) | Node.js |
-| **Reliability** | ⭐⭐⭐⭐ (mature) | ⭐⭐⭐⭐⭐ (very mature) | ⭐⭐⭐⭐ (mature) | Node.js |
-| **Dev Experience** | ⭐⭐⭐⭐⭐ (excellent) | ⭐⭐⭐⭐ (good) | ⭐⭐⭐ (learning curve) | Node.js |
-| **Team Expertise** | ⭐⭐⭐⭐⭐ (high) | ⭐⭐⭐ (moderate) | ⭐⭐ (low) | Node.js |
-| **Ecosystem** | ⭐⭐⭐⭐⭐ (2M+ packages) | ⭐⭐⭐⭐ (large) | ⭐⭐⭐ (growing) | Node.js |
+| **Criteria**       | **Node.js/Express**             | **Python/Django**                  | **Go/Gin**                           | **Decision** |
+| ------------------ | ------------------------------- | ---------------------------------- | ------------------------------------ | ------------ |
+| **Cost**           | ⭐⭐⭐⭐⭐ (free, low resource) | ⭐⭐⭐⭐ (free, moderate resource) | ⭐⭐⭐⭐⭐ (free, very low resource) | Node.js      |
+| **Performance**    | ⭐⭐⭐⭐ (fast I/O)             | ⭐⭐⭐ (slower I/O)                | ⭐⭐⭐⭐⭐ (fastest)                 | Node.js      |
+| **Scalability**    | ⭐⭐⭐⭐ (horizontal)           | ⭐⭐⭐⭐ (horizontal)              | ⭐⭐⭐⭐⭐ (excellent)               | Node.js      |
+| **Reliability**    | ⭐⭐⭐⭐ (mature)               | ⭐⭐⭐⭐⭐ (very mature)           | ⭐⭐⭐⭐ (mature)                    | Node.js      |
+| **Dev Experience** | ⭐⭐⭐⭐⭐ (excellent)          | ⭐⭐⭐⭐ (good)                    | ⭐⭐⭐ (learning curve)              | Node.js      |
+| **Team Expertise** | ⭐⭐⭐⭐⭐ (high)               | ⭐⭐⭐ (moderate)                  | ⭐⭐ (low)                           | Node.js      |
+| **Ecosystem**      | ⭐⭐⭐⭐⭐ (2M+ packages)       | ⭐⭐⭐⭐ (large)                   | ⭐⭐⭐ (growing)                     | Node.js      |
 
 **Winner:** Node.js/Express (best balance for team, timeline, cost)
 
@@ -4220,13 +4427,13 @@ cron.schedule('0 2 * * *', async () => {
 
 **Database Comparison:**
 
-| **Criteria** | **PostgreSQL** | **MongoDB** | **MySQL** | **Decision** |
-|--------------|----------------|-------------|-----------|--------------|
-| **Spatial Data** | ⭐⭐⭐⭐⭐ (PostGIS) | ⭐⭐ (basic) | ⭐⭐⭐ (MySQL Spatial) | PostgreSQL |
-| **ACID** | ⭐⭐⭐⭐⭐ (full) | ⭐⭐⭐⭐ (transactions) | ⭐⭐⭐⭐⭐ (full) | PostgreSQL |
-| **Flexibility** | ⭐⭐⭐ (JSONB) | ⭐⭐⭐⭐⭐ (schemaless) | ⭐⭐ (rigid) | MongoDB |
-| **Scalability** | ⭐⭐⭐⭐ (vertical) | ⭐⭐⭐⭐⭐ (horizontal) | ⭐⭐⭐⭐ (vertical) | Both |
-| **Cost** | ⭐⭐⭐⭐⭐ (free) | ⭐⭐⭐⭐⭐ (free) | ⭐⭐⭐⭐⭐ (free) | Both |
+| **Criteria**     | **PostgreSQL**       | **MongoDB**             | **MySQL**              | **Decision** |
+| ---------------- | -------------------- | ----------------------- | ---------------------- | ------------ |
+| **Spatial Data** | ⭐⭐⭐⭐⭐ (PostGIS) | ⭐⭐ (basic)            | ⭐⭐⭐ (MySQL Spatial) | PostgreSQL   |
+| **ACID**         | ⭐⭐⭐⭐⭐ (full)    | ⭐⭐⭐⭐ (transactions) | ⭐⭐⭐⭐⭐ (full)      | PostgreSQL   |
+| **Flexibility**  | ⭐⭐⭐ (JSONB)       | ⭐⭐⭐⭐⭐ (schemaless) | ⭐⭐ (rigid)           | MongoDB      |
+| **Scalability**  | ⭐⭐⭐⭐ (vertical)  | ⭐⭐⭐⭐⭐ (horizontal) | ⭐⭐⭐⭐ (vertical)    | Both         |
+| **Cost**         | ⭐⭐⭐⭐⭐ (free)    | ⭐⭐⭐⭐⭐ (free)       | ⭐⭐⭐⭐⭐ (free)      | Both         |
 
 **Winner:** PostgreSQL (primary) + MongoDB (secondary) - polyglot persistence
 
@@ -4234,13 +4441,13 @@ cron.schedule('0 2 * * *', async () => {
 
 **ML Framework Comparison:**
 
-| **Criteria** | **TensorFlow** | **PyTorch** | **scikit-learn** | **Decision** |
-|--------------|----------------|-------------|------------------|--------------|
-| **Deep Learning** | ⭐⭐⭐⭐⭐ (excellent) | ⭐⭐⭐⭐⭐ (excellent) | ⭐⭐ (basic) | TensorFlow/PyTorch |
-| **Traditional ML** | ⭐⭐⭐ (good) | ⭐⭐⭐ (good) | ⭐⭐⭐⭐⭐ (excellent) | scikit-learn |
-| **Production** | ⭐⭐⭐⭐⭐ (TF Serving) | ⭐⭐⭐⭐ (TorchServe) | ⭐⭐⭐⭐ (pickle) | TensorFlow |
-| **Community** | ⭐⭐⭐⭐⭐ (largest) | ⭐⭐⭐⭐⭐ (growing) | ⭐⭐⭐⭐⭐ (mature) | All |
-| **Learning Curve** | ⭐⭐⭐ (moderate) | ⭐⭐⭐⭐ (easier) | ⭐⭐⭐⭐⭐ (easiest) | Mixed |
+| **Criteria**       | **TensorFlow**          | **PyTorch**            | **scikit-learn**       | **Decision**       |
+| ------------------ | ----------------------- | ---------------------- | ---------------------- | ------------------ |
+| **Deep Learning**  | ⭐⭐⭐⭐⭐ (excellent)  | ⭐⭐⭐⭐⭐ (excellent) | ⭐⭐ (basic)           | TensorFlow/PyTorch |
+| **Traditional ML** | ⭐⭐⭐ (good)           | ⭐⭐⭐ (good)          | ⭐⭐⭐⭐⭐ (excellent) | scikit-learn       |
+| **Production**     | ⭐⭐⭐⭐⭐ (TF Serving) | ⭐⭐⭐⭐ (TorchServe)  | ⭐⭐⭐⭐ (pickle)      | TensorFlow         |
+| **Community**      | ⭐⭐⭐⭐⭐ (largest)    | ⭐⭐⭐⭐⭐ (growing)   | ⭐⭐⭐⭐⭐ (mature)    | All                |
+| **Learning Curve** | ⭐⭐⭐ (moderate)       | ⭐⭐⭐⭐ (easier)      | ⭐⭐⭐⭐⭐ (easiest)   | Mixed              |
 
 **Winner:** TensorFlow (U-Net boundary detection) + scikit-learn (Random Forest yield prediction)
 
@@ -4251,14 +4458,17 @@ cron.schedule('0 2 * * *', async () => {
 **Technical Constraints:**
 
 1. **Satellite Resolution:** 10m (Sentinel-2) - cannot detect features <10m
+
    - **Impact:** Small fields (<0.1 ha) may not be accurately detected
    - **Mitigation:** Set minimum field size to 0.1 ha, provide manual drawing option
 
 2. **Satellite Revisit:** 5 days (Sentinel-2) - cannot provide daily updates
+
    - **Impact:** Health data updates every 5-7 days (not real-time)
    - **Mitigation:** Set user expectations, show "Last updated: X days ago"
 
 3. **Cloud Cover:** >20% makes images unusable
+
    - **Impact:** No health updates during monsoon season (frequent clouds)
    - **Mitigation:** Use historical data, provide disclaimer, wait for clear images
 
@@ -4269,6 +4479,7 @@ cron.schedule('0 2 * * *', async () => {
 **Budget Constraints:**
 
 1. **Free Tier Limits:**
+
    - Sentinel Hub: 3,000 requests/month (100 users × 30 requests = 3,000 ✅)
    - OpenWeatherMap: 1M calls/month (100 users × 100 calls/day × 30 days = 300K ✅)
    - Railway: $5/month credit (sufficient for 100 users ✅)
@@ -4298,6 +4509,7 @@ cron.schedule('0 2 * * *', async () => {
 ### 11.5 Future Architecture Evolution
 
 **Phase 1 (MVP - Months 1-4): Modular Monolith**
+
 ```
 Single Node.js app
 ├── All services in one codebase
@@ -4311,6 +4523,7 @@ Cost: $0-5/month
 ```
 
 **Phase 2 (Scale - Months 5-12): Optimized Monolith**
+
 ```
 Node.js app (2-5 instances)
 ├── Load balancer (AWS ALB)
@@ -4324,6 +4537,7 @@ Cost: $50-100/month
 ```
 
 **Phase 3 (National Scale - Year 2): Microservices**
+
 ```
 Microservices architecture
 ├── API Gateway (Kong/AWS API Gateway)
@@ -4344,11 +4558,13 @@ Cost: $500-1,000/month
 **Migration Strategy:**
 
 1. **Extract AI/ML Service First:**
+
    - Reason: Compute-intensive, independent, easy to scale separately
    - Timeline: Month 6-7
    - Benefit: Offload CPU load from main API, enable GPU instances
 
 2. **Extract Satellite Service Second:**
+
    - Reason: External API dependency, caching-heavy, rate-limited
    - Timeline: Month 8-9
    - Benefit: Isolate external API failures, independent scaling
@@ -4404,7 +4620,7 @@ paths:
                   type: string
                   example: Sunil Perera
       responses:
-        '201':
+        "201":
           description: User created successfully
           content:
             application/json:
@@ -4424,12 +4640,12 @@ paths:
                         type: string
                       token:
                         type: string
-        '400':
+        "400":
           description: Validation error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /fields:
     get:
@@ -4438,7 +4654,7 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: List of fields
           content:
             application/json:
@@ -4450,7 +4666,7 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Field'
+                      $ref: "#/components/schemas/Field"
 
 components:
   securitySchemes:
@@ -4458,7 +4674,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-  
+
   schemas:
     Field:
       type: object
@@ -4480,7 +4696,7 @@ components:
         created_at:
           type: string
           format: date-time
-    
+
     Error:
       type: object
       properties:
@@ -4581,6 +4797,7 @@ components:
 ### Appendix C: Deployment Checklist
 
 **Pre-Deployment:**
+
 - [ ] All P0 features implemented and tested
 - [ ] Code coverage ≥80%
 - [ ] Security audit passed (OWASP Top 10)
@@ -4593,6 +4810,7 @@ components:
 - [ ] Documentation complete (API docs, deployment guide, user guide)
 
 **Deployment:**
+
 - [ ] Deploy to staging environment
 - [ ] Run smoke tests on staging
 - [ ] Deploy to production (blue-green deployment)
@@ -4602,6 +4820,7 @@ components:
 - [ ] Verify monitoring alerts working
 
 **Post-Deployment:**
+
 - [ ] Onboard first 10 farmers (pilot group)
 - [ ] Collect user feedback
 - [ ] Monitor system performance (uptime, latency, errors)
@@ -4611,6 +4830,7 @@ components:
 ### Appendix D: Technology Stack Versions
 
 **Backend:**
+
 ```json
 {
   "dependencies": {
@@ -4641,6 +4861,7 @@ components:
 ```
 
 **Frontend (Web):**
+
 ```json
 {
   "dependencies": {
@@ -4667,6 +4888,7 @@ components:
 ```
 
 **Mobile (React Native):**
+
 ```json
 {
   "dependencies": {
@@ -4691,6 +4913,7 @@ components:
 ```
 
 **ML Service (Python):**
+
 ```txt
 # requirements.txt
 tensorflow==2.14.0
@@ -4707,25 +4930,26 @@ gunicorn==21.2.0
 
 ### Appendix E: Glossary
 
-| **Term** | **Definition** |
-|----------|----------------|
-| **API Gateway** | Single entry point for all client requests, handles routing, authentication, rate limiting |
-| **Circuit Breaker** | Design pattern that prevents cascading failures by stopping requests to failing services |
-| **DAO (Data Access Object)** | Pattern that abstracts database operations from business logic |
-| **Horizontal Scaling** | Adding more servers to handle increased load (scale out) |
-| **Vertical Scaling** | Adding more resources (CPU, RAM) to existing server (scale up) |
-| **IoU (Intersection over Union)** | Metric for boundary detection accuracy (0-1, higher is better) |
-| **JWT (JSON Web Token)** | Stateless authentication token containing user claims |
-| **MAPE (Mean Absolute Percentage Error)** | Metric for prediction accuracy (lower is better) |
-| **Modular Monolith** | Single deployable unit with clear module boundaries (easy to extract later) |
-| **Polyglot Persistence** | Using multiple database types for different data needs |
-| **Repository Pattern** | Abstraction layer between business logic and data access |
-| **Service Layer** | Layer containing business logic, orchestrates operations across repositories |
-| **TTL (Time To Live)** | Duration before cached data expires |
+| **Term**                                  | **Definition**                                                                             |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------ |
+| **API Gateway**                           | Single entry point for all client requests, handles routing, authentication, rate limiting |
+| **Circuit Breaker**                       | Design pattern that prevents cascading failures by stopping requests to failing services   |
+| **DAO (Data Access Object)**              | Pattern that abstracts database operations from business logic                             |
+| **Horizontal Scaling**                    | Adding more servers to handle increased load (scale out)                                   |
+| **Vertical Scaling**                      | Adding more resources (CPU, RAM) to existing server (scale up)                             |
+| **IoU (Intersection over Union)**         | Metric for boundary detection accuracy (0-1, higher is better)                             |
+| **JWT (JSON Web Token)**                  | Stateless authentication token containing user claims                                      |
+| **MAPE (Mean Absolute Percentage Error)** | Metric for prediction accuracy (lower is better)                                           |
+| **Modular Monolith**                      | Single deployable unit with clear module boundaries (easy to extract later)                |
+| **Polyglot Persistence**                  | Using multiple database types for different data needs                                     |
+| **Repository Pattern**                    | Abstraction layer between business logic and data access                                   |
+| **Service Layer**                         | Layer containing business logic, orchestrates operations across repositories               |
+| **TTL (Time To Live)**                    | Duration before cached data expires                                                        |
 
 ### Appendix F: Design Review Checklist
 
 **Architecture Review:**
+
 - [x] System architecture clearly defined
 - [x] Component responsibilities well-defined
 - [x] Component interactions documented
@@ -4735,6 +4959,7 @@ gunicorn==21.2.0
 - [x] Separation of concerns maintained
 
 **Scalability Review:**
+
 - [x] Horizontal scaling strategy defined
 - [x] Caching strategy comprehensive
 - [x] Database optimization planned
@@ -4742,6 +4967,7 @@ gunicorn==21.2.0
 - [x] Auto-scaling policies defined
 
 **Security Review:**
+
 - [x] Authentication mechanism secure (OAuth 2.0, JWT)
 - [x] Authorization implemented (RBAC)
 - [x] Data encryption (in transit and at rest)
@@ -4751,6 +4977,7 @@ gunicorn==21.2.0
 - [x] Audit logging planned
 
 **Performance Review:**
+
 - [x] Performance targets defined (<3s API, <60s AI)
 - [x] Caching strategy comprehensive
 - [x] Database queries optimized
@@ -4758,6 +4985,7 @@ gunicorn==21.2.0
 - [x] Image optimization planned
 
 **Reliability Review:**
+
 - [x] Availability target defined (99% uptime)
 - [x] Fault tolerance mechanisms (circuit breaker, retry, fallback)
 - [x] Backup strategy defined (daily, 30-day retention)
@@ -4765,6 +4993,7 @@ gunicorn==21.2.0
 - [x] Monitoring and alerting configured
 
 **Maintainability Review:**
+
 - [x] Code organization clear (layered architecture)
 - [x] Design patterns documented
 - [x] API specification complete (OpenAPI)
@@ -4774,12 +5003,14 @@ gunicorn==21.2.0
 ### Appendix G: References
 
 **Architecture Patterns:**
+
 1. Martin Fowler - Patterns of Enterprise Application Architecture
 2. Microsoft - Cloud Design Patterns
 3. AWS - Well-Architected Framework
 4. Google - Site Reliability Engineering (SRE) Book
 
 **Technology Documentation:**
+
 1. React.js: https://react.dev/
 2. React Native: https://reactnative.dev/
 3. Node.js: https://nodejs.org/
@@ -4791,6 +5022,7 @@ gunicorn==21.2.0
 9. Sentinel Hub: https://docs.sentinel-hub.com/
 
 **Best Practices:**
+
 1. OWASP Top 10: https://owasp.org/www-project-top-ten/
 2. WCAG 2.1: https://www.w3.org/WAI/WCAG21/quickref/
 3. REST API Design: https://restfulapi.net/
@@ -4804,13 +5036,13 @@ gunicorn==21.2.0
 
 By signing below, the undersigned acknowledge that they have reviewed the System Design Document and agree that it provides a comprehensive and implementable design for the SkyCrop system.
 
-| **Name** | **Role** | **Signature** | **Date** |
-|----------|----------|---------------|----------|
-| [Your Name] | System Architect | _________________ | __________ |
-| [Tech Lead] | Technical Lead | _________________ | __________ |
-| [ML Engineer] | ML Engineer | _________________ | __________ |
-| [PM Name] | Product Manager | _________________ | __________ |
-| [Supervisor] | Project Sponsor | _________________ | __________ |
+| **Name**      | **Role**         | **Signature**      | **Date**     |
+| ------------- | ---------------- | ------------------ | ------------ |
+| [Your Name]   | System Architect | ********\_******** | ****\_\_**** |
+| [Tech Lead]   | Technical Lead   | ********\_******** | ****\_\_**** |
+| [ML Engineer] | ML Engineer      | ********\_******** | ****\_\_**** |
+| [PM Name]     | Product Manager  | ********\_******** | ****\_\_**** |
+| [Supervisor]  | Project Sponsor  | ********\_******** | ****\_\_**** |
 
 **Approval Decision:** ☐ APPROVED - Proceed to Implementation ☐ CONDITIONAL APPROVAL ☐ REJECTED
 
@@ -4820,12 +5052,12 @@ By signing below, the undersigned acknowledge that they have reviewed the System
 
 ## DOCUMENT HISTORY
 
-| **Version** | **Date** | **Author** | **Changes** |
-|-------------|----------|------------|-------------|
-| 0.1 | Oct 29, 2025 | System Architect | Initial draft (Sections 1-4) |
-| 0.5 | Oct 29, 2025 | System Architect | Added Sections 5-8 (AI/ML, Data, Integration, Security) |
-| 0.9 | Oct 29, 2025 | System Architect | Added Sections 9-10 (Scalability, Deployment) |
-| 1.0 | Oct 29, 2025 | System Architect | Final version (Design Decisions, Appendices) |
+| **Version** | **Date**     | **Author**       | **Changes**                                             |
+| ----------- | ------------ | ---------------- | ------------------------------------------------------- |
+| 0.1         | Oct 29, 2025 | System Architect | Initial draft (Sections 1-4)                            |
+| 0.5         | Oct 29, 2025 | System Architect | Added Sections 5-8 (AI/ML, Data, Integration, Security) |
+| 0.9         | Oct 29, 2025 | System Architect | Added Sections 9-10 (Scalability, Deployment)           |
+| 1.0         | Oct 29, 2025 | System Architect | Final version (Design Decisions, Appendices)            |
 
 ---
 
@@ -4834,6 +5066,7 @@ By signing below, the undersigned acknowledge that they have reviewed the System
 ---
 
 **Next Steps:**
+
 1. ✅ Obtain SDD approval from all stakeholders
 2. ✅ Create detailed database schema (DDL scripts)
 3. ✅ Create API specification (complete OpenAPI 3.0 document)
@@ -4849,4 +5082,4 @@ Contact System Architect: [Your Email] | [Your Phone]
 
 ---
 
-*This document is confidential and intended for the development team and project stakeholders only.*
+_This document is confidential and intended for the development team and project stakeholders only._

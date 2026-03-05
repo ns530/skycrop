@@ -61,7 +61,19 @@ export const FieldHealthScreen: React.FC = () => {
                 Alert.alert('Success', 'Health analysis has been triggered. Check back in a few minutes.');
               },
               onError: (err: any) => {
-                Alert.alert('Error', err.message || 'Failed to trigger analysis');
+                const errorMessage = err.message || 'Failed to trigger analysis';
+                const isSentinelHubError = errorMessage.includes('Satellite data service') || 
+                                         errorMessage.includes('backend configuration');
+                
+                if (isSentinelHubError) {
+                  Alert.alert(
+                    'Service Unavailable',
+                    errorMessage + '\n\nThis is a backend configuration issue. Please contact support or check backend logs.',
+                    [{ text: 'OK' }]
+                  );
+                } else {
+                  Alert.alert('Error', errorMessage);
+                }
               },
             });
           },
@@ -101,8 +113,17 @@ export const FieldHealthScreen: React.FC = () => {
 
   const { current, history, trends } = healthData;
   
-  // Check if we have actual health index data
-  const hasHealthData = current.ndvi_mean !== undefined && current.ndvi_mean !== null && current.ndvi_mean !== 0;
+  // Check if we have actual health index data (any of NDVI, NDWI, or TDVI)
+  // We need to distinguish between "no data" (undefined/null) and "actual 0 value" (very poor vegetation)
+  // If all indices are undefined/null, or if NDVI is 0 and others are undefined, treat as "no data"
+  const hasNdviData = current.ndvi_mean !== undefined && current.ndvi_mean !== null;
+  const hasNdwiData = current.ndwi_mean !== undefined && current.ndwi_mean !== null;
+  const hasTdviData = current.tdvi_mean !== undefined && current.tdvi_mean !== null;
+  
+  // Consider it "no data" if:
+  // 1. All indices are undefined/null, OR
+  // 2. Only NDVI is defined and it's 0 (likely means no real data, just a default)
+  const hasHealthData = (hasNdviData && current.ndvi_mean !== 0) || hasNdwiData || hasTdviData;
 
   const getHealthColor = (status: string) => {
     switch (status) {
@@ -183,7 +204,7 @@ export const FieldHealthScreen: React.FC = () => {
       )}
 
       {/* NDVI Analysis Card */}
-      {hasHealthData && (
+      {hasHealthData && hasNdviData && current.ndvi_mean !== undefined && current.ndvi_mean !== null && (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>🌱 NDVI Analysis (Vegetation Health)</Text>
           <View style={styles.ndviGrid}>
@@ -212,7 +233,7 @@ export const FieldHealthScreen: React.FC = () => {
           </View>
 
           {/* Progress Bar for Vegetation Cover */}
-          {current.vegetation_cover_percentage !== undefined && current.vegetation_cover_percentage !== null && (
+          {hasNdviData && current.ndvi_mean !== undefined && current.ndvi_mean !== null && current.vegetation_cover_percentage !== undefined && current.vegetation_cover_percentage !== null && (
             <View style={styles.progressSection}>
               <Text style={styles.progressLabel}>Vegetation Cover</Text>
               <View style={styles.progressBar}>

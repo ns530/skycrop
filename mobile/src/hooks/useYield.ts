@@ -13,7 +13,7 @@ import {
 /**
  * Hook to fetch current yield prediction for a field
  */
-export const useFieldYield = (fieldId: number) => {
+export const useFieldYield = (fieldId: string | number) => {
   return useQuery<YieldPrediction, Error>({
     queryKey: ['fieldYield', fieldId],
     queryFn: () => getFieldYield(fieldId),
@@ -26,7 +26,7 @@ export const useFieldYield = (fieldId: number) => {
  * Hook to fetch yield history for a field
  */
 export const useFieldYieldHistory = (
-  fieldId: number,
+  fieldId: string | number,
   params?: {
     limit?: number;
     start_year?: number;
@@ -44,7 +44,7 @@ export const useFieldYieldHistory = (
 /**
  * Hook to fetch yield summary (current + history + trends)
  */
-export const useFieldYieldSummary = (fieldId: number) => {
+export const useFieldYieldSummary = (fieldId: string | number) => {
   return useQuery<YieldSummary, Error>({
     queryKey: ['fieldYieldSummary', fieldId],
     queryFn: () => getFieldYieldSummary(fieldId),
@@ -60,7 +60,7 @@ export const useTriggerYieldPrediction = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (fieldId: number) => triggerYieldPrediction(fieldId),
+    mutationFn: (fieldId: string | number) => triggerYieldPrediction(fieldId),
     onSuccess: (_, fieldId) => {
       // Invalidate yield queries to refetch
       queryClient.invalidateQueries({ queryKey: ['fieldYield', fieldId] });
@@ -81,7 +81,7 @@ export const useRecordActualYield = () => {
       fieldId,
       data,
     }: {
-      fieldId: number;
+      fieldId: string | number;
       data: {
         actual_yield: number;
         harvest_date: string;

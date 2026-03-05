@@ -30,17 +30,26 @@ const RegisterScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleRegister = async () => {
-    if (!formData.name || !formData.email || !formData.password) {
+    // Trim all inputs to remove accidental whitespace
+    const trimmedData = {
+      name: formData.name.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim(),
+      password: formData.password,
+      confirmPassword: formData.confirmPassword,
+    };
+    
+    if (!trimmedData.name || !trimmedData.email || !trimmedData.password) {
       Alert.alert('Error', 'Please fill in all required fields');
       return;
     }
 
-    if (formData.password !== formData.confirmPassword) {
+    if (trimmedData.password !== trimmedData.confirmPassword) {
       Alert.alert('Error', 'Passwords do not match');
       return;
     }
 
-    if (formData.password.length < 8) {
+    if (trimmedData.password.length < 8) {
       Alert.alert('Error', 'Password must be at least 8 characters');
       return;
     }
@@ -48,13 +57,22 @@ const RegisterScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     try {
       setIsLoading(true);
       await register({
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        password: formData.password,
+        name: trimmedData.name,
+        email: trimmedData.email,
+        phone: trimmedData.phone || undefined,
+        password: trimmedData.password,
       });
-    } catch (error) {
+    } catch (error: any) {
       const apiError = handleApiError(error);
+      
+      if (__DEV__) {
+        console.error('[RegisterScreen] Registration error details:', {
+          status: error?.response?.status,
+          data: error?.response?.data,
+          apiError,
+        });
+      }
+      
       Alert.alert('Registration Failed', apiError.message);
     } finally {
       setIsLoading(false);

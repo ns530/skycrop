@@ -1,0 +1,860 @@
+﻿FAIL tests/unit/controllers.branches.test.js
+  ΓùÅ Console
+System.Management.Automation.RemoteException
+    console.log
+      {"cachehit":true,"correlationid":null,"environment":"test","etag":"etag-xyz","latencyms":0,"level":"info","message":"satellite.tiles","method":"GET","route":"/api/v1/satellite/tiles/12/3567/2150","service":"skycrop-backend","status":304,"timestamp":"2026-03-03T11:18:17.114Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+  ΓùÅ Controllers branch coverage (error and alt paths) ΓÇ║ WeatherController.current -> next(err) when field_id missing
+System.Management.Automation.RemoteException
+    TypeError: weatherController.current is not a function
+System.Management.Automation.RemoteException
+    [0m [90m 223 |[39m     [36mconst[39m res [33m=[39m makeRes()[33m;[39m
+     [90m 224 |[39m     [36mconst[39m next [33m=[39m jest[33m.[39mfn()[33m;[39m
+    [31m[1m>[22m[39m[90m 225 |[39m     [36mawait[39m weatherController[33m.[39mcurrent(req[33m,[39m res[33m,[39m next)[33m;[39m
+     [90m     |[39m                             [31m[1m^[22m[39m
+     [90m 226 |[39m     expect(next)[33m.[39mtoHaveBeenCalled()[33m;[39m
+     [90m 227 |[39m     expect(res[33m.[39mstatusCode)[33m.[39mtoBe([36mnull[39m)[33m;[39m
+     [90m 228 |[39m   })[33m;[39m[0m
+System.Management.Automation.RemoteException
+      at Object.current (tests/unit/controllers.branches.test.js:225:29)
+System.Management.Automation.RemoteException
+  ΓùÅ Controllers branch coverage (error and alt paths) ΓÇ║ WeatherController.forecast -> success 200 and payload
+System.Management.Automation.RemoteException
+    TypeError: weatherController.forecast is not a function
+System.Management.Automation.RemoteException
+    [0m [90m 232 |[39m     [36mconst[39m res [33m=[39m makeRes()[33m;[39m
+     [90m 233 |[39m     [36mconst[39m next [33m=[39m jest[33m.[39mfn()[33m;[39m
+    [31m[1m>[22m[39m[90m 234 |[39m     [36mawait[39m weatherController[33m.[39mforecast(req[33m,[39m res[33m,[39m next)[33m;[39m
+     [90m     |[39m                             [31m[1m^[22m[39m
+     [90m 235 |[39m     expect(next)[33m.[39mnot[33m.[39mtoHaveBeenCalled()[33m;[39m
+     [90m 236 |[39m     expect(res[33m.[39mstatusCode)[33m.[39mtoBe([35m200[39m)[33m;[39m
+     [90m 237 |[39m     expect(res[33m.[39mbody)[33m.[39mtoMatchObject({ success[33m:[39m [36mtrue[39m[33m,[39m data[33m:[39m { daily[33m:[39m [] } })[33m;[39m[0m
+System.Management.Automation.RemoteException
+      at Object.forecast (tests/unit/controllers.branches.test.js:234:29)
+System.Management.Automation.RemoteException
+PASS tests/unit/weather.service.branches.test.js
+  ΓùÅ Console
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":0,"environment":"test","level":"error","message":"weather.current.error","service":"skycrop-backend","status":401,"timestamp":"2026-03-03T11:18:17.066Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":0,"environment":"test","level":"error","message":"weather.current.error","service":"skycrop-backend","timestamp":"2026-03-03T11:18:17.230Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":0,"environment":"test","level":"error","message":"weather.current.error","service":"skycrop-backend","timestamp":"2026-03-03T11:18:17.357Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":1,"environment":"test","level":"info","message":"weather.forecast.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:18:17.566Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","key":"weather:forecast:field_id","level":"info","message":"cache.set","service":"skycrop-backend","timestamp":"2026-03-03T11:18:17.574Z","ttl":21600}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+FAIL tests/unit/field.service.test.js
+  ΓùÅ FieldService unit ΓÇ║ update changes name and invalidates cache
+System.Management.Automation.RemoteException
+    expect(received).toHaveBeenCalled()
+System.Management.Automation.RemoteException
+    Matcher error: received value must be a mock or spy function
+System.Management.Automation.RemoteException
+    Received has type:  function
+    Received has value: [Function save]
+System.Management.Automation.RemoteException
+    [0m [90m 267 |[39m     [36mconst[39m result [33m=[39m [36mawait[39m service[33m.[39mupdate([32m'user-1'[39m[33m,[39m [32m'f-123'[39m[33m,[39m { name[33m:[39m [32m'New Name'[39m })[33m;[39m
+     [90m 268 |[39m     expect(result[33m.[39mname)[33m.[39mtoBe([32m'New Name'[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 269 |[39m     expect([33mField[39m[33m.[39mprototype[33m.[39msave)[33m.[39mtoHaveBeenCalled()[33m;[39m
+     [90m     |[39m                                  [31m[1m^[22m[39m
+     [90m 270 |[39m   })[33m;[39m
+     [90m 271 |[39m
+     [90m 272 |[39m   test([32m'update rejects duplicate name'[39m[33m,[39m [36masync[39m () [33m=>[39m {[0m
+System.Management.Automation.RemoteException
+      at Object.toHaveBeenCalled (tests/unit/field.service.test.js:269:34)
+System.Management.Automation.RemoteException
+  ΓùÅ FieldService unit ΓÇ║ delete sets status to deleted and invalidates cache
+System.Management.Automation.RemoteException
+    expect(received).toHaveBeenCalled()
+System.Management.Automation.RemoteException
+    Matcher error: received value must be a mock or spy function
+System.Management.Automation.RemoteException
+    Received has type:  function
+    Received has value: [Function save]
+System.Management.Automation.RemoteException
+    [0m [90m 291 |[39m     [36mconst[39m result [33m=[39m [36mawait[39m service[33m.[39m[36mdelete[39m([32m'user-1'[39m[33m,[39m [32m'f-123'[39m)[33m;[39m
+     [90m 292 |[39m     expect(result[33m.[39msuccess)[33m.[39mtoBe([36mtrue[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 293 |[39m     expect([33mField[39m[33m.[39mprototype[33m.[39msave)[33m.[39mtoHaveBeenCalled()[33m;[39m
+     [90m     |[39m                                  [31m[1m^[22m[39m
+     [90m 294 |[39m   })[33m;[39m
+     [90m 295 |[39m })[33m;[39m
+     [90m 296 |[39m[0m
+System.Management.Automation.RemoteException
+      at Object.toHaveBeenCalled (tests/unit/field.service.test.js:293:34)
+System.Management.Automation.RemoteException
+PASS tests/unit/branches.lift.more.test.js
+  ΓùÅ Console
+System.Management.Automation.RemoteException
+    console.log
+      {"correlationid":"corr-x","downstreamstatus":200,"environment":"test","latencyms":0,"level":"info","message":"ml.gateway.downstream","modelversion":"fallback","route":"/api/v1/ml/segmentation/predict","service":"skycrop-backend","timestamp":"2026-03-03T11:18:17.800Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+PASS tests/unit/recommendation.service.test.js
+  ΓùÅ Console
+System.Management.Automation.RemoteException
+    console.log
+      {"count":2,"date":"2025-01-15","environment":"test","field_id":"F1","level":"info","message":"recommendations.compute.cached","service":"skycrop-backend","timestamp":"2026-03-03T11:18:17.866Z","ttl":86400}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"count":1,"date":"2025-01-15","environment":"test","field_id":"F1","level":"info","message":"recommendations.compute.cached","service":"skycrop-backend","timestamp":"2026-03-03T11:18:17.926Z","ttl":86400}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"count":1,"date":"2025-01-15","environment":"test","field_id":"F1","level":"info","message":"recommendations.compute.cached","service":"skycrop-backend","timestamp":"2026-03-03T11:18:17.930Z","ttl":86400}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"count":1,"date":"2025-01-15","environment":"test","field_id":"F1","level":"info","message":"recommendations.compute.cached","service":"skycrop-backend","timestamp":"2026-03-03T11:18:17.933Z","ttl":86400}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"count":1,"date":"2025-01-15","environment":"test","field_id":"F1","level":"info","message":"recommendations.compute.cached","service":"skycrop-backend","timestamp":"2026-03-03T11:18:17.936Z","ttl":86400}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"count":1,"date":"2025-01-15","environment":"test","field_id":"F1","level":"info","message":"recommendations.compute.cached","service":"skycrop-backend","timestamp":"2026-03-03T11:18:17.948Z","ttl":86400}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"count":2,"date":"2025-01-15","environment":"test","field_id":"F1","level":"info","message":"recommendations.compute.cached","service":"skycrop-backend","timestamp":"2026-03-03T11:18:17.956Z","ttl":86400}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"count":2,"date":"2025-01-15","environment":"test","field_id":"F1","level":"info","message":"recommendations.compute.cached","service":"skycrop-backend","timestamp":"2026-03-03T11:18:17.974Z","ttl":86400}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+PASS tests/unit/weather.service.extra.test.js
+  ΓùÅ Console
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":0,"environment":"test","level":"info","message":"weather.current.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:18:18.143Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","key":"weather:current:field_id","level":"info","message":"cache.set","service":"skycrop-backend","timestamp":"2026-03-03T11:18:18.191Z","ttl":21600}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":1,"environment":"test","level":"error","message":"weather.current.error","service":"skycrop-backend","status":401,"timestamp":"2026-03-03T11:18:18.196Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":1,"environment":"test","level":"error","message":"weather.current.error","service":"skycrop-backend","timestamp":"2026-03-03T11:18:18.200Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":0,"environment":"test","level":"info","message":"weather.forecast.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:18:18.204Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","key":"weather:forecast:field_id","level":"info","message":"cache.set","service":"skycrop-backend","timestamp":"2026-03-03T11:18:18.206Z","ttl":21600}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+PASS tests/unit/ml.gateway.service.branches.test.js
+  ΓùÅ Console
+System.Management.Automation.RemoteException
+    console.log
+      {"correlationid":"corr-abc","downstreamstatus":200,"environment":"test","latencyms":3,"level":"info","message":"ml.gateway.downstream","modelversion":"unet-2.0.0","route":"/api/v1/ml/segmentation/predict","service":"skycrop-backend","timestamp":"2026-03-03T11:18:17.909Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","latencyms":0,"level":"error","message":"network down","route":"/api/v1/ml/segmentation/predict","service":"skycrop-backend","timestamp":"2026-03-03T11:18:18.165Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+PASS tests/unit/field.controller.test.js
+PASS tests/unit/healthMonitoring.service.test.js
+  ΓùÅ Console
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","event":"healthupdated","field_id":"field-123","level":"warn","message":"websocket.emit.noio","service":"skycrop-backend","timestamp":"2026-03-03T11:18:18.336Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+PASS tests/unit/server.test.js
+PASS tests/unit/recommendationEngine.service.test.js
+  ΓùÅ Console
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","event":"recommendationsupdated","field_id":"field-1","level":"warn","message":"websocket.emit.noio","service":"skycrop-backend","timestamp":"2026-03-03T11:18:18.796Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","event":"recommendationcreated","level":"warn","message":"websocket.emit.noio","service":"skycrop-backend","timestamp":"2026-03-03T11:18:18.824Z","user_id":"user-1"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","event":"recommendationsupdated","field_id":"field-1","level":"warn","message":"websocket.emit.noio","service":"skycrop-backend","timestamp":"2026-03-03T11:18:18.830Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","event":"recommendationcreated","level":"warn","message":"websocket.emit.noio","service":"skycrop-backend","timestamp":"2026-03-03T11:18:18.831Z","user_id":"user-1"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","event":"recommendationsupdated","field_id":"field-1","level":"warn","message":"websocket.emit.noio","service":"skycrop-backend","timestamp":"2026-03-03T11:18:18.840Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","event":"recommendationsupdated","field_id":"field-1","level":"warn","message":"websocket.emit.noio","service":"skycrop-backend","timestamp":"2026-03-03T11:18:18.843Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","event":"recommendationcreated","level":"warn","message":"websocket.emit.noio","service":"skycrop-backend","timestamp":"2026-03-03T11:18:18.845Z","user_id":"user-1"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","event":"recommendationsupdated","field_id":"field-1","level":"warn","message":"websocket.emit.noio","service":"skycrop-backend","timestamp":"2026-03-03T11:18:18.848Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","event":"recommendationsupdated","field_id":"field-1","level":"warn","message":"websocket.emit.noio","service":"skycrop-backend","timestamp":"2026-03-03T11:18:18.851Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","event":"recommendationcreated","level":"warn","message":"websocket.emit.noio","service":"skycrop-backend","timestamp":"2026-03-03T11:18:18.853Z","user_id":"user-1"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","event":"recommendationsupdated","field_id":"field-1","level":"warn","message":"websocket.emit.noio","service":"skycrop-backend","timestamp":"2026-03-03T11:18:18.855Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","event":"recommendationsupdated","field_id":"field-1","level":"warn","message":"websocket.emit.noio","service":"skycrop-backend","timestamp":"2026-03-03T11:18:18.866Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","event":"recommendationcreated","level":"warn","message":"websocket.emit.noio","service":"skycrop-backend","timestamp":"2026-03-03T11:18:18.868Z","user_id":"user-1"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+PASS tests/unit/auth.service.test.js
+PASS tests/unit/weather.service.test.js
+  ΓùÅ Console
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":0,"environment":"test","level":"info","message":"test.label.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:18:16.820Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":507,"environment":"test","level":"info","message":"test.label.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:18:17.378Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":0,"environment":"test","level":"error","message":"test.label.error","service":"skycrop-backend","status":401,"timestamp":"2026-03-03T11:18:17.387Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":1526,"environment":"test","level":"error","message":"test.label.error","service":"skycrop-backend","timestamp":"2026-03-03T11:18:18.916Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":0,"environment":"test","level":"info","message":"weather.current.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:18:18.928Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","key":"weather:current:field_id","level":"info","message":"cache.set","service":"skycrop-backend","timestamp":"2026-03-03T11:18:18.930Z","ttl":21600}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":0,"environment":"test","level":"info","message":"weather.forecast.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:18:18.980Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","key":"weather:forecast:field_id","level":"info","message":"cache.set","service":"skycrop-backend","timestamp":"2026-03-03T11:18:18.982Z","ttl":21600}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":0,"environment":"test","level":"info","message":"weather.forecast.normalized.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:18:18.996Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","key":"weather:forecast:LAT:LON","level":"info","message":"cache.set","service":"skycrop-backend","timestamp":"2026-03-03T11:18:18.997Z","ttl":21600}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":0,"environment":"test","level":"info","message":"weather.forecast.normalized.coords.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:18:18.999Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","key":"weather:forecast:LAT:LON","level":"info","message":"cache.set","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.002Z","ttl":21600}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+PASS tests/unit/coverage.lift.test.js
+  ΓùÅ Console
+System.Management.Automation.RemoteException
+    console.log
+      {"cachehit":false,"durationms":0,"environment":"test","etag":"9f32ee09df44b6b86bb918fa212df628a1f2e76f","level":"info","message":"satellite.tile.response","route":"/api/v1/satellite/tiles","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:18:18.926Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"cachehit":false,"durationms":0,"environment":"test","etag":"9f32ee09df44b6b86bb918fa212df628a1f2e76f","level":"info","message":"satellite.tile.response","route":"/api/v1/satellite/tiles","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:18:18.926Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"cachehit":false,"durationms":0,"environment":"test","etag":"9f32ee09df44b6b86bb918fa212df628a1f2e76f","level":"info","message":"satellite.tile.response","route":"/api/v1/satellite/tiles","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:18:19.012Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+PASS tests/unit/branches.extra.test.js
+  ΓùÅ Console
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":0,"environment":"test","level":"error","message":"satellite.tile.error","route":"/api/v1/satellite/tiles","service":"skycrop-backend","status":500,"timestamp":"2026-03-03T11:18:19.187Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","latencyms":0,"level":"error","message":"network failure","route":"/api/v1/ml/segmentation/predict","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.236Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+PASS tests/unit/ml.gateway.service.test.js
+  ΓùÅ Console
+System.Management.Automation.RemoteException
+    console.log
+      {"correlationid":"corr-1","downstreamstatus":200,"environment":"test","latencyms":0,"level":"info","message":"ml.gateway.downstream","modelversion":"unet-1.0.0","route":"/api/v1/ml/segmentation/predict","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.289Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"correlationid":"corr-3","downstreamstatus":400,"environment":"test","latencyms":0,"level":"info","message":"ml.gateway.downstream","modelversion":null,"route":"/api/v1/ml/segmentation/predict","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.302Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"correlationid":"corr-1","downstreamstatus":200,"environment":"test","latencyms":0,"level":"info","message":"ml.gateway.downstream","modelversion":"1.0.0","route":"/api/v1/ml/segmentation/predict","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.319Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","latencyms":0,"level":"error","message":"Network error","route":"/api/v1/ml/segmentation/predict","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.334Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"correlationid":"corr-1","downstreamstatus":200,"environment":"test","latencyms":0,"level":"info","message":"ml.gateway.downstream","modelversion":null,"route":"/api/v1/ml/yield/predict","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.337Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"correlationid":"corr-1","downstreamstatus":200,"environment":"test","latencyms":0,"level":"info","message":"ml.gateway.downstream","modelversion":null,"route":"/api/v1/ml/segmentation/predict","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.345Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"correlationid":"corr-2","downstreamstatus":200,"environment":"test","latencyms":0,"level":"info","message":"ml.gateway.downstream","modelversion":null,"route":"/api/v1/ml/segmentation/predict","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.347Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"correlationid":"corr-1","downstreamstatus":200,"environment":"test","latencyms":0,"level":"info","message":"ml.gateway.downstream","modelversion":"yield-1.0.0","route":"/api/v1/ml/yield/predict","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.356Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+PASS tests/unit/satellite.service.branches.test.js
+  ΓùÅ Console
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","level":"warn","message":"Sentinel Hub credentials are not configured; proceeding for test/mocked environment","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.135Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"cachehit":false,"durationms":1,"environment":"test","etag":"4effda12c2611e2e4feb6f0d342feb685ccd825b","level":"info","message":"satellite.tile.response","route":"/api/v1/satellite/tiles","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:18:19.149Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","level":"warn","message":"Sentinel Hub credentials are not configured; proceeding for test/mocked environment","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.234Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"cachehit":false,"durationms":0,"environment":"test","etag":"4effda12c2611e2e4feb6f0d342feb685ccd825b","level":"info","message":"satellite.tile.response","route":"/api/v1/satellite/tiles","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:18:19.236Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","level":"warn","message":"Sentinel Hub credentials are not configured; proceeding for test/mocked environment","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.454Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+PASS tests/unit/controllers.field.more.branches.test.js
+PASS tests/unit/satellite.service.test.js
+  ΓùÅ Console
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","level":"warn","message":"Sentinel Hub credentials are not configured; proceeding for test/mocked environment","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.509Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","level":"warn","message":"Sentinel Hub credentials are not configured; proceeding for test/mocked environment","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.528Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","level":"warn","message":"Sentinel Hub credentials are not configured; proceeding for test/mocked environment","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.547Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"cachehit":false,"durationms":1,"environment":"test","etag":"1a2e48fcd05ada652be50c743965a5ed61ac3233","level":"info","message":"satellite.tile.response","route":"/api/v1/satellite/tiles","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:18:19.549Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+PASS tests/unit/health.service.test.js
+  ΓùÅ Console
+System.Management.Automation.RemoteException
+    console.log
+      {"cachehit":false,"date":"2025-01-15","environment":"test","field_id":"field-1","latencyms":14,"level":"info","message":"health.indices.process.ok","route":"/api/v1/fields/:id/health/compute","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.449Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+PASS tests/unit/ml.gateway.service.segmentation.test.js
+  ΓùÅ Console
+System.Management.Automation.RemoteException
+    console.log
+      {"correlationid":null,"downstreamstatus":200,"environment":"test","latencyms":2,"level":"info","message":"ml.gateway.downstream","modelversion":"unet-2.0.0","route":"/api/v1/ml/segmentation/predict","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.719Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"correlationid":null,"downstreamstatus":200,"environment":"test","latencyms":1,"level":"info","message":"ml.gateway.downstream","modelversion":"unet-1.0.0","route":"/api/v1/ml/segmentation/predict","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.727Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"correlationid":null,"downstreamstatus":404,"environment":"test","latencyms":0,"level":"info","message":"ml.gateway.downstream","modelversion":"9.9.9","route":"/api/v1/ml/segmentation/predict","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.731Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"correlationid":null,"downstreamstatus":200,"environment":"test","latencyms":1,"level":"info","message":"ml.gateway.downstream","modelversion":"unet-1.0.0","route":"/api/v1/ml/segmentation/predict","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.737Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+PASS tests/unit/notification.service.test.js
+  ΓùÅ Console
+System.Management.Automation.RemoteException
+    console.log
+      {"alertType":"NDVI drop detected","environment":"test","fieldName":"Test Field","level":"info","message":"notification.healthAlert.sent","service":"skycrop-backend","severity":"critical","timestamp":"2026-03-03T11:18:19.555Z","user_id":"user-1"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"alertType":"Low health score","environment":"test","fieldName":"Test Field","level":"info","message":"notification.healthAlert.sent","service":"skycrop-backend","severity":"high","timestamp":"2026-03-03T11:18:19.577Z","user_id":"user-1"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","error":"User not found: non-existent","level":"error","message":"notification.getUserEmail.error","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.582Z","user_id":"non-existent"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","error":"User not found: non-existent","fieldName":"Field","level":"error","message":"notification.healthAlert.error","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.583Z","user_id":"non-existent"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","fieldName":"Test Field","level":"info","message":"notification.recommendation.sent","priority":"high","recommendationId":"rec-1","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.614Z","user_id":"user-1"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","fieldName":"Test Field","level":"info","message":"notification.recommendation.sent","priority":"high","recommendationId":"rec-1","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.618Z","user_id":"user-1"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","fieldName":"Test Field","level":"info","message":"notification.yieldPrediction.sent","predictedYield":4800,"predictionId":"pred-1","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.747Z","user_id":"user-1"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","level":"info","message":"notification.general.sent","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.751Z","title":"Test Title","type":"info","user_id":"user-1"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+PASS tests/unit/fieldHealth.service.test.js
+  ΓùÅ Console
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","key":"field:health:field_id","level":"info","message":"cache.miss","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.731Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","key":"field:health:field_id","level":"info","message":"cache.miss","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.755Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","key":"field:health:field_id","level":"info","message":"cache.hit","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.758Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","key":"field:health:field_id","level":"info","message":"cache.miss","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.768Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+PASS tests/unit/weather.forecast.normalize.test.js
+  ΓùÅ Console
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":0,"environment":"test","level":"info","message":"weather.forecast.normalized.coords.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:18:19.834Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","key":"weather:forecast:LAT:LON","level":"info","message":"cache.set","service":"skycrop-backend","timestamp":"2026-03-03T11:18:19.871Z","ttl":21600}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+PASS tests/unit/yieldPrediction.service.test.js (5.1 s)
+  ΓùÅ Console
+System.Management.Automation.RemoteException
+    console.warn
+      Redis delPattern failed: (intermediate value) is not iterable
+System.Management.Automation.RemoteException
+    [0m [90m 66 |[39m     } [36mwhile[39m (cursor [33m!==[39m [32m'0'[39m)[33m;[39m
+     [90m 67 |[39m   } [36mcatch[39m (err) {
+    [31m[1m>[22m[39m[90m 68 |[39m     console[33m.[39mwarn([32m'Redis delPattern failed:'[39m[33m,[39m err[33m.[39mmessage)[33m;[39m
+     [90m    |[39m             [31m[1m^[22m[39m
+     [90m 69 |[39m   }
+     [90m 70 |[39m }
+     [90m 71 |[39m[0m
+System.Management.Automation.RemoteException
+      at warn (src/services/yield.service.js:68:13)
+      at Object.predictYield (src/services/yield.service.js:509:3)
+      at Object.<anonymous> (tests/unit/yieldPrediction.service.test.js:107:22)
+System.Management.Automation.RemoteException
+    console.warn
+      Redis delPattern failed: (intermediate value) is not iterable
+System.Management.Automation.RemoteException
+    [0m [90m 66 |[39m     } [36mwhile[39m (cursor [33m!==[39m [32m'0'[39m)[33m;[39m
+     [90m 67 |[39m   } [36mcatch[39m (err) {
+    [31m[1m>[22m[39m[90m 68 |[39m     console[33m.[39mwarn([32m'Redis delPattern failed:'[39m[33m,[39m err[33m.[39mmessage)[33m;[39m
+     [90m    |[39m             [31m[1m^[22m[39m
+     [90m 69 |[39m   }
+     [90m 70 |[39m }
+     [90m 71 |[39m[0m
+System.Management.Automation.RemoteException
+      at warn (src/services/yield.service.js:68:13)
+      at Object.predictYield (src/services/yield.service.js:510:3)
+      at Object.<anonymous> (tests/unit/yieldPrediction.service.test.js:107:22)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","event":"yieldpredictionready","field_id":"field-1","level":"warn","message":"websocket.emit.noio","service":"skycrop-backend","timestamp":"2026-03-03T11:18:20.085Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","event":"yieldpredictionready","level":"warn","message":"websocket.emit.noio","service":"skycrop-backend","timestamp":"2026-03-03T11:18:20.094Z","user_id":"user-1"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.warn
+      Weather service unavailable, using default values: Weather API unavailable
+System.Management.Automation.RemoteException
+    [0m [90m 441 |[39m   } [36mcatch[39m (error) {
+     [90m 442 |[39m     [90m// Weather service failed - use defaults[39m
+    [31m[1m>[22m[39m[90m 443 |[39m     console[33m.[39mwarn([32m'Weather service unavailable, using default values:'[39m[33m,[39m error[33m.[39mmessage)[33m;[39m
+     [90m     |[39m             [31m[1m^[22m[39m
+     [90m 444 |[39m   }
+     [90m 445 |[39m
+     [90m 446 |[39m   [90m// 3. Build feature vector for ML model[39m[0m
+System.Management.Automation.RemoteException
+      at Object.warn [as predictYield] (src/services/yield.service.js:443:13)
+      at Object.<anonymous> (tests/unit/yieldPrediction.service.test.js:187:22)
+System.Management.Automation.RemoteException
+    console.warn
+      Redis delPattern failed: (intermediate value) is not iterable
+System.Management.Automation.RemoteException
+    [0m [90m 66 |[39m     } [36mwhile[39m (cursor [33m!==[39m [32m'0'[39m)[33m;[39m
+     [90m 67 |[39m   } [36mcatch[39m (err) {
+    [31m[1m>[22m[39m[90m 68 |[39m     console[33m.[39mwarn([32m'Redis delPattern failed:'[39m[33m,[39m err[33m.[39mmessage)[33m;[39m
+     [90m    |[39m             [31m[1m^[22m[39m
+     [90m 69 |[39m   }
+     [90m 70 |[39m }
+     [90m 71 |[39m[0m
+System.Management.Automation.RemoteException
+      at warn (src/services/yield.service.js:68:13)
+      at Object.predictYield (src/services/yield.service.js:509:3)
+      at Object.<anonymous> (tests/unit/yieldPrediction.service.test.js:187:22)
+System.Management.Automation.RemoteException
+    console.warn
+      Redis delPattern failed: (intermediate value) is not iterable
+System.Management.Automation.RemoteException
+    [0m [90m 66 |[39m     } [36mwhile[39m (cursor [33m!==[39m [32m'0'[39m)[33m;[39m
+     [90m 67 |[39m   } [36mcatch[39m (err) {
+    [31m[1m>[22m[39m[90m 68 |[39m     console[33m.[39mwarn([32m'Redis delPattern failed:'[39m[33m,[39m err[33m.[39mmessage)[33m;[39m
+     [90m    |[39m             [31m[1m^[22m[39m
+     [90m 69 |[39m   }
+     [90m 70 |[39m }
+     [90m 71 |[39m[0m
+System.Management.Automation.RemoteException
+      at warn (src/services/yield.service.js:68:13)
+      at Object.predictYield (src/services/yield.service.js:510:3)
+      at Object.<anonymous> (tests/unit/yieldPrediction.service.test.js:187:22)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","event":"yieldpredictionready","field_id":"field-1","level":"warn","message":"websocket.emit.noio","service":"skycrop-backend","timestamp":"2026-03-03T11:18:20.127Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","event":"yieldpredictionready","level":"warn","message":"websocket.emit.noio","service":"skycrop-backend","timestamp":"2026-03-03T11:18:20.128Z","user_id":"user-1"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.warn
+      Redis delPattern failed: (intermediate value) is not iterable
+System.Management.Automation.RemoteException
+    [0m [90m 66 |[39m     } [36mwhile[39m (cursor [33m!==[39m [32m'0'[39m)[33m;[39m
+     [90m 67 |[39m   } [36mcatch[39m (err) {
+    [31m[1m>[22m[39m[90m 68 |[39m     console[33m.[39mwarn([32m'Redis delPattern failed:'[39m[33m,[39m err[33m.[39mmessage)[33m;[39m
+     [90m    |[39m             [31m[1m^[22m[39m
+     [90m 69 |[39m   }
+     [90m 70 |[39m }
+     [90m 71 |[39m[0m
+System.Management.Automation.RemoteException
+      at warn (src/services/yield.service.js:68:13)
+      at Object.predictYield (src/services/yield.service.js:509:3)
+      at Object.<anonymous> (tests/unit/yieldPrediction.service.test.js:241:22)
+System.Management.Automation.RemoteException
+    console.warn
+      Redis delPattern failed: (intermediate value) is not iterable
+System.Management.Automation.RemoteException
+    [0m [90m 66 |[39m     } [36mwhile[39m (cursor [33m!==[39m [32m'0'[39m)[33m;[39m
+     [90m 67 |[39m   } [36mcatch[39m (err) {
+    [31m[1m>[22m[39m[90m 68 |[39m     console[33m.[39mwarn([32m'Redis delPattern failed:'[39m[33m,[39m err[33m.[39mmessage)[33m;[39m
+     [90m    |[39m             [31m[1m^[22m[39m
+     [90m 69 |[39m   }
+     [90m 70 |[39m }
+     [90m 71 |[39m[0m
+System.Management.Automation.RemoteException
+      at warn (src/services/yield.service.js:68:13)
+      at Object.predictYield (src/services/yield.service.js:510:3)
+      at Object.<anonymous> (tests/unit/yieldPrediction.service.test.js:241:22)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","event":"yieldpredictionready","field_id":"field-1","level":"warn","message":"websocket.emit.noio","service":"skycrop-backend","timestamp":"2026-03-03T11:18:20.132Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","event":"yieldpredictionready","level":"warn","message":"websocket.emit.noio","service":"skycrop-backend","timestamp":"2026-03-03T11:18:20.132Z","user_id":"user-1"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+FAIL tests/unit/routes.middleware.branches.test.js (6.19 s)
+  ΓùÅ Routes middleware branch coverage lifts (ML and Satellite) ΓÇ║ Satellite preprocess enforceMaxBodySize: Content-Length header branch returns 413 JSON
+System.Management.Automation.RemoteException
+    expect(received).toBe(expected) // Object.is equality
+System.Management.Automation.RemoteException
+    Expected: false
+    Received: true
+System.Management.Automation.RemoteException
+    [0m [90m  98 |[39m     })[33m;[39m
+     [90m  99 |[39m
+    [31m[1m>[22m[39m[90m 100 |[39m     expect(calledNext)[33m.[39mtoBe([36mfalse[39m)[33m;[39m
+     [90m     |[39m                        [31m[1m^[22m[39m
+     [90m 101 |[39m     expect(res[33m.[39mstatusCode)[33m.[39mtoBe([35m413[39m)[33m;[39m
+     [90m 102 |[39m     expect(responseBody)[33m.[39mtoEqual(
+     [90m 103 |[39m       expect[33m.[39mobjectContaining({[0m
+System.Management.Automation.RemoteException
+      at Object.toBe (tests/unit/routes.middleware.branches.test.js:100:24)
+System.Management.Automation.RemoteException
+  ΓùÅ Routes middleware branch coverage lifts (ML and Satellite) ΓÇ║ Satellite preprocess enforceMaxBodySize: fallback approx branch when no content-length (Buffer.byteLength mocked)
+System.Management.Automation.RemoteException
+    expect(received).toBe(expected) // Object.is equality
+System.Management.Automation.RemoteException
+    Expected: false
+    Received: true
+System.Management.Automation.RemoteException
+    [0m [90m 130 |[39m       })[33m;[39m
+     [90m 131 |[39m
+    [31m[1m>[22m[39m[90m 132 |[39m       expect(calledNext)[33m.[39mtoBe([36mfalse[39m)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 133 |[39m       expect(res[33m.[39mstatusCode)[33m.[39mtoBe([35m413[39m)[33m;[39m
+     [90m 134 |[39m       expect(responseBody)[33m.[39mtoEqual(
+     [90m 135 |[39m         expect[33m.[39mobjectContaining({[0m
+System.Management.Automation.RemoteException
+      at Object.toBe (tests/unit/routes.middleware.branches.test.js:132:26)
+System.Management.Automation.RemoteException
+Summary of all failing tests
+FAIL tests/unit/controllers.branches.test.js
+  ΓùÅ Controllers branch coverage (error and alt paths) ΓÇ║ WeatherController.current -> next(err) when field_id missing
+System.Management.Automation.RemoteException
+    TypeError: weatherController.current is not a function
+System.Management.Automation.RemoteException
+    [0m [90m 223 |[39m     [36mconst[39m res [33m=[39m makeRes()[33m;[39m
+     [90m 224 |[39m     [36mconst[39m next [33m=[39m jest[33m.[39mfn()[33m;[39m
+    [31m[1m>[22m[39m[90m 225 |[39m     [36mawait[39m weatherController[33m.[39mcurrent(req[33m,[39m res[33m,[39m next)[33m;[39m
+     [90m     |[39m                             [31m[1m^[22m[39m
+     [90m 226 |[39m     expect(next)[33m.[39mtoHaveBeenCalled()[33m;[39m
+     [90m 227 |[39m     expect(res[33m.[39mstatusCode)[33m.[39mtoBe([36mnull[39m)[33m;[39m
+     [90m 228 |[39m   })[33m;[39m[0m
+System.Management.Automation.RemoteException
+      at Object.current (tests/unit/controllers.branches.test.js:225:29)
+System.Management.Automation.RemoteException
+  ΓùÅ Controllers branch coverage (error and alt paths) ΓÇ║ WeatherController.forecast -> success 200 and payload
+System.Management.Automation.RemoteException
+    TypeError: weatherController.forecast is not a function
+System.Management.Automation.RemoteException
+    [0m [90m 232 |[39m     [36mconst[39m res [33m=[39m makeRes()[33m;[39m
+     [90m 233 |[39m     [36mconst[39m next [33m=[39m jest[33m.[39mfn()[33m;[39m
+    [31m[1m>[22m[39m[90m 234 |[39m     [36mawait[39m weatherController[33m.[39mforecast(req[33m,[39m res[33m,[39m next)[33m;[39m
+     [90m     |[39m                             [31m[1m^[22m[39m
+     [90m 235 |[39m     expect(next)[33m.[39mnot[33m.[39mtoHaveBeenCalled()[33m;[39m
+     [90m 236 |[39m     expect(res[33m.[39mstatusCode)[33m.[39mtoBe([35m200[39m)[33m;[39m
+     [90m 237 |[39m     expect(res[33m.[39mbody)[33m.[39mtoMatchObject({ success[33m:[39m [36mtrue[39m[33m,[39m data[33m:[39m { daily[33m:[39m [] } })[33m;[39m[0m
+System.Management.Automation.RemoteException
+      at Object.forecast (tests/unit/controllers.branches.test.js:234:29)
+System.Management.Automation.RemoteException
+FAIL tests/unit/field.service.test.js
+  ΓùÅ FieldService unit ΓÇ║ update changes name and invalidates cache
+System.Management.Automation.RemoteException
+    expect(received).toHaveBeenCalled()
+System.Management.Automation.RemoteException
+    Matcher error: received value must be a mock or spy function
+System.Management.Automation.RemoteException
+    Received has type:  function
+    Received has value: [Function save]
+System.Management.Automation.RemoteException
+    [0m [90m 267 |[39m     [36mconst[39m result [33m=[39m [36mawait[39m service[33m.[39mupdate([32m'user-1'[39m[33m,[39m [32m'f-123'[39m[33m,[39m { name[33m:[39m [32m'New Name'[39m })[33m;[39m
+     [90m 268 |[39m     expect(result[33m.[39mname)[33m.[39mtoBe([32m'New Name'[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 269 |[39m     expect([33mField[39m[33m.[39mprototype[33m.[39msave)[33m.[39mtoHaveBeenCalled()[33m;[39m
+     [90m     |[39m                                  [31m[1m^[22m[39m
+     [90m 270 |[39m   })[33m;[39m
+     [90m 271 |[39m
+     [90m 272 |[39m   test([32m'update rejects duplicate name'[39m[33m,[39m [36masync[39m () [33m=>[39m {[0m
+System.Management.Automation.RemoteException
+      at Object.toHaveBeenCalled (tests/unit/field.service.test.js:269:34)
+System.Management.Automation.RemoteException
+  ΓùÅ FieldService unit ΓÇ║ delete sets status to deleted and invalidates cache
+System.Management.Automation.RemoteException
+    expect(received).toHaveBeenCalled()
+System.Management.Automation.RemoteException
+    Matcher error: received value must be a mock or spy function
+System.Management.Automation.RemoteException
+    Received has type:  function
+    Received has value: [Function save]
+System.Management.Automation.RemoteException
+    [0m [90m 291 |[39m     [36mconst[39m result [33m=[39m [36mawait[39m service[33m.[39m[36mdelete[39m([32m'user-1'[39m[33m,[39m [32m'f-123'[39m)[33m;[39m
+     [90m 292 |[39m     expect(result[33m.[39msuccess)[33m.[39mtoBe([36mtrue[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 293 |[39m     expect([33mField[39m[33m.[39mprototype[33m.[39msave)[33m.[39mtoHaveBeenCalled()[33m;[39m
+     [90m     |[39m                                  [31m[1m^[22m[39m
+     [90m 294 |[39m   })[33m;[39m
+     [90m 295 |[39m })[33m;[39m
+     [90m 296 |[39m[0m
+System.Management.Automation.RemoteException
+      at Object.toHaveBeenCalled (tests/unit/field.service.test.js:293:34)
+System.Management.Automation.RemoteException
+FAIL tests/unit/routes.middleware.branches.test.js (6.19 s)
+  ΓùÅ Routes middleware branch coverage lifts (ML and Satellite) ΓÇ║ Satellite preprocess enforceMaxBodySize: Content-Length header branch returns 413 JSON
+System.Management.Automation.RemoteException
+    expect(received).toBe(expected) // Object.is equality
+System.Management.Automation.RemoteException
+    Expected: false
+    Received: true
+System.Management.Automation.RemoteException
+    [0m [90m  98 |[39m     })[33m;[39m
+     [90m  99 |[39m
+    [31m[1m>[22m[39m[90m 100 |[39m     expect(calledNext)[33m.[39mtoBe([36mfalse[39m)[33m;[39m
+     [90m     |[39m                        [31m[1m^[22m[39m
+     [90m 101 |[39m     expect(res[33m.[39mstatusCode)[33m.[39mtoBe([35m413[39m)[33m;[39m
+     [90m 102 |[39m     expect(responseBody)[33m.[39mtoEqual(
+     [90m 103 |[39m       expect[33m.[39mobjectContaining({[0m
+System.Management.Automation.RemoteException
+      at Object.toBe (tests/unit/routes.middleware.branches.test.js:100:24)
+System.Management.Automation.RemoteException
+  ΓùÅ Routes middleware branch coverage lifts (ML and Satellite) ΓÇ║ Satellite preprocess enforceMaxBodySize: fallback approx branch when no content-length (Buffer.byteLength mocked)
+System.Management.Automation.RemoteException
+    expect(received).toBe(expected) // Object.is equality
+System.Management.Automation.RemoteException
+    Expected: false
+    Received: true
+System.Management.Automation.RemoteException
+    [0m [90m 130 |[39m       })[33m;[39m
+     [90m 131 |[39m
+    [31m[1m>[22m[39m[90m 132 |[39m       expect(calledNext)[33m.[39mtoBe([36mfalse[39m)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 133 |[39m       expect(res[33m.[39mstatusCode)[33m.[39mtoBe([35m413[39m)[33m;[39m
+     [90m 134 |[39m       expect(responseBody)[33m.[39mtoEqual(
+     [90m 135 |[39m         expect[33m.[39mobjectContaining({[0m
+System.Management.Automation.RemoteException
+      at Object.toBe (tests/unit/routes.middleware.branches.test.js:132:26)
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+Test Suites: 3 failed, 23 passed, 26 total
+Tests:       6 failed, 291 passed, 297 total
+Snapshots:   0 total
+Time:        6.784 s
+Ran all test suites matching /tests\\unit/i.

@@ -1,0 +1,130 @@
+﻿PASS tests/unit/weather.service.branches.test.js
+  ΓùÅ Console
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":0,"environment":"test","level":"error","message":"weather.current.error","service":"skycrop-backend","status":401,"timestamp":"2026-03-03T11:08:58.716Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":1,"environment":"test","level":"error","message":"weather.current.error","service":"skycrop-backend","timestamp":"2026-03-03T11:08:58.812Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":0,"environment":"test","level":"error","message":"weather.current.error","service":"skycrop-backend","timestamp":"2026-03-03T11:08:58.887Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":0,"environment":"test","level":"info","message":"weather.forecast.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:08:59.007Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","key":"weather:forecast:field_id","level":"info","message":"cache.set","service":"skycrop-backend","timestamp":"2026-03-03T11:08:59.008Z","ttl":21600}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+PASS tests/unit/weather.service.extra.test.js
+  ΓùÅ Console
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":0,"environment":"test","level":"info","message":"weather.current.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:08:58.989Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","key":"weather:current:field_id","level":"info","message":"cache.set","service":"skycrop-backend","timestamp":"2026-03-03T11:08:59.020Z","ttl":21600}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":0,"environment":"test","level":"error","message":"weather.current.error","service":"skycrop-backend","status":401,"timestamp":"2026-03-03T11:08:59.023Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":0,"environment":"test","level":"error","message":"weather.current.error","service":"skycrop-backend","timestamp":"2026-03-03T11:08:59.026Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":0,"environment":"test","level":"info","message":"weather.forecast.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:08:59.029Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","key":"weather:forecast:field_id","level":"info","message":"cache.set","service":"skycrop-backend","timestamp":"2026-03-03T11:08:59.030Z","ttl":21600}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+PASS tests/unit/weather.service.test.js
+  ΓùÅ Console
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":0,"environment":"test","level":"info","message":"test.label.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:08:58.467Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":506,"environment":"test","level":"info","message":"test.label.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:08:58.992Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":0,"environment":"test","level":"error","message":"test.label.error","service":"skycrop-backend","status":401,"timestamp":"2026-03-03T11:08:58.997Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":1515,"environment":"test","level":"error","message":"test.label.error","service":"skycrop-backend","timestamp":"2026-03-03T11:09:00.516Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":0,"environment":"test","level":"info","message":"weather.current.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:09:00.522Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","key":"weather:current:field_id","level":"info","message":"cache.set","service":"skycrop-backend","timestamp":"2026-03-03T11:09:00.523Z","ttl":21600}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":0,"environment":"test","level":"info","message":"weather.forecast.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:09:00.530Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","key":"weather:forecast:field_id","level":"info","message":"cache.set","service":"skycrop-backend","timestamp":"2026-03-03T11:09:00.532Z","ttl":21600}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":0,"environment":"test","level":"info","message":"weather.forecast.normalized.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:09:00.539Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","key":"weather:forecast:LAT:LON","level":"info","message":"cache.set","service":"skycrop-backend","timestamp":"2026-03-03T11:09:00.540Z","ttl":21600}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"durationms":0,"environment":"test","level":"info","message":"weather.forecast.normalized.coords.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:09:00.543Z"}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+    console.log
+      {"environment":"test","key":"weather:forecast:LAT:LON","level":"info","message":"cache.set","service":"skycrop-backend","timestamp":"2026-03-03T11:09:00.544Z","ttl":21600}
+System.Management.Automation.RemoteException
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+Test Suites: 3 passed, 3 total
+Tests:       38 passed, 38 total
+Snapshots:   0 total
+Time:        4.328 s, estimated 6 s
+Ran all test suites matching /tests\\unit\\weather.service.test.js|tests\\unit\\weather.service.extra.test.js|tests\\unit\\weather.service.branches.test.js/i.

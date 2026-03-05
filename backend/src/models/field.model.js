@@ -38,7 +38,7 @@ const Field = sequelize.define(
       },
     },
     areasqm: {
-      // square meters computed via STArea(geography) in DB trigger/service
+      // square meters computed via ST_Area(geography) in DB trigger/service
       type: DataTypes.DECIMAL, // NUMERIC
       allowNull: false,
       // Default value for Sequelize validation - trigger will override
@@ -50,7 +50,7 @@ const Field = sequelize.define(
       type: DataTypes.GEOMETRY('POINT', 4326),
       allowNull: false,
       // Default point for Sequelize validation - trigger will override
-      defaultValue: literal("STGeomFromText('POINT(0 0)', 4326)"),
+      defaultValue: literal("ST_GeomFromText('POINT(0 0)', 4326)"),
     },
     status: {
       type: DataTypes.ENUM('active', 'archived', 'deleted'),

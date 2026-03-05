@@ -1,0 +1,243 @@
+﻿[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+FAIL tests/integration/fields.api.test.js
+  ΓùÅ Test suite failed to run
+System.Management.Automation.RemoteException
+    Cannot find module 'supertest' from 'tests/integration/fields.api.test.js'
+System.Management.Automation.RemoteException
+    [0m [90m 1 |[39m [90m/* eslint-disable camelcase */[39m
+    [31m[1m>[22m[39m[90m 2 |[39m [36mconst[39m request [33m=[39m require([32m'supertest'[39m)[33m;[39m
+     [90m   |[39m                 [31m[1m^[22m[39m
+     [90m 3 |[39m
+     [90m 4 |[39m [90m// Mock rate limiter to no-op for tests[39m
+     [90m 5 |[39m jest[33m.[39mmock([32m'../../src/api/middleware/rateLimit.middleware'[39m[33m,[39m () [33m=>[39m ({[0m
+System.Management.Automation.RemoteException
+      at Resolver._throwModNotFoundError (C:/Users/ASUS/AppData/Local/npm-cache/_npx/b8d86e6551a4f492/node_modules/jest-resolve/build/index.js:863:11)
+      at Object.require (tests/integration/fields.api.test.js:2:17)
+System.Management.Automation.RemoteException
+FAIL tests/integration/satellite.preprocess.test.js
+  ΓùÅ Test suite failed to run
+System.Management.Automation.RemoteException
+    Cannot find module 'supertest' from 'tests/integration/satellite.preprocess.test.js'
+System.Management.Automation.RemoteException
+    [0m [90m 1 |[39m [90m/* eslint-disable camelcase */[39m
+    [31m[1m>[22m[39m[90m 2 |[39m [36mconst[39m request [33m=[39m require([32m'supertest'[39m)[33m;[39m
+     [90m   |[39m                 [31m[1m^[22m[39m
+     [90m 3 |[39m [36mconst[39m axios [33m=[39m require([32m'axios'[39m)[33m;[39m
+     [90m 4 |[39m
+     [90m 5 |[39m [90m// Mock rate limiter to no-op for tests[39m[0m
+System.Management.Automation.RemoteException
+      at Resolver._throwModNotFoundError (C:/Users/ASUS/AppData/Local/npm-cache/_npx/b8d86e6551a4f492/node_modules/jest-resolve/build/index.js:863:11)
+      at Object.require (tests/integration/satellite.preprocess.test.js:2:17)
+System.Management.Automation.RemoteException
+FAIL tests/integration/dashboard.metrics.test.js
+  ΓùÅ Test suite failed to run
+System.Management.Automation.RemoteException
+    Cannot find module 'supertest' from 'tests/integration/dashboard.metrics.test.js'
+System.Management.Automation.RemoteException
+    [0m [90m 1 |[39m [90m/* eslint-disable max-classes-per-file */[39m
+    [31m[1m>[22m[39m[90m 2 |[39m [36mconst[39m request [33m=[39m require([32m'supertest'[39m)[33m;[39m
+     [90m   |[39m                 [31m[1m^[22m[39m
+     [90m 3 |[39m
+     [90m 4 |[39m [90m// Mock rate limiter to no-op for tests[39m
+     [90m 5 |[39m jest[33m.[39mmock([32m'../../src/api/middleware/rateLimit.middleware'[39m[33m,[39m () [33m=>[39m ({[0m
+System.Management.Automation.RemoteException
+      at Resolver._throwModNotFoundError (C:/Users/ASUS/AppData/Local/npm-cache/_npx/b8d86e6551a4f492/node_modules/jest-resolve/build/index.js:863:11)
+      at Object.require (tests/integration/dashboard.metrics.test.js:2:17)
+System.Management.Automation.RemoteException
+FAIL tests/integration/healthMonitoring.api.test.js
+  ΓùÅ Test suite failed to run
+System.Management.Automation.RemoteException
+    Cannot find module 'supertest' from 'tests/integration/healthMonitoring.api.test.js'
+System.Management.Automation.RemoteException
+    [0m [90m 1 |[39m [90m/* eslint-disable camelcase */[39m
+    [31m[1m>[22m[39m[90m 2 |[39m [36mconst[39m request [33m=[39m require([32m'supertest'[39m)[33m;[39m
+     [90m   |[39m                 [31m[1m^[22m[39m
+     [90m 3 |[39m
+     [90m 4 |[39m [90m// Mock rate limiter to no-op for tests[39m
+     [90m 5 |[39m jest[33m.[39mmock([32m'../../src/api/middleware/rateLimit.middleware'[39m[33m,[39m () [33m=>[39m ({[0m
+System.Management.Automation.RemoteException
+      at Resolver._throwModNotFoundError (C:/Users/ASUS/AppData/Local/npm-cache/_npx/b8d86e6551a4f492/node_modules/jest-resolve/build/index.js:863:11)
+      at Object.require (tests/integration/healthMonitoring.api.test.js:2:17)
+System.Management.Automation.RemoteException
+FAIL tests/integration/ml.yield.test.js
+  ΓùÅ Test suite failed to run
+System.Management.Automation.RemoteException
+    Cannot find module 'supertest' from 'tests/integration/ml.yield.test.js'
+System.Management.Automation.RemoteException
+    [0m[31m[1m>[22m[39m[90m 1 |[39m [36mconst[39m request [33m=[39m require([32m'supertest'[39m)[33m;[39m
+     [90m   |[39m                 [31m[1m^[22m[39m
+     [90m 2 |[39m [36mconst[39m axios [33m=[39m require([32m'axios'[39m)[33m;[39m
+     [90m 3 |[39m
+     [90m 4 |[39m [90m// Mock rate limiter to no-op for tests[39m[0m
+System.Management.Automation.RemoteException
+      at Resolver._throwModNotFoundError (C:/Users/ASUS/AppData/Local/npm-cache/_npx/b8d86e6551a4f492/node_modules/jest-resolve/build/index.js:863:11)
+      at Object.require (tests/integration/ml.yield.test.js:1:17)
+System.Management.Automation.RemoteException
+FAIL tests/integration/ml.predict.test.js
+  ΓùÅ Test suite failed to run
+System.Management.Automation.RemoteException
+    Cannot find module 'supertest' from 'tests/integration/ml.predict.test.js'
+System.Management.Automation.RemoteException
+    [0m[31m[1m>[22m[39m[90m 1 |[39m [36mconst[39m request [33m=[39m require([32m'supertest'[39m)[33m;[39m
+     [90m   |[39m                 [31m[1m^[22m[39m
+     [90m 2 |[39m [36mconst[39m axios [33m=[39m require([32m'axios'[39m)[33m;[39m
+     [90m 3 |[39m
+     [90m 4 |[39m [90m// Mock rate limiter to no-op for tests[39m[0m
+System.Management.Automation.RemoteException
+      at Resolver._throwModNotFoundError (C:/Users/ASUS/AppData/Local/npm-cache/_npx/b8d86e6551a4f492/node_modules/jest-resolve/build/index.js:863:11)
+      at Object.require (tests/integration/ml.predict.test.js:1:17)
+System.Management.Automation.RemoteException
+FAIL tests/integration/yieldPrediction.api.test.js
+  ΓùÅ Test suite failed to run
+System.Management.Automation.RemoteException
+    Cannot find module 'supertest' from 'tests/integration/yieldPrediction.api.test.js'
+System.Management.Automation.RemoteException
+    [0m [90m 1 |[39m [90m/* eslint-disable camelcase, func-names, no-underscore-dangle */[39m
+    [31m[1m>[22m[39m[90m 2 |[39m [36mconst[39m request [33m=[39m require([32m'supertest'[39m)[33m;[39m
+     [90m   |[39m                 [31m[1m^[22m[39m
+     [90m 3 |[39m
+     [90m 4 |[39m [90m// Mock auth middleware - must be before app import[39m
+     [90m 5 |[39m jest[33m.[39mmock([32m'../../src/api/middleware/auth.middleware'[39m[33m,[39m () [33m=>[39m ({[0m
+System.Management.Automation.RemoteException
+      at Resolver._throwModNotFoundError (C:/Users/ASUS/AppData/Local/npm-cache/_npx/b8d86e6551a4f492/node_modules/jest-resolve/build/index.js:863:11)
+      at Object.require (tests/integration/yieldPrediction.api.test.js:2:17)
+System.Management.Automation.RemoteException
+FAIL tests/integration/contracts.openapi.test.js
+  ΓùÅ Test suite failed to run
+System.Management.Automation.RemoteException
+    Cannot find module 'supertest' from 'tests/integration/contracts.openapi.test.js'
+System.Management.Automation.RemoteException
+    [0m [90m 11 |[39m [90m */[39m
+     [90m 12 |[39m
+    [31m[1m>[22m[39m[90m 13 |[39m [36mconst[39m request [33m=[39m require([32m'supertest'[39m)[33m;[39m
+     [90m    |[39m                 [31m[1m^[22m[39m
+     [90m 14 |[39m [36mconst[39m axios [33m=[39m require([32m'axios'[39m)[33m;[39m
+     [90m 15 |[39m
+     [90m 16 |[39m [36mlet[39m assertApiSpec [33m=[39m () [33m=>[39m {}[33m;[39m[0m
+System.Management.Automation.RemoteException
+      at Resolver._throwModNotFoundError (C:/Users/ASUS/AppData/Local/npm-cache/_npx/b8d86e6551a4f492/node_modules/jest-resolve/build/index.js:863:11)
+      at Object.require (tests/integration/contracts.openapi.test.js:13:17)
+System.Management.Automation.RemoteException
+FAIL tests/integration/e2e.real.test.js
+  ΓùÅ Test suite failed to run
+System.Management.Automation.RemoteException
+    Cannot find module 'supertest' from 'tests/integration/e2e.real.test.js'
+System.Management.Automation.RemoteException
+    [0m [90m  5 |[39m [90m/* eslint-disable camelcase, func-names */[39m
+     [90m  6 |[39m
+    [31m[1m>[22m[39m[90m  7 |[39m [36mconst[39m request [33m=[39m require([32m'supertest'[39m)[33m;[39m
+     [90m    |[39m                 [31m[1m^[22m[39m
+     [90m  8 |[39m
+     [90m  9 |[39m [90m// Mock auth middleware[39m
+     [90m 10 |[39m jest[33m.[39mmock([32m'../../src/api/middleware/auth.middleware'[39m[33m,[39m () [33m=>[39m ({[0m
+System.Management.Automation.RemoteException
+      at Resolver._throwModNotFoundError (C:/Users/ASUS/AppData/Local/npm-cache/_npx/b8d86e6551a4f492/node_modules/jest-resolve/build/index.js:863:11)
+      at Object.require (tests/integration/e2e.real.test.js:7:17)
+System.Management.Automation.RemoteException
+FAIL tests/integration/recommendation.api.test.js
+  ΓùÅ Test suite failed to run
+System.Management.Automation.RemoteException
+    Cannot find module 'supertest' from 'tests/integration/recommendation.api.test.js'
+System.Management.Automation.RemoteException
+    [0m [90m 1 |[39m [90m/* eslint-disable camelcase */[39m
+    [31m[1m>[22m[39m[90m 2 |[39m [36mconst[39m request [33m=[39m require([32m'supertest'[39m)[33m;[39m
+     [90m   |[39m                 [31m[1m^[22m[39m
+     [90m 3 |[39m
+     [90m 4 |[39m [90m// Create mock instances that we can control[39m
+     [90m 5 |[39m [36mconst[39m mockRecommendationEngineService [33m=[39m {[0m
+System.Management.Automation.RemoteException
+      at Resolver._throwModNotFoundError (C:/Users/ASUS/AppData/Local/npm-cache/_npx/b8d86e6551a4f492/node_modules/jest-resolve/build/index.js:863:11)
+      at Object.require (tests/integration/recommendation.api.test.js:2:17)
+System.Management.Automation.RemoteException
+FAIL tests/integration/health.indices.test.js
+  ΓùÅ Test suite failed to run
+System.Management.Automation.RemoteException
+    Cannot find module 'supertest' from 'tests/integration/health.indices.test.js'
+System.Management.Automation.RemoteException
+    [0m [90m 1 |[39m [90m/* eslint-disable camelcase */[39m
+    [31m[1m>[22m[39m[90m 2 |[39m [36mconst[39m request [33m=[39m require([32m'supertest'[39m)[33m;[39m
+     [90m   |[39m                 [31m[1m^[22m[39m
+     [90m 3 |[39m [36mconst[39m axios [33m=[39m require([32m'axios'[39m)[33m;[39m
+     [90m 4 |[39m
+     [90m 5 |[39m [90m// Disable rate limiter for tests[39m[0m
+System.Management.Automation.RemoteException
+      at Resolver._throwModNotFoundError (C:/Users/ASUS/AppData/Local/npm-cache/_npx/b8d86e6551a4f492/node_modules/jest-resolve/build/index.js:863:11)
+      at Object.require (tests/integration/health.indices.test.js:2:17)
+System.Management.Automation.RemoteException
+FAIL tests/integration/e2e.workflow.test.js
+  ΓùÅ Test suite failed to run
+System.Management.Automation.RemoteException
+    Cannot find module 'supertest' from 'tests/integration/e2e.workflow.test.js'
+System.Management.Automation.RemoteException
+    [0m [90m 11 |[39m [90m/* eslint-disable no-unused-vars, camelcase, func-names */[39m
+     [90m 12 |[39m
+    [31m[1m>[22m[39m[90m 13 |[39m [36mconst[39m request [33m=[39m require([32m'supertest'[39m)[33m;[39m
+     [90m    |[39m                 [31m[1m^[22m[39m
+     [90m 14 |[39m
+     [90m 15 |[39m [90m// Mock all dependencies[39m
+     [90m 16 |[39m jest[33m.[39mmock([32m'../../src/api/middleware/auth.middleware'[39m[33m,[39m () [33m=>[39m ({[0m
+System.Management.Automation.RemoteException
+      at Resolver._throwModNotFoundError (C:/Users/ASUS/AppData/Local/npm-cache/_npx/b8d86e6551a4f492/node_modules/jest-resolve/build/index.js:863:11)
+      at Object.require (tests/integration/e2e.workflow.test.js:13:17)
+System.Management.Automation.RemoteException
+FAIL tests/integration/auth.api.test.js
+  ΓùÅ Test suite failed to run
+System.Management.Automation.RemoteException
+    Cannot find module 'supertest' from 'tests/integration/auth.api.test.js'
+System.Management.Automation.RemoteException
+    [0m [90m 69 |[39m
+     [90m 70 |[39m [90m// Build app after mocks are set up[39m
+    [31m[1m>[22m[39m[90m 71 |[39m [36mconst[39m request [33m=[39m require([32m'supertest'[39m)[33m;[39m
+     [90m    |[39m                 [31m[1m^[22m[39m
+     [90m 72 |[39m [36mconst[39m bcrypt [33m=[39m require([32m'bcrypt'[39m)[33m;[39m
+     [90m 73 |[39m [90m// eslint-disable-next-line global-require[39m
+     [90m 74 |[39m [36mconst[39m app [33m=[39m require([32m'../../src/app'[39m)[33m.[39m[36mdefault[39m [33m||[39m require([32m'../../src/app'[39m)[33m;[39m[0m
+System.Management.Automation.RemoteException
+      at Resolver._throwModNotFoundError (C:/Users/ASUS/AppData/Local/npm-cache/_npx/b8d86e6551a4f492/node_modules/jest-resolve/build/index.js:863:11)
+      at Object.require (tests/integration/auth.api.test.js:71:17)
+System.Management.Automation.RemoteException
+FAIL tests/integration/weather.current.test.js
+  ΓùÅ Test suite failed to run
+System.Management.Automation.RemoteException
+    Cannot find module 'supertest' from 'tests/integration/weather.current.test.js'
+System.Management.Automation.RemoteException
+    [0m [90m 1 |[39m [90m/* eslint-disable camelcase */[39m
+    [31m[1m>[22m[39m[90m 2 |[39m [36mconst[39m request [33m=[39m require([32m'supertest'[39m)[33m;[39m
+     [90m   |[39m                 [31m[1m^[22m[39m
+     [90m 3 |[39m [36mconst[39m axios [33m=[39m require([32m'axios'[39m)[33m;[39m
+     [90m 4 |[39m
+     [90m 5 |[39m [90m// Mock rate limiter to no-op for tests[39m[0m
+System.Management.Automation.RemoteException
+      at Resolver._throwModNotFoundError (C:/Users/ASUS/AppData/Local/npm-cache/_npx/b8d86e6551a4f492/node_modules/jest-resolve/build/index.js:863:11)
+      at Object.require (tests/integration/weather.current.test.js:2:17)
+System.Management.Automation.RemoteException
+FAIL tests/integration/satellite.tiles.test.js
+  ΓùÅ Test suite failed to run
+System.Management.Automation.RemoteException
+    Cannot find module 'supertest' from 'tests/integration/satellite.tiles.test.js'
+System.Management.Automation.RemoteException
+    [0m [90m 1 |[39m [90m/* eslint-disable camelcase */[39m
+    [31m[1m>[22m[39m[90m 2 |[39m [36mconst[39m request [33m=[39m require([32m'supertest'[39m)[33m;[39m
+     [90m   |[39m                 [31m[1m^[22m[39m
+     [90m 3 |[39m [36mconst[39m axios [33m=[39m require([32m'axios'[39m)[33m;[39m
+     [90m 4 |[39m
+     [90m 5 |[39m [90m// Mock rate limiter to no-op for tests[39m[0m
+System.Management.Automation.RemoteException
+      at Resolver._throwModNotFoundError (C:/Users/ASUS/AppData/Local/npm-cache/_npx/b8d86e6551a4f492/node_modules/jest-resolve/build/index.js:863:11)
+      at Object.require (tests/integration/satellite.tiles.test.js:2:17)
+System.Management.Automation.RemoteException
+Test Suites: 15 failed, 15 total
+Tests:       0 total
+Snapshots:   0 total
+Time:        3.254 s
+Ran all test suites matching integration.

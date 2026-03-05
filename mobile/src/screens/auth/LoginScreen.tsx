@@ -24,17 +24,29 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!email || !password) {
+    // Trim email to remove any accidental whitespace or extra characters
+    const trimmedEmail = email.trim();
+    
+    if (!trimmedEmail || !password) {
       Alert.alert('Error', 'Please enter email and password');
       return;
     }
 
     try {
       setIsLoading(true);
-      await login({ email, password });
+      await login({ email: trimmedEmail, password });
       // Navigation handled automatically by RootNavigator
-    } catch (error) {
+    } catch (error: any) {
       const apiError = handleApiError(error);
+      
+      if (__DEV__) {
+        console.error('[LoginScreen] Login error details:', {
+          status: error?.response?.status,
+          data: error?.response?.data,
+          apiError,
+        });
+      }
+      
       Alert.alert('Login Failed', apiError.message);
     } finally {
       setIsLoading(false);

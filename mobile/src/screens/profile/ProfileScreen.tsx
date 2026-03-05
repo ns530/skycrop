@@ -48,14 +48,16 @@ const ProfileScreen: React.FC = () => {
     }
   };
 
-  if (isLoading || !user) {
+  if (isLoading) {
     return <LoadingSpinner message="Loading profile..." />;
   }
 
-  const memberSince = new Date(user.createdAt).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-  });
+  const memberSince = user?.createdAt
+    ? new Date(user.createdAt).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+    })
+    : 'Recently';
 
   return (
     <SafeAreaView style={styles.container}>
@@ -65,8 +67,8 @@ const ProfileScreen: React.FC = () => {
           <View style={styles.avatar}>
             <Icon name="person" size={48} color="#fff" />
           </View>
-          <Text style={styles.name}>{user.name}</Text>
-          <Text style={styles.email}>{user.email}</Text>
+          <Text style={styles.name}>{user?.name || 'User'}</Text>
+          <Text style={styles.email}>{user?.email || 'No email'}</Text>
           <Text style={styles.memberSince}>Member since {memberSince}</Text>
         </View>
 

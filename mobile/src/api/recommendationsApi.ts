@@ -49,16 +49,16 @@ export const getRecommendationById = async (
   fieldId: number,
   recommendationId: number
 ): Promise<Recommendation> => {
-  const response = await apiClient.get(`/fields/${fieldId}/recommendations/${recommendationId}`);
-  return response.data.data;
+  const response = await apiClient.get(`/api/v1/fields/${fieldId}/recommendations/${recommendationId}`);
+  return response.data.data || response.data;
 };
 
 /**
  * Get recommendations summary
  */
 export const getRecommendationsSummary = async (fieldId: number): Promise<RecommendationSummary> => {
-  const response = await apiClient.get(`/fields/${fieldId}/recommendations/summary`);
-  return response.data.data;
+  const response = await apiClient.get(`/api/v1/fields/${fieldId}/recommendations/summary`);
+  return response.data.data || response.data;
 };
 
 /**

@@ -1,0 +1,18 @@
+﻿[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+{"correlationid":null,"downstreamstatus":200,"environment":"test","latencyms":3,"level":"info","message":"ml.gateway.downstream","modelversion":"unet-2.0.0","route":"/api/v1/ml/segmentation/predict","service":"skycrop-backend","timestamp":"2026-03-03T10:24:35.093Z"}
+{"correlationid":null,"downstreamstatus":200,"environment":"test","latencyms":1,"level":"info","message":"ml.gateway.downstream","modelversion":"unet-1.0.0","route":"/api/v1/ml/segmentation/predict","service":"skycrop-backend","timestamp":"2026-03-03T10:24:35.098Z"}
+{"correlationid":null,"downstreamstatus":404,"environment":"test","latencyms":0,"level":"info","message":"ml.gateway.downstream","modelversion":"9.9.9","route":"/api/v1/ml/segmentation/predict","service":"skycrop-backend","timestamp":"2026-03-03T10:24:35.100Z"}
+{"correlationid":null,"downstreamstatus":200,"environment":"test","latencyms":0,"level":"info","message":"ml.gateway.downstream","modelversion":"unet-1.0.0","route":"/api/v1/ml/segmentation/predict","service":"skycrop-backend","timestamp":"2026-03-03T10:24:35.104Z"}
+PASS tests/unit/ml.gateway.service.segmentation.test.js
+  MLGatewayService.detectBoundaries Unit
+    ΓêÜ happy path: returns normalized structure (maskUrl) and propagates Authorization + X-Model-Version header from options (10 ms)
+    ΓêÜ header propagation: uses env MODELUNETVERSION when options.modelVersion not provided (1 ms)
+    ΓêÜ error mapping: downstream 404 MODELNOTFOUND is normalized and thrown (1 ms)
+    ΓêÜ input validation: bad bbox arrays reject fast and do not call downstream (2 ms)
+    ΓêÜ inline return: returns maskBase64 and preserves model/version (1 ms)
+System.Management.Automation.RemoteException
+Test Suites: 1 passed, 1 total
+Tests:       5 passed, 5 total
+Snapshots:   0 total
+Time:        0.539 s, estimated 1 s
+Ran all test suites matching tests/unit/ml.gateway.service.segmentation.test.js.

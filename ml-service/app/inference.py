@@ -9,14 +9,45 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 from shapely.geometry import Polygon, MultiPolygon, mapping, shape
 from shapely.ops import unary_union
-from skimage.morphology import (
-    binary_opening,
-    binary_closing,
-    remove_small_objects,
-    remove_small_holes,
-    disk,
-)
-from skimage.measure import label, regionprops, find_contours
+# Optional skimage imports (used for morphology/postprocessing). Provide fallbacks if unavailable.
+try:
+    from skimage.morphology import (
+        binary_opening,
+        binary_closing,
+        remove_small_objects,
+        remove_small_holes,
+        disk,
+    )
+    from skimage.measure import label, regionprops, find_contours
+    HAS_SKIMAGE = True
+except Exception:
+    HAS_SKIMAGE = False
+    # Fallback no-op implementations to allow service startup without skimage.
+    def binary_opening(arr, *args, **kwargs):
+        return arr
+
+    def binary_closing(arr, *args, **kwargs):
+        return arr
+
+    def remove_small_objects(arr, *args, **kwargs):
+        return arr
+
+    def remove_small_holes(arr, *args, **kwargs):
+        return arr
+
+    def disk(radius, *args, **kwargs):
+        return None
+
+    def label(arr, *args, **kwargs):
+        return np.zeros_like(arr, dtype=int)
+
+    def regionprops(*args, **kwargs):
+        return []
+
+    def find_contours(*args, **kwargs):
+        return []
+
+    print("[WARN] skimage not available; using no-op morphology fallbacks.")
 
 # =========================
 # Configuration (ENV-driven)

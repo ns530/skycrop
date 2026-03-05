@@ -1,0 +1,41 @@
+﻿[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+{"cachehit":false,"date":"2025-01-15","environment":"test","field_id":"field-1","latencyms":4,"level":"info","message":"health.indices.process.ok","route":"/api/v1/fields/:id/health/compute","service":"skycrop-backend","timestamp":"2026-03-03T10:24:08.658Z"}
+PASS tests/unit/health.service.test.js
+  HealthService (vegetation indices) unit
+    ΓêÜ evalscript builder includes expected bands and index formulas (4 ms)
+    ΓêÜ computeIndicesForField builds Process API request with geometry and image size, populates cache (8 ms)
+    ΓêÜ upsertSnapshot is idempotent and returns row; recompute=true updates values (2 ms)
+    ΓêÜ listSnapshots returns paginated results and respects range and page/pageSize defaults (3 ms)
+    ΓêÜ Process API error mapping: 5xx -> 503, 4xx -> 400 (2 ms)
+    ΓêÜ date validation rejects invalid date format (1 ms)
+    ΓêÜ assertFieldOwnership throws ValidationError for missing user_id or field_id (2 ms)
+    ΓêÜ assertFieldOwnership throws NotFoundError for non-existent or deleted field (2 ms)
+    ΓêÜ assertFieldOwnership returns field for valid ownership (1 ms)
+    ΓêÜ getFieldGeometry calls ownership check and returns boundary (1 ms)
+    ΓêÜ getFieldGeometry throws NotFoundError when no boundary (1 ms)
+    ΓêÜ getOAuthToken caches token and reuses when valid
+    ΓêÜ getOAuthToken fetches new token when expired or missing (2 ms)
+    ΓêÜ getOAuthToken throws error on OAuth failure (30 ms)
+    ΓêÜ buildProcessBodyForGeometry constructs correct request body (1 ms)
+    ΓêÜ parseProcessResponse parses JSON stats correctly (1 ms)
+    ΓêÜ parseProcessResponse parses data array and computes means (1 ms)
+    ΓêÜ parseProcessResponse throws error for invalid JSON (3 ms)
+    ΓêÜ parseProcessResponse throws 501 for non-JSON content (2 ms)
+    ΓêÜ findSnapshot returns snapshot by field and date (1 ms)
+    ΓêÜ findSnapshot returns null when no snapshot found
+    ΓêÜ getLatest returns latest health record (1 ms)
+    ΓêÜ getLatest throws NotFoundError when no records (1 ms)
+    ΓêÜ getHistory returns records with default days filter (1 ms)
+    ΓêÜ getHistory supports from/to date filters (1 ms)
+    ΓêÜ refresh returns success response
+    ΓêÜ computeIndicesForField validates date format
+    ΓêÜ upsertSnapshot validates required parameters (1 ms)
+    ΓêÜ listSnapshots validates ownership (1 ms)
+    ΓêÜ listSnapshots handles pagination and range filters
+    ΓêÜ getHealthService returns singleton instance
+System.Management.Automation.RemoteException
+Test Suites: 1 passed, 1 total
+Tests:       31 passed, 31 total
+Snapshots:   0 total
+Time:        1.242 s
+Ran all test suites matching tests/unit/health.service.test.js.

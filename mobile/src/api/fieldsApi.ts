@@ -66,12 +66,18 @@ export const fieldsApi = {
     const response = await apiClient.get<any>('/api/v1/fields', {
       params,
     });
-    // Backend returns { success: true, data: {...}, pagination: {...} }
-    const backendData = response.data.data || response.data;
-    const pagination = response.data.pagination || response.data.data?.pagination;
+    // Backend returns { success: true, data: [...items], pagination: { page, pagesize, total } }
+    const responseBody = response.data;
+    const items = Array.isArray(responseBody.data) ? responseBody.data : [];
+    const pag = responseBody.pagination || {};
     return {
-      data: backendData?.data || backendData || [],
-      pagination: pagination || { page: 1, limit: 20, total: 0, total_pages: 0 },
+      data: items,
+      pagination: {
+        page: pag.page || 1,
+        limit: pag.pagesize || pag.pageSize || pag.limit || 20,
+        total: pag.total || items.length,
+        total_pages: pag.total_pages || Math.ceil((pag.total || items.length) / (pag.pagesize || pag.pageSize || pag.limit || 20)),
+      },
     };
   },
 

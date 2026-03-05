@@ -40,49 +40,49 @@ export interface YieldSummary {
 /**
  * Get current yield prediction for a field
  */
-export const getFieldYield = async (fieldId: number): Promise<YieldPrediction> => {
-  const response = await apiClient.get(`/fields/${fieldId}/yield`);
-  return response.data.data;
+export const getFieldYield = async (fieldId: string | number): Promise<YieldPrediction> => {
+  const response = await apiClient.get(`/api/v1/fields/${fieldId}/yield`);
+  return response.data.data || response.data;
 };
 
 /**
  * Get yield history for a field
  */
 export const getFieldYieldHistory = async (
-  fieldId: number,
+  fieldId: string | number,
   params?: {
     limit?: number;
     start_year?: number;
     end_year?: number;
   }
 ): Promise<YieldHistory[]> => {
-  const response = await apiClient.get(`/fields/${fieldId}/yield/history`, { params });
-  return response.data.data;
+  const response = await apiClient.get(`/api/v1/fields/${fieldId}/yield/history`, { params });
+  return response.data.data || response.data;
 };
 
 /**
  * Get yield summary (current + history + trends)
  */
-export const getFieldYieldSummary = async (fieldId: number): Promise<YieldSummary> => {
-  const response = await apiClient.get(`/fields/${fieldId}/yield/summary`);
-  return response.data.data;
+export const getFieldYieldSummary = async (fieldId: string | number): Promise<YieldSummary> => {
+  const response = await apiClient.get(`/api/v1/fields/${fieldId}/yield/summary`);
+  return response.data.data || response.data;
 };
 
 /**
  * Trigger new yield prediction for a field
  */
 export const triggerYieldPrediction = async (
-  fieldId: number
+  fieldId: string | number
 ): Promise<{ message: string; job_id: string }> => {
-  const response = await apiClient.post(`/fields/${fieldId}/yield/predict`);
-  return response.data;
+  const response = await apiClient.post(`/api/v1/fields/${fieldId}/yield/predict`);
+  return response.data.data || response.data;
 };
 
 /**
  * Record actual yield for a field
  */
 export const recordActualYield = async (
-  fieldId: number,
+  fieldId: string | number,
   data: {
     actual_yield: number;
     harvest_date: string;
@@ -90,7 +90,7 @@ export const recordActualYield = async (
     notes?: string;
   }
 ): Promise<{ message: string }> => {
-  const response = await apiClient.post(`/fields/${fieldId}/yield/actual`, data);
-  return response.data;
+  const response = await apiClient.post(`/api/v1/fields/${fieldId}/yield/actual`, data);
+  return response.data.data || response.data;
 };
 

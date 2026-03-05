@@ -87,7 +87,7 @@ class HealthService {
     const rows = await sequelize.query(
       `
       SELECT
-        STAsGeoJSON(boundary)::json AS boundary
+        ST_AsGeoJSON(boundary)::json AS boundary
       FROM fields
       WHERE field_id = :field_id AND user_id = :user_id AND status <> 'deleted'
       LIMIT 1

@@ -39,7 +39,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loadStoredAuth = async () => {
     try {
       setIsLoading(true);
-      console.log('[AuthContext] Loading stored auth data...');
+      if (__DEV__) {
+        console.log('[AuthContext] Loading stored auth data...');
+      }
       
       // Try to get token from secure storage first
       let storedToken = await SecureStore.getItemAsync(TOKEN_KEY);
@@ -49,23 +51,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         storedToken = await AsyncStorage.getItem(TOKEN_KEY);
       }
       
-      console.log('[AuthContext] Token found:', !!storedToken);
+      if (__DEV__) {
+        console.log('[AuthContext] Token found:', !!storedToken);
+      }
 
       if (storedToken) {
         setToken(storedToken);
         
         // Load user data
-        const userJson = await AsyncStorage.getItem(USER_KEY);
-        if (userJson) {
-          const userData = JSON.parse(userJson);
-          setUser(userData);
+        try {
+          const userJson = await AsyncStorage.getItem(USER_KEY);
+          if (userJson) {
+            const userData = JSON.parse(userJson);
+            setUser(userData);
+            if (__DEV__) {
+              console.log('[AuthContext] User data loaded:', userData.email);
+            }
+          } else {
+            if (__DEV__) {
+              console.warn('[AuthContext] Token found but user data missing');
+            }
+            // If we have a token but no user data, we'll still consider it authenticated
+            // The token is what matters for API calls
+          }
+        } catch (userError) {
+          console.error('[AuthContext] Error parsing user data:', userError);
+          // Continue with token even if user data parsing fails
         }
 
         // Note: Backend doesn't have a profile endpoint for token verification
         // Token validity will be checked on the next API call that requires auth
+      } else {
+        if (__DEV__) {
+          console.log('[AuthContext] No stored token found');
+        }
       }
     } catch (error) {
-      console.error('Error loading stored auth:', error);
+      console.error('[AuthContext] Error loading stored auth:', error);
+      // Clear any partial state on error
+      setToken(null);
+      setUser(null);
     } finally {
       setIsLoading(false);
     }
@@ -73,6 +98,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const saveAuth = async (newToken: string, newUser: User) => {
     try {
+      if (__DEV__) {
+        console.log('[AuthContext] Saving auth data...');
+      }
+      
       // Save to secure storage (preferred)
       await SecureStore.setItemAsync(TOKEN_KEY, newToken);
       
@@ -80,10 +109,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await AsyncStorage.setItem(TOKEN_KEY, newToken);
       await AsyncStorage.setItem(USER_KEY, JSON.stringify(newUser));
       
+      // Update state only after successful save
       setToken(newToken);
       setUser(newUser);
+      
+      if (__DEV__) {
+        console.log('[AuthContext] Auth data saved successfully');
+      }
     } catch (error) {
-      console.error('Error saving auth:', error);
+      console.error('[AuthContext] Error saving auth:', error);
+      // Clear state if save fails
+      setToken(null);
+      setUser(null);
       throw error;
     }
   };
@@ -102,10 +139,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = useCallback(async (credentials: LoginCredentials) => {
     try {
+      if (__DEV__) {
+        console.log('[AuthContext] Attempting login with email:', credentials.email);
+      }
       const response = await authApi.login(credentials);
       await saveAuth(response.token, response.user);
-    } catch (error) {
-      console.error('Login error:', error);
+      if (__DEV__) {
+        console.log('[AuthContext] Login successful');
+      }
+    } catch (error: any) {
+      if (__DEV__) {
+        console.error('[AuthContext] Login error:', error);
+        console.error('[AuthContext] Error response:', error?.response?.data);
+        console.error('[AuthContext] Error status:', error?.response?.status);
+        console.error('[AuthContext] Error message:', error?.response?.data?.message || error?.message);
+        if (error?.response?.data?.errors) {
+          console.error('[AuthContext] Validation errors:', error.response.data.errors);
+        }
+      }
       throw error;
     }
   }, []);
@@ -148,11 +199,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [token]);
 
+  // Consider authenticated if we have a token (user data is nice-to-have but not required)
+  // The token is what matters for API authentication
+  const isAuthenticated = !!token;
+
   const value: AuthContextType = {
     user,
     token,
     isLoading,
-    isAuthenticated: !!token && !!user,
+    isAuthenticated,
     login,
     register,
     logout,

@@ -26,13 +26,40 @@ export const authApi = {
    * Login with email and password
    */
   login: async (credentials: LoginCredentials): Promise<LoginResponse> => {
-    const response = await apiClient.post<any>('/api/v1/auth/login', credentials);
-    // Backend returns { success: true, data: { token, user } }
-    const backendData = response.data.data || response.data;
-    return {
-      token: backendData.token,
-      user: mapUser(backendData.user),
-    };
+    try {
+      if (__DEV__) {
+        console.log('[AuthAPI] Sending login request to /api/v1/auth/login');
+        console.log('[AuthAPI] Email:', credentials.email);
+        console.log('[AuthAPI] Password length:', credentials.password?.length);
+      }
+      
+      const response = await apiClient.post<any>('/api/v1/auth/login', credentials);
+      
+      if (__DEV__) {
+        console.log('[AuthAPI] Login response received:', response.status);
+      }
+      
+      // Backend returns { success: true, data: { token, user } }
+      const backendData = response.data.data || response.data;
+      return {
+        token: backendData.token,
+        user: mapUser(backendData.user),
+      };
+    } catch (error: any) {
+      if (__DEV__) {
+        console.error('[AuthAPI] Login request failed');
+        console.error('[AuthAPI] Status:', error?.response?.status);
+        console.error('[AuthAPI] Response data:', JSON.stringify(error?.response?.data, null, 2));
+        console.error('[AuthAPI] Error message:', error?.message);
+        
+        // Log validation errors if available
+        const validationErrors = error?.response?.data?.error?.details?.errors;
+        if (Array.isArray(validationErrors)) {
+          console.error('[AuthAPI] Validation errors:', validationErrors);
+        }
+      }
+      throw error;
+    }
   },
 
   /**

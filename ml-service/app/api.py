@@ -14,6 +14,7 @@ from .inference import encode_geojson_base64, run_unet_geojson, persist_mask_geo
 from .monitoring import log_inference_event
 from .yield_predict import predict_numeric, build_matrix_from_features
 from .disaster_analyze import analyze_indices, build_feature_collection
+from .gee_indices import compute_indices as gee_compute_indices, is_available as gee_is_available
 from .schemas import (
     ErrorResponse,
     Metrics,
@@ -464,3 +465,69 @@ def disaster_analyze_endpoint():
         pass
 
     return _ok(body)
+
+
+@api_bp.route("/gee/compute-indices", methods=["POST"])
+@require_internal_auth
+def gee_compute_indices_endpoint():
+    """
+    Compute NDVI, NDWI, TDVI indices using Google Earth Engine
+    Alternative to SentinelHub for crop health analysis
+    
+    Request body:
+    {
+        "geometry": {...},  // GeoJSON geometry
+        "date": "2024-01-15"  // YYYY-MM-DD format
+    }
+    
+    Response:
+    {
+        "ndvi": 0.65,
+        "ndwi": 0.12,
+        "tdvi": 0.58
+    }
+    """
+    t0 = time.time()
+    
+    if not gee_is_available():
+        return _error(
+            "SERVICE_UNAVAILABLE",
+            "Google Earth Engine is not available. Install earthengine-api and configure authentication.",
+            {},
+            status=503
+        )
+    
+    data = request.get_json()
+    if not data:
+        return _error("INVALID_INPUT", "Request body is required", {}, status=400)
+    
+    geometry = data.get("geometry")
+    date = data.get("date")
+    
+    if not geometry:
+        return _error("INVALID_INPUT", "geometry is required", {}, status=400)
+    if not date:
+        return _error("INVALID_INPUT", "date is required (YYYY-MM-DD format)", {}, status=400)
+    
+    try:
+        result = gee_compute_indices(geometry, date)
+        
+        request_id = getattr(g, "correlation_id", None) or str(uuid.uuid4())
+        latency_ms = int((time.time() - t0) * 1000)
+        
+        body = {
+            "request_id": request_id,
+            "indices": result,
+            "metrics": {"latency_ms": latency_ms},
+        }
+        
+        return _ok(body)
+        
+    except Exception as e:
+        logger.error(f"GEE indices computation failed: {e}", exc_info=True)
+        return _error(
+            "COMPUTATION_ERROR",
+            f"Failed to compute indices: {str(e)}",
+            {},
+            status=500
+        )

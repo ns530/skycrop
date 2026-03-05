@@ -16,7 +16,8 @@ AGENTS.md
 .kilocodemodes
 opencode.jsonc
 
-web-bundles/
-
+# Documentation/analysis files (temporary)
 CONNECTION_ANALYSIS_REPORT.md
 ML_MODEL_DEPLOYMENT_FIX.md
+
+web-bundles/

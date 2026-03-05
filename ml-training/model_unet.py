@@ -1,11 +1,17 @@
 import os
+import logging
 from typing import Tuple, Optional, Dict
+
+logger = logging.getLogger(__name__)
 
 try:
     import tensorflow as tf
     from tensorflow.keras import layers, models, optimizers
-except Exception as e:  # pragma: no cover - optional in CI without TF
-    tf = None  # type: ignore
+except ImportError:
+    logger.error(
+        "TensorFlow is not installed. Install with: pip install tensorflow"
+    )
+    raise
 
 from metrics import (
     iou_metric,
@@ -282,7 +288,10 @@ def build_and_compile_from_config(cfg: Dict) -> "tf.keras.Model":
         if lname == "bce":
             loss_fn = tf.keras.losses.BinaryCrossentropy(from_logits=bool(params.get("logits", False)))
         elif lname == "dice":
-            loss_fn = lambda y_true, y_pred: dice_loss(y_true, y_pred, smooth=float(params.get("smooth", 1.0)))  # noqa: E731
+            _dice_smooth = float(params.get("smooth", 1.0))
+
+            def loss_fn(y_true, y_pred):
+                return dice_loss(y_true, y_pred, smooth=_dice_smooth)
         elif lname == "bce_dice":
             loss_fn = bce_dice_loss(
                 bce_weight=float(params.get("bce_weight", legacy_bce_w)),

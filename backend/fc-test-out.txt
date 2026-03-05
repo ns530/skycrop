@@ -1,0 +1,7 @@
+﻿PASS tests/unit/field.controller.test.js
+System.Management.Automation.RemoteException
+Test Suites: 1 passed, 1 total
+Tests:       17 passed, 17 total
+Snapshots:   0 total
+Time:        0.781 s, estimated 2 s
+Ran all test suites matching /tests\\unit\\field.controller.test.js/i.

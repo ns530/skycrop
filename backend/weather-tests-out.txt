@@ -1,0 +1,170 @@
+﻿{"durationms":0,"environment":"test","level":"info","message":"test.label.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:02:55.293Z"}
+{"durationms":0,"environment":"test","level":"error","message":"weather.current.error","service":"skycrop-backend","status":401,"timestamp":"2026-03-03T11:02:55.652Z"}
+{"durationms":14,"environment":"test","level":"error","message":"weather.current.error","service":"skycrop-backend","timestamp":"2026-03-03T11:02:55.665Z"}
+{"durationms":0,"environment":"test","level":"error","message":"weather.current.error","service":"skycrop-backend","timestamp":"2026-03-03T11:02:55.813Z"}
+{"durationms":511,"environment":"test","level":"info","message":"test.label.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:02:55.817Z"}
+{"durationms":1,"environment":"test","level":"error","message":"test.label.error","service":"skycrop-backend","status":401,"timestamp":"2026-03-03T11:02:55.824Z"}
+{"durationms":1,"environment":"test","level":"error","message":"test.label.error","service":"skycrop-backend","timestamp":"2026-03-03T11:02:55.825Z"}
+{"durationms":1,"environment":"test","level":"error","message":"weather.current.error","service":"skycrop-backend","timestamp":"2026-03-03T11:02:55.959Z"}
+{"durationms":0,"environment":"test","level":"info","message":"weather.current.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:02:56.287Z"}
+{"environment":"test","key":"weather:current:field_id","level":"info","message":"cache.set","service":"skycrop-backend","timestamp":"2026-03-03T11:02:56.292Z","ttl":21600}
+{"durationms":0,"environment":"test","level":"error","message":"weather.current.error","service":"skycrop-backend","status":401,"timestamp":"2026-03-03T11:02:56.318Z"}
+{"durationms":1,"environment":"test","level":"error","message":"weather.current.error","service":"skycrop-backend","timestamp":"2026-03-03T11:02:56.319Z"}
+{"durationms":0,"environment":"test","level":"error","message":"weather.current.error","service":"skycrop-backend","timestamp":"2026-03-03T11:02:56.326Z"}
+{"durationms":0,"environment":"test","level":"info","message":"weather.forecast.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:02:56.333Z"}
+{"environment":"test","key":"weather:forecast:field_id","level":"info","message":"cache.set","service":"skycrop-backend","timestamp":"2026-03-03T11:02:56.333Z","ttl":21600}
+PASS tests/unit/weather.service.extra.test.js
+  WeatherService branch coverage lift
+    ΓêÜ getCurrentByField: cache hit short-circuits and returns cached payload (54 ms)
+    ΓêÜ getCurrentByField: success provider path -> miss then provider (19 ms)
+    ΓêÜ getCurrentByField: 4xx client error maps to ValidationError with statusCode from provider (23 ms)
+    ΓêÜ getCurrentByField: 5xx error retries and ends as SERVICE_UNAVAILABLE 503 (7 ms)
+    ΓêÜ getForecastByField: success provider path returns limited daily array (8 ms)
+    ΓêÜ getCurrentByField: missing API key throws ValidationError quickly (4 ms)
+System.Management.Automation.RemoteException
+{"durationms":1,"environment":"test","level":"info","message":"weather.forecast.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:02:56.369Z"}
+{"environment":"test","key":"weather:forecast:field_id","level":"info","message":"cache.set","service":"skycrop-backend","timestamp":"2026-03-03T11:02:56.370Z","ttl":21600}
+PASS tests/unit/weather.service.branches.test.js
+  WeatherService branch coverage lifts
+    ΓêÜ throws ValidationError when OPENWEATHER_API_KEY is missing (covers requireApiKey false branch) (1402 ms)
+    ΓêÜ throws ValidationError when field center is missing/invalid (covers fieldCenterToLatLon invalid branch) (146 ms)
+    ΓêÜ throws ValidationError for missing user_id in getFieldOrThrow (covers missing param branches) (194 ms)
+    ΓêÜ requestWithRetry maps 4xx to ValidationError with statusCode and bubbles via getCurrentByField (covers 4xx path) (172 ms)
+    ΓêÜ requestWithRetry retries on 5xx then throws SERVICE_UNAVAILABLE 503 (covers retry/backoff path) (145 ms)
+    ΓêÜ getCurrentByField falls back to cache on provider failure when secondary cache fetch hits (covers catch fallback branch) (167 ms)
+    ΓêÜ forecast path: cache hit branch (covers getForecastByField cached block) (187 ms)
+    ΓêÜ getForecastByField success path with provider (covers success/meta cache miss branch) (200 ms)
+System.Management.Automation.RemoteException
+{"durationms":1526,"environment":"test","level":"error","message":"test.label.error","service":"skycrop-backend","timestamp":"2026-03-03T11:02:57.359Z"}
+{"durationms":1,"environment":"test","level":"info","message":"weather.current.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:02:57.366Z"}
+{"environment":"test","key":"weather:current:field_id","level":"info","message":"cache.set","service":"skycrop-backend","timestamp":"2026-03-03T11:02:57.367Z","ttl":21600}
+{"durationms":0,"environment":"test","level":"info","message":"weather.forecast.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:02:57.376Z"}
+{"environment":"test","key":"weather:forecast:field_id","level":"info","message":"cache.set","service":"skycrop-backend","timestamp":"2026-03-03T11:02:57.377Z","ttl":21600}
+{"durationms":0,"environment":"test","level":"info","message":"weather.forecast.normalized.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:02:57.386Z"}
+{"environment":"test","key":"weather:forecast:LAT:LON","level":"info","message":"cache.set","service":"skycrop-backend","timestamp":"2026-03-03T11:02:57.387Z","ttl":21600}
+{"durationms":0,"environment":"test","level":"info","message":"weather.forecast.normalized.coords.response","service":"skycrop-backend","status":200,"timestamp":"2026-03-03T11:02:57.390Z"}
+{"environment":"test","key":"weather:forecast:LAT:LON","level":"info","message":"cache.set","service":"skycrop-backend","timestamp":"2026-03-03T11:02:57.390Z","ttl":21600}
+FAIL tests/unit/weather.service.test.js (5.137 s)
+  WeatherService unit
+    ΓêÜ init initializes redis client (14 ms)
+    ΓêÜ requireApiKey throws when no API key (53 ms)
+    ΓêÜ requireApiKey returns API key (2 ms)
+    ΓêÜ fieldCenterToLatLon extracts coordinates (3 ms)
+    ├ù fieldCenterToLatLon throws for invalid field (53 ms)
+    ΓêÜ cacheKey generates correct key (8 ms)
+    ΓêÜ getFieldOrThrow validates parameters (4 ms)
+    ΓêÜ getFieldOrThrow throws NotFoundError for missing field (3 ms)
+    ΓêÜ getFieldOrThrow returns field (1 ms)
+    ├ù requestWithRetry succeeds on first attempt (15 ms)
+    ├ù requestWithRetry retries on 5xx errors (516 ms)
+    ├ù requestWithRetry throws on 4xx errors without retry (7 ms)
+    ΓêÜ requestWithRetry throws after max retries (1529 ms)
+    ΓêÜ getCurrentByField returns cached data (5 ms)
+    ΓêÜ getCurrentByField fetches from API when not cached (3 ms)
+    ΓêÜ getCurrentByField falls back to cache on API failure (2 ms)
+    ΓêÜ getForecastByField returns cached data (4 ms)
+    ΓêÜ getForecastByField fetches from API when not cached (3 ms)
+    ΓêÜ normalizeDaily processes daily array (3 ms)
+    ΓêÜ forecastCacheKeyByCoords generates key (1 ms)
+    ΓêÜ getForecast returns normalized cached data (2 ms)
+    ΓêÜ getForecast fetches and normalizes from API (3 ms)
+    ΓêÜ getForecastByCoords works without field validation (3 ms)
+    ΓêÜ getWeatherService returns singleton (1 ms)
+System.Management.Automation.RemoteException
+  ΓùÅ WeatherService unit ΓÇ║ fieldCenterToLatLon throws for invalid field
+System.Management.Automation.RemoteException
+    expect(received).toThrow(expected)
+System.Management.Automation.RemoteException
+    Expected substring: "Field center point is missing"
+    Received message:   "Cannot read properties of undefined (reading 'json')"
+System.Management.Automation.RemoteException
+        [0m [90m 72 |[39m
+         [90m 73 |[39m   test([32m'fieldCenterToLatLon throws for invalid field'[39m[33m,[39m () [33m=>[39m {
+        [31m[1m>[22m[39m[90m 74 |[39m     expect(() [33m=>[39m svc[33m.[39mfieldCenterToLatL[33m.[39mjson({}))[33m.[39mtoThrow([32m'Field center point is missing'[39m)[33m;[39m
+         [90m    |[39m                                        [31m[1m^[22m[39m
+         [90m 75 |[39m     expect(() [33m=>[39m svc[33m.[39mfieldCenterToLatL[33m.[39mjson({ center[33m:[39m {} }))[33m.[39mtoThrow(
+         [90m 76 |[39m       [32m'Field center point is missing'[39m
+         [90m 77 |[39m     )[33m;[39m[0m
+System.Management.Automation.RemoteException
+      at json (tests/unit/weather.service.test.js:74:40)
+      at Object.<anonymous> (node_modules/expect/build/toThrowMatchers.js:74:11)
+      at Object.throwingMatcher [as toThrow] (node_modules/expect/build/index.js:320:21)
+      at Object.toThrow (tests/unit/weather.service.test.js:74:50)
+      at Object.toThrow (tests/unit/weather.service.test.js:74:50)
+System.Management.Automation.RemoteException
+  ΓùÅ WeatherService unit ΓÇ║ requestWithRetry succeeds on first attempt
+System.Management.Automation.RemoteException
+    expect(received).toEqual(expected) // deep equality
+System.Management.Automation.RemoteException
+    - Expected  - 0
+    + Received  + 1
+System.Management.Automation.RemoteException
+      Object {
+        "current": Object {
+          "temp": 25,
+        },
+    +   "duration": 0,
+      }
+System.Management.Automation.RemoteException
+    [0m [90m 104 |[39m     axios[33m.[39m[36mget[39m[33m.[39mmockResolvedValue(mockResponse)[33m;[39m
+     [90m 105 |[39m     [36mconst[39m result [33m=[39m [36mawait[39m svc[33m.[39mrequestWithRetry([32m'http://test.com'[39m[33m,[39m [32m'test.label'[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 106 |[39m     expect(result)[33m.[39mtoEqual({ current[33m:[39m { temp[33m:[39m [35m25[39m } })[33m;[39m
+     [90m     |[39m                    [31m[1m^[22m[39m
+     [90m 107 |[39m     expect(result[33m.[39mduration)[33m.[39mtoBeGreaterThanOrEqual([35m0[39m)[33m;[39m
+     [90m 108 |[39m   })[33m;[39m
+     [90m 109 |[39m[0m
+System.Management.Automation.RemoteException
+      at Object.toEqual (tests/unit/weather.service.test.js:106:20)
+System.Management.Automation.RemoteException
+  ΓùÅ WeatherService unit ΓÇ║ requestWithRetry retries on 5xx errors
+System.Management.Automation.RemoteException
+    expect(received).toEqual(expected) // deep equality
+System.Management.Automation.RemoteException
+    - Expected  - 0
+    + Received  + 1
+System.Management.Automation.RemoteException
+      Object {
+    +   "duration": 511,
+        "success": true,
+      }
+System.Management.Automation.RemoteException
+    [0m [90m 114 |[39m     [36mconst[39m result [33m=[39m [36mawait[39m svc[33m.[39mrequestWithRetry([32m'http://test.com'[39m[33m,[39m [32m'test.label'[39m)[33m;[39m
+     [90m 115 |[39m     expect(axios[33m.[39m[36mget[39m)[33m.[39mtoHaveBeenCalledTimes([35m2[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 116 |[39m     expect(result)[33m.[39mtoEqual({ success[33m:[39m [36mtrue[39m })[33m;[39m
+     [90m     |[39m                    [31m[1m^[22m[39m
+     [90m 117 |[39m   })[33m;[39m
+     [90m 118 |[39m
+     [90m 119 |[39m   test([32m'requestWithRetry throws on 4xx errors without retry'[39m[33m,[39m [36masync[39m () [33m=>[39m {[0m
+System.Management.Automation.RemoteException
+      at Object.toEqual (tests/unit/weather.service.test.js:116:20)
+System.Management.Automation.RemoteException
+  ΓùÅ WeatherService unit ΓÇ║ requestWithRetry throws on 4xx errors without retry
+System.Management.Automation.RemoteException
+    expect(received).rejects.toMatchObject(expected)
+System.Management.Automation.RemoteException
+    - Expected  - 3
+    + Received  + 1
+System.Management.Automation.RemoteException
+      Object {
+    -   "message": "Weather API error (401): Unauthorized",
+    -   "name": "ValidationError",
+    -   "statusCode": 401,
+    +   "statusCode": 503,
+      }
+System.Management.Automation.RemoteException
+    [0m [90m 119 |[39m   test([32m'requestWithRetry throws on 4xx errors without retry'[39m[33m,[39m [36masync[39m () [33m=>[39m {
+     [90m 120 |[39m     axios[33m.[39m[36mget[39m[33m.[39mmockResolvedValue({ status[33m:[39m [35m401[39m[33m,[39m data[33m:[39m {}[33m,[39m statusText[33m:[39m [32m'Unauthorized'[39m })[33m;[39m
+    [31m[1m>[22m[39m[90m 121 |[39m     [36mawait[39m expect(svc[33m.[39mrequestWithRetry([32m'http://test.com'[39m[33m,[39m [32m'test.label'[39m))[33m.[39mrejects[33m.[39mtoMatchObject({
+     [90m     |[39m                                                                                 [31m[1m^[22m[39m
+     [90m 122 |[39m       name[33m:[39m [32m'ValidationError'[39m[33m,[39m
+     [90m 123 |[39m       message[33m:[39m [32m'Weather API error (401): Unauthorized'[39m[33m,[39m
+     [90m 124 |[39m       statusCode[33m:[39m [35m401[39m[33m,[39m[0m
+System.Management.Automation.RemoteException
+      at Object.toMatchObject (node_modules/expect/build/index.js:218:22)
+      at Object.toMatchObject (tests/unit/weather.service.test.js:121:81)
+System.Management.Automation.RemoteException
+Test Suites: 1 failed, 2 passed, 3 total
+Tests:       4 failed, 34 passed, 38 total
+Snapshots:   0 total
+Time:        5.858 s
+Ran all test suites matching /tests\\unit\\weather.service.test.js|tests\\unit\\weather.service.extra.test.js|tests\\unit\\weather.service.branches.test.js/i.

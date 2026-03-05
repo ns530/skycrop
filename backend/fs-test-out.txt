@@ -1,0 +1,54 @@
+﻿FAIL tests/unit/field.service.test.js
+  ΓùÅ FieldService unit ΓÇ║ update changes name and invalidates cache
+System.Management.Automation.RemoteException
+    TypeError: Cannot read properties of undefined (reading 'constructor')
+System.Management.Automation.RemoteException
+    [0m [90m 533 |[39m     }
+     [90m 534 |[39m
+    [31m[1m>[22m[39m[90m 535 |[39m     [36mawait[39m [33mField[39m[33m.[39mprototype[33m.[39msave[33m.[39mcall(field)[33m;[39m
+     [90m     |[39m                                [31m[1m^[22m[39m
+     [90m 536 |[39m     [36mawait[39m invalidateFieldCaches(user_id[33m,[39m field[33m.[39mfield_id)[33m;[39m
+     [90m 537 |[39m     [36mreturn[39m field[33m;[39m
+     [90m 538 |[39m   }[0m
+System.Management.Automation.RemoteException
+      at Object.save (node_modules/sequelize/src/model.js:3994:61)
+      at FieldService.call [as update] (src/services/field.service.js:535:32)
+      at Object.<anonymous> (tests/unit/field.service.test.js:267:20)
+System.Management.Automation.RemoteException
+  ΓùÅ FieldService unit ΓÇ║ update changes status
+System.Management.Automation.RemoteException
+    TypeError: Cannot read properties of undefined (reading 'constructor')
+System.Management.Automation.RemoteException
+    [0m [90m 533 |[39m     }
+     [90m 534 |[39m
+    [31m[1m>[22m[39m[90m 535 |[39m     [36mawait[39m [33mField[39m[33m.[39mprototype[33m.[39msave[33m.[39mcall(field)[33m;[39m
+     [90m     |[39m                                [31m[1m^[22m[39m
+     [90m 536 |[39m     [36mawait[39m invalidateFieldCaches(user_id[33m,[39m field[33m.[39mfield_id)[33m;[39m
+     [90m 537 |[39m     [36mreturn[39m field[33m;[39m
+     [90m 538 |[39m   }[0m
+System.Management.Automation.RemoteException
+      at Object.save (node_modules/sequelize/src/model.js:3994:61)
+      at FieldService.call [as update] (src/services/field.service.js:535:32)
+      at Object.<anonymous> (tests/unit/field.service.test.js:280:20)
+System.Management.Automation.RemoteException
+  ΓùÅ FieldService unit ΓÇ║ delete sets status to deleted and invalidates cache
+System.Management.Automation.RemoteException
+    TypeError: Cannot read properties of undefined (reading 'constructor')
+System.Management.Automation.RemoteException
+    [0m [90m 549 |[39m     }
+     [90m 550 |[39m     field[33m.[39mstatus [33m=[39m [32m'deleted'[39m[33m;[39m
+    [31m[1m>[22m[39m[90m 551 |[39m     [36mawait[39m [33mField[39m[33m.[39mprototype[33m.[39msave[33m.[39mcall(field)[33m;[39m
+     [90m     |[39m                                [31m[1m^[22m[39m
+     [90m 552 |[39m     [36mawait[39m invalidateFieldCaches(user_id[33m,[39m field[33m.[39mfield_id)[33m;[39m
+     [90m 553 |[39m     [36mreturn[39m { success[33m:[39m [36mtrue[39m }[33m;[39m
+     [90m 554 |[39m   }[0m
+System.Management.Automation.RemoteException
+      at Object.save (node_modules/sequelize/src/model.js:3994:61)
+      at FieldService.call [as delete] (src/services/field.service.js:551:32)
+      at Object.<anonymous> (tests/unit/field.service.test.js:291:20)
+System.Management.Automation.RemoteException
+Test Suites: 1 failed, 1 total
+Tests:       3 failed, 9 passed, 12 total
+Snapshots:   0 total
+Time:        1.823 s, estimated 3 s
+Ran all test suites matching /tests\\unit\\field.service.test.js/i.

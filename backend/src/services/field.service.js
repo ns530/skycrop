@@ -289,8 +289,8 @@ async function queryFieldsList(user_id, filters) {
     params.maxLon = bbox.maxLon;
     params.maxLat = bbox.maxLat;
     conds.push(
-      `f.boundary && STMakeEnvelope(:minLon, :minLat, :maxLon, :maxLat, 4326)`,
-      `STIntersects(f.boundary, STMakeEnvelope(:minLon, :minLat, :maxLon, :maxLat, 4326))`
+      `f.boundary && ST_MakeEnvelope(:minLon, :minLat, :maxLon, :maxLat, 4326)`,
+      `ST_Intersects(f.boundary, ST_MakeEnvelope(:minLon, :minLat, :maxLon, :maxLat, 4326))`
     );
   }
 
@@ -299,7 +299,7 @@ async function queryFieldsList(user_id, filters) {
     params.nearLon = near.lon;
     params.nearRadius = near.radius;
     conds.push(
-      `STDWithin(f.center::geography, STSetSRID(STPoint(:nearLon, :nearLat), 4326)::geography, :nearRadius)`
+      `ST_DWithin(f.center::geography, ST_SetSRID(ST_Point(:nearLon, :nearLat), 4326)::geography, :nearRadius)`
     );
   }
 
@@ -308,11 +308,11 @@ async function queryFieldsList(user_id, filters) {
       params.intersectsfield_id = inter.id;
       // Restrict lookup to same user to avoid cross-tenant leakage
       conds.push(
-        `STIntersects(f.boundary, (SELECT boundary FROM fields f2 WHERE f2.field_id = :intersectsfield_id AND f2.user_id = :user_id LIMIT 1))`
+        `ST_Intersects(f.boundary, (SELECT boundary FROM fields f2 WHERE f2.field_id = :intersectsfield_id AND f2.user_id = :user_id LIMIT 1))`
       );
     } else if (inter.type === 'geometry') {
       params.intersectsGeo = JSON.stringify(inter.geometry);
-      conds.push(`STIntersects(f.boundary, STSetSRID(STGeomFromGeoJSON(:intersectsGeo), 4326))`);
+      conds.push(`ST_Intersects(f.boundary, ST_SetSRID(ST_GeomFromGeoJSON(:intersectsGeo), 4326))`);
     }
   }
 
@@ -333,9 +333,9 @@ async function queryFieldsList(user_id, filters) {
       f.field_id,
       f.user_id,
       f.name,
-      STAsGeoJSON(f.boundary)::json AS boundary,
+      ST_AsGeoJSON(f.boundary)::json AS boundary,
       f.areasqm,
-      STAsGeoJSON(f.center)::json AS center,
+      ST_AsGeoJSON(f.center)::json AS center,
       f.status,
       f.createdat,
       f.updatedat,
@@ -429,7 +429,7 @@ class FieldService {
       // Map potential PostGIS validity errors to 400
       if (
         String(err.message || '').includes('Geometry') ||
-        String(err.message || '').includes('STIsValid')
+        String(err.message || '').includes('ST_IsValid')
       ) {
         throw new ValidationError('Geometry invalid or self-intersecting', { field: 'boundary' });
       }
@@ -474,9 +474,9 @@ class FieldService {
         f.field_id,
         f.user_id,
         f.name,
-        STAsGeoJSON(f.boundary)::json AS boundary,
+        ST_AsGeoJSON(f.boundary)::json AS boundary,
         f.areasqm,
-        STAsGeoJSON(f.center)::json AS center,
+        ST_AsGeoJSON(f.center)::json AS center,
         f.status,
         f.createdat,
         f.updatedat

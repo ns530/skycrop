@@ -1,23 +1,48 @@
 /**
  * FieldMap Component - Native Version (iOS/Android)
  * 
- * Native map component using react-native-maps
+ * Native map component using react-native-maps.
+ * Falls back to a placeholder if react-native-maps is not available (e.g., in Expo Go).
  */
 
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import MapView, { Marker, Polygon, Region, PROVIDER_GOOGLE } from 'react-native-maps';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import * as Location from 'expo-location';
 import { Ionicons as Icon } from '@expo/vector-icons';
 import { config } from '../config/env';
-import * as GeoJSON from 'geojson';
+import type { Polygon as GeoPolygon, MultiPolygon as GeoMultiPolygon, Position } from 'geojson';
+
+// Safely try to import react-native-maps (may not be available in Expo Go)
+let RNMapView: any = null;
+let RNMarker: any = null;
+let RNPolygon: any = null;
+let RN_PROVIDER_GOOGLE: any = null;
+let mapsAvailable = false;
+
+try {
+  const maps = require('react-native-maps');
+  RNMapView = maps.default || maps.MapView;
+  RNMarker = maps.Marker;
+  RNPolygon = maps.Polygon;
+  RN_PROVIDER_GOOGLE = maps.PROVIDER_GOOGLE;
+  mapsAvailable = !!RNMapView;
+} catch (e) {
+  console.warn('[FieldMap] react-native-maps not available, using placeholder');
+}
+
+interface MapRegion {
+  latitude: number;
+  longitude: number;
+  latitudeDelta: number;
+  longitudeDelta: number;
+}
 
 interface FieldMapProps {
-  initialRegion?: Region;
-  boundary?: GeoJSON.Polygon;
+  initialRegion?: MapRegion;
+  boundary?: GeoPolygon | GeoMultiPolygon;
   center?: { latitude: number; longitude: number };
   editable?: boolean;
-  onBoundaryChange?: (boundary: GeoJSON.Polygon) => void;
+  onBoundaryChange?: (boundary: GeoPolygon) => void;
   height?: number;
 }
 
@@ -29,10 +54,11 @@ export const FieldMap: React.FC<FieldMapProps> = ({
   onBoundaryChange,
   height = 300,
 }) => {
-  const [region, setRegion] = useState<Region>(
+  // All hooks MUST be called before any conditional returns (Rules of Hooks)
+  const [region, setRegion] = useState<MapRegion>(
     initialRegion || config.mapInitialRegion
   );
-  const [currentBoundary, setCurrentBoundary] = useState<GeoJSON.Polygon | undefined>(boundary);
+  const [currentBoundary, setCurrentBoundary] = useState<GeoPolygon | GeoMultiPolygon | undefined>(boundary);
   const [mapCenter, setMapCenter] = useState<{ latitude: number; longitude: number } | undefined>(center);
 
   useEffect(() => {
@@ -53,13 +79,39 @@ export const FieldMap: React.FC<FieldMapProps> = ({
     }
   }, [center]);
 
+  // ---- Placeholder when maps are not available ----
+  if (!mapsAvailable) {
+    return (
+      <View style={[styles.container, { height }]}>
+        <View style={styles.placeholderContent}>
+          <Icon name="map-outline" size={48} color="#9ca3af" />
+          <Text style={styles.placeholderTitle}>Map View</Text>
+          {center ? (
+            <Text style={styles.placeholderText}>
+              📍 {center.latitude.toFixed(6)}, {center.longitude.toFixed(6)}
+            </Text>
+          ) : (
+            <Text style={styles.placeholderText}>
+              Map requires a development build
+            </Text>
+          )}
+          {editable && (
+            <Text style={styles.placeholderHint}>
+              Enter coordinates manually below
+            </Text>
+          )}
+        </View>
+      </View>
+    );
+  }
+
+  // ---- Map handlers ----
   const handleMapPress = (event: any) => {
     if (!editable || !onBoundaryChange) return;
 
     const { latitude, longitude } = event.nativeEvent.coordinate;
-    
-    // Create a simple square boundary around the tapped point
-    const newBoundary: GeoJSON.Polygon = {
+
+    const newBoundary: GeoPolygon = {
       type: 'Polygon',
       coordinates: [[
         [longitude - 0.001, latitude - 0.001],
@@ -85,7 +137,7 @@ export const FieldMap: React.FC<FieldMapProps> = ({
         accuracy: Location.Accuracy.Balanced,
       });
       const { latitude, longitude } = location.coords;
-      
+
       setMapCenter({ latitude, longitude });
       setRegion({
         latitude,
@@ -94,105 +146,48 @@ export const FieldMap: React.FC<FieldMapProps> = ({
         longitudeDelta: 0.01,
       });
     } catch (error) {
-      // Silently fail - user can tap on map instead
       console.warn('Location unavailable, user can tap on map:', error);
     }
   };
 
   // Convert GeoJSON coordinates to map coordinates
-  const getPolygonCoordinates = (polygon: GeoJSON.Polygon | GeoJSON.MultiPolygon | undefined) => {
-    if (!polygon) {
-      return [];
-    }
+  const getPolygonCoordinates = (polygon: GeoPolygon | GeoMultiPolygon | undefined) => {
+    if (!polygon) return [];
+
     try {
-      // Handle Polygon
-      if (polygon.type === 'Polygon' && 'coordinates' in polygon) {
-        const polygonData = polygon as GeoJSON.Polygon;
-        if (!polygonData.coordinates || !Array.isArray(polygonData.coordinates) || polygonData.coordinates.length === 0) {
-          console.warn('[FieldMap] Invalid Polygon coordinates');
-          return [];
-        }
-        
-        const outerRing = polygonData.coordinates[0];
-        if (!Array.isArray(outerRing) || outerRing.length === 0) {
-          console.warn('[FieldMap] Invalid outer ring');
-          return [];
-        }
+      let outerRing: Position[] = [];
 
-        return outerRing.map((coord) => {
-          // Handle both [lng, lat] and [lng, lat, elevation] formats
-          if (!Array.isArray(coord) || coord.length < 2) {
-            console.warn('[FieldMap] Invalid coordinate:', coord);
-            return { latitude: 0, longitude: 0 };
-          }
-          
-          const [lng, lat] = coord;
-          // Validate coordinates are numbers
-          if (typeof lng !== 'number' || typeof lat !== 'number' || isNaN(lng) || isNaN(lat)) {
-            console.warn('[FieldMap] Invalid coordinate values:', coord);
-            return { latitude: 0, longitude: 0 };
-          }
-          
-          return {
-            latitude: lat,
-            longitude: lng,
-          };
-        });
+      if (polygon.type === 'Polygon') {
+        if (!polygon.coordinates || polygon.coordinates.length === 0) return [];
+        outerRing = polygon.coordinates[0];
+      } else if (polygon.type === 'MultiPolygon') {
+        if (!polygon.coordinates || polygon.coordinates.length === 0) return [];
+        const firstPolygon = polygon.coordinates[0];
+        if (!firstPolygon || firstPolygon.length === 0) return [];
+        outerRing = firstPolygon[0];
       }
-      
-      // Handle MultiPolygon - take first polygon
-      if (polygon.type === 'MultiPolygon' && 'coordinates' in polygon) {
-        const multiPolygonData = polygon as GeoJSON.MultiPolygon;
-        if (!multiPolygonData.coordinates || !Array.isArray(multiPolygonData.coordinates) || multiPolygonData.coordinates.length === 0) {
-          console.warn('[FieldMap] Invalid MultiPolygon coordinates');
-          return [];
-        }
-        
-        const firstPolygon = multiPolygonData.coordinates[0];
-        if (!Array.isArray(firstPolygon) || firstPolygon.length === 0) {
-          console.warn('[FieldMap] Invalid first polygon in MultiPolygon');
-          return [];
-        }
-        
-        const outerRing = firstPolygon[0];
-        if (!Array.isArray(outerRing) || outerRing.length === 0) {
-          console.warn('[FieldMap] Invalid outer ring in MultiPolygon');
-          return [];
-        }
 
-        return outerRing.map((coord) => {
-          if (!Array.isArray(coord) || coord.length < 2) {
-            console.warn('[FieldMap] Invalid coordinate:', coord);
-            return { latitude: 0, longitude: 0 };
-          }
-          
-          const [lng, lat] = coord;
-          if (typeof lng !== 'number' || typeof lat !== 'number' || isNaN(lng) || isNaN(lat)) {
-            console.warn('[FieldMap] Invalid coordinate values:', coord);
-            return { latitude: 0, longitude: 0 };
-          }
-          
-          return {
-            latitude: lat,
-            longitude: lng,
-          };
-        });
-      }
-      
-      // Fallback for unsupported types
-      const geometryType = (polygon as any).type || 'unknown';
-      console.warn('[FieldMap] Unsupported geometry type:', geometryType);
-      return [];
+      if (!Array.isArray(outerRing) || outerRing.length === 0) return [];
+
+      return outerRing
+        .filter((coord) => Array.isArray(coord) && coord.length >= 2)
+        .map((coord) => ({
+          latitude: coord[1],
+          longitude: coord[0],
+        }));
     } catch (error) {
       console.error('[FieldMap] Error converting polygon coordinates:', error);
       return [];
     }
   };
 
+  // ---- Render actual map ----
+  const polygonCoords = getPolygonCoordinates(currentBoundary);
+
   return (
     <View style={[styles.container, { height }]}>
-      <MapView
-        provider={PROVIDER_GOOGLE}
+      <RNMapView
+        provider={RN_PROVIDER_GOOGLE}
         style={styles.map}
         region={region}
         onRegionChangeComplete={setRegion}
@@ -202,29 +197,22 @@ export const FieldMap: React.FC<FieldMapProps> = ({
         mapType="satellite"
       >
         {mapCenter && (
-          <Marker
+          <RNMarker
             coordinate={mapCenter}
             title="Field Center"
             pinColor="#16A34A"
           />
         )}
-        
-        {currentBoundary && (() => {
-          const polygonCoords = getPolygonCoordinates(currentBoundary);
-          // Only render if we have valid coordinates
-          if (polygonCoords.length >= 3) {
-            return (
-              <Polygon
-                coordinates={polygonCoords}
-                fillColor="rgba(22, 163, 74, 0.3)"
-                strokeColor="#16A34A"
-                strokeWidth={2}
-              />
-            );
-          }
-          return null;
-        })()}
-      </MapView>
+
+        {polygonCoords.length >= 3 && (
+          <RNPolygon
+            coordinates={polygonCoords}
+            fillColor="rgba(22, 163, 74, 0.3)"
+            strokeColor="#16A34A"
+            strokeWidth={2}
+          />
+        )}
+      </RNMapView>
 
       {editable && (
         <TouchableOpacity
@@ -265,5 +253,29 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
+  placeholderContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f9fafb',
+    padding: 16,
+  },
+  placeholderTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#6b7280',
+    marginTop: 8,
+  },
+  placeholderText: {
+    fontSize: 13,
+    color: '#9ca3af',
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  placeholderHint: {
+    fontSize: 12,
+    color: '#3b82f6',
+    marginTop: 8,
+    fontStyle: 'italic',
+  },
 });
-

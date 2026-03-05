@@ -1,0 +1,27 @@
+﻿[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+{"count":2,"date":"2025-01-15","environment":"test","field_id":"F1","level":"info","message":"recommendations.compute.cached","service":"skycrop-backend","timestamp":"2026-03-03T10:25:03.972Z","ttl":86400}
+{"count":1,"date":"2025-01-15","environment":"test","field_id":"F1","level":"info","message":"recommendations.compute.cached","service":"skycrop-backend","timestamp":"2026-03-03T10:25:03.977Z","ttl":86400}
+{"count":1,"date":"2025-01-15","environment":"test","field_id":"F1","level":"info","message":"recommendations.compute.cached","service":"skycrop-backend","timestamp":"2026-03-03T10:25:03.978Z","ttl":86400}
+{"count":1,"date":"2025-01-15","environment":"test","field_id":"F1","level":"info","message":"recommendations.compute.cached","service":"skycrop-backend","timestamp":"2026-03-03T10:25:03.980Z","ttl":86400}
+{"count":1,"date":"2025-01-15","environment":"test","field_id":"F1","level":"info","message":"recommendations.compute.cached","service":"skycrop-backend","timestamp":"2026-03-03T10:25:03.982Z","ttl":86400}
+{"count":1,"date":"2025-01-15","environment":"test","field_id":"F1","level":"info","message":"recommendations.compute.cached","service":"skycrop-backend","timestamp":"2026-03-03T10:25:03.983Z","ttl":86400}
+{"count":2,"date":"2025-01-15","environment":"test","field_id":"F1","level":"info","message":"recommendations.compute.cached","service":"skycrop-backend","timestamp":"2026-03-03T10:25:03.985Z","ttl":86400}
+{"count":2,"date":"2025-01-15","environment":"test","field_id":"F1","level":"info","message":"recommendations.compute.cached","service":"skycrop-backend","timestamp":"2026-03-03T10:25:04.000Z","ttl":86400}
+PASS tests/unit/recommendation.service.test.js
+  RecommendationService unit
+    ΓêÜ water alert severity: high when NDWI very low or 7-day rain < 10 mm (8 ms)
+    ΓêÜ water alert severity: medium when NDWI in [0.05,0.1) and 3-day rain < 5 mm (1 ms)
+    ΓêÜ water alert severity: low when NDWI in [0.1,0.15) and 3-day rain < 2 mm (low-only rule) (2 ms)
+    ΓêÜ fertilizer alert: medium when ╬öNDVI < threshold and TDVI > threshold (2 ms)
+    ΓêÜ fertilizer alert: high when ╬öNDVI < NDVIGROWTHMIN/2 OR TDVI > TDVISTRESSTHRESHOLD+0.1 (2 ms)
+    ΓêÜ compute cache: second call returns cachehit = true and same recommendations (1 ms)
+    ΓêÜ upsertRecommendations idempotent by (field_id, timestamp, type); recompute=true updates severity/reason/details (3 ms)
+    ΓêÜ listRecommendations filters by type and range and returns pagination; cache stored and invalidated on upsert (8 ms)
+    ΓêÜ forecast normalization shape consumed by recommendation engine (4 ms)
+    ΓêÜ validation errors thrown for bad inputs (3 ms)
+System.Management.Automation.RemoteException
+Test Suites: 1 passed, 1 total
+Tests:       10 passed, 10 total
+Snapshots:   0 total
+Time:        0.901 s, estimated 2 s
+Ran all test suites matching tests/unit/recommendation.service.test.js.
