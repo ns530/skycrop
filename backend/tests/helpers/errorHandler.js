@@ -5,21 +5,22 @@
  */
 function attachErrorHandler(app) {
   // eslint-disable-next-line no-unused-vars
-  app.use((err, req, res, next) => {
+  app.use((err, req, res, _next) => {
+    let statusCode = err.statusCode || 500;
+    let code = err.code || 'INTERNALERROR';
+    let { message } = err;
+
     if (err && (err.type === 'entity.too.large' || err.status === 413)) {
-      err.statusCode = 413;
-      err.code = 'PAYLOADTOOLARGE';
-      err.message = err.message || 'Request entity too large';
+      statusCode = 413;
+      code = 'PAYLOADTOOLARGE';
+      message = message || 'Request entity too large';
     }
 
-    const status = err.statusCode || 500;
-    const code = err.code || 'INTERNALERROR';
-
-    res.status(status).json({
+    res.status(statusCode).json({
       success: false,
       error: {
         code,
-        message: err.message || 'An unexpected error occurred',
+        message: message || 'An unexpected error occurred',
         details: err.details || {},
       },
       meta: { timestamp: new Date().toISOString() },
