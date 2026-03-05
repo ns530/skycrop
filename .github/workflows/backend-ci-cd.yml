@@ -70,15 +70,4 @@ jobs:
         REDISURL: redis://localhost:6379
         REDISENABLED: 'false'
     # Build step skipped as backend is Node.js without build script
-
-  cd:
-    needs: ci
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Deploy to Railway
-      uses: railwayapp/actions-deploy@v1
-      with:
-        railway-token: ${{ secrets.RAILWAY_TOKEN }}
-        service: backend
+    # Deployment is handled automatically by Railway on push to main
